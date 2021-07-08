@@ -62,4 +62,4 @@ if __name__ == "__main__":
     cronprocess = mp.Process(target=start_cron)
     cronprocess.start()
     app.router.add_routes(routes)
-    web.run_app(app)
+    web.run_app(app, port="8000")
