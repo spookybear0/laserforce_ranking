@@ -32,7 +32,7 @@ CREATE TABLE `games` (
   `won` int(11) NOT NULL,
   `role` varchar(32) NOT NULL,
   `score` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `players`
@@ -47,7 +47,7 @@ CREATE TABLE `players` (
   `ranking_commander` float(11) NOT NULL,
   `ranking_medic` float(11) NOT NULL,
   `ranking_ammo` float(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Indexes for dumped tables
