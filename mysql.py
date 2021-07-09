@@ -61,7 +61,7 @@ class MySQLPool:
 
         cls = cls()
 
-        cls.connect_local(
+        await cls.connect_local(
             host,user,password,database,port,
             asyncio.get_event_loop() if loop is None else loop
         )

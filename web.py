@@ -1,4 +1,4 @@
-from helpers import ranking_cron, log_game # type: ignore
+from helpers import ranking_cron, log_game, init_sql # type: ignore
 from aiohttp import web
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
@@ -23,16 +23,18 @@ async def render_template(r, template, *args, **kwargs) -> web.Response:
     return web.Response(text=text, content_type="text/html")
 
 @routes.get("/log")
-async def log_game(r: web.RequestHandler):
+async def log_game_get(r: web.RequestHandler):
     return await render_template(r, "log.html")
 
 @routes.post("/log")
-async def log_game(r: web.RequestHandler):
+async def log_game_post(r: web.RequestHandler):
+    await init_sql()
     data = await r.post()
     
     id = data["id"]
     role = data["role"]
     won = data["won"]
+    
     
     try:
         score = int(data["score"])
@@ -55,9 +57,14 @@ async def log_game(r: web.RequestHandler):
 
 def start_cron():
     loop = asyncio.get_event_loop()
+    loop.run_until_complete(init_sql())
     loop.run_until_complete(msh.start())
 
 if __name__ == "__main__":
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
     mp.set_start_method("spawn")
     cronprocess = mp.Process(target=start_cron)
     cronprocess.start()
