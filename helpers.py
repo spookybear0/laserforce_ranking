@@ -16,7 +16,7 @@ def format_sql(to_format):
     return final
 
 async def get_top_100(role):
-    q = await sql.fetchall(f"SELECT player_id FROM players ORDER BY ranking_{role.valu} DESC LIMIT 100")
+    q = await sql.fetchall(f"SELECT player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT 100")
     return format_sql(q)
 
 async def get_all_players():
