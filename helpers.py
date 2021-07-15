@@ -1,24 +1,10 @@
 import mysql # type: ignore
 import asyncio
 from typing import List, Union, Tuple
-from dataclasses import dataclass
 from config import config # type: ignore
+from objects import Player, Game, Role # type: ignore
 
 sql = None
-
-@dataclass
-class Game:
-    id: int
-    player_id: str
-    won: bool
-    role: str
-    score: int
-    
-@dataclass
-class Player:
-    id: int
-    player_id: str
-    codename: str
 
 def average(to_average: Union[List, Tuple]):
     return sum(to_average) / len(to_average)
@@ -30,7 +16,7 @@ def format_sql(to_format):
     return final
 
 async def get_top_100(role):
-    q = await sql.fetchall(f"SELECT player_id FROM players ORDER BY ranking_{role} DESC LIMIT 100")
+    q = await sql.fetchall(f"SELECT player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT 100")
     return format_sql(q)
 
 async def get_all_players():
@@ -38,14 +24,14 @@ async def get_all_players():
     return format_sql(q)
     
 async def ranking_cron():
-    roles = ["scout", "heavy", "commander", "medic", "ammo"]
+    roles = list(Role)
     for player_id in await get_all_players():
         for role in roles:
             try:
                 score = await calculate_total_score(player_id, role)
             except ZeroDivisionError: # no games
                 score = 0
-            await sql.execute(f"UPDATE players SET ranking_{role} = %s WHERE player_id = %s", (score, player_id))
+            await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
 
 async def fetch_player(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
@@ -63,18 +49,18 @@ async def database_player(player_id: str, codename: str) -> None:
 
 async def log_game(player_id: str, won: bool, role: str, score: int) -> None:
     await sql.execute("""INSERT INTO `games` (player_id, won, role, score)
-                        VALUES (%s, %s, %s, %s)""", (player_id, int(won), role, score))
+                        VALUES (%s, %s, %s, %s)""", (player_id, int(won), role.value, score))
     
 async def fetch_game(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
     return Game(*q[0])
 
 async def get_average_score(role: str, player_id: str) -> int:
-    q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND NOT `player_id` = %s", (role, player_id))
+    q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
     return average(format_sql(q))
 
 async def get_my_average_score(role: str, player_id: str):
-    q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND `player_id` = %s", (role, player_id))
+    q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
     return average(format_sql(q))
     
 async def calculate_total_score(player_id: int, role: str) -> float:
