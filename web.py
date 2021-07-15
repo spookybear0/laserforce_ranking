@@ -50,7 +50,8 @@ async def log_game_post(r: web.RequestHandler):
         return web.Response(text="401: Error, invalid data!")
     try:
         await log_game(id, won, role, score)
-    except:
+    except Exception as e:
+        print(e)
         return web.Response(text="500: Error, game was not logged!")
     else:
         return web.Response(text="200: Logged!")
