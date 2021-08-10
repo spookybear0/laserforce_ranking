@@ -1,8 +1,8 @@
 import mysql # type: ignore
-import asyncio
 from typing import List, Union, Tuple
 from config import config # type: ignore
 from objects import Player, Game, Role # type: ignore
+import laserforce # type: ignore
 
 sql = None
 
@@ -15,9 +15,9 @@ def format_sql(to_format):
         final.append(i[0])
     return final
 
-async def get_top_100(role):
-    q = await sql.fetchall(f"SELECT player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT 100")
-    return format_sql(q)
+async def get_top_100(role: Role):
+    q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT 100")
+    return list(q)
 
 async def get_all_players():
     q = await sql.fetchall("SELECT player_id FROM players")
@@ -28,10 +28,21 @@ async def ranking_cron():
     for player_id in await get_all_players():
         for role in roles:
             try:
-                score = await calculate_total_score(player_id, role)
+                score = await get_my_ranking_score(role, player_id)
             except ZeroDivisionError: # no games
                 score = 0
             await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
+            
+async def player_cron():
+    client = laserforce.Client()
+
+    for i in range(5000):
+        try:
+            player = client.get_player(f"4-43-{i}")
+        except LookupError:
+            continue
+        
+        await database_player(f"4-43-{i}", player.codename)
 
 async def fetch_player(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
@@ -44,8 +55,9 @@ async def fetch_player_by_name(codename: int) -> Game:
 async def database_player(player_id: str, codename: str) -> None:
     # clean codename
     codename = codename.replace(" ☺", "").replace("☺", "")
-    await sql.execute("""INSERT INTO `players` (player_id, codename, ranking)
-                        VALUES (%s, %s, %s)""", (player_id, codename, 0.0))
+    
+    await sql.execute("""INSERT INTO `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, 0.0, 0.0, 0.0, 0.0, 0.0))
 
 async def log_game(player_id: str, won: bool, role: str, score: int) -> None:
     await sql.execute("""INSERT INTO `games` (player_id, won, role, score)
@@ -55,18 +67,13 @@ async def fetch_game(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
     return Game(*q[0])
 
-async def get_average_score(role: str, player_id: str) -> int:
-    q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
-    return average(format_sql(q))
-
-async def get_my_average_score(role: str, player_id: str):
+async def get_my_ranking_score(role: Role, player_id: str):
     q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
-    return average(format_sql(q))
-    
-async def calculate_total_score(player_id: int, role: str) -> float:
-    world_average = await get_average_score(role, player_id)
-    my_average = await get_my_average_score(role, player_id)
-    return round(world_average / my_average, 2)
+    games = format_sql(q)[:10]
+    weighted = 0
+    for i, score in enumerate(games):
+        weighted += int(score * 0.95**i)
+    return weighted # only top 10 weighted
 
 async def init_sql():
     global sql

@@ -1,5 +1,6 @@
-from helpers import ranking_cron, log_game, init_sql # type: ignore
+from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100 # type: ignore
 from aiohttp import web
+from objects import Role
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
 import multiprocessing as mp
@@ -15,12 +16,24 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("html"))
 
 msh = Scheduler()
-cron = CronJob(name="ranking").every(1).hour.go(ranking_cron)
-msh.add_job(cron)
+ranking = CronJob(name="ranking").every(1).hour.go(ranking_cron)
+player = CronJob(name="player").every(1).hour.go(player_cron)
+msh.add_job(ranking)
+msh.add_job(player)
 
 async def render_template(r, template, *args, **kwargs) -> web.Response:
     text = templates.get_template(template).render(*args, **kwargs)
     return web.Response(text=text, content_type="text/html")
+
+@routes.get("/top")
+async def top_get(r: web.RequestHandler):
+    await init_sql()
+    scout = await get_top_100(Role.SCOUT)
+    heavy = await get_top_100(Role.HEAVY)
+    ammo = await get_top_100(Role.AMMO)
+    medic = await get_top_100(Role.MEDIC)
+    commander = await get_top_100(Role.COMMANDER)
+    return await render_template(r, "top.html", scout=scout, heavy=heavy, ammo=ammo, medic=medic, commander=commander)
 
 @routes.get("/log")
 async def log_game_get(r: web.RequestHandler):
