@@ -39,7 +39,7 @@ async def player_cron():
     for i in range(5000):
         try:
             player = client.get_player(f"4-43-{i}")
-        except LookupError:
+        except LookupError: # player does not exist
             continue
         
         await database_player(f"4-43-{i}", player.codename)
@@ -54,10 +54,12 @@ async def fetch_player_by_name(codename: int) -> Game:
 
 async def database_player(player_id: str, codename: str) -> None:
     # clean codename
-    codename = codename.replace(" ☺", "").replace("☺", "")
+    codename = codename.replace(" ☺", "").replace("☺", "").replace(" ♡", "").replace("♡", "")
     
-    await sql.execute("""INSERT INTO `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, 0.0, 0.0, 0.0, 0.0, 0.0))
+    cname = await sql.fetchone("SELECT codename FROM `players` WHERE player_id = %s", (player_id))
+    if cname:
+        await sql.execute("""INSERT INTO `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, 0.0, 0.0, 0.0, 0.0, 0.0))
 
 async def log_game(player_id: str, won: bool, role: str, score: int) -> None:
     await sql.execute("""INSERT INTO `games` (player_id, won, role, score)
