@@ -57,7 +57,7 @@ async def database_player(player_id: str, codename: str) -> None:
     codename = codename.replace(" ☺", "").replace("☺", "").replace(" ♡", "").replace("♡", "")
     
     cname = await sql.fetchone("SELECT codename FROM `players` WHERE player_id = %s", (player_id))
-    if cname:
+    if not cname:
         await sql.execute("""INSERT INTO `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
                             VALUES (%s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, 0.0, 0.0, 0.0, 0.0, 0.0))
 
