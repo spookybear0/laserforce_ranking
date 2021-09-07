@@ -40,8 +40,8 @@ CREATE TABLE `games` (
 
 CREATE TABLE `players` (
   `id` int(11) NOT NULL,
-  `player_id` varchar(32) NOT NULL,
-  `codename` varchar(32) NOT NULL UNIQUE,
+  `player_id` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
+  `codename` varchar(32) NOT NULL UNIQUE COLLATE utf8mb4_0900_ai_ci,
   `ranking_scout` float(11) NOT NULL,
   `ranking_heavy` float(11) NOT NULL,
   `ranking_commander` float(11) NOT NULL,

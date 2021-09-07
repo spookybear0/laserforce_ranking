@@ -54,7 +54,6 @@ async def fetch_player_by_name(codename: int) -> Game:
 
 async def database_player(player_id: str, codename: str) -> None:
     # clean codename
-    codename = codename.replace(" ☺", "").replace("☺", "").replace(" ♡", "").replace("♡", "")
     
     if not await sql.fetchone("SELECT id FROM `players` WHERE player_id = %s", (player_id)) and \
     not await sql.fetchone("SELECT id FROM `players` WHERE codename = %s", (codename)):
