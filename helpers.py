@@ -15,8 +15,8 @@ def format_sql(to_format):
         final.append(i[0])
     return final
 
-async def get_top_100(role: Role):
-    q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT 100")
+async def get_top_100(role: Role, amount: int=100):
+    q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount}")
     return list(q)
 
 async def get_all_players():
@@ -55,10 +55,16 @@ async def fetch_player_by_name(codename: int) -> Game:
 async def database_player(player_id: str, codename: str) -> None:
     # clean codename
     
-    if not await sql.fetchone("SELECT id FROM `players` WHERE player_id = %s", (player_id)) and \
-    not await sql.fetchone("SELECT id FROM `players` WHERE codename = %s", (codename)):
+    if await sql.fetchone("SELECT id FROM `players` WHERE player_id = %s", (player_id)):
+        await sql.execute("""UPDATE `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
+                            SET player_id = %s, codename = %s WHERE player_id = %s""", (player_id, codename, player_id))
+    elif await sql.fetchone("SELECT id FROM `players` WHERE codename = %s", (codename)):
+        await sql.execute("""UPDATE `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
+                            SET player_id = %s, codename = %s WHERE codename = %s""", (player_id, codename, codename))
+    else:
         await sql.execute("""INSERT INTO `players` (player_id, codename, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
                             VALUES (%s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, 0.0, 0.0, 0.0, 0.0, 0.0))
+        
 
 async def log_game(player_id: str, won: bool, role: str, score: int) -> None:
     await sql.execute("""INSERT INTO `games` (player_id, won, role, score)
