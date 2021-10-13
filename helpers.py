@@ -1,13 +1,21 @@
 import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
-from objects import Player, Game, Role # type: ignore
+from objects import Player, Game, Role, RankMMR, Rank # type: ignore
 import laserforce # type: ignore
 
 sql = None
 
 def average(to_average: Union[List, Tuple]):
     return sum(to_average) / len(to_average)
+
+# iron: 0.75, 75%
+# bronze: 0.85, 85%
+# silver: 1.0, 100% (average)
+# gold: 1.15, 115%
+# diamond: 1.25, 125%
+# immortal: 1.35, 135%
+# lasermaster: top 500 average mmr
 
 def format_sql(to_format):
     final = []
@@ -22,8 +30,16 @@ async def get_top_100(role: Role, amount: int=100):
 async def get_all_players():
     q = await sql.fetchall("SELECT player_id FROM players")
     return format_sql(q)
+
+async def get_mmr(player_id: str):
+    q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
+    all_mmr = format_sql(q) # format
+    mmr = average(all_mmr)
+    return mmr
     
 async def ranking_cron():
+    # mmr cron
+    
     roles = list(Role)
     for player_id in await get_all_players():
         for role in roles:
@@ -32,11 +48,19 @@ async def ranking_cron():
             except ZeroDivisionError: # no games
                 score = 0
             await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
-            
+    
+    # rank cron
+    
+    mmr = await get_mmr()
+    ranks = [x.value for x in RankMMR.__members__.values() if not x.value is None]
+    abs_diff = lambda value: abs(value-mmr)
+    rank = RankMMR(min(ranks, key=abs_diff)) # find rank that catergorizes player best and convert to enum
+    await sql.execute("""UPDATE `players` SET rank = %s WHERE player_id = %s""", (rank.name.lower(), player_id)) # 
+
 async def player_cron():
     client = laserforce.Client()
 
-    for i in range(5000):
+    for i in range(10000):
         try:
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
@@ -62,9 +86,9 @@ async def database_player(player_id: str, codename: str) -> None:
                             VALUES (%s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, 0.0, 0.0, 0.0, 0.0, 0.0))
         
 
-async def log_game(player_id: str, won: bool, role: str, score: int) -> None:
+async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (player_id, won, role, score)
-                        VALUES (%s, %s, %s, %s)""", (player_id, int(won), role.value, score))
+                        VALUES (%s, %s, %s, %s)""", (game.player_id, int(game.won), game.role.value, game.score))
     
 async def fetch_game(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
@@ -72,9 +96,9 @@ async def fetch_game(id: int) -> Game:
 
 async def get_my_ranking_score(role: Role, player_id: str):
     q = await sql.fetchall("SELECT `score` FROM `games` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
-    games = format_sql(q)[:10]
+    games = format_sql(q)[:10] # grab top 10 games
     weighted = 0
-    for i, score in enumerate(games):
+    for i, score in enumerate(games): # use weighting algrorthim
         weighted += int(score * 0.95**i)
     return weighted # only top 10 weighted
 

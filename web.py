@@ -1,6 +1,6 @@
 from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100 # type: ignore
 from aiohttp import web
-from objects import Role
+from objects import Role, Game
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
 import multiprocessing as mp
@@ -44,25 +44,32 @@ async def log_game_post(r: web.RequestHandler):
     await init_sql()
     data = await r.post()
     
-    id = data["id"]
+    player_id = data["id"]
     role = data["role"]
     won = data["won"]
-    
+    my_team = data["team"]
+    green_players = []
+    red_players = []
     
     try:
         score = int(data["score"])
     except:
-        return web.Response(text="401: Error, invalid data!")
+        return web.Response(text="401: Error, invalid data (score)!")
     
     if won == "on":
         won = True
     else:
         won = False
+        
+    role = Role(role) # use the role class
     
-    if not role in ["scout", "heavy", "comamnder", "medic", "ammo"] or len(id.split("-")) != 3:
-        return web.Response(text="401: Error, invalid data!")
+    game = Game(0, player_id, won, score, my_team, green_players=green_players, red_players=red_players) # game_id is 0 becaue its undefined
+    
+    if not role.value in ["scout", "heavy", "comamnder", "medic", "ammo"] or len(player_id.split("-")) != 3:
+        return web.Response(text="401: Error, invalid data (role)!")
+    
     try:
-        await log_game(id, won, role, score)
+        await log_game(game)
     except Exception as e:
         print(e)
         return web.Response(text="500: Error, game was not logged!")
