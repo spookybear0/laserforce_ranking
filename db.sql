@@ -28,10 +28,20 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `games` (
   `id` int(11) NOT NULL,
-  `player_id` varchar(32) NOT NULL,
-  `won` int(11) NOT NULL,
-  `role` varchar(32) NOT NULL,
+  `winner` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `game_players`
+--
+
+CREATE TABLE `game_players` (
+  `player_id` int(11) NOT NULL,
+  `game_id` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
+  `team` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
+  `role` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
   `score` int(11) NOT NULL
+
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -59,6 +69,12 @@ CREATE TABLE `players` (
 --
 ALTER TABLE `games`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `game_players`
+--
+ALTER TABLE `game_players`
+  ADD PRIMARY KEY (`player_id`);
 
 --
 -- Indexes for table `players`

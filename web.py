@@ -46,27 +46,25 @@ async def log_game_post(r: web.RequestHandler):
     
     player_id = data["id"]
     role = data["role"]
-    won = data["won"]
-    my_team = data["team"]
+    winner = data["won"] # green or red
     green_players = []
     red_players = []
     
     try:
         score = int(data["score"])
     except:
-        return web.Response(text="401: Error, invalid data (score)!")
+        return web.Response(text="401: Error, invalid data! (score)")
     
-    if won == "on":
-        won = True
-    else:
-        won = False
-        
+    if not role.value in ["scout", "heavy", "comamnder", "medic", "ammo"]:
+        return web.Response(text="401: Error, invalid data! (role)")
+    if not winner in ["green", "red"] or len(player_id.split("-")) != 3:
+        return web.Response(text="401: Error, invalid data! (team)")
+    if len(player_id.split("-")) != 3:
+        return web.Response(text="401: Error, invalid data! (id)")
+    
     role = Role(role) # use the role class
     
-    game = Game(0, player_id, won, score, my_team, green_players=green_players, red_players=red_players) # game_id is 0 becaue its undefined
-    
-    if not role.value in ["scout", "heavy", "comamnder", "medic", "ammo"] or len(player_id.split("-")) != 3:
-        return web.Response(text="401: Error, invalid data (role)!")
+    game = Game(0, player_id, winner, score, green_players=green_players, red_players=red_players) # game_id is 0 becaue its undefined
     
     try:
         await log_game(game)

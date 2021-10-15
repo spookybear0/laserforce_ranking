@@ -2,12 +2,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List
     
-@dataclass
-class Player:
-    id: int
-    player_id: str
-    codename: str
-    
 class Role(Enum):
     SCOUT = "scout"
     HEAVY = "heavy"
@@ -39,23 +33,22 @@ class RankMMR(Enum):
     IMMORTAL = 1.35
     LASERMASTER = 2
     
-@dataclass(init=False)
-class Game:
-    def __init__(self, id=0, player_id="", won=False, role=None, score=0, my_team=None, green_players=[], red_players=[]) -> None:
-        self.id = id
-        self.player_id = player_id
-        self.won = won
-        self.role = role
-        self.score = score
-        self.my_team = my_team
-        self.green_players = green_players
-        self.red_players = red_players
-    
+@dataclass
+class Player:
     id: int
     player_id: str
-    won: bool
+    codename: str
+    
+@dataclass
+class GamePlayer:
+    player_id: int
+    game_id: int
+    team: Team
     role: Role
     score: int
-    my_team: Team
-    green_players: List[Player] # INCLUDES YOURSELF
-    red_players: List[Player] # INCLUDES YOURSELF
+    
+@dataclass
+class Game:
+    id: int
+    winner: Team
+    players=[]
