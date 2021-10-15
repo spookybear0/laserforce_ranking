@@ -85,9 +85,9 @@ async def fetch_player_by_name(codename: int) -> Game:
 
 async def database_player(player_id: str, codename: str) -> None:
     if await sql.fetchone("SELECT id FROM `players` WHERE player_id = %s", (player_id)):
-        await sql.execute("""UPDATE `players` SET player_id = %s, codename = %s WHERE player_id = %s""", (player_id, codename, player_id))
+        await sql.execute("""UPDATE `players` SET codename = %s WHERE player_id = %s""", (player_id, codename, player_id))
     elif await sql.fetchone("SELECT id FROM `players` WHERE codename = %s", (codename)):
-        await sql.execute("""UPDATE `players` SET player_id = %s, codename = %s WHERE codename = %s""", (player_id, codename, codename))
+        await sql.execute("""UPDATE `players` SET player_id = %s WHERE codename = %s""", (player_id, codename, codename))
     else:
         await sql.execute("""INSERT INTO `players` (player_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
