@@ -1,6 +1,6 @@
 from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100 # type: ignore
 from aiohttp import web
-from objects import Role, Game
+from objects import Role, Game, GamePlayer, Team
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
 import multiprocessing as mp
@@ -44,27 +44,40 @@ async def log_game_post(r: web.RequestHandler):
     await init_sql()
     data = await r.post()
     
-    player_id = data["id"]
-    role = data["role"]
-    winner = data["won"] # green or red
-    green_players = []
+    winner = data["winner"] # green or red
     red_players = []
+    green_players = []
+    
+    for red_player in range(8, start=1):
+        player_id = data[f"rid{red_player}"]
+        player_role = data[f"rrole{red_player}"]
+        player_score = data[f"rscore{red_player}"]
+        game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
+        red_players.append(game)
+    for green_player in range(8, start=1):
+        player_id = data[f"gid{green_player}"]
+        player_role = data[f"grole{green_player}"]
+        player_score = data[f"gscore{green_player}"]
+        game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
+        green_players.append(game)
+        
+    players = [*red_players, *green_players]
     
     try:
         score = int(data["score"])
     except:
         return web.Response(text="401: Error, invalid data! (score)")
     
-    if not role.value in ["scout", "heavy", "comamnder", "medic", "ammo"]:
-        return web.Response(text="401: Error, invalid data! (role)")
-    if not winner in ["green", "red"] or len(player_id.split("-")) != 3:
+    for player in players:
+        if not player.role.value in ["scout", "heavy", "comamnder", "medic", "ammo"]:
+            return web.Response(text="401: Error, invalid data! (role)")
+        if len(player.player_id.split("-")) != 3:
+            return web.Response(text="401: Error, invalid data! (id)")
+            
+    if not winner in ["green", "red"]:
         return web.Response(text="401: Error, invalid data! (team)")
-    if len(player_id.split("-")) != 3:
-        return web.Response(text="401: Error, invalid data! (id)")
     
-    role = Role(role) # use the role class
-    
-    game = Game(0, player_id, winner, score, green_players=green_players, red_players=red_players) # game_id is 0 becaue its undefined
+    game = Game(0, winner, players=players) # game_id is 0 becaue its undefined
     
     try:
         await log_game(game)
