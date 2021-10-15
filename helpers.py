@@ -62,7 +62,7 @@ async def ranking_cron():
             ranks = [x.value for x in RankMMR.__members__.values() if not x.value is None]
             abs_diff = lambda value: abs(value-mmr)
             rank = RankMMR(min(ranks, key=abs_diff)) # find rank that catergorizes player best and convert to enum
-        await sql.execute("UPDATE players SET rank = %s WHERE player_id = %s", (rank.name.lower(), player_id))
+        await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
 
 async def player_cron():
     client = laserforce.Client()
