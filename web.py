@@ -56,7 +56,7 @@ async def log_game_post(r: web.RequestHandler):
             if player_name == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
-        player_id = await fetch_player_by_name(player_name)
+        player_id = await fetch_player_by_name(player_name).player_id
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
         red_players.append(game)
     for green_player in range(1, 8):
@@ -67,7 +67,7 @@ async def log_game_post(r: web.RequestHandler):
             if player_name == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
-        player_id = await fetch_player_by_name(player_name)
+        player_id = await fetch_player_by_name(player_name).player_id
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
         green_players.append(game)
         
