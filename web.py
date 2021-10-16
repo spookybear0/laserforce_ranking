@@ -80,7 +80,8 @@ async def log_game_post(r: web.RequestHandler):
     if not winner in ["green", "red"]:
         return web.Response(text="401: Error, invalid data! (team)")
     
-    game = Game(0, winner, players=players) # game_id is 0 becaue its undefined
+    game = Game(0, winner) # game_id is 0 becaue its undefined
+    game.players = players
     
     try:
         await log_game(game)
