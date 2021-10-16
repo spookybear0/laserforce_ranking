@@ -71,11 +71,6 @@ async def log_game_post(r: web.RequestHandler):
         
     players = [*red_players, *green_players]
     
-    try:
-        score = int(data["score"])
-    except:
-        return web.Response(text="401: Error, invalid data! (score)")
-    
     for player in players:
         if not player.role.value in ["scout", "heavy", "comamnder", "medic", "ammo"]:
             return web.Response(text="401: Error, invalid data! (role)")
