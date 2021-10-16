@@ -82,7 +82,8 @@ async def fetch_player(id: int) -> Game:
     return Player(*q[0])
 
 async def fetch_player_by_name(codename: int) -> Game:
-    q = await sql.fetchall("SELECT * FROM `players` WHERE `codename` = %s", (codename))[0]
+    q = await sql.fetchall("SELECT * FROM `players` WHERE `codename` = %s", (codename))
+    q = q[0]
     return Player(q[0], q[1], q[2])
 
 async def database_player(player_id: str, codename: str) -> None:
