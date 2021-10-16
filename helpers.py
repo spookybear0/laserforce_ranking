@@ -98,8 +98,9 @@ async def database_player(player_id: str, codename: str) -> None:
 async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s)""", (game.winner))
+    last_row = sql.last_row_id
     for player in game.players:
-        player.game_id = sql.last_row_id
+        player.game_id = last_row
         await sql.execute("""INSERT INTO `game_players` (player_id, game_id, team, role, score)
                             VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_id, player.team.value, player.role.value, player.score))
     
