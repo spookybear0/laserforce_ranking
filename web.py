@@ -53,6 +53,7 @@ async def log_game_post(r: web.RequestHandler):
             player_id = data[f"rid{red_player}"]
             player_role = data[f"rrole{red_player}"]
             player_score = data[f"rscore{red_player}"]
+            if player_id == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
@@ -62,6 +63,7 @@ async def log_game_post(r: web.RequestHandler):
             player_id = data[f"gid{green_player}"]
             player_role = data[f"grole{green_player}"]
             player_score = data[f"gscore{green_player}"]
+            if player_id == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
