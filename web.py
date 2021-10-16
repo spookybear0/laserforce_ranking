@@ -72,7 +72,7 @@ async def log_game_post(r: web.RequestHandler):
     players = [*red_players, *green_players]
     
     for player in players:
-        if not player.role.value in ["scout", "heavy", "comamnder", "medic", "ammo"]:
+        if not player.role.value in ["scout", "heavy", "commander", "medic", "ammo"]:
             return web.Response(text="401: Error, invalid data! (role)")
         if len(player.player_id.split("-")) != 3:
             return web.Response(text="401: Error, invalid data! (id)")
