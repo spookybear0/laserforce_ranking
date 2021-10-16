@@ -1,4 +1,4 @@
-from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100 # type: ignore
+from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100, fetch_player_by_name # type: ignore
 from aiohttp import web
 from objects import Role, Game, GamePlayer, Team
 from async_cron.job import CronJob # type: ignore
@@ -50,22 +50,24 @@ async def log_game_post(r: web.RequestHandler):
     
     for red_player in range(1, 8):
         try:
-            player_id = data[f"rid{red_player}"]
+            player_name = data[f"rname{red_player}"]
             player_role = data[f"rrole{red_player}"]
             player_score = data[f"rscore{red_player}"]
-            if player_id == "" or player_role == "" or player_score == "": break
+            if player_name == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
+        player_id = await fetch_player_by_name(player_name)
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
         red_players.append(game)
     for green_player in range(1, 8):
         try:
-            player_id = data[f"gid{green_player}"]
+            player_name = data[f"gname{green_player}"]
             player_role = data[f"grole{green_player}"]
             player_score = data[f"gscore{green_player}"]
-            if player_id == "" or player_role == "" or player_score == "": break
+            if player_name == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
+        player_id = await fetch_player_by_name(player_name)
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
         green_players.append(game)
         
