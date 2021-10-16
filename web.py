@@ -49,15 +49,21 @@ async def log_game_post(r: web.RequestHandler):
     green_players = []
     
     for red_player in range(1, 8):
-        player_id = data[f"rid{red_player}"]
-        player_role = data[f"rrole{red_player}"]
-        player_score = data[f"rscore{red_player}"]
+        try:
+            player_id = data[f"rid{red_player}"]
+            player_role = data[f"rrole{red_player}"]
+            player_score = data[f"rscore{red_player}"]
+        except KeyError:
+            break
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
         red_players.append(game)
     for green_player in range(1, 8):
-        player_id = data[f"gid{green_player}"]
-        player_role = data[f"grole{green_player}"]
-        player_score = data[f"gscore{green_player}"]
+        try:
+            player_id = data[f"gid{green_player}"]
+            player_role = data[f"grole{green_player}"]
+            player_score = data[f"gscore{green_player}"]
+        except KeyError:
+            break
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
         green_players.append(game)
         
