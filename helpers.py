@@ -134,17 +134,29 @@ def remove_values_from_list(the_list, val):
 async def get_average_score(role: Role, player_id: str) -> int: # the world (everyone else's)
     q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
     q = remove_values_from_list(format_sql(q), 0)
-    return average(q)
+    try:
+        ret = average(q)
+    except ZeroDivisionError:
+        ret = 0
+    return ret
 
 async def get_my_average_score(role: Role, player_id: str): # my average score
     q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
     q = remove_values_from_list(format_sql(q), 0)
-    return average(q)
+    try:
+        ret = average(q)
+    except ZeroDivisionError:
+        ret = 0
+    return ret
     
 async def get_my_ranking_score(role: Role, player_id: str) -> float:
     world_average = await get_average_score(role, player_id)
     my_average = await get_my_average_score(role, player_id)
-    return round(world_average / my_average, 2)
+    try:
+        ret = round(world_average / my_average, 2)
+    except ZeroDivisionError:
+        ret = 0
+    return ret
 
 async def init_sql():
     global sql
