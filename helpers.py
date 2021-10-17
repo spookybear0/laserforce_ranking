@@ -129,11 +129,11 @@ async def fetch_game(id: int) -> Game:
 #    return weighted # only top 10 weighted
 
 async def get_average_score(role: Role, player_id: str) -> int: # the world (everyone else's)
-    q = await sql.fetchall("SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
+    q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s AND ( SELECT `ranking_{role.value}` FROM `players` WHERE `player_id` = %s ) != 0", (role.value, player_id, player_id))
     return average(format_sql(q))
 
 async def get_my_average_score(role: Role, player_id: str): # my average score
-    q = await sql.fetchall("SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
+    q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s AND ( SELECT `ranking_{role.value}` FROM `players` WHERE `player_id` = %s ) != 0", (role.value, player_id, player_id))
     return average(format_sql(q))
     
 async def get_my_ranking_score(role: Role, player_id: str) -> float:
