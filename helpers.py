@@ -15,7 +15,7 @@ def average(to_average: Union[List, Tuple]):
 # gold: 1.15, 115%
 # diamond: 1.25, 125%
 # immortal: 1.35, 135%
-# lasermaster: top 500 average mmr
+# lasermaster: top 5 average mmr
 
 def format_sql(to_format) -> List:
     final = []
@@ -120,13 +120,26 @@ async def fetch_game(id: int) -> Game:
     game.players = players
     return game
 
-async def get_my_ranking_score(role: Role, player_id: str):
+#async def get_my_ranking_score(role: Role, player_id: str):
+#    q = await sql.fetchall("SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
+#    games = format_sql(q)[:10] # grab top 10 games
+#    weighted = 0
+#    for i, score in enumerate(games): # use weighting algrorthim
+#        weighted += int(score * 0.95**i)
+#    return weighted # only top 10 weighted
+
+async def get_average_score(role: Role, player_id: str) -> int: # the world (everyone else's)
+    q = await sql.fetchall("SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
+    return average(format_sql(q))
+
+async def get_my_average_score(role: Role, player_id: str): # my average score
     q = await sql.fetchall("SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
-    games = format_sql(q)[:10] # grab top 10 games
-    weighted = 0
-    for i, score in enumerate(games): # use weighting algrorthim
-        weighted += int(score * 0.95**i)
-    return weighted # only top 10 weighted
+    return average(format_sql(q))
+    
+async def get_my_ranking_score(role: Role, player_id: str) -> float:
+    world_average = await get_average_score(role, player_id)
+    my_average = await get_my_average_score(role, player_id)
+    return round(world_average / my_average, 2)
 
 async def init_sql():
     global sql
