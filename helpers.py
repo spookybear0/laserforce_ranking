@@ -90,11 +90,11 @@ async def database_player(player_id: str, codename: str) -> None:
     client = laserforce.Client()
     ipl_id = client.get_player(player_id).ipl_id
     
-    if await sql.fetchone("SELECT id FROM `players` WHERE `player_id` = %s", (player_id)):
+    if await sql.fetchone("SELECT id FROM `players` WHERE `player_id` = %s", (player_id)): # update stuff
         await sql.execute("""UPDATE `players` SET `codename` = %s WHERE `player_id` = %s""", (codename, player_id))
-    elif await sql.fetchone("SELECT id FROM `players` WHERE `codename` = %s", (codename)):
+        
         await sql.execute("""UPDATE `players` SET `player_id` = %s WHERE `codename` = %s""", (player_id, codename))
-    elif await sql.fetchone("SELECT id FROM `players` WHERE `player_id` = %s", (player_id)):
+
         await sql.execute("""UPDATE `players` SET `ipl_id` = %s WHERE `player_id` = %s""", (ipl_id, player_id))
     else:
         await sql.execute("""INSERT INTO `players` (player_id, ipl_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
