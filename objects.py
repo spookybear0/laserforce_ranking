@@ -36,6 +36,7 @@ class RankMMR(Enum):
 @dataclass
 class Player:
     id: int
+    ipl_id: str
     player_id: str
     codename: str
     

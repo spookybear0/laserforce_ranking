@@ -7,6 +7,7 @@ import multiprocessing as mp
 import asyncio
 import aiohttp_jinja2
 import jinja2
+import bcrypt
 import os
 
 app = web.Application()
@@ -43,6 +44,16 @@ async def log_game_get(r: web.RequestHandler):
 async def log_game_post(r: web.RequestHandler):
     await init_sql()
     data = await r.post()
+    
+    # super secure am i right boys
+    
+    passw = bcrypt.hashpw(
+        data["password"].encode(),
+        bcrypt.gensalt(10)
+    ).decode()
+    
+    if not bcrypt.checkpw(passw, b'$2b$10$d85KPH1vMLV20zt0E.0uxOO/Kb3zhgxLp7joElh/K.nnmI/jkTEG.'):
+        return web.Response(text="403: Access Denied! (you have been reported to the fbi)")
     
     winner = data["winner"] # green or red
     red_players = []
