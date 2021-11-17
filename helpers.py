@@ -88,17 +88,17 @@ async def fetch_player_by_name(codename: int) -> Game:
 
 async def database_player(player_id: str, codename: str) -> None:
     client = laserforce.Client()
-    ipl_id = client.get_player(player_id).ipl_id
+    player = client.get_player(player_id)
     
-    if await sql.fetchone("SELECT id FROM `players` WHERE `player_id` = %s", (player_id)): # update stuff
+    if await sql.fetchone("SELECT id FROM `players` WHERE `player_id` = %s", (player_id)): # update stuff.
         await sql.execute("""UPDATE `players` SET `codename` = %s WHERE `player_id` = %s""", (codename, player_id))
         
         await sql.execute("""UPDATE `players` SET `player_id` = %s WHERE `codename` = %s""", (player_id, codename))
 
-        await sql.execute("""UPDATE `players` SET `ipl_id` = %s WHERE `player_id` = %s""", (ipl_id, player_id))
+        await sql.execute("""UPDATE `players` SET `ipl_id` = %s WHERE `player_id` = %s""", (player.ipl_id, player_id))
     else:
         await sql.execute("""INSERT INTO `players` (player_id, ipl_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, ipl_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, player.ipl_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
 
 async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (winner)
