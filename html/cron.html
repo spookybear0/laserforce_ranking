@@ -84,15 +84,15 @@
 <script>
     $(document).ready(function(){
       var prev_text = "";
-      var userlist = document.getElementById('userlist');
       var xhr = new XMLHttpRequest();
       setInterval(function() {
           xhr.open('GET', '/admin/cron/stream', false);
           xhr.send();
           console.log(xhr.responseText)
           if (prev_text != xhr.responseText) {
-              p = document.createElement("p");
-              node = document.createTextNode(xhr.responseText);
+              var p = document.createElement("p");
+              var node = document.createTextNode(xhr.responseText);
+              var userlist = document.getElementById('userlist');
               p.appendChild(node)
               userlist.appendChild(p)
               prev_text = xhr.responseText
