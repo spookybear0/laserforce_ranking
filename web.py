@@ -123,7 +123,10 @@ async def players_get(r: web.RequestHandler):
 async def player_get(r: web.RequestHandler):
     await init_sql()
     id = r.match_info["id"]
-    player = await get_player(id)
+    try:
+        player = await get_player(id)
+    except IndexError:
+        raise web.HTTPNotFound("Invalid ID")
     return await render_template(r, "player.html", player=player)
 
 @routes.post("/admin/player")
