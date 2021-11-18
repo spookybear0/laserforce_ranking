@@ -126,7 +126,7 @@ async def player_get(r: web.RequestHandler):
     try:
         player = await get_player(id)
     except IndexError:
-        raise web.HTTPNotFound("Invalid ID")
+        raise web.HTTPNotFound(reason="Invalid ID")
     return await render_template(r, "player.html", player=player)
 
 @routes.post("/admin/player")
