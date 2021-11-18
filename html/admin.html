@@ -48,13 +48,6 @@
             display: inline-block;
         }
 
-        .buttons {
-            display: grid;
-            grid-template-columns: 6rem 6rem; 
-            grid-template-rows: 5rem;
-            grid-column-gap: 5rem;
-        }
-
         body {
             background-color: #121212;
         }
@@ -67,10 +60,10 @@
         <a href="/admin/cron">Cron</a>
     </div>
     <div class="content">
-        <div class="buttons">
+        <div>
             <div class="btn">
                 <div>
-                    <h2>{{ total_players }}</h3>
+                    <h2>{{ total_players }}</h2>
                 </div>
                 <div>
                     <p style="position: relative;bottom: 20px;">Players</p>
@@ -78,7 +71,7 @@
             </div>
             <div class="btn">
                 <div>
-                    <h2>{{ total_games }}</h3>
+                    <h2>{{ total_games }}</h2>
                 </div>
                 <div>
                     <p style="position: relative;bottom: 20px;">Games Logged</p>
@@ -86,7 +79,7 @@
             </div>
             <div class="btn">
                 <div>
-                    <h2>{{ total_games_played }}</h3>
+                    <h2>{{ total_games_played }}</h2>
                 </div>
                 <div>
                     <p style="position: relative;bottom: 20px;">Games Played</p>
