@@ -2,6 +2,7 @@ import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
 from objects import Player, Game, Role, RankMMR, Rank, GamePlayer, Team # type: ignore
+from glob import cron_log # type: ignore
 import laserforce # type: ignore
 
 sql = None
@@ -63,15 +64,18 @@ async def ranking_cron():
         player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
         player_id = player_id[0]
         # mmr cron
+        cron_log(f"Updating rank for: {player_id}")
         for role in roles:
             try:
                 score = await get_my_ranking_score(role, player_id)
             except ZeroDivisionError: # no games
                 score = 0
             await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
+        cron_log(f"Updated rank for: {player_id}")
             
         # rank cron
         
+        cron_log(f"Updating rank for: {player_id}")
         mmr = await get_mmr(player_id)
         if mmr == 0:
             rank = RankMMR.UNRANKED
@@ -79,10 +83,12 @@ async def ranking_cron():
             ranks = [x.value for x in RankMMR.__members__.values() if not x.value is None]
             abs_diff = lambda value: abs(value-mmr)
             rank = RankMMR(min(ranks, key=abs_diff)) # find rank that catergorizes player best and convert to enum
+        cron_log(f"Updated rank for: {player_id}, {rank.name.lower()}")
         await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
         id += 1
 
 async def player_cron():
+    global LAST_CRON_LOG
     client = laserforce.Client()
 
     for i in range(10000):
@@ -91,7 +97,9 @@ async def player_cron():
         except LookupError: # player does not exist
             continue
         
+        cron_log(f"Databasing player: 4-43-{i}, {player.codename}")
         await database_player(f"4-43-{i}", player.codename)
+        cron_log(f"Databased player: 4-43-{i}, {player.codename}")
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))

@@ -50,22 +50,49 @@
         display: inline-block;
     }
 
-    .buttons {
-        display: grid;
-        grid-template-columns: 6rem 6rem; 
-        grid-template-rows: 5rem;
-        grid-column-gap: 5rem;
+    .userlist {
+        border-radius: 15px;
+        background: #1A1A1A;
+        padding: 1rem;
+        margin: auto;
+        width: 60%;
+        height: 80vh;
     }
 
     body {
         background-color: #121212;
     }
 </style>
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script>
+  $(document).ready(function(){
+    var prev_text = "";
+    var output = document.getElementById('output');
+    var xhr = new XMLHttpRequest();
+    setInterval(function() {
+        xhr.open('GET', '/admin/cron/stream', false);
+        xhr.send();
+        console.log(xhr.responseText)
+        if (prev_text != xhr.responseText) {
+            output.textContent = xhr.responseText;
+            prev_text = xhr.responseText
+        }
+    }, 500);
+  });
+</script>
 
 <body>
     <div class="sidebar">
         <a href="/admin">Dashboard</a>
         <a href="/admin/players">Players</a>
         <a class="active" href="/admin/cron">Cron</a>
+    </div>
+    <div class="content">
+        <div>
+            <h2 style="text-align: center;">Logs</h2>
+            <div class="userlist">
+                <pre id="output"></pre>
+            </div>
+        </div>
     </div>
 </body>

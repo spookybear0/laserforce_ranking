@@ -1,6 +1,7 @@
+from objects import Role, Game, GamePlayer, Team
+from glob import cron_log, get_cron_log
 from helpers import fetch_player, get_player, get_total_games, get_total_games_played, ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
 from aiohttp import web
-from objects import Role, Game, GamePlayer, Team
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
 import multiprocessing as mp
@@ -144,6 +145,10 @@ async def player_post(r: web.RequestHandler):
 async def admin_get(r: web.RequestHandler):
     await init_sql()
     return await render_template(r, "cron.html")
+
+@routes.get("/admin/cron/stream")
+async def admin_cron_stream_get(r: web.RequestHandler):
+    return web.Response(text=get_cron_log(), content_type="text/plain")
 
 def start_cron():
     loop = asyncio.get_event_loop()
