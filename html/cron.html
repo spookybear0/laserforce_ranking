@@ -67,14 +67,16 @@
 <script>
   $(document).ready(function(){
     var prev_text = "";
-    var output = document.getElementById('output');
+    var userlist = document.getElementById('userlist');
     var xhr = new XMLHttpRequest();
     setInterval(function() {
         xhr.open('GET', '/admin/cron/stream', false);
         xhr.send();
         console.log(xhr.responseText)
         if (prev_text != xhr.responseText) {
-            output.textContent = xhr.responseText;
+            const p = document.createElement("p");
+            p.textContent = xhr.responseText;
+            userlist.appendChild(p)
             prev_text = xhr.responseText
         }
     }, 500);
@@ -91,7 +93,7 @@
         <div>
             <h2 style="text-align: center;">Logs</h2>
             <div class="userlist">
-                <pre id="output"></pre>
+                
             </div>
         </div>
     </div>
