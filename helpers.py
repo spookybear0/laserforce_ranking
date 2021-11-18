@@ -29,7 +29,7 @@ async def get_top_100(role: Role, amount: int=100):
 
 async def get_total_players():
     q = await sql.fetchall("SELECT COUNT(*) FROM players")
-    return q
+    return q[0][0]
 
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
