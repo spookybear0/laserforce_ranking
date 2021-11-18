@@ -74,8 +74,9 @@
         xhr.send();
         console.log(xhr.responseText)
         if (prev_text != xhr.responseText) {
-            const p = document.createElement("p");
-            p.textContent = xhr.responseText;
+            p = document.createElement("p");
+            node = document.createTextNode(xhr.responseText);
+            p.appendChild(node)
             userlist.appendChild(p)
             prev_text = xhr.responseText
         }
