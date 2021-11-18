@@ -1,0 +1,69 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+
+<style type="text/css">
+    .important {
+        color: #336699;
+    }
+
+    .sidebar {
+        margin: 0;
+        padding: 0;
+        width: 200px;
+        background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+        position: fixed;
+        height: 100%;
+        overflow: auto;
+    }
+
+    .sidebar a {
+        display: block;
+        color: white;
+        padding: 16px;
+        text-decoration: none;
+    }
+
+    .sidebar a.active {
+        background-color: #0096FF;
+        color: white;
+    }
+
+    .content {
+        margin-top: 20px;
+        margin-left: 250px;
+    }
+
+    .btn {
+        background-color: #0096FF;
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border-radius: 5px;
+        width: 10rem;
+        height: 5rem;
+        margin-left: 20px;
+        display: inline-block;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: 6rem 6rem; 
+        grid-template-rows: 5rem;
+        grid-column-gap: 5rem;
+    }
+
+    body {
+        background-color: #121212;
+    }
+</style>
+
+<div class="sidebar">
+    <a href="/admin">Dashboard</a>
+    <a href="/admin/players">Players</a>
+    <a class="active" href="/admin/cron">Cron</a>
+</div>

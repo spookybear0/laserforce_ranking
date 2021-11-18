@@ -23,8 +23,12 @@ def format_sql(to_format) -> List:
         final.append(i[0])
     return final
 
-async def get_top_100(role: Role, amount: int=100):
-    q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount}")
+async def get_top_100_by_role(role: Role, amount: int=100, start: int=0):
+    q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount} OFFSET {start}")
+    return list(q)
+
+async def get_top_100(amount: int=100, start: int=0):
+    q = await sql.fetchall(f"SELECT codename, player_id FROM players LIMIT {amount} OFFSET {start}")
     return list(q)
 
 async def get_total_players():

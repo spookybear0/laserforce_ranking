@@ -1,4 +1,4 @@
-from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100, fetch_player_by_name, get_total_players # type: ignore
+from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
 from aiohttp import web
 from objects import Role, Game, GamePlayer, Team
 from async_cron.job import CronJob # type: ignore
@@ -30,11 +30,11 @@ async def render_template(r, template, *args, **kwargs) -> web.Response:
 @routes.get("/top")
 async def top_get(r: web.RequestHandler):
     await init_sql()
-    scout = await get_top_100(Role.SCOUT)
-    heavy = await get_top_100(Role.HEAVY)
-    ammo = await get_top_100(Role.AMMO)
-    medic = await get_top_100(Role.MEDIC)
-    commander = await get_top_100(Role.COMMANDER)
+    scout = await get_top_100_by_role(Role.SCOUT)
+    heavy = await get_top_100_by_role(Role.HEAVY)
+    ammo = await get_top_100_by_role(Role.AMMO)
+    medic = await get_top_100_by_role(Role.MEDIC)
+    commander = await get_top_100_by_role(Role.COMMANDER)
     return await render_template(r, "top.html", scout=scout, heavy=heavy, ammo=ammo, medic=medic, commander=commander)
 
 @routes.get("/log")
@@ -112,6 +112,17 @@ async def admin_get(r: web.RequestHandler):
     await init_sql()
     total_players = await get_total_players()
     return await render_template(r, "admin.html", total_players=total_players)
+
+@routes.get("/admin/players")
+async def admin_get(r: web.RequestHandler):
+    await init_sql()
+    page = int(r.rel_url.query.get("page", 0))
+    return await render_template(r, "players.html", players=await get_top_100(15, 15*page), page=page)
+
+@routes.get("/admin/cron")
+async def admin_get(r: web.RequestHandler):
+    await init_sql()
+    return await render_template(r, "cron.html")
 
 def start_cron():
     loop = asyncio.get_event_loop()
