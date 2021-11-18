@@ -76,6 +76,7 @@
         padding: 0.25rem;
         margin: 0.25rem;
         background: #262626;
+        height: 5%;
     }
 
     .userlist-codename-text {
@@ -106,7 +107,7 @@
             <div class="userlist">
                 {% for player in players %}
                     {% if not loop.index > 15 %}
-                    <div class="userlist-pos"><span class="userlist-codename-text">{{ player[0] }} </span><span class="userlist-player_id-text">{{ player[1] }}</span><a style="position: relative;text-align: right;float: right;top: 0.25rem;left: 3.5rem;" href="/admin/player/{{ player[1] }}"><span style="position: relative; right: 0.25rem;">Manage</span></a></div>
+                    <div class="userlist-pos"><span class="userlist-codename-text">{{ player[0] }}</span><span class="userlist-player_id-text">{{ player[1] }}</span><a style="position: relative;text-align: right;float: right;top: 0.25rem;left: 3.5rem;" href="/admin/player/{{ player[1] }}"><span style="position: relative; right: 0.25rem;">Manage</span></a></div>
                     {% endif %}
                 {% endfor %}
                 {% if page > 0 %}<a href="/admin/players?page={{ page-1 }}"><span style="float: left; position: relative; left: 1rem; font-size: 1.5rem;">Prev</span></a>{% endif %}
