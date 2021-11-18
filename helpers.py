@@ -35,6 +35,14 @@ async def get_total_players():
     q = await sql.fetchone("SELECT COUNT(*) FROM players")
     return q[0]
 
+async def get_total_games():
+    q = await sql.fetchone("SELECT COUNT(*) FROM games")
+    return q[0]
+
+async def get_total_games_played():
+    q = await sql.fetchone("SELECT COUNT(*) FROM game_players")
+    return q[0]
+
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
     all_mmr = format_sql(q) # format
