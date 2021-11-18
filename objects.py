@@ -36,8 +36,8 @@ class RankMMR(Enum):
 @dataclass
 class Player:
     id: int
-    ipl_id: str
     player_id: str
+    ipl_id: str
     codename: str
     rank: str
     ranking_scout: float=0.0
