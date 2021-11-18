@@ -64,25 +64,6 @@
     }
 </style>
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script>
-  $(document).ready(function(){
-    var prev_text = "";
-    var userlist = document.getElementById('userlist');
-    var xhr = new XMLHttpRequest();
-    setInterval(function() {
-        xhr.open('GET', '/admin/cron/stream', false);
-        xhr.send();
-        console.log(xhr.responseText)
-        if (prev_text != xhr.responseText) {
-            p = document.createElement("p");
-            node = document.createTextNode(xhr.responseText);
-            p.appendChild(node)
-            userlist.appendChild(p)
-            prev_text = xhr.responseText
-        }
-    }, 500);
-  });
-</script>
 
 <body>
     <div class="sidebar">
@@ -99,3 +80,23 @@
         </div>
     </div>
 </body>
+
+<script>
+    $(document).ready(function(){
+      var prev_text = "";
+      var userlist = document.getElementById('userlist');
+      var xhr = new XMLHttpRequest();
+      setInterval(function() {
+          xhr.open('GET', '/admin/cron/stream', false);
+          xhr.send();
+          console.log(xhr.responseText)
+          if (prev_text != xhr.responseText) {
+              p = document.createElement("p");
+              node = document.createTextNode(xhr.responseText);
+              p.appendChild(node)
+              userlist.appendChild(p)
+              prev_text = xhr.responseText
+          }
+      }, 500);
+    });
+  </script>
