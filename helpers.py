@@ -1,3 +1,4 @@
+from types import CodeType
 import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
@@ -62,7 +63,10 @@ async def ranking_cron():
     id = 0
     while True:
         player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
-        player_id = player_id[0]
+        try:
+            player_id = player_id[0]
+        except TypeError:
+            continue
         # mmr cron
         cron_log(f"Updating rank for: {player_id}")
         for role in roles:
