@@ -1,0 +1,368 @@
+body {
+    font-family: Torus, Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+    color: white;
+    background: black;
+  }
+  *,
+  :after,
+  :before {
+    box-sizing: border-box;
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .base--bg {
+    bottom: 7.5rem;
+    position: fixed;
+    width: 100%;
+    height: 90%;
+    z-index: -9999;
+  }
+  .base--bg-overlay {
+    position: absolute;
+    top: 0;
+    background: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0) 100%);
+    width: 100%;
+    height: 100%;
+  }
+  .base--bg img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+    backdrop-filter: blur(40px);
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+  .navbar--layout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 48px;
+  }
+  .navbar--layout-icon {
+    font-size: 20px;
+  }
+  .navbar--layout-home {
+    margin-right: 24px;
+    font-size: 24px;
+    color: #00AAFF;
+  }
+  .navbar--layout-login {
+    margin-right: 24px;
+    font-size: 24px;
+  }
+  .navbar--layout-item {
+    width: 48px;
+    height: 48px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #E5E5E5;
+  }
+  .navbar--layout-item:hover {
+    color: white;
+    background: #00A9FD;
+    transform: skewX(10deg);
+    display: flex;
+    height: 64px;
+    border-radius: 5px;
+  }
+  .navbar--layout-item:hover .navbar--layout-icon {
+    color: white;
+    transform: skewX(-10deg);
+  }
+  .navbar--layout-item-active {
+    display: flex;
+    width: auto;
+    height: 64px;
+    padding-left: 16px;
+    padding-right: 16px;
+    margin-right: 6px;
+    transform: skewX(10deg);
+    background: linear-gradient(90deg, #00A9FD 0%, #00D3FD 100%), #C4C4C4;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.04);
+    border-radius: 5px;
+  }
+  .navbar--layout-item-active .navbar--layout-text {
+    display: flex !important;
+    align-items: center;
+    color: white;
+    transform: skewX(-10deg);
+  }
+  .navbar--layout-item-active .navbar--layout-icon {
+    color: white;
+    margin-right: 12px;
+    transform: skewX(-10deg);
+  }
+  .navbar--layout-item .navbar--layout-text {
+    display: none;
+  }
+  .navbar--layout:nth-child(2) {
+    flex-direction: row-reverse;
+  }
+  .navbar--account {
+    display: flex;
+    flex-direction: row-reverse;
+    height: 48px;
+    align-items: center;
+  }
+  .navbar--account-image {
+    width: 64px;
+    height: 64px;
+    transform: skewX(10deg);
+    border-radius: 0 0 5px 5px;
+    border: 2px solid transparent;
+    background-position-y: 2px !important;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+  .navbar--account-image img {
+    width: 75.28px;
+    height: 64px;
+    transform: skewX(-10deg);
+    object-fit: cover;
+    left: -5px;
+    position: absolute;
+  }
+  .navbar--account-image-online {
+    background: linear-gradient(to bottom, #00FFAA00, #00FFAAFF);
+  }
+  .navbar--account-dropdown {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 10px;
+    transform: skewX(10deg);
+    border-radius: 0 5px 5px 0;
+    display: flex;
+    justify-items: center;
+    transition: background 0.25s;
+  }
+  .navbar--account-dropdown:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .navbar--account-dropdown:hover i {
+    color: white;
+  }
+  .navbar--account-dropdown i {
+    transition: color 0.25s;
+    transform: skewX(-10deg);
+    font-size: 14px;
+    text-align: center;
+    color: #666;
+  }
+  .navbar--account p {
+    margin-right: 8px;
+    color: white;
+    font-size: 14px;
+  }
+  .navbar--search {
+    display: flex;
+    flex-direction: row-reverse;
+    margin-right: 16px;
+  }
+  .navbar--search-icon {
+    transform: skewX(10deg);
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    width: 34px;
+    border-radius: 5px;
+    z-index: 1;
+    transition: background-color 0.25s;
+    cursor: pointer;
+    font-size: 12px;
+    outline:none;
+  }
+  .navbar--search-icon:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .navbar--search-icon:hover i {
+    opacity: 1;
+  }
+  .navbar--search-icon i {
+    transform: skewX(-10deg);
+    color: white;
+    opacity: 0.5;
+    transition: opacity 0.25s;
+  }
+  .navbar--search-field {
+    border: none;
+    height: 34px;
+    background-color: transparent;
+    transform: skewX(-10deg);
+    padding-left: 16px;
+    font: inherit;
+    font-size: 12px;
+    color: white;
+  }
+  .navbar--search-field:focus {
+    outline: none;
+  }
+  .navbar--search-field-container {
+    background-color: rgba(0, 0, 0, 0.2);
+    margin-right: -34px;
+    transform: skewX(10deg);
+    width: 200px;
+    display: none;
+    border-radius: 5px;
+  }
+  .navbar--search-active .navbar--search-icon {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  .navbar--search-active .navbar--search-icon i {
+    opacity: 1;
+  }
+  .navbar--search-active .navbar--search-field-container {
+    display: inline-block;
+  }
+  
+  .btn {
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 24px;
+    padding: .3rem .8rem;
+    letter-spacing: .5px;
+  }
+  
+  /**
+   * @license
+   * MyFonts Webfont Build ID 3797987, 2019-08-16T07:07:19-0400
+   *
+   * The fonts listed in this notice are subject to the End User License
+   * Agreement(s) entered into by the website owner. All other parties are
+   * explicitly restricted from using the Licensed Webfonts(s).
+   *
+   * You may obtain a valid license at the URLs below.
+   *
+   * Webfont: Torus-Thin by Paulo Goode
+   * URL: https://www.myfonts.com/fonts/paulo-goode/torus/thin/
+   *
+   * Webfont: Torus-SemiBold by Paulo Goode
+   * URL: https://www.myfonts.com/fonts/paulo-goode/torus/semi-bold/
+   *
+   * Webfont: Torus-Regular by Paulo Goode
+   * URL: https://www.myfonts.com/fonts/paulo-goode/torus/regular/
+   *
+   * Webfont: Torus-Light by Paulo Goode
+   * URL: https://www.myfonts.com/fonts/paulo-goode/torus/light/
+   *
+   * Webfont: Torus-Heavy by Paulo Goode
+   * URL: https://www.myfonts.com/fonts/paulo-goode/torus/heavy/
+   *
+   * Webfont: Torus-Bold by Paulo Goode
+   * URL: https://www.myfonts.com/fonts/paulo-goode/torus/bold/
+   *
+   *
+   * License: https://www.myfonts.com/viewlicense?type=web&buildid=3797987
+   * Licensed pageviews: 100,000
+   * Webfonts copyright: Copyright &#x00A9; 2017 by Paulo Goode. All rights reserved.
+   *
+   * © 2019 MyFonts Inc
+   */
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 100;
+    src: url('../fonts/torus/Torus-Thin.otf');
+  }
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 600;
+    src: url('../fonts/torus/Torus-SemiBold.otf');
+  }
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 700;
+    src: url('../fonts/torus/Torus-SemiBold.otf');
+  }
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 400;
+    src: url('../fonts/torus/Torus-Regular.otf');
+  }
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 300;
+    src: url('../fonts/torus/Torus-Light.otf');
+  }
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 900;
+    src: url('../fonts/torus/Torus-Heavy.otf');
+  }
+  @font-face {
+    font-family: 'Torus';
+    font-weight: 800;
+    src: url('../fonts/torus/Torus-Bold.otf');
+  }
+  @font-face {
+    font-family: 'kami';
+    src: url('../fonts/kami/kami.eot?35763117');
+    src: url('../fonts/kami/kami.eot?35763117#iefix') format('embedded-opentype'), url('../fonts/kami/kami.woff2?35763117') format('woff2'), url('../fonts/kami/kami.woff?35763117') format('woff'), url('../fonts/kami/kami.ttf?35763117') format('truetype'), url('../fonts/kami/kami.svg?35763117#kami') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+  /* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+  /* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+  /*
+  @media screen and (-webkit-min-device-pixel-ratio:0) {
+    @font-face {
+      font-family: 'kami';
+      src: url('../font/kami.svg?35763117#kami') format('svg');
+    }
+  }
+  */
+  [class^="icon-"]:before,
+  [class*=" icon-"]:before {
+    font-family: "kami";
+    font-style: normal;
+    font-weight: normal;
+    speak: never;
+    display: inline-block;
+    text-decoration: inherit;
+    width: 1em;
+    margin-right: 0.2em;
+    text-align: center;
+    /* opacity: .8; */
+    /* For safety - reset parent styles, that can break glyph codes*/
+    font-variant: normal;
+    text-transform: none;
+    /* fix buttons height, for twitter bootstrap */
+    line-height: 1em;
+    /* Animation center compensation - margins should be symmetric */
+    /* remove if not needed */
+    margin-left: 0.2em;
+    /* you can be more comfortable with increased icons size */
+    /* font-size: 120%; */
+    /* Font smoothing. That was taken from TWBS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Uncomment for 3D effect */
+    /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+  }
+  .icon-level:before {
+    content: '\e800';
+  }
+  /* '' */
+  .icon-rankings:before {
+    content: '\e801';
+  }
+  /* '' */
+  .icon-community:before {
+    content: '\e802';
+  }
+  /* '' */
+  

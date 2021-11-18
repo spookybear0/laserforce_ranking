@@ -1,4 +1,4 @@
-from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100, fetch_player_by_name # type: ignore
+from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100, fetch_player_by_name, get_total_players # type: ignore
 from aiohttp import web
 from objects import Role, Game, GamePlayer, Team
 from async_cron.job import CronJob # type: ignore
@@ -15,10 +15,11 @@ routes = web.RouteTableDef()
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("html"))
+app.router.add_static("/css/", path="./css/", name="css")
 
 msh = Scheduler()
-ranking = CronJob(name="ranking").every(1).hour.go(ranking_cron)
-player = CronJob(name="player").every(1).hour.go(player_cron)
+ranking = CronJob(name="ranking").every(1).day.at("12:00").go(ranking_cron)
+player = CronJob(name="player").every(1).day.at("00:00").go(player_cron)
 msh.add_job(ranking)
 msh.add_job(player)
 
@@ -105,6 +106,11 @@ async def log_game_post(r: web.RequestHandler):
         return web.Response(text="500: Error, game was not logged!")
     else:
         return web.Response(text="200: Logged!")
+    
+@routes.get("/admin")
+async def admin_get(r: web.RequestHandler):
+    total_players = await get_total_players()
+    return await render_template(r, "admin.html", total_players=total_players)
 
 def start_cron():
     loop = asyncio.get_event_loop()

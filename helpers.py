@@ -27,9 +27,9 @@ async def get_top_100(role: Role, amount: int=100):
     q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount}")
     return list(q)
 
-async def get_all_players():
-    q = await sql.fetchall("SELECT player_id FROM players")
-    return format_sql(q)
+async def get_total_players():
+    q = await sql.fetchall(f"SELECT COUNT(*) FROM players;")
+    return q
 
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
@@ -46,7 +46,10 @@ async def get_games_played(player_id: str):
     
 async def ranking_cron():
     roles = list(Role)
-    for player_id in await get_all_players():
+    id = 0
+    while True:
+        player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
+        player_id = player_id[0]
         # mmr cron
         for role in roles:
             try:
@@ -65,6 +68,7 @@ async def ranking_cron():
             abs_diff = lambda value: abs(value-mmr)
             rank = RankMMR(min(ranks, key=abs_diff)) # find rank that catergorizes player best and convert to enum
         await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
+        id += 1
 
 async def player_cron():
     client = laserforce.Client()
