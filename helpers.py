@@ -85,14 +85,17 @@ async def player_cron():
         
         await database_player(f"4-43-{i}", player.codename)
 
-async def fetch_player(id: int) -> Game:
+async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
+    return Player(*q[0])
+
+async def get_player(player_id: str) -> Player:
+    q = await sql.fetchall("SELECT * FROM `players` WHERE `player_id` = %s", (player_id))
     return Player(*q[0])
 
 async def fetch_player_by_name(codename: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `codename` = %s", (codename))
-    q = q[0]
-    return Player(q[0], q[1], q[2])
+    return Player(*q[0])
 
 async def database_player(player_id: str, codename: str) -> None:
     client = laserforce.Client()

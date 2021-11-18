@@ -1,4 +1,4 @@
-from helpers import ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
+from helpers import fetch_player, get_player, ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
 from aiohttp import web
 from objects import Role, Game, GamePlayer, Team
 from async_cron.job import CronJob # type: ignore
@@ -114,10 +114,23 @@ async def admin_get(r: web.RequestHandler):
     return await render_template(r, "admin.html", total_players=total_players)
 
 @routes.get("/admin/players")
-async def admin_get(r: web.RequestHandler):
+async def players_get(r: web.RequestHandler):
     await init_sql()
     page = int(r.rel_url.query.get("page", 0))
     return await render_template(r, "players.html", players=await get_top_100(15, 15*page), page=page)
+
+@routes.get("/admin/player/{id}")
+async def player_get(r: web.RequestHandler):
+    await init_sql()
+    id = r.match_info["id"]
+    player = await get_player(id)
+    return await render_template(r, "player.html", player=player)
+
+@routes.post("/admin/player")
+async def player_post(r: web.RequestHandler):
+    data = await r.post()
+    user = data["userid"]
+    raise web.HTTPFound(f"/admin/player/{user}")
 
 @routes.get("/admin/cron")
 async def admin_get(r: web.RequestHandler):

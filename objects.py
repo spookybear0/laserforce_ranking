@@ -39,6 +39,12 @@ class Player:
     ipl_id: str
     player_id: str
     codename: str
+    rank: str
+    ranking_scout: float=0.0
+    ranking_heavy: float=0.0
+    ranking_commander: float=0.0
+    ranking_medic: float=0.0
+    ranking_ammo: float=0.0
     
 @dataclass
 class GamePlayer:

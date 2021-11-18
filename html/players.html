@@ -60,7 +60,6 @@
     body {
         background-color: #121212;
     }
-
     
     .userlist {
         border-radius: 15px;
@@ -112,6 +111,10 @@
                 {% endfor %}
                 {% if page > 0 %}<a href="/admin/players?page={{ page-1 }}"><span style="float: left; position: relative; left: 1rem; font-size: 1.5rem;">Prev</span></a>{% endif %}
                 <a href="/admin/players?page={{ page+1 }}"><span style="float: right; position: relative; right: 1.5rem; font-size: 1.5rem;">Next</span></a>
+                <form action="/admin/player" method="post" style="display:flex;justify-content:center;align-items:flex-end;position:relative; bottom:-5vh;">
+                    <input type="text" id="userid" name="userid">
+                    <input type="submit" value="Search">
+                </form>
             </div>
         </div>
     </div>
