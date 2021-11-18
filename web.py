@@ -109,6 +109,7 @@ async def log_game_post(r: web.RequestHandler):
     
 @routes.get("/admin")
 async def admin_get(r: web.RequestHandler):
+    await init_sql()
     total_players = await get_total_players()
     return await render_template(r, "admin.html", total_players=total_players)
 
