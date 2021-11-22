@@ -19,8 +19,8 @@ templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("html"))
 app.router.add_static("/css/", path="./css/", name="css")
 
 msh = Scheduler()
-ranking = CronJob(name="ranking").every(1).day.at("12:00").go(ranking_cron)
-player = CronJob(name="player").every(1).day.at("00:00").go(player_cron)
+ranking = CronJob(name="ranking").every(3).hour.go(ranking_cron)
+player = CronJob(name="player").every(6).hour.go(player_cron)
 msh.add_job(ranking)
 msh.add_job(player)
 
