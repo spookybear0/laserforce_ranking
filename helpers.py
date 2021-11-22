@@ -70,11 +70,13 @@ async def ranking_cron():
         except pymysql.InternalError as e:
             rank_cron_log(f"ERROR: Player at index {id} doesn't exist, skipping")
             id += 1
+            await asyncio.sleep(1)
             continue
         try:
             player_id = player_id[0]
         except TypeError:
             id += 1
+            await asyncio.sleep(1)
             continue
         # mmr cron
         rank_cron_log(f"Updating rank for: {player_id}")
@@ -88,6 +90,7 @@ async def ranking_cron():
             except pymysql.InternalError as e:
                 rank_cron_log(f"ERROR: Can't update role: {role.value} of player: {player_id}, skipping")
                 id += 1
+                await asyncio.sleep(1)
                 continue
         rank_cron_log(f"Updated rank for: {player_id}")
             
@@ -107,8 +110,10 @@ async def ranking_cron():
         except pymysql.InternalError as e:
             rank_cron_log(f"ERROR: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
             id += 1
+            await asyncio.sleep(1)
             continue
         id += 1
+        await asyncio.sleep(1)
 
 async def player_cron():
     global LAST_CRON_LOG
@@ -124,7 +129,7 @@ async def player_cron():
         
         await database_player(f"4-43-{i}", player.codename)
         player_cron_log(f"Databased player: 4-43-{i}, {player.codename}")
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
