@@ -75,11 +75,11 @@
         <div>
             <h2 style="text-align: center;">Logs</h2>
             <h4 style="text-align: center;">Player Cron</h4>
-            <div class="userlist" id="userlist">
+            <div class="userlist" id="player">
                 
             </div>
             <h4 style="text-align: center;">Rank Cron</h4>
-            <div class="userlist" id="userlist2">
+            <div class="userlist" id="rank">
                 
             </div>
         </div>
@@ -89,6 +89,7 @@
 <script>
     $(document).ready(function(){
       var prev_text = "";
+      var prev_text_2 = "";
       var xhr = new XMLHttpRequest();
       setInterval(function() {
           xhr.open("GET", "/admin/cron/player_stream", false);
@@ -97,7 +98,7 @@
           if (prev_text != xhr.responseText) {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
-              var userlist = document.getElementById("userlist");
+              var userlist = document.getElementById("player");
               p.appendChild(node)
               userlist.appendChild(p)
               prev_text = xhr.responseText
@@ -107,13 +108,13 @@
           xhr.open("GET", "/admin/cron/rank_stream", false);
           xhr.send();
           console.log(xhr.responseText)
-          if (prev_text != xhr.responseText) {
+          if (prev_text_2 != xhr.responseText) {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
-              var userlist = document.getElementById("userlist2");
+              var userlist = document.getElementById("rank");
               p.appendChild(node)
               userlist.appendChild(p)
-              prev_text = xhr.responseText
+              prev_text_2 = xhr.responseText
           }
       }, 500);
     });
