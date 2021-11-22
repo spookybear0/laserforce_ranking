@@ -125,6 +125,7 @@ async def player_cron():
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
             player_cron_log(f"Player: 4-43-{i} does not exist, skipping")
+            await asyncio.sleep(1)
             continue
         
         await database_player(f"4-43-{i}", player.codename)
