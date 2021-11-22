@@ -146,9 +146,13 @@ async def admin_get(r: web.RequestHandler):
     await init_sql()
     return await render_template(r, "cron.html")
 
-@routes.get("/admin/cron/stream")
-async def admin_cron_stream_get(r: web.RequestHandler):
-    return web.Response(player_log=get_player_cron_log(), rank_log=get_rank_cron_log(), content_type="text/plain")
+@routes.get("/admin/cron/player_stream")
+async def admin_cron_player_stream_get(r: web.RequestHandler):
+    return web.Response(text=get_player_cron_log(), content_type="text/plain")
+
+@routes.get("/admin/cron/rank_stream")
+async def admin_cron_rank_stream_get(r: web.RequestHandler):
+    return web.Response(text=get_rank_cron_log(), content_type="text/plain")
 
 def start_cron():
     loop = asyncio.get_event_loop()
