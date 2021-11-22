@@ -49,12 +49,7 @@ async def log_game_post(r: web.RequestHandler):
     
     # super secure am i right boys
     
-    passw = bcrypt.hashpw(
-        data["password"].encode(),
-        bcrypt.gensalt(10)
-    ).decode()
-    
-    if not bcrypt.checkpw(passw, b'$2b$10$d85KPH1vMLV20zt0E.0uxOO/Kb3zhgxLp7joElh/K.nnmI/jkTEG.'):
+    if not bcrypt.checkpw(bytes(data["password"]), b'$2b$10$d85KPH1vMLV20zt0E.0uxOO/Kb3zhgxLp7joElh/K.nnmI/jkTEG.'):
         return web.Response(text="403: Access Denied! (you have been reported to the fbi)")
     
     winner = data["winner"] # green or red
