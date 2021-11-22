@@ -91,31 +91,35 @@
       var prev_text = "";
       var prev_text_2 = "";
       var xhr = new XMLHttpRequest();
-      setInterval(function() {
-          xhr.open("GET", "/admin/cron/player_stream", false);
+      function player_cron() {
+        xhr.open("GET", "/admin/cron/player_stream", false);
           xhr.send();
           console.log(xhr.responseText)
           if (prev_text != xhr.responseText) {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
-              var userlist = document.getElementById("player");
+              var player = document.getElementById("player");
               p.appendChild(node)
               userlist.appendChild(p)
               prev_text = xhr.responseText
           }
-      }, 500);
-      setInterval(function() {
-          xhr.open("GET", "/admin/cron/rank_stream", false);
+      }
+      function ranking_cron() {
+        xhr.open("GET", "/admin/cron/rank_stream", false);
           xhr.send();
           console.log(xhr.responseText)
           if (prev_text_2 != xhr.responseText) {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
-              var userlist = document.getElementById("rank");
+              var rank = document.getElementById("rank");
               p.appendChild(node)
               userlist.appendChild(p)
               prev_text_2 = xhr.responseText
           }
+      }
+      setInterval(function() {
+        player_cron()
+        ranking_cron()
       }, 500);
     });
   </script>

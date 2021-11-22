@@ -6,6 +6,7 @@ from objects import Player, Game, Role, RankMMR, Rank, GamePlayer, Team # type: 
 from glob import player_cron_log, rank_cron_log # type: ignore
 import laserforce # type: ignore
 import pymysql
+import asyncio
 
 sql = None
 
@@ -118,6 +119,7 @@ async def player_cron():
         
         await database_player(f"4-43-{i}", player.codename)
         player_cron_log(f"Databased player: 4-43-{i}, {player.codename}")
+        await asyncio.sleep(0.5)
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
