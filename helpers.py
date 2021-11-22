@@ -67,11 +67,8 @@ async def ranking_cron():
         rank_cron_log(f"Searching for player at index {id}")
         try:
             player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
-        except pymysql.InternalError as e:
-            rank_cron_log(f"ERROR: Player at index {id} doesn't exist, skipping")
-            id += 1
-            await asyncio.sleep(1)
-            continue
+        except:
+            break
         try:
             player_id = player_id[0]
         except TypeError:
