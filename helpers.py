@@ -64,6 +64,7 @@ async def ranking_cron():
     roles = list(Role)
     id = 0
     while True:
+        rank_cron_log(f"Searching for player at index {id}")
         try:
             player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
         except pymysql.InternalError as e:
