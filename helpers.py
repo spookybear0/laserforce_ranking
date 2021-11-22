@@ -3,8 +3,9 @@ import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
 from objects import Player, Game, Role, RankMMR, Rank, GamePlayer, Team # type: ignore
-from glob import cron_log # type: ignore
+from glob import player_cron_log, rank_cron_log # type: ignore
 import laserforce # type: ignore
+import pymysql
 
 sql = None
 
@@ -62,24 +63,32 @@ async def ranking_cron():
     roles = list(Role)
     id = 0
     while True:
-        player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
+        try:
+            player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
+        except pymysql.InternalError as e:
+            rank_cron_log(f"ERROR: Player at index {id} doesn't exist, skipping")
+            continue
         try:
             player_id = player_id[0]
         except TypeError:
             continue
         # mmr cron
-        cron_log(f"Updating rank for: {player_id}")
+        rank_cron_log(f"Updating rank for: {player_id}")
         for role in roles:
             try:
                 score = await get_my_ranking_score(role, player_id)
             except ZeroDivisionError: # no games
                 score = 0
-            await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
-        cron_log(f"Updated rank for: {player_id}")
+            try:
+                await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
+            except pymysql.InternalError as e:
+                rank_cron_log(f"ERROR: Can't update role: {role.value} of player: {player_id}, skipping")
+                continue
+        rank_cron_log(f"Updated rank for: {player_id}")
             
         # rank cron
         
-        cron_log(f"Updating rank for: {player_id}")
+        rank_cron_log(f"Updating rank for: {player_id}")
         mmr = await get_mmr(player_id)
         if mmr == 0:
             rank = RankMMR.UNRANKED
@@ -87,8 +96,12 @@ async def ranking_cron():
             ranks = [x.value for x in RankMMR.__members__.values() if not x.value is None]
             abs_diff = lambda value: abs(value-mmr)
             rank = RankMMR(min(ranks, key=abs_diff)) # find rank that catergorizes player best and convert to enum
-        cron_log(f"Updated rank for: {player_id}, {rank.name.lower()}")
-        await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
+        rank_cron_log(f"Updated rank for: {player_id}, {rank.name.lower()}")
+        try:
+            await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
+        except pymysql.InternalError as e:
+            rank_cron_log(f"ERROR: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
+            continue
         id += 1
 
 async def player_cron():
@@ -96,14 +109,15 @@ async def player_cron():
     client = laserforce.Client()
 
     for i in range(10000):
+        player_cron_log(f"Attemping to database player: 4-43-{i}")
         try:
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
+            player_cron_log(f"Player: 4-43-{i} does not exist, skipping")
             continue
         
-        cron_log(f"Databasing player: 4-43-{i}, {player.codename}")
         await database_player(f"4-43-{i}", player.codename)
-        cron_log(f"Databased player: 4-43-{i}, {player.codename}")
+        player_cron_log(f"Databased player: 4-43-{i}, {player.codename}")
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
