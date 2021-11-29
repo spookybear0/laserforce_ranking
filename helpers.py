@@ -122,12 +122,13 @@ async def player_cron():
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
             player_cron_log(f"Player: 4-43-{i} does not exist, skipping")
-            await asyncio.sleep(1)
             continue
         
-        await database_player(f"4-43-{i}", player.codename)
+        try:
+            await database_player(f"4-43-{i}", player.codename)
+        except pymysql.InternalError:
+            continue
         player_cron_log(f"Databased player: 4-43-{i}, {player.codename}")
-        await asyncio.sleep(1)
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
@@ -150,8 +151,12 @@ async def database_player(player_id: str, codename: str) -> None:
 
         await sql.execute("""UPDATE `players` SET `ipl_id` = %s WHERE `player_id` = %s""", (ipl_id, player_id))
     else:
-        await sql.execute("""INSERT INTO `players` (player_id, ipl_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, ipl_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
+        try:
+            await sql.execute("""INSERT INTO `players` (player_id, ipl_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, ipl_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
+        except pymysql.InternalError as e:
+            print(e)
+            pass
 
 async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (winner)
