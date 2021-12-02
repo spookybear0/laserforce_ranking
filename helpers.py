@@ -13,8 +13,8 @@ sql = None
 def average(to_average: Union[List, Tuple]):
     return sum(to_average) / len(to_average)
 
-# iron: 0.75, 75%
-# bronze: 0.85, 85%
+# iron: 0.60, 60%
+# bronze: 0.75, 75%
 # silver: 1.0, 100% (average)
 # gold: 1.15, 115%
 # diamond: 1.25, 125%

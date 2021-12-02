@@ -25,8 +25,8 @@ class Rank(Enum):
     
 class RankMMR(Enum):
     UNRANKED = None
-    IRON = 0.75
-    BRONZE = 0.85
+    IRON = 0.60
+    BRONZE = 0.75
     SILVER = 1
     GOLD = 1.15
     DIAMOND = 1.25
