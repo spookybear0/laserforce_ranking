@@ -49,8 +49,13 @@ async def get_total_games_played():
 
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
-    all_mmr = q[0] # format
-    if all_mmr == [0.0, 0.0, 0.0, 0.0, 0.0]:
+    all_mmr = list(q[0]) # format
+    try:
+        while True:
+            all_mmr.remove(0.0)
+    except ValueError:
+        pass
+    if all_mmr == []:
         return 0
     mmr = average(all_mmr)
     return mmr
@@ -73,22 +78,26 @@ async def ranking_cron():
             player_id = player_id[0]
         except TypeError:
             id += 1
-            await asyncio.sleep(2.5)
             continue
         # mmr cron
         rank_cron_log(f"Updating rank for: {player_id}")
+        val_list = []
         for role in roles:
             try:
                 score = await get_my_ranking_score(role, player_id)
             except ZeroDivisionError: # no games
                 score = 0
-            try:
-                await sql.execute(f"UPDATE players SET ranking_{role.value} = %s WHERE player_id = %s", (score, player_id))
-            except pymysql.InternalError as e:
-                rank_cron_log(f"ERROR: Can't update role: {role.value} of player: {player_id}, skipping")
-                id += 1
-                await asyncio.sleep(2.5)
-                continue
+            
+            val_list.append(score)
+        try:
+            await sql.execute(f"""UPDATE players SET ranking_{role[0].value}, ranking_{role[1].value},
+                              ranking_{role[2].value}, ranking_{role[3].value}, ranking_{role[4].value} = %s, %s, %s, %s, %s
+                              WHERE player_id = %s""", (val_list[0], val_list[1], val_list[2], val_list[3], val_list[4], player_id))
+        except pymysql.InternalError as e:
+            rank_cron_log(f"ERROR: Can't update player mmr of: {player_id}, skipping")
+            id += 1
+            await asyncio.sleep(2.5)
+            continue
         rank_cron_log(f"Updated rank for: {player_id}")
             
         # rank cron
