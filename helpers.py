@@ -223,7 +223,7 @@ async def get_my_ranking_score(role: Role, player_id: str) -> float:
     world_average = await get_average_score(role, player_id)
     my_average = await get_my_average_score(role, player_id)
     try:
-        ret = round(world_average / my_average, 2)
+        ret = round(my_average / world_average, 2)
     except ZeroDivisionError:
         ret = 0
     return ret
