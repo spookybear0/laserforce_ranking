@@ -67,7 +67,7 @@ async def get_games_played(player_id: str):
     
 async def ranking_cron():
     roles = list(Role)
-    id = 0
+    id = 1
     while True:
         rank_cron_log(f"Searching for player at index {id}")
         try:
@@ -77,8 +77,7 @@ async def ranking_cron():
         try:
             player_id = player_id[0]
         except TypeError:
-            id += 1
-            continue
+            break
         # mmr cron
         rank_cron_log(f"Updating rank for: {player_id}")
         val_list = []
