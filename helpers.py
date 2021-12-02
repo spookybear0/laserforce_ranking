@@ -50,7 +50,7 @@ async def get_total_games_played():
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
     all_mmr = q[0] # format
-    if all_mmr == []:
+    if all_mmr == [0.0, 0.0, 0.0, 0.0, 0.0]:
         return 0
     mmr = average(all_mmr)
     return mmr
