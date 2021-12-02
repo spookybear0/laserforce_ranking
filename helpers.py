@@ -7,8 +7,7 @@ from glob import player_cron_log, rank_cron_log # type: ignore
 import laserforce # type: ignore
 import pymysql
 import asyncio
-print("test\
-    test")
+
 sql = None
 
 def average(to_average: Union[List, Tuple]):
