@@ -49,7 +49,7 @@ async def get_total_games_played():
 
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
-    all_mmr = format_sql(q) # format
+    all_mmr = q[0] # format
     if all_mmr == []:
         return 0
     mmr = average(all_mmr)
@@ -73,7 +73,7 @@ async def ranking_cron():
             player_id = player_id[0]
         except TypeError:
             id += 1
-            await asyncio.sleep(1)
+            await asyncio.sleep(2.5)
             continue
         # mmr cron
         rank_cron_log(f"Updating rank for: {player_id}")
@@ -87,7 +87,7 @@ async def ranking_cron():
             except pymysql.InternalError as e:
                 rank_cron_log(f"ERROR: Can't update role: {role.value} of player: {player_id}, skipping")
                 id += 1
-                await asyncio.sleep(1)
+                await asyncio.sleep(2.5)
                 continue
         rank_cron_log(f"Updated rank for: {player_id}")
             
@@ -98,19 +98,19 @@ async def ranking_cron():
         if mmr == 0:
             rank = RankMMR.UNRANKED
         else:
-            ranks = [x.value for x in RankMMR.__members__.values() if not x.value is None]
+            ranks = [x.value for x in RankMMR.__members__.values() if not x.value is None] # closest rank
             abs_diff = lambda value: abs(value-mmr)
             rank = RankMMR(min(ranks, key=abs_diff)) # find rank that catergorizes player best and convert to enum
-        rank_cron_log(f"Updated rank for: {player_id}, {rank.name.lower()}")
         try:
             await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
         except pymysql.InternalError as e:
             rank_cron_log(f"ERROR: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
             id += 1
-            await asyncio.sleep(1)
+            await asyncio.sleep(2.5)
             continue
+        rank_cron_log(f"Updated rank for: {player_id}, {rank.name.lower()}")
         id += 1
-        await asyncio.sleep(1)
+        await asyncio.sleep(2.5)
 
 async def player_cron():
     global LAST_CRON_LOG
