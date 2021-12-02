@@ -90,8 +90,8 @@ async def ranking_cron():
             
             val_list.append(score)
         try:
-            await sql.execute(f"""UPDATE players SET ranking_{role[0].value}, ranking_{role[1].value},
-                              ranking_{role[2].value}, ranking_{role[3].value}, ranking_{role[4].value} = %s, %s, %s, %s, %s
+            await sql.execute(f"""UPDATE players SET ranking_{Role[0].value}, ranking_{Role[1].value},
+                              ranking_{Role[2].value}, ranking_{Role[3].value}, ranking_{Role[4].value} = %s, %s, %s, %s, %s
                               WHERE player_id = %s""", (val_list[0], val_list[1], val_list[2], val_list[3], val_list[4], player_id))
         except pymysql.InternalError as e:
             rank_cron_log(f"ERROR: Can't update player mmr of: {player_id}, skipping")
