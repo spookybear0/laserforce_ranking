@@ -28,6 +28,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `games` (
   `id` int(11) NOT NULL,
+  `date_played` int(11) NOT NULL,
   `winner` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -53,6 +54,7 @@ CREATE TABLE `players` (
   `player_id` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
   `ipl_id` varchar(16) NOT NULL COLLATE utf8mb4_0900_ai_ci,
   `codename` varchar(32) NOT NULL UNIQUE COLLATE utf8mb4_0900_ai_ci,
+  `elo` int(11) DEFAULT 1200,
   `rank` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
   `ranking_scout` float(11) NOT NULL,
   `ranking_heavy` float(11) NOT NULL,

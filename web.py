@@ -1,6 +1,6 @@
 from objects import Role, Game, GamePlayer, Team
 from glob import get_player_cron_log, get_rank_cron_log
-from helpers import fetch_player, get_player, get_total_games, get_total_games_played, ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
+from helpers import fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
 from aiohttp import web
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
@@ -19,7 +19,7 @@ templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("html"))
 app.router.add_static("/css/", path="./css/", name="css")
 
 msh = Scheduler()
-ranking = CronJob(name="ranking").every(3).hour.go(ranking_cron)
+ranking = CronJob(name="ranking").every(3).hour.go(legacy_ranking_cron)
 player = CronJob(name="player").every(6).hour.go(player_cron)
 msh.add_job(ranking)
 msh.add_job(player)

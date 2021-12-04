@@ -65,11 +65,20 @@ async def get_games_played(player_id: str):
     q = format_sql(q) # format
     return len(q)
     
-async def ranking_cron():
+async def trueskill_ranking_cron():
+    # changable variables
+    divisor = 100 # how much the ranking changes between games
+    
+    # constants
+    id = 1
+    while True:
+        pass
+    
+async def legacy_ranking_cron():
     roles = list(Role)
     id = 1
     while True:
-        rank_cron_log(f"Searching for player at index {id}")
+        rank_cron_log(f"LEGACY: Searching for player at index {id}")
         try:
             player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
         except:
@@ -79,7 +88,7 @@ async def ranking_cron():
         except TypeError:
             break
         # mmr cron
-        rank_cron_log(f"Updating rank for: {player_id}")
+        rank_cron_log(f"LEGACY: Updating rank for: {player_id}")
         val_list = []
         for role in roles:
             try:
@@ -91,15 +100,15 @@ async def ranking_cron():
         try:
             await sql.execute(f"UPDATE players SET ranking_scout = %s, ranking_heavy = %s, ranking_commander = %s, ranking_ammo = %s, ranking_medic = %s WHERE player_id = %s", (val_list[0], val_list[1], val_list[2], val_list[3], val_list[4], player_id))
         except pymysql.InternalError as e:
-            rank_cron_log(f"ERROR: Can't update player mmr of: {player_id}, skipping")
+            rank_cron_log(f"LEGACY: ERROR: Can't update player mmr of: {player_id}, skipping")
             id += 1
             await asyncio.sleep(2.5)
             continue
-        rank_cron_log(f"Updated rank for: {player_id}")
+        rank_cron_log(f"LEGACY: Updated rank for: {player_id}")
             
         # rank cron
         
-        rank_cron_log(f"Updating rank for: {player_id}")
+        rank_cron_log(f"LEGACY: Updating rank for: {player_id}")
         mmr = await get_mmr(player_id)
         if mmr == 0:
             rank = RankMMR.UNRANKED
@@ -110,11 +119,11 @@ async def ranking_cron():
         try:
             await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
         except pymysql.InternalError as e:
-            rank_cron_log(f"ERROR: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
+            rank_cron_log(f"LEGACY: ERROR: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
             id += 1
             await asyncio.sleep(2.5)
             continue
-        rank_cron_log(f"Updated rank for: {player_id}, {rank.name.lower()}")
+        rank_cron_log(f"LEGACY: Updated rank for: {player_id}, {rank.name.lower()}")
         id += 1
         await asyncio.sleep(2.5)
 
