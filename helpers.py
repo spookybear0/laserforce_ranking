@@ -166,12 +166,8 @@ async def database_player(player_id: str, codename: str) -> None:
 
         await sql.execute("""UPDATE `players` SET `ipl_id` = %s WHERE `player_id` = %s""", (ipl_id, player_id))
     else:
-        try:
-            await sql.execute("""INSERT INTO `players` (player_id, ipl_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, ipl_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
-        except pymysql.InternalError as e:
-            print(e)
-            pass
+        await sql.execute("""INSERT IGNORE INTO `players` (player_id, ipl_id, codename, rank, ranking_scout, ranking_heavy, ranking_medic, ranking_ammo, ranking_commander)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (player_id, ipl_id, codename, "unranked", 0.0, 0.0, 0.0, 0.0, 0.0))
 
 async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (winner)
