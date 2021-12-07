@@ -94,6 +94,8 @@ async def log_game_post(r: web.RequestHandler):
     
     game = Game(0, winner) # game_id is 0 becaue its undefined
     game.players = players
+    game.green = green_players
+    game.red = red_players
     
     try:
         await log_game(game)

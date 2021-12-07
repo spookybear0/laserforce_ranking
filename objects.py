@@ -59,3 +59,5 @@ class Game:
     id: int
     winner: Team
     players=[]
+    green=[]
+    red=[]

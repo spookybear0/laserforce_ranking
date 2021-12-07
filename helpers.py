@@ -7,6 +7,7 @@ from glob import player_cron_log, rank_cron_log # type: ignore
 import laserforce # type: ignore
 import pymysql
 import asyncio
+from elo import get_win_chance, update_elo
 
 sql = None
 
@@ -65,15 +66,30 @@ async def get_games_played(player_id: str):
     q = format_sql(q) # format
     return len(q)
     
-async def trueskill_ranking_cron():
-    # changable variables
-    divisor = 100 # how much the ranking changes between games
+def matchmake_elo(players_elo):
+    """
+    This function essentially sorts players in ascending
+    order than takes pairs starting from the best
+    and splitting the best up into seperate teams
+    """
+    players_elo.sort()
     
-    # constants
-    id = 1
-    while True:
-        pass
+    team1 = []
+    team2 = []
     
+    i = 0
+    while i < len(players_elo):
+        team2.append(players_elo[i])
+        players_elo.pop(i)
+        try:
+            team1.append(players_elo[i])
+        except IndexError: # odd number of players
+            break
+        players_elo.pop(i)
+        i += 0
+    
+    return (team1, team2)
+
 async def legacy_ranking_cron():
     roles = list(Role)
     id = 1
@@ -153,7 +169,7 @@ async def get_player(player_id: str) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `player_id` = %s", (player_id))
     return Player(*q[0])
 
-async def fetch_player_by_name(codename: int) -> Game:
+async def fetch_player_by_name(codename: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `codename` = %s", (codename))
     return Player(*q[0])
 
@@ -175,14 +191,39 @@ async def database_player(player_id: str, codename: str) -> None:
 async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s)""", (game.winner))
+    
+    # update elo
+    
+    k = 512 # k-factor of elo
+    
+    if game.winner == Team.RED:
+        winner_int = 0
+    else: # is green
+        winner_int = 1
+        
+    game.red, game.green = update_elo(game.red, game.green, winner_int, k)
+    game.players = [*game.red, *game.green]
+    
     last_row = sql.last_row_id
     for player in game.players:
         player.game_id = last_row
+        
         await sql.execute("""INSERT INTO `game_players` (player_id, game_id, team, role, score)
                             VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_id, player.team.value, player.role.value, player.score))
+        
+        await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
     
 async def fetch_game_players(game_id: int) -> List[GamePlayer]:
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s", (game_id))
+    final = []
+    for player in q:
+        player[2] = Team(player[2])
+        player[3] = Role(player[3])
+        final.append(GamePlayer(*player))
+    return final
+
+async def fetch_game_players_team(game_id: int, team: Team) -> List[GamePlayer]:
+    q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s AND `team` = %s", (game_id, team.value))
     final = []
     for player in q:
         player[2] = Team(player[2])
@@ -194,7 +235,11 @@ async def fetch_game(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
     game = Game(*q[0])
     players = await fetch_game_players(game.id)
+    green = fetch_game_players_team(game.id, Team.GREEN)
+    red = fetch_game_players_team(game.id, Team.RED)
     game.players = players
+    game.green = green
+    game.red = red
     return game
 
 def remove_values_from_list(the_list, val):
