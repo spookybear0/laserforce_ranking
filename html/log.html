@@ -2,8 +2,7 @@
     <div class="container">
       <input type="text" placeholder="Winner" name="winner" required><br><br>
 
-      {% for i in range(1, 8+1) %}
-      <input type="text" placeholder="Green Codename {{i}}" name="gname{{i}}" required>
+      <input type="text" placeholder="Green Codename {{i}}" name="gname{{i}}">
       <select name="grole{{i}}">
         <option value="">Green Role {{i}}</option>
         <option value="commander">Commander</option>
@@ -12,11 +11,10 @@
         <option value="ammo">Ammo</option>
         <option value="medic">Medic</option>
       </select>
-      <input type="text" placeholder="Green Score {{i}}" name="gscore{{i}}" required><br><br>
+      <input type="text" placeholder="Green Score {{i}}" name="gscore{{i}}"><br><br>
       {% endfor %}
 
-      {% for i in range(1, 8+1) %}
-      <input type="text" placeholder="Red Codename {{i}}" name="rname{{i}}" required>
+      <input type="text" placeholder="Red Codename {{i}}" name="rname{{i}}">
       <select name="rrole{{i}}">
         <option value="">Red Role {{i}}</option>
         <option value="commander">Commander</option>
@@ -25,7 +23,7 @@
         <option value="ammo">Ammo</option>
         <option value="medic">Medic</option>
       </select>
-      <input type="text" placeholder="Red Score {{i}}" name="rscore{{i}}" required><br><br>
+      <input type="text" placeholder="Red Score {{i}}" name="rscore{{i}}"><br><br>
       {% endfor %}
 
       <input type="text" placeholder="Password" name="password"><br><br>
