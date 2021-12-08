@@ -59,6 +59,8 @@ async def log_game_post(r: web.RequestHandler):
     winner = data["winner"] # green or red
     red_players = []
     green_players = []
+    red_game_players = []
+    green_game_players = []
     
     for red_player in range(1, 8):
         try:
@@ -71,7 +73,8 @@ async def log_game_post(r: web.RequestHandler):
         player = await fetch_player_by_name(player_name)
         player_id = player.player_id
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
-        red_players.append(game)
+        red_game_players.append(game)
+        red_players.append(player)
     for green_player in range(1, 8):
         try:
             player_name = data[f"gname{green_player}"]
@@ -83,9 +86,10 @@ async def log_game_post(r: web.RequestHandler):
         player = await fetch_player_by_name(player_name)
         player_id = player.player_id
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
-        green_players.append(game)
+        green_game_players.append(game)
+        green_players.append(player)
         
-    players = [*red_players, *green_players]
+    players = [*red_game_players, *green_game_players]
     
     for player in players:
         if not player.role.value in ["scout", "heavy", "commander", "medic", "ammo"]:
