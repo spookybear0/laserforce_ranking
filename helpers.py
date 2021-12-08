@@ -194,7 +194,7 @@ async def log_game(game: Game) -> None:
     
     # update elo
     
-    k = 256 # k-factor of elo
+    k = 512 # k-factor of elo
     
     if game.winner == Team.RED:
         winner_int = 0

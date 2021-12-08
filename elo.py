@@ -16,7 +16,7 @@ def get_win_chance(team1, team2):
     expected2 = round(elo2 / (elo1 + elo2), 3)
     return (expected1, expected2)
 
-def update_elo(team1, team2, winner: int, k: int=256):
+def update_elo(team1, team2, winner: int, k: int=512):
     # k value = intensity on elo on each game higher = more elo won/lost each game
     
     # get average elo of team
