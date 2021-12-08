@@ -38,8 +38,8 @@ class Player:
     id: int
     player_id: str
     ipl_id: str
-    elo: int
     codename: str
+    elo: int
     rank: str
     ranking_scout: float=0.0
     ranking_heavy: float=0.0
