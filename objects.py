@@ -34,6 +34,14 @@ class RankMMR(Enum):
     LASERMASTER = 2
     
 @dataclass
+class GamePlayer:
+    player_id: int
+    game_id: int
+    team: Team
+    role: Role
+    score: int
+    
+@dataclass
 class Player:
     id: int
     player_id: str
@@ -41,19 +49,12 @@ class Player:
     codename: str
     elo: int
     rank: str
+    game_player: GamePlayer=None
     ranking_scout: float=0.0
     ranking_heavy: float=0.0
     ranking_commander: float=0.0
     ranking_medic: float=0.0
     ranking_ammo: float=0.0
-    
-@dataclass
-class GamePlayer:
-    player_id: int
-    game_id: int
-    team: Team
-    role: Role
-    score: int
     
 @dataclass
 class Game:

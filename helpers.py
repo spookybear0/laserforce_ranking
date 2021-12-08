@@ -209,7 +209,7 @@ async def log_game(game: Game) -> None:
         player.game_id = last_row
         
         await sql.execute("""INSERT INTO `game_players` (player_id, game_id, team, role, score)
-                            VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_id, player.team.value, player.role.value, player.score))
+                            VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_player.game_id, player.game_player.team.value, player.game_player.role.value, player.game_player.score))
         
         await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
     

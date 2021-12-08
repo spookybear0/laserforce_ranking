@@ -75,6 +75,7 @@ async def log_game_post(r: web.RequestHandler):
         player_id = player.player_id
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
         red_game_players.append(game)
+        player.game_player = game
         red_players.append(player)
     for green_player in range(1, 8):
         try:
@@ -88,12 +89,13 @@ async def log_game_post(r: web.RequestHandler):
         player_id = player.player_id
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
         green_game_players.append(game)
+        player.game_player = game
         green_players.append(player)
         
-    players = [*red_game_players, *green_game_players]
+    players = [*red_players, *green_players]
     
     for player in players:
-        if not player.role.value in ["scout", "heavy", "commander", "medic", "ammo"]:
+        if not player.game_player.role.value in ["scout", "heavy", "commander", "medic", "ammo"]:
             return web.Response(text="401: Error, invalid data! (role)")
         if len(player.player_id.split("-")) != 3:
             return web.Response(text="401: Error, invalid data! (id)")
