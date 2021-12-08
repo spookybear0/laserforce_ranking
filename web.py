@@ -42,6 +42,10 @@ async def top_get(r: web.RequestHandler):
 async def log_game_get(r: web.RequestHandler):
     return await render_template(r, "log.html")
 
+@routes.get("/admin/matchmake")
+async def matchmake_get(r: web.RequestHandler):
+    return await render_template(r, "matchmake.html")
+
 @routes.post("/log")
 async def log_game_post(r: web.RequestHandler):
     await init_sql()

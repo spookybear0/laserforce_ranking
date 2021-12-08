@@ -16,7 +16,7 @@ def get_win_chance(team1, team2):
     expected2 = round(elo2 / (elo1 + elo2), 3)
     return (expected1, expected2)
 
-def update_elo(team1, team2, winner: int, k: int=512):
+def update_elo(team1, team2, winner: int, k: int=256):
     # k value = intensity on elo on each game higher = more elo won/lost each game
     
     # get average elo of team
@@ -39,8 +39,6 @@ def update_elo(team1, team2, winner: int, k: int=512):
     final2 = elo1 + k * (score2 - expected2)
     
     # split elo along each player
-    newlist1 = []
-    newlist2 = []
     
     for p in team1:
         p.elo = round((final1 - elo1) / len(team1) + p.elo)
