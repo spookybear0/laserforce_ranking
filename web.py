@@ -109,7 +109,7 @@ async def log_game_post(r: web.RequestHandler):
     try:
         await log_game(game)
     except Exception as e:
-        print(traceback.print_exc())
+        traceback.print_exc()
         return web.Response(text="500: Error, game was not logged!")
     else:
         return web.Response(text="200: Logged!")
