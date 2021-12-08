@@ -10,6 +10,7 @@ import aiohttp_jinja2
 import jinja2
 import bcrypt
 import os
+import traceback
 
 app = web.Application()
 routes = web.RouteTableDef()
@@ -108,7 +109,7 @@ async def log_game_post(r: web.RequestHandler):
     try:
         await log_game(game)
     except Exception as e:
-        print(e)
+        print(traceback.print_exc())
         return web.Response(text="500: Error, game was not logged!")
     else:
         return web.Response(text="200: Logged!")
