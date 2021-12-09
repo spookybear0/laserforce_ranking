@@ -74,9 +74,9 @@
     <div class="content" >
         <div>
             <h2 style="text-align: center;">Matchmaker</h2>
-            <form class="modal-content animate" action="/log" method="post" style="text-align: center;">
+            <form class="modal-content animate" action="/admin/matchmake" method="post" style="text-align: center;">
                 <div class="container">
-                    {% for i in range(16) %}
+                    {% for i in range(1, 16+1) %}
                     <input type="text" placeholder="Player Codename" name="player{{ i }}"><br><br>
                     {% endfor %}
                     <button type="submit">Submit</button>

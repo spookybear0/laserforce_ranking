@@ -65,30 +65,6 @@ async def get_games_played(player_id: str):
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `player_id` = %s", (player_id))
     q = format_sql(q) # format
     return len(q)
-    
-def matchmake_elo(players_elo):
-    """
-    This function essentially sorts players in ascending
-    order than takes pairs starting from the best
-    and splitting the best up into seperate teams
-    """
-    players_elo.sort()
-    
-    team1 = []
-    team2 = []
-    
-    i = 0
-    while i < len(players_elo):
-        team2.append(players_elo[i])
-        players_elo.pop(i)
-        try:
-            team1.append(players_elo[i])
-        except IndexError: # odd number of players
-            break
-        players_elo.pop(i)
-        i += 0
-    
-    return (team1, team2)
 
 async def legacy_ranking_cron():
     roles = list(Role)
