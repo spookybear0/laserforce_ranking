@@ -191,6 +191,7 @@ async def database_player(player_id: str, codename: str) -> None:
 async def log_game(game: Game) -> None:
     await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s)""", (game.winner))
+    last_row = sql.last_row_id
     
     # update elo
     
@@ -204,7 +205,6 @@ async def log_game(game: Game) -> None:
     game.red, game.green = update_elo(game.red, game.green, winner_int, k)
     game.players = [*game.red, *game.green]
     
-    last_row = sql.last_row_id
     for player in game.players:
         player.game_id = last_row
         

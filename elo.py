@@ -16,6 +16,15 @@ def get_win_chance(team1, team2):
     expected2 = round(elo2 / (elo1 + elo2), 3)
     return (expected1, expected2)
 
+# elo split
+#
+# scout: 30%
+# heavy: 20%
+# commander: 30%
+# ammo: 10%
+# medic: 10%
+
+
 def update_elo(team1, team2, winner: int, k: int=512):
     # k value = intensity on elo on each game higher = more elo won/lost each game
     
