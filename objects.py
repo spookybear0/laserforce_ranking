@@ -61,6 +61,7 @@ class Player:
 class Game:
     id: int
     winner: Team
+    date_logged: str
     players=[]
     green=[]
     red=[]
