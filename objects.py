@@ -40,6 +40,7 @@ class GamePlayer:
     team: Team
     role: Role
     score: int
+    adj_score: int=None
     
 @dataclass
 class Player:

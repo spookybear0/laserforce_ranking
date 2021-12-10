@@ -178,7 +178,7 @@ async def log_game(game: Game) -> None:
     else: # is green
         winner_int = 1
         
-    game.red, game.green = update_elo(game.red, game.green, winner_int, k)
+    game.red, game.green = update_elo(game.red, game.green, winner_int, k) # update elo
     game.players = [*game.red, *game.green]
     
     for player in game.players:

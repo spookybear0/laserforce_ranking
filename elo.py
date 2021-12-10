@@ -1,5 +1,6 @@
 from typing import List, Tuple, Union
 import operator
+from objects import Player, Role
 
 def get_team_elo(team):
     elo_sum = 0
@@ -20,12 +21,75 @@ def get_win_chance(team1, team2):
     return (expected1, expected2)
 
 # elo split
+# (remember to convert to int after)
 #
-# scout: 30%
-# heavy: 20%
-# commander: 30%
-# ammo: 10%
-# medic: 10%
+# scout: expected: 4500, *2.2
+# heavy: 7000, *1.42
+# commander: expected: 10000, *1
+# ammo: expected: 2500, *4
+# medic: expected: 1500, *6.66
+
+def update_elo(team1, team2, winner: int, k: int=512):
+    # k value = intensity on elo on each game higher = more elo won/lost each game
+    
+    # get average elo of team
+    
+    elo1 = get_team_elo(team1)
+    elo2 = get_team_elo(team2)
+
+    expected1 = elo1 / (elo1 + elo2)
+    expected2 = elo2 / (elo1 + elo2)
+    
+    # get which team won
+    if winner == 0:
+        score1 = 1
+        score2 = 0
+    elif winner == 1:
+        score1 = 0
+        score2 = 1
+    
+    # change in elo
+    change1 = k * (score1 - expected1)
+    change2 = k * (score2 - expected2)
+    
+    # split elo along each player depending on role and performance
+    
+    def update_team_elo(team):
+        total_adj_score = 0
+        for p in team: # first loop to get total score
+            # get nessacary variables
+            score = p.game_player.score
+            role = p.game_player.role
+            
+            # prepare to even out score
+            multiplier = 1
+            
+            if role == Role.SCOUT:
+                multiplier = 2.2
+            elif role == Role.HEAVY:
+                multiplier = 1.42
+            elif role == Role.COMMANDER:
+                multiplier = 1
+            elif role == Role.AMMO:
+                multiplier = 4
+            elif role == Role.MEDIC:
+                multiplier = 6.66
+            
+            adj_score = score*multiplier
+            p.game_player.adj_score = adj_score
+            
+            total_adj_score += adj_score # even out score
+        
+        for p in team: # second loop to update elo
+            adj_score = p.game_player.adj_score
+            
+            p.elo = p.elo + change1 / (adj_score / total_adj_score) # use adj score to determine how much elo each player gets by seeing how much they contributed (adjusted)
+            p.elo = round(p.elo)
+
+    update_team_elo(team1)
+    update_team_elo(team2)
+    
+    return (team1, team2)
 
 def matchmake_elo(players):
     """
@@ -75,38 +139,6 @@ def matchmake_elo_from_elo(players_elo):
             break
         players_elo.pop(i)
         i += 0
-    
-    return (team1, team2)
-
-def update_elo(team1, team2, winner: int, k: int=512):
-    # k value = intensity on elo on each game higher = more elo won/lost each game
-    
-    # get average elo of team
-    
-    elo1 = get_team_elo(team1)
-    elo2 = get_team_elo(team2)
-
-    expected1 = elo1 / (elo1 + elo2)
-    expected2 = elo2 / (elo1 + elo2)
-    
-    # get which team won
-    if winner == 0:
-        score1 = 1
-        score2 = 0
-    elif winner == 1:
-        score1 = 0
-        score2 = 1
-    
-    final1 = elo1 + k * (score1 - expected1)
-    final2 = elo1 + k * (score2 - expected2)
-    
-    # split elo along each player
-    
-    for p in team1:
-        p.elo = round((final1 - elo1) / len(team1) + p.elo)
-        
-    for p in team2:
-        p.elo = round((final2 - elo2) / len(team2) + p.elo)
     
     return (team1, team2)
 
