@@ -72,7 +72,7 @@ async def recalculate_elo():
     # reset elo
     await sql.execute("UPDATE `players` SET `elo` = %s", (base_elo,))
     
-    i = 0
+    i = 1
     while True:
         game = await fetch_game(i)
         
