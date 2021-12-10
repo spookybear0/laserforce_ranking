@@ -77,6 +77,7 @@ async def recalculate_elo():
         try:
             game = await fetch_game(i)
         except IndexError:
+            print("Done recalculating")
             break
         
         k = 512

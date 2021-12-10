@@ -26,7 +26,7 @@ def get_win_chance(team1, team2):
 # scout: expected: 4500, *2.2
 # heavy: 7000, *1.42
 # commander: expected: 10000, *1
-# ammo: expected: 2500, *4
+# ammo: expected: 2500, *3
 # medic: expected: 1500, *6.66
 
 def update_elo(team1, team2, winner: int, k: int=512):
@@ -72,7 +72,7 @@ def update_elo(team1, team2, winner: int, k: int=512):
             elif role == Role.COMMANDER:
                 multiplier = 1
             elif role == Role.AMMO:
-                multiplier = 4
+                multiplier = 3
             elif role == Role.MEDIC:
                 multiplier = 6.66
             
