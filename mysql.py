@@ -6,6 +6,8 @@ from typing import (
 import aiomysql
 import asyncio
 import os
+
+import pymysql
 from config import config # type: ignore
 
 class MySQLPool:
@@ -134,7 +136,12 @@ class MySQLPool:
             # Grab a cur.
             async with pool.cursor() as cur:
                 # Execute and fetchone.
-                await cur.execute(query, args)
+                async def execute():
+                    try:
+                        await cur.execute(query, args)
+                    except pymysql.InternalError:
+                        execute()
+                    
 
                 # Immidiately return it
                 return await cur.fetchone()
@@ -170,7 +177,11 @@ class MySQLPool:
             # Grab a cur.
             async with pool.cursor() as cur:
                 # Execute and fetchall.
-                await cur.execute(query, args)
+                async def execute():
+                    try:
+                        await cur.execute(query, args)
+                    except pymysql.InternalError:
+                        execute()
 
                 # Immidiately return it
                 return await cur.fetchall()
@@ -209,7 +220,11 @@ class MySQLPool:
             # Grab a cur.
             async with pool.cursor() as cur:
                 # Execute it.
-                await cur.execute(query, args)
+                async def execute():
+                    try:
+                        await cur.execute(query, args)
+                    except pymysql.InternalError:
+                        execute()
 
                 # Set `last_row_id`
                 self.last_row_id = cur.lastrowid

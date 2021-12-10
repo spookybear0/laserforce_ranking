@@ -66,6 +66,33 @@ async def get_games_played(player_id: str):
     q = format_sql(q) # format
     return len(q)
 
+async def recalculate_elo():
+    base_elo = 1200
+    
+    # reset elo
+    await sql.execute("UPDATE `players` SET `elo` = %s", (base_elo,))
+    
+    i = 0
+    while True:
+        game = await fetch_game(i)
+        
+        k = 512
+        
+        if game.winner == Team.RED:
+            winner_int = 0
+        else: # is green
+            winner_int = 1
+        
+        game.red, game.green = update_elo(game.red, game.green, winner_int, k) # update elo
+        game.players = [*game.red, *game.green]
+        
+        for player in game.players:
+            player.game_id = game.id
+        
+            await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
+        
+        i += 1
+
 async def legacy_ranking_cron():
     roles = list(Role)
     id = 1

@@ -16,8 +16,8 @@ def get_win_chance(team1, team2):
     elo1 = get_team_elo(team1)
     elo2 = get_team_elo(team2)
 
-    expected1 = round(elo1 / (elo1 + elo2), 3)
-    expected2 = round(elo2 / (elo1 + elo2), 3)
+    expected1 = round(elo1 / (elo1 + elo2))
+    expected2 = round(elo2 / (elo1 + elo2))
     return (expected1, expected2)
 
 # elo split
@@ -54,7 +54,7 @@ def update_elo(team1, team2, winner: int, k: int=512):
     
     # split elo along each player depending on role and performance
     
-    def update_team_elo(team):
+    def update_team_elo(team, change, team_value: int):
         total_adj_score = 0
         for p in team: # first loop to get total score
             # get nessacary variables
@@ -64,6 +64,7 @@ def update_elo(team1, team2, winner: int, k: int=512):
             # prepare to even out score
             multiplier = 1
             
+            # keep score values similar and buff worse roles to commanders level
             if role == Role.SCOUT:
                 multiplier = 2.2
             elif role == Role.HEAVY:
@@ -75,19 +76,26 @@ def update_elo(team1, team2, winner: int, k: int=512):
             elif role == Role.MEDIC:
                 multiplier = 6.66
             
+            if score < 0: # negatives will mess with the multiplier so just set score to 0 if its an negative value
+                score = 0
             adj_score = score*multiplier
             p.game_player.adj_score = adj_score
             
-            total_adj_score += adj_score # even out score
+            total_adj_score += adj_score # even out score, used for dividend/divisor
         
         for p in team: # second loop to update elo
-            adj_score = p.game_player.adj_score
             
-            p.elo = p.elo + change1 / (adj_score / total_adj_score) # use adj score to determine how much elo each player gets by seeing how much they contributed (adjusted)
+            # use adj score to determine how much elo each player gets by seeing how much they contributed (adjusted)
+            adj_score = p.game_player.adj_score
+
+            if team_value == winner: # team won
+                p.elo += change * (adj_score / total_adj_score)
+            else: # team lost
+                p.elo += change * ((total_adj_score / adj_score)/25) # /25 is something that works good for better players losing less on the losing team
             p.elo = round(p.elo)
 
-    update_team_elo(team1)
-    update_team_elo(team2)
+    update_team_elo(team1, change1, 0)
+    update_team_elo(team2, change2, 1)
     
     return (team1, team2)
 
