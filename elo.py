@@ -92,7 +92,10 @@ def update_elo(team1, team2, winner: int, k: int=512):
             if team_value == winner: # team won
                 p.elo += change * (adj_score / total_adj_score)
             else: # team lost
-                p.elo += change * ((total_adj_score / adj_score)/25) # /25 is something that works good for better players losing less on the losing team
+                elo = change * ((total_adj_score / adj_score)/25) # /25 is something that works good for better players losing less on the losing team
+                if elo < change/2:
+                    elo = change/2
+                p.elo += elo
             p.elo = round(p.elo)
 
     update_team_elo(team1, change1, 0)
