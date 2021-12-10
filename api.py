@@ -1,9 +1,11 @@
 from glob import routes
 from aiohttp import web
-from helpers import fetch_player_by_name, get_player
+from helpers import init_sql, fetch_player_by_name, get_player
 
 @routes.get("/api/player")
-async def test(r: web.Request):
+async def player(r: web.Request):
+    await init_sql()
+    
     args = r.rel_url.query
     
     player_id = args.get("id")
