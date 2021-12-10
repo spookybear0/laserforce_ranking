@@ -74,7 +74,10 @@ async def recalculate_elo():
     
     i = 1
     while True:
-        game = await fetch_game(i)
+        try:
+            game = await fetch_game(i)
+        except IndexError:
+            break
         
         k = 512
         
