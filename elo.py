@@ -77,7 +77,7 @@ def update_elo(team1, team2, winner: int, k: int=512):
                 multiplier = 6.66
             
             if score < 0: # negatives will mess with the multiplier so just set score to 0 if its an negative value
-                score = 0
+                score = 20 # to avoid division by zero
             adj_score = score*multiplier
             p.game_player.adj_score = adj_score
             
