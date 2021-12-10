@@ -140,7 +140,7 @@ class MySQLPool:
                     try:
                         await cur.execute(query, args)
                     except pymysql.InternalError:
-                        execute()
+                        await execute()
                     
 
                 # Immidiately return it
@@ -181,7 +181,7 @@ class MySQLPool:
                     try:
                         await cur.execute(query, args)
                     except pymysql.InternalError:
-                        execute()
+                        await execute()
 
                 # Immidiately return it
                 return await cur.fetchall()
@@ -224,7 +224,7 @@ class MySQLPool:
                     try:
                         await cur.execute(query, args)
                     except pymysql.InternalError:
-                        execute()
+                        await execute()
 
                 # Set `last_row_id`
                 self.last_row_id = cur.lastrowid
