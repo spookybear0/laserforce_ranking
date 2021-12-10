@@ -1,5 +1,5 @@
 from objects import Role, Game, GamePlayer, Team
-from glob import get_player_cron_log, get_rank_cron_log
+from glob import get_player_cron_log, get_rank_cron_log, routes
 from helpers import fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
 from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
 from aiohttp import web
@@ -12,9 +12,9 @@ import jinja2
 import bcrypt
 import os
 import traceback
+import api
 
 app = web.Application()
-routes = web.RouteTableDef()
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("html"))
@@ -31,7 +31,7 @@ async def render_template(r, template, *args, **kwargs) -> web.Response:
     return web.Response(text=text, content_type="text/html")
 
 @routes.get("/top")
-async def top_get(r: web.RequestHandler):
+async def top_get(r: web.Request):
     await init_sql()
     scout = await get_top_100_by_role(Role.SCOUT)
     heavy = await get_top_100_by_role(Role.HEAVY)
@@ -41,15 +41,15 @@ async def top_get(r: web.RequestHandler):
     return await render_template(r, "top.html", scout=scout, heavy=heavy, ammo=ammo, medic=medic, commander=commander)
 
 @routes.get("/log")
-async def log_game_get(r: web.RequestHandler):
+async def log_game_get(r: web.Request):
     return await render_template(r, "log.html")
 
 @routes.get("/admin/matchmake")
-async def matchmake_get(r: web.RequestHandler):
+async def matchmake_get(r: web.Request):
     return await render_template(r, "matchmake.html")
 
 @routes.post("/admin/matchmake")
-async def matchmake_post(r: web.RequestHandler):
+async def matchmake_post(r: web.Request):
     data = await r.post()
     
     players = []
@@ -75,7 +75,7 @@ async def matchmake_post(r: web.RequestHandler):
     return web.Response(text=f"{match} {win_chance}")
 
 @routes.post("/log")
-async def log_game_post(r: web.RequestHandler):
+async def log_game_post(r: web.Request):
     await init_sql()
     data = await r.post()
     
@@ -144,7 +144,7 @@ async def log_game_post(r: web.RequestHandler):
         return web.Response(text="200: Logged!")
     
 @routes.get("/admin")
-async def admin_get(r: web.RequestHandler):
+async def admin_get(r: web.Request):
     await init_sql()
     total_players = await get_total_players()
     total_games = await get_total_games()
@@ -152,13 +152,13 @@ async def admin_get(r: web.RequestHandler):
     return await render_template(r, "admin.html", total_players=total_players, total_games=total_games, total_games_played=total_games_played)
 
 @routes.get("/admin/players")
-async def players_get(r: web.RequestHandler):
+async def players_get(r: web.Request):
     await init_sql()
     page = int(r.rel_url.query.get("page", 0))
     return await render_template(r, "players.html", players=await get_top_100(15, 15*page), page=page)
 
 @routes.get("/admin/player/{id}")
-async def player_get(r: web.RequestHandler):
+async def player_get(r: web.Request):
     await init_sql()
     id = r.match_info["id"]
     try:
@@ -171,22 +171,22 @@ async def player_get(r: web.RequestHandler):
     return await render_template(r, "player.html", player=player)
 
 @routes.post("/admin/player")
-async def player_post(r: web.RequestHandler):
+async def player_post(r: web.Request):
     data = await r.post()
     user = data["userid"]
     raise web.HTTPFound(f"/admin/player/{user}")
 
 @routes.get("/admin/cron")
-async def admin_get(r: web.RequestHandler):
+async def admin_get(r: web.Request):
     await init_sql()
     return await render_template(r, "cron.html")
 
 @routes.get("/admin/cron/player_stream")
-async def admin_cron_player_stream_get(r: web.RequestHandler):
+async def admin_cron_player_stream_get(r: web.Request):
     return web.Response(text=get_player_cron_log(), content_type="text/plain")
 
 @routes.get("/admin/cron/rank_stream")
-async def admin_cron_rank_stream_get(r: web.RequestHandler):
+async def admin_cron_rank_stream_get(r: web.Request):
     return web.Response(text=get_rank_cron_log(), content_type="text/plain")
 
 def start_cron():

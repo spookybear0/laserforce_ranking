@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
-    
+from dataclasses_json import dataclass_json
+
 class Role(Enum):
     SCOUT = "scout"
     HEAVY = "heavy"
@@ -32,7 +33,8 @@ class RankMMR(Enum):
     DIAMOND = 1.25
     IMMORTAL = 1.35
     LASERMASTER = 2
-    
+
+@dataclass_json
 @dataclass
 class GamePlayer:
     player_id: int
@@ -41,7 +43,8 @@ class GamePlayer:
     role: Role
     score: int
     adj_score: int=None
-    
+
+@dataclass_json  
 @dataclass
 class Player:
     id: int
@@ -56,7 +59,8 @@ class Player:
     ranking_commander: float=0.0
     ranking_medic: float=0.0
     ranking_ammo: float=0.0
-    
+
+@dataclass_json
 @dataclass
 class Game:
     id: int

@@ -1,4 +1,7 @@
 import datetime
+from aiohttp import web
+
+routes = web.RouteTableDef()
 
 def player_cron_log(text: str):
     open("player_cron.log", "w").write(f"{datetime.datetime.now()} - {text}")
