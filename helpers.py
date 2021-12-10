@@ -192,9 +192,8 @@ async def database_player(player_id: str, codename: str) -> None:
             pass
 
 async def log_game(game: Game) -> None:
-    await sql.execute("""INSERT INTO `games` (winner)
+    last_row = await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s)""", (game.winner))
-    last_row = sql.last_row_id
     
     # update elo
     
