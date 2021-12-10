@@ -218,27 +218,47 @@ async def log_game(game: Game) -> None:
 async def fetch_game_players(game_id: int) -> List[GamePlayer]:
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s", (game_id))
     final = []
-    for player in q:
-        player[2] = Team(player[2])
-        player[3] = Role(player[3])
-        final.append(GamePlayer(*player))
+
+    for game_player in q:
+        nplayer = []
+
+        nplayer.append(game_player[0])
+        nplayer.append(game_player[1])
+        nplayer.append(Team(game_player[2]))
+        nplayer.append(Role(game_player[3]))
+        nplayer.append(game_player[4])
+        
+        player = await get_player(game_player[0])
+        player.game_player = GamePlayer(*nplayer)
+        
+        final.append(player)
     return final
 
 async def fetch_game_players_team(game_id: int, team: Team) -> List[GamePlayer]:
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s AND `team` = %s", (game_id, team.value))
     final = []
-    for player in q:
-        player[2] = Team(player[2])
-        player[3] = Role(player[3])
-        final.append(GamePlayer(*player))
+    
+    for game_player in q:
+        nplayer = []
+
+        nplayer.append(game_player[0])
+        nplayer.append(game_player[1])
+        nplayer.append(Team(game_player[2]))
+        nplayer.append(Role(game_player[3]))
+        nplayer.append(game_player[4])
+        
+        player = await get_player(game_player[0])
+        player.game_player = GamePlayer(*nplayer)
+        
+        final.append(player)
     return final
     
 async def fetch_game(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
     game = Game(*q[0])
     players = await fetch_game_players(game.id)
-    green = fetch_game_players_team(game.id, Team.GREEN)
-    red = fetch_game_players_team(game.id, Team.RED)
+    green = await fetch_game_players_team(game.id, Team.GREEN)
+    red = await fetch_game_players_team(game.id, Team.RED)
     game.players = players
     game.green = green
     game.red = red
