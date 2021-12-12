@@ -100,7 +100,10 @@ async def log_game_post(r: web.Request):
             if player_name == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
-        player = await fetch_player_by_name(player_name)
+        try:
+            player = await fetch_player_by_name(player_name)
+        except IndexError: # player doens't exist
+            return web.Response(text=f"401: Error, invalid data! (codename, green, {player_name})")
         player_id = player.player_id
         game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
         red_game_players.append(game)
@@ -114,12 +117,18 @@ async def log_game_post(r: web.Request):
             if player_name == "" or player_role == "" or player_score == "": break
         except KeyError:
             break
-        player = await fetch_player_by_name(player_name)
+        try:
+            player = await fetch_player_by_name(player_name)
+        except IndexError: # player doens't exist
+            return web.Response(text=f"401: Error, invalid data! (codename, red, {player_name})")
         player_id = player.player_id
         game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
         green_game_players.append(game)
         player.game_player = game
         green_players.append(player)
+        
+    if len(red_players) == 0 or len(green_players) == 0:
+        return web.Response(text="401: Error, invalid data! (invalid teams)")
         
     players = [*red_players, *green_players]
     
@@ -130,7 +139,7 @@ async def log_game_post(r: web.Request):
             return web.Response(text="401: Error, invalid data! (id)")
             
     if not winner in ["green", "red"]:
-        return web.Response(text="401: Error, invalid data! (team)")
+        return web.Response(text="401: Error, invalid data! (no winner)")
     
     game = Game(0, winner) # game_id is 0 becaue its undefined
     game.players = players

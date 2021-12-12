@@ -14,6 +14,7 @@ sql = None
 def average(to_average: Union[List, Tuple]):
     return sum(to_average) / len(to_average)
 
+# deprecated
 # iron: 0.60, 60%
 # bronze: 0.75, 75%
 # silver: 1.0, 100% (average)
@@ -50,7 +51,7 @@ async def get_total_games_played():
 
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
-    all_mmr = list(q[0]) # format
+    all_mmr = list(q[0])
     try:
         while True:
             all_mmr.remove(0.0)
@@ -63,7 +64,7 @@ async def get_mmr(player_id: str):
 
 async def get_games_played(player_id: str):
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `player_id` = %s", (player_id))
-    q = format_sql(q) # format
+    q = format_sql(q)
     return len(q)
 
 async def recalculate_elo():
@@ -96,7 +97,8 @@ async def recalculate_elo():
             await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
         
         i += 1
-
+        
+# deprecated
 async def legacy_ranking_cron():
     roles = list(Role)
     id = 1
@@ -263,10 +265,9 @@ async def fetch_game_players_team(game_id: int, team: Team) -> List[GamePlayer]:
 async def fetch_game(id: int) -> Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
     game = Game(*q[0])
-    players = await fetch_game_players(game.id)
     green = await fetch_game_players_team(game.id, Team.GREEN)
     red = await fetch_game_players_team(game.id, Team.RED)
-    game.players = players
+    game.players = [*green, *red]
     game.green = green
     game.red = red
     return game
@@ -274,6 +275,7 @@ async def fetch_game(id: int) -> Game:
 def remove_values_from_list(the_list, val):
    return [value for value in the_list if value != val]
 
+# deprecated
 #async def get_my_ranking_score(role: Role, player_id: str):
 #    q = await sql.fetchall("SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
 #    games = format_sql(q)[:10] # grab top 10 games
@@ -282,6 +284,7 @@ def remove_values_from_list(the_list, val):
 #        weighted += int(score * 0.95**i)
 #    return weighted # only top 10 weighted
 
+# deprecated
 async def get_average_score(role: Role, player_id: str) -> int: # the world (everyone else's)
     q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
     q = remove_values_from_list(format_sql(q), 0)
@@ -291,6 +294,7 @@ async def get_average_score(role: Role, player_id: str) -> int: # the world (eve
         ret = 0
     return ret
 
+# deprecated
 async def get_my_average_score(role: Role, player_id: str): # my average score
     q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
     q = remove_values_from_list(format_sql(q), 0)
@@ -299,7 +303,8 @@ async def get_my_average_score(role: Role, player_id: str): # my average score
     except ZeroDivisionError:
         ret = 0
     return ret
-    
+
+# deprecated
 async def get_my_ranking_score(role: Role, player_id: str) -> float:
     world_average = await get_average_score(role, player_id)
     my_average = await get_my_average_score(role, player_id)
