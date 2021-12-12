@@ -56,6 +56,7 @@ def update_elo(team1, team2, winner: int, k: int=512):
     
     def update_team_elo(team, change, team_value: int):
         total_adj_score = 0
+        team_elo = 0
         for p in team: # first loop to get total score
             # get nessacary variables
             score = p.game_player.score
@@ -83,6 +84,8 @@ def update_elo(team1, team2, winner: int, k: int=512):
             p.game_player.adj_score = adj_score
             
             total_adj_score += adj_score # even out score, used for dividend/divisor
+            
+            team_elo += p.elo # get team total elo for elo performance calculations
         
         for p in team: # second loop to update elo
             
@@ -90,9 +93,13 @@ def update_elo(team1, team2, winner: int, k: int=512):
             adj_score = p.game_player.adj_score
 
             if team_value == winner: # team won
-                p.elo += change * (adj_score / total_adj_score)
+                # how much contributed to team
+                # and adjust change with how good the player actually is compared to team
+                p.elo += change * (adj_score / total_adj_score) + (change * (0.5-(p.elo / team_elo)))
             else: # team lost
-                elo = change * (1-(adj_score / total_adj_score)) # 1-% contributed to team = adjusted for loss instead of win
+                # 1-% contributed to team = adjusted for loss instead of win
+                # and adjust change with how good the player actually is compared to team
+                elo = change * (1-(adj_score / total_adj_score)) + (change * (p.elo / team_elo))
                 if elo < change/2:
                     elo = change/2
                 p.elo += elo
