@@ -20,7 +20,7 @@ def get_win_chance(team1, team2):
     expected2 = round(elo2 / (elo1 + elo2))
     return (expected1, expected2)
 
-def update_elo(team1, team2, winner: int, k: int=512):
+async def update_elo(team1, team2, winner: int, k: int=512):
     from helpers import get_average_score
     # k value = intensity on elo on each game higher = more elo won/lost each game
     
@@ -46,7 +46,7 @@ def update_elo(team1, team2, winner: int, k: int=512):
     
     # split elo along each player depending on role and performance
     
-    def update_team_elo(team, change, team_value: int):
+    async def update_team_elo(team, change, team_value: int):
         total_adj_score = 0
         team_elo = 0
         for p in team: # first loop to get total score
@@ -55,7 +55,9 @@ def update_elo(team1, team2, winner: int, k: int=512):
             role = p.game_player.role
             
             # keep score values similar and buff worse roles to commanders level (aka mvp points)
-            multiplier = get_average_score(Role.COMMANDER) / get_average_score(role)
+            commander_avg = await get_average_score(Role.COMMANDER)
+            my_role_avg = await get_average_score(role)
+            multiplier = commander_avg / my_role_avg
             
             if score < 0: # negatives will mess with the multiplier so just set score to 0 if its an negative value
                 score = 20 # to avoid division by zero
@@ -85,8 +87,8 @@ def update_elo(team1, team2, winner: int, k: int=512):
                 p.elo += elo
             p.elo = round(p.elo)
 
-    update_team_elo(team1, change1, 0)
-    update_team_elo(team2, change2, 1)
+    await update_team_elo(team1, change1, 0)
+    await update_team_elo(team2, change2, 1)
     
     return (team1, team2)
 
