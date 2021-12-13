@@ -1,9 +1,10 @@
+from logging import Logger
 from types import CodeType
 import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
 from objects import Player, Game, Role, RankMMR, Rank, GamePlayer, Team # type: ignore
-from glob import player_cron_log, rank_cron_log # type: ignore
+from logs import logger, player_logger, elo_logger # type: ignore
 import laserforce # type: ignore
 import pymysql
 import asyncio
@@ -107,10 +108,11 @@ async def recalculate_elo():
         
 # deprecated
 async def legacy_ranking_cron():
+    logger.debug(f"LEGACY: Starting to update rankings")
     roles = list(Role)
     id = 1
     while True:
-        rank_cron_log(f"LEGACY: Searching for player at index {id}")
+        logger.debug(f"LEGACY: Searching for player at index {id}")
         try:
             player_id = await sql.fetchone("SELECT player_id FROM `players` WHERE `id` = %s", id)
         except:
@@ -120,7 +122,7 @@ async def legacy_ranking_cron():
         except TypeError:
             break
         # mmr cron
-        rank_cron_log(f"LEGACY: Updating rank for: {player_id}")
+        logger.debug(f"LEGACY: Updating rank for: {player_id}")
         val_list = []
         for role in roles:
             try:
@@ -132,15 +134,15 @@ async def legacy_ranking_cron():
         try:
             await sql.execute(f"UPDATE players SET ranking_scout = %s, ranking_heavy = %s, ranking_commander = %s, ranking_ammo = %s, ranking_medic = %s WHERE player_id = %s", (val_list[0], val_list[1], val_list[2], val_list[3], val_list[4], player_id))
         except pymysql.InternalError as e:
-            rank_cron_log(f"LEGACY: ERROR: Can't update player mmr of: {player_id}, skipping")
+            logger.error(f"LEGACY: Can't update player mmr of: {player_id}, skipping")
             id += 1
             await asyncio.sleep(2.5)
             continue
-        rank_cron_log(f"LEGACY: Updated rank for: {player_id}")
+        logger.debug(f"LEGACY: Updated rank for: {player_id}")
             
         # rank cron
         
-        rank_cron_log(f"LEGACY: Updating rank for: {player_id}")
+        logger.debug(f"LEGACY: Updating rank for: {player_id}")
         mmr = await get_mmr(player_id)
         if mmr == 0:
             rank = RankMMR.UNRANKED
@@ -151,11 +153,11 @@ async def legacy_ranking_cron():
         try:
             await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
         except pymysql.InternalError as e:
-            rank_cron_log(f"LEGACY: ERROR: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
+            logger.error(f"LEGACY: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
             id += 1
             await asyncio.sleep(2.5)
             continue
-        rank_cron_log(f"LEGACY: Updated rank for: {player_id}, {rank.name.lower()}")
+        logger.debug(f"LEGACY: Updated rank for: {player_id}, {rank.name.lower()}")
         id += 1
         await asyncio.sleep(2.5)
 
@@ -164,18 +166,18 @@ async def player_cron():
     client = laserforce.Client()
 
     for i in range(10000):
-        player_cron_log(f"Attemping to database player: 4-43-{i}")
+        player_logger.debug(f"Attemping to database player: 4-43-{i}")
         try:
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
-            player_cron_log(f"Player: 4-43-{i} does not exist, skipping")
+            player_logger.error(f"Player: 4-43-{i} does not exist, skipping")
             continue
         
         try:
             await database_player(f"4-43-{i}", player.codename)
         except pymysql.InternalError:
             continue
-        player_cron_log(f"Databased player: 4-43-{i}, {player.codename}")
+        player_logger.debug(f"Databased player: 4-43-{i}, {player.codename}")
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
@@ -205,8 +207,10 @@ async def database_player(player_id: str, codename: str) -> None:
             pass
 
 async def log_game(game: Game) -> None:
+    elo_logger.info("Inserting game")
     await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s);""", (game.winner))
+    elo_logger.debug("Inserted game")
     
     last_row = await sql.fetchone("SELECT LAST_INSERT_ID();")
     last_row = last_row[0]
@@ -219,10 +223,13 @@ async def log_game(game: Game) -> None:
         winner_int = 0
     else: # is green
         winner_int = 1
-        
+    
+    elo_logger.debug("Updating players elo for game")
     game.red, game.green = await update_elo(game.red, game.green, winner_int, k) # update elo
     game.players = [*game.red, *game.green]
+    elo_logger.debug("Done updating elo")
     
+    elo_logger.debug("Setting elo in mysql")
     for player in game.players:
         player.game_player.game_id = last_row
         
@@ -230,6 +237,7 @@ async def log_game(game: Game) -> None:
                             VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_player.game_id, player.game_player.team.value, player.game_player.role.value, player.game_player.score))
         
         await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
+    elo_logger.info("Done logging game")
     
 async def fetch_game_players(game_id: int) -> List[GamePlayer]:
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s", (game_id))

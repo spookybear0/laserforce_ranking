@@ -1,5 +1,6 @@
 from objects import Role, Game, GamePlayer, Team
-from glob import get_player_cron_log, get_rank_cron_log, routes
+from glob import routes
+from logs import get_log
 from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
 from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
 from aiohttp import web
@@ -194,11 +195,11 @@ async def admin_get(r: web.Request):
 
 @routes.get("/admin/cron/player_stream")
 async def admin_cron_player_stream_get(r: web.Request):
-    return web.Response(text=get_player_cron_log(), content_type="text/plain")
+    return web.Response(text=get_log("player_cron"), content_type="text/plain")
 
-@routes.get("/admin/cron/rank_stream")
+@routes.get("/admin/cron/elo_stream")
 async def admin_cron_rank_stream_get(r: web.Request):
-    return web.Response(text=get_rank_cron_log(), content_type="text/plain")
+    return web.Response(text=get_log("elo_cron"), content_type="text/plain")
 
 def start_cron():
     loop = asyncio.get_event_loop()

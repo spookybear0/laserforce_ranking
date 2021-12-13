@@ -79,8 +79,8 @@
             <div class="userlist" id="player">
                 
             </div>
-            <h4 style="text-align: center;">Rank Cron</h4>
-            <div class="userlist" id="rank">
+            <h4 style="text-align: center;">Elo Cron</h4>
+            <div class="userlist" id="elo">
                 
             </div>
         </div>
@@ -105,13 +105,12 @@
           }
       }
       function ranking_cron() {
-        xhr.open("GET", "/admin/cron/rank_stream", false);
+        xhr.open("GET", "/admin/cron/elo_stream", false);
           xhr.send();
-          console.log(xhr.responseText)
           if (prev_text_2 != xhr.responseText) {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
-              var rank = document.getElementById("rank");
+              var rank = document.getElementById("elo");
               p.appendChild(node)
               rank.appendChild(p)
               prev_text_2 = xhr.responseText
@@ -120,6 +119,6 @@
       setInterval(function() {
         player_cron()
         ranking_cron()
-      }, 500);
+      }, 10);
     });
   </script>
