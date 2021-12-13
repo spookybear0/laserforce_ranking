@@ -137,9 +137,8 @@ async def legacy_ranking_cron():
         try:
             await sql.execute(f"UPDATE players SET ranking_scout = %s, ranking_heavy = %s, ranking_commander = %s, ranking_ammo = %s, ranking_medic = %s WHERE player_id = %s", (val_list[0], val_list[1], val_list[2], val_list[3], val_list[4], player_id))
         except pymysql.InternalError as e:
-            logger.error(f"LEGACY: Can't update player mmr of: {player_id}, skipping")
+            logger.exception(f"LEGACY: Can't update player mmr of: {player_id}, skipping")
             id += 1
-            await asyncio.sleep(2.5)
             continue
         logger.debug(f"LEGACY: Updated rank for: {player_id}")
             
@@ -156,9 +155,8 @@ async def legacy_ranking_cron():
         try:
             await sql.execute("UPDATE `players` SET `rank` = %s WHERE `player_id` = %s;", (rank.name.lower(), player_id))
         except pymysql.InternalError as e:
-            logger.error(f"LEGACY: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
+            logger.exception(f"LEGACY: Can't set final rank: {rank.name.lower()} of player: {player_id}, skipping")
             id += 1
-            await asyncio.sleep(2.5)
             continue
         logger.debug(f"LEGACY: Updated rank for: {player_id}, {rank.name.lower()}")
         id += 1
@@ -173,12 +171,13 @@ async def player_cron():
         try:
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
-            player_logger.error(f"Player: 4-43-{i} does not exist, skipping")
+            player_logger.warning(f"Player: 4-43-{i} does not exist, skipping")
             continue
         
         try:
             await database_player(f"4-43-{i}", player.codename)
         except pymysql.InternalError:
+            player_logger.exception(f"Unable to database 4-43-{i}, {player.codename}")
             continue
         player_logger.debug(f"Databased player: 4-43-{i}, {player.codename}")
 
