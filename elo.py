@@ -1,6 +1,5 @@
 from typing import List, Tuple, Union
 import operator
-from helpers import get_average_score
 from objects import Player, Role
 
 def get_team_elo(team):
@@ -22,6 +21,7 @@ def get_win_chance(team1, team2):
     return (expected1, expected2)
 
 def update_elo(team1, team2, winner: int, k: int=512):
+    from helpers import get_average_score
     # k value = intensity on elo on each game higher = more elo won/lost each game
     
     # get average elo of team
