@@ -73,13 +73,20 @@ async def recalculate_elo():
     # reset elo
     await sql.execute("UPDATE `players` SET `elo` = %s", (base_elo,))
     
+    in_a_row = 0
     i = 1
     while True:
         try:
             game = await fetch_game(i)
         except IndexError:
-            print("Done recalculating")
-            break
+            in_a_row += 1
+            if in_a_row >= 100:
+                print("Done recalculating")
+                break
+            i += 1
+            continue
+        
+        in_a_row = 0
         
         k = 512
         
