@@ -1,14 +1,17 @@
-from logging import Logger
+import logging
 from types import CodeType
 import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
 from objects import Player, Game, Role, RankMMR, Rank, GamePlayer, Team # type: ignore
-from logs import logger, player_logger, elo_logger # type: ignore
 import laserforce # type: ignore
 import pymysql
 import asyncio
 from elo import get_win_chance, update_elo
+
+logger = logging.getLogger("general")
+elo_logger = logging.getLogger("elo cron")
+player_logger = logging.getLogger("player cron")
 
 sql = None
 

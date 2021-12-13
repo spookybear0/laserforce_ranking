@@ -1,7 +1,11 @@
 from typing import List, Tuple, Union
 import operator
 from objects import Player, Role
-from logs import elo_logger # type: ignore
+import logging
+
+logger = logging.getLogger("general")
+elo_logger = logging.getLogger("elo cron")
+player_logger = logging.getLogger("player cron")
 
 def get_team_elo(team):
     elo_sum = 0
