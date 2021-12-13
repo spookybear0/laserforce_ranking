@@ -1,5 +1,6 @@
 from typing import List, Tuple, Union
 import operator
+from helpers import get_average_score
 from objects import Player, Role
 
 def get_team_elo(team):
@@ -19,15 +20,6 @@ def get_win_chance(team1, team2):
     expected1 = round(elo1 / (elo1 + elo2))
     expected2 = round(elo2 / (elo1 + elo2))
     return (expected1, expected2)
-
-# elo split
-# (remember to convert to int after)
-#
-# scout: expected: 4500, *2.2
-# heavy: 7000, *1.42
-# commander: expected: 10000, *1
-# ammo: expected: 2500, *3
-# medic: expected: 1500, *6.66
 
 def update_elo(team1, team2, winner: int, k: int=512):
     # k value = intensity on elo on each game higher = more elo won/lost each game
@@ -62,20 +54,8 @@ def update_elo(team1, team2, winner: int, k: int=512):
             score = p.game_player.score
             role = p.game_player.role
             
-            # prepare to even out score
-            multiplier = 1
-            
-            # keep score values similar and buff worse roles to commanders level
-            if role == Role.SCOUT:
-                multiplier = 2.2
-            elif role == Role.HEAVY:
-                multiplier = 1.42
-            elif role == Role.COMMANDER:
-                multiplier = 1
-            elif role == Role.AMMO:
-                multiplier = 3
-            elif role == Role.MEDIC:
-                multiplier = 6.66
+            # keep score values similar and buff worse roles to commanders level (aka mvp points)
+            multiplier = get_average_score(Role.COMMANDER) / get_average_score(role)
             
             if score < 0: # negatives will mess with the multiplier so just set score to 0 if its an negative value
                 score = 20 # to avoid division by zero

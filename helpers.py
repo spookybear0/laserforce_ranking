@@ -284,9 +284,11 @@ def remove_values_from_list(the_list, val):
 #        weighted += int(score * 0.95**i)
 #    return weighted # only top 10 weighted
 
-# deprecated
-async def get_average_score(role: Role, player_id: str) -> int: # the world (everyone else's)
-    q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
+async def get_average_score(role: Role, player_id: str=None) -> int: # the world
+    if player_id:
+        q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
+    else:
+        q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s", (role.value))
     q = remove_values_from_list(format_sql(q), 0)
     try:
         ret = average(q)
