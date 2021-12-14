@@ -11,6 +11,11 @@ logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
 player_logger = logging.getLogger("player cron")
 
+# default
+logger.setLevel(logging.DEBUG)
+elo_logger.setLevel(logging.DEBUG)
+player_logger.setLevel(logging.DEBUG)
+
 handler = logging.FileHandler("general.log", mode="a")
 handler.setFormatter(fmt)
 handler.setLevel(logging.DEBUG)
