@@ -90,7 +90,6 @@ async def recalculate_elo():
         except IndexError:
             in_a_row += 1
             if in_a_row >= 100:
-                print("Done recalculating")
                 break
             i += 1
             continue
