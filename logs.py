@@ -33,7 +33,7 @@ elo_logger.addHandler(handler)
 
 handler = logging.StreamHandler()
 handler.setFormatter(fmt)
-handler.setLevel(logging.WARNING)
+handler.setLevel(logging.ERROR)
 player_logger.addHandler(handler)
     
 def get_log(log: str):
