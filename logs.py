@@ -11,12 +11,12 @@ def log_hook():
     f2 = open("elo_cron.log", "w+")
     f3 = open("player_cron.log", "w+")
     
-    if sum(1 for line in f1) > 30:
-        f1.write("")
-    if sum(1 for line in f2) > 30:
-        f2.write("")
-    if sum(1 for line in f3) > 30:
-        f3.write("")
+    if sum(1 for line in f1) > 30: pass
+        #f1.write("")
+    if sum(1 for line in f2) > 30: pass
+        #f2.write("")
+    if sum(1 for line in f3) > 30: pass
+        #f3.write("")
 
 fmt = logging.Formatter("%(name)s :: %(asctime)s - %(levelname)s: %(message)s")
 

@@ -77,11 +77,11 @@
             <h2 style="text-align: center;">Logs</h2>
             <h4 style="text-align: center;">Player Cron</h4>
             <div class="userlist" id="player">
-                <p id="player_log"></p>
+                
             </div>
             <h4 style="text-align: center;">Elo Cron</h4>
             <div class="userlist" id="elo">
-                <p id="elo_log"></p>
+                
             </div>
         </div>
     </div>
@@ -89,19 +89,33 @@
 
 <script>
     $(document).ready(function(){
+      var prev_text = "";
+      var prev_text_2 = "";
       var xhr = new XMLHttpRequest();
-    function player_cron() {
+      function player_cron() {
         xhr.open("GET", "/admin/cron/player_stream", false);
-            xhr.send();
-            var log = document.getElementById("player_log");
-            log.innerText = xhr.responseText
-        }
-    function elo_cron() {
+          xhr.send();
+          if (prev_text != xhr.responseText) {
+              var p = document.createElement("p");
+              var node = document.createTextNode(xhr.responseText);
+              var player = document.getElementById("player");
+              p.appendChild(node)
+              player.appendChild(p)
+              prev_text = xhr.responseText
+          }
+      }
+      function elo_cron() {
         xhr.open("GET", "/admin/cron/elo_stream", false);
-            xhr.send();
-            var log = document.getElementById("elo_log");
-            log.innerText = xhr.responseText
-        }
+          xhr.send();
+          if (prev_text_2 != xhr.responseText) {
+              var p = document.createElement("p");
+              var node = document.createTextNode(xhr.responseText);
+              var elo = document.getElementById("elo");
+              p.appendChild(node)
+              elo.appendChild(p)
+              prev_text_2 = xhr.responseText
+          }
+      }
       setInterval(function() {
         player_cron()
         elo_cron()
