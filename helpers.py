@@ -8,10 +8,15 @@ import laserforce # type: ignore
 import pymysql
 import asyncio
 from elo import get_win_chance, update_elo
+from logs import hook, log_hook
 
 logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
 player_logger = logging.getLogger("player cron")
+
+logger._log = hook(log_hook, logger._log)
+elo_logger._log = hook(log_hook, elo_logger._log)
+elo_logger._log = hook(log_hook, elo_logger._log)
 
 sql = None
 
@@ -72,19 +77,19 @@ async def get_games_played(player_id: str):
     return len(q)
 
 async def recalculate_elo():
-    elo_logger.info("Recalculating elo")
+    await elo_logger.info("Recalculating elo")
     base_elo = 1200
     
     # reset elo
-    elo_logger.debug(f"Resetting base elo ({base_elo})")
+    await elo_logger.debug(f"Resetting base elo ({base_elo})")
     await sql.execute("UPDATE `players` SET `elo` = %s", (base_elo,))
-    elo_logger.debug(f"Reset to {base_elo}")
+    await elo_logger.debug(f"Reset to {base_elo}")
     
     in_a_row = 0
     i = 1
     while True:
         try:
-            elo_logger.debug(f"Fetching game with id {i}")
+            await elo_logger.debug(f"Fetching game with id {i}")
             game = await fetch_game(i)
         except IndexError:
             in_a_row += 1
@@ -92,7 +97,7 @@ async def recalculate_elo():
                 break
             i += 1
             continue
-        elo_logger.debug(f"Fetched game with id {i}")
+        await elo_logger.debug(f"Fetched game with id {i}")
         
         in_a_row = 0
         
@@ -103,19 +108,19 @@ async def recalculate_elo():
         else: # is green
             winner_int = 1
         
-        elo_logger.debug(f"Updating elo for game id {i}")
+        await elo_logger.debug(f"Updating elo for game id {i}")
         game.red, game.green = await update_elo(game.red, game.green, winner_int, k) # update elo
         game.players = [*game.red, *game.green]
-        elo_logger.debug(f"Done updating for game id {i}")
+        await elo_logger.debug(f"Done updating for game id {i}")
         
-        elo_logger.debug(f"Setting all players elo to updated value for game id {i}")
+        await elo_logger.debug(f"Setting all players elo to updated value for game id {i}")
         for player in game.players:
             player.game_id = game.id
         
             await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
         
         i += 1
-    elo_logger.info("Done recalculating elo")
+    await elo_logger.info("Done recalculating elo")
         
 # deprecated
 async def legacy_ranking_cron():
@@ -175,19 +180,19 @@ async def player_cron():
     client = laserforce.Client()
 
     for i in range(10000):
-        player_logger.debug(f"Attemping to database player: 4-43-{i}")
+        await elo_logger.debug(f"Attemping to database player: 4-43-{i}")
         try:
             player = client.get_player(f"4-43-{i}")
         except LookupError: # player does not exist
-            player_logger.warning(f"Player: 4-43-{i} does not exist, skipping")
+            await elo_logger.warning(f"Player: 4-43-{i} does not exist, skipping")
             continue
         
         try:
             await database_player(f"4-43-{i}", player.codename)
         except pymysql.InternalError:
-            player_logger.exception(f"Unable to database 4-43-{i}, {player.codename}")
+            await elo_logger.exception(f"Unable to database 4-43-{i}, {player.codename}")
             continue
-        player_logger.debug(f"Databased player: 4-43-{i}, {player.codename}")
+        await elo_logger.debug(f"Databased player: 4-43-{i}, {player.codename}")
 
 async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
@@ -217,10 +222,10 @@ async def database_player(player_id: str, codename: str) -> None:
             pass
 
 async def log_game(game: Game) -> None:
-    elo_logger.info("Inserting game")
+    await elo_logger.info("Inserting game")
     await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s);""", (game.winner))
-    elo_logger.debug("Inserted game")
+    await elo_logger.debug("Inserted game")
     
     last_row = await sql.fetchone("SELECT LAST_INSERT_ID();")
     last_row = last_row[0]
@@ -234,12 +239,12 @@ async def log_game(game: Game) -> None:
     else: # is green
         winner_int = 1
     
-    elo_logger.debug("Updating players elo for game")
+    await elo_logger.debug("Updating players elo for game")
     game.red, game.green = await update_elo(game.red, game.green, winner_int, k) # update elo
     game.players = [*game.red, *game.green]
-    elo_logger.debug("Done updating elo")
+    await elo_logger.debug("Done updating elo")
     
-    elo_logger.debug("Setting elo in mysql")
+    await elo_logger.debug("Setting elo in mysql")
     for player in game.players:
         player.game_player.game_id = last_row
         
@@ -247,7 +252,7 @@ async def log_game(game: Game) -> None:
                             VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_player.game_id, player.game_player.team.value, player.game_player.role.value, player.game_player.score))
         
         await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
-    elo_logger.info("Done logging game")
+    await elo_logger.info("Done logging game")
     
 async def fetch_game_players(game_id: int) -> List[GamePlayer]:
     q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s", (game_id))

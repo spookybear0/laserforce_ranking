@@ -1,9 +1,20 @@
 import logging
+import asyncio
 
 # reset
 open("general.log", "w")
 open("elo_cron.log", "w")
 open("player_cron.log", "w")
+
+async def hook(hookfunc, oldfunc):
+    async def hooked(*args, **kwargs):
+        ret = oldfunc(*args, **kwargs)
+        await hookfunc()
+        return ret
+    return hooked
+
+async def log_hook():
+    await asyncio.sleep(1)
 
 fmt = logging.Formatter("%(name)s :: %(asctime)s - %(levelname)s: %(message)s")
 

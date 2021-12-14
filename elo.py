@@ -2,10 +2,15 @@ from typing import List, Tuple, Union
 import operator
 from objects import Player, Role
 import logging
+from logs import hook, log_hook
 
 logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
 player_logger = logging.getLogger("player cron")
+
+logger._log = hook(log_hook, logger._log)
+elo_logger._log = hook(log_hook, elo_logger._log)
+player_logger._log = hook(log_hook, player_logger._log)
 
 def get_team_elo(team):
     elo_sum = 0
@@ -30,11 +35,11 @@ async def update_elo(team1, team2, winner: int, k: int=512):
     # k value = intensity on elo on each game higher = more elo won/lost each game
     
     # get average elo of team
-    elo_logger.debug("Getting average elo of team")
+    await elo_logger.debug("Getting average elo of team")
     elo1 = get_team_elo(team1)
     elo2 = get_team_elo(team2)
 
-    elo_logger.debug("Getting expected win chance of teams")
+    await elo_logger.debug("Getting expected win chance of teams")
     expected1 = elo1 / (elo1 + elo2)
     expected2 = elo2 / (elo1 + elo2)
     
@@ -46,15 +51,15 @@ async def update_elo(team1, team2, winner: int, k: int=512):
         score1 = 0
         score2 = 1
     
-    elo_logger.debug("Using elo formula to see the change in elo for both teams")
+    await elo_logger.debug("Using elo formula to see the change in elo for both teams")
     # change in elo
     change1 = k * (score1 - expected1)
     change2 = k * (score2 - expected2)
-    elo_logger.debug(f"Team 1: {change1} Team 2: {change2}")
+    await elo_logger.debug(f"Team 1: {change1} Team 2: {change2}")
     
     # split elo along each player depending on role and performance
     
-    elo_logger.debug("Splitting elo between players based on performance and role")
+    await elo_logger.debug("Splitting elo between players based on performance and role")
     async def update_team_elo(team, change, team_value: int):
         total_adj_score = 0
         team_elo = 0
@@ -88,7 +93,7 @@ async def update_elo(team1, team2, winner: int, k: int=512):
                 # and adjust change with how good the player actually is compared to team
                 elo = change * (adj_score / total_adj_score) + (change * (0.5-(p.elo / team_elo)))
                 p.elo += elo
-                elo_logger.debug(f"{p.codename} won and elo was changed by {elo}")
+                await elo_logger.debug(f"{p.codename} won and elo was changed by {elo}")
             else: # team lost
                 # 1-% contributed to team = adjusted for loss instead of win
                 # and adjust change with how good the player actually is compared to team
@@ -96,12 +101,12 @@ async def update_elo(team1, team2, winner: int, k: int=512):
                 if elo < change/2:
                     elo = change/2
                 p.elo += elo
-                elo_logger.debug(f"{p.codename} lost and elo was changed by {elo}")
+                await elo_logger.debug(f"{p.codename} lost and elo was changed by {elo}")
             p.elo = round(p.elo)
 
-    elo_logger.debug(f"Updating team 1's elo")
+    await elo_logger.debug(f"Updating team 1's elo")
     await update_team_elo(team1, change1, 0)
-    elo_logger.debug(f"Updating team 2's elo")
+    await elo_logger.debug(f"Updating team 2's elo")
     await update_team_elo(team2, change2, 1)
     
     return (team1, team2)
