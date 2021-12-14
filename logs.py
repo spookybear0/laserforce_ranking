@@ -1,10 +1,32 @@
 import logging
 
+def hook(hookfunc, oldfunc):
+    def hooked(*args, **kwargs):
+        hookfunc()
+        return oldfunc(*args, **kwargs)
+    return hooked
+
+def log_hook():
+    f1 = open("general.log", "w+")
+    f2 = open("elo_cron.log", "w+")
+    f3 = open("player_cron.log", "w+")
+    
+    if sum(1 for line in open(f1)) > 30:
+        f1.write("")
+    if sum(1 for line in open(f2)) > 30:
+        f2.write("")
+    if sum(1 for line in open(f3)) > 30:
+        f3.write("")
+
 fmt = logging.Formatter("%(name)s :: %(asctime)s - %(levelname)s: %(message)s")
 
 logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
 player_logger = logging.getLogger("player cron")
+
+logger._log = hook(log_hook, logger._log)
+elo_logger._log = hook(log_hook, elo_logger._log)
+player_logger._log = hook(log_hook, player_logger._log)
 
 handler = logging.FileHandler("general.log", mode="a")
 handler.setFormatter(fmt)
