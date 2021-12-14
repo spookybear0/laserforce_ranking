@@ -6,7 +6,7 @@ open("general.log", "w")
 open("elo_cron.log", "w")
 open("player_cron.log", "w")
 
-async def hook(hookfunc, oldfunc):
+def hook(hookfunc, oldfunc):
     async def hooked(*args, **kwargs):
         ret = oldfunc(*args, **kwargs)
         await hookfunc()
