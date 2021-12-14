@@ -48,4 +48,8 @@ player_logger.addHandler(handler)
     
 def get_log(log: str):
     with open(f"{log}.log", "r") as f:
-        return f.readlines()[-1]
+        try:
+            last_line = f.readlines()[-1]
+        except IndexError:
+            return ""
+        return last_line

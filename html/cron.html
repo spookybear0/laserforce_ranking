@@ -95,7 +95,7 @@
       function player_cron() {
         xhr.open("GET", "/admin/cron/player_stream", false);
           xhr.send();
-          if (prev_text != xhr.responseText) {
+          if (prev_text != xhr.responseText && xhr.responseText != "") {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
               var player = document.getElementById("player");
@@ -107,7 +107,7 @@
       function elo_cron() {
         xhr.open("GET", "/admin/cron/elo_stream", false);
           xhr.send();
-          if (prev_text_2 != xhr.responseText) {
+          if (prev_text_2 != xhr.responseText && xhr.responseText != "" && !xhr.responseText.startsWith("<!DOCTYPE html>")) {
               var p = document.createElement("p");
               var node = document.createTextNode(xhr.responseText);
               var elo = document.getElementById("elo");
