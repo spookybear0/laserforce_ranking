@@ -16,6 +16,6 @@ async def player(r: web.Request):
     elif codename:
         player = await fetch_player_by_name(codename)
     else:
-        web.HTTPBadRequest()
+        return web.HTTPBadRequest()
 
     return web.json_response(player.to_dict())
