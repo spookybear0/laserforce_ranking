@@ -77,11 +77,11 @@
             <h2 style="text-align: center;">Logs</h2>
             <h4 style="text-align: center;">Player Cron</h4>
             <div class="userlist" id="player">
-                
+                <p class="player_log"></p>
             </div>
             <h4 style="text-align: center;">Elo Cron</h4>
             <div class="userlist" id="elo">
-                
+                <p class="elo_log"></p>
             </div>
         </div>
     </div>
@@ -89,36 +89,22 @@
 
 <script>
     $(document).ready(function(){
-      var prev_text = "";
-      var prev_text_2 = "";
       var xhr = new XMLHttpRequest();
-      function player_cron() {
+    function player_cron() {
         xhr.open("GET", "/admin/cron/player_stream", false);
-          xhr.send();
-          if (prev_text != xhr.responseText) {
-              var p = document.createElement("p");
-              var node = document.createTextNode(xhr.responseText);
-              var player = document.getElementById("player");
-              p.appendChild(node)
-              player.appendChild(p)
-              prev_text = xhr.responseText
-          }
-      }
-      function ranking_cron() {
+            xhr.send();
+            var log = document.getElementById("player_log");
+            log.innerText = xhr.responseText
+        }
+    function elo_cron() {
         xhr.open("GET", "/admin/cron/elo_stream", false);
-          xhr.send();
-          if (prev_text_2 != xhr.responseText) {
-              var p = document.createElement("p");
-              var node = document.createTextNode(xhr.responseText);
-              var rank = document.getElementById("elo");
-              p.appendChild(node)
-              rank.appendChild(p)
-              prev_text_2 = xhr.responseText
-          }
-      }
+            xhr.send();
+            var log = document.getElementById("elo_log");
+            log.innerText = xhr.responseText
+        }
       setInterval(function() {
         player_cron()
-        ranking_cron()
-      }, 10);
+        elo_cron()
+      }, 100);
     });
   </script>
