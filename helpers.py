@@ -8,15 +8,10 @@ import laserforce # type: ignore
 import pymysql
 import asyncio
 from elo import get_win_chance, update_elo
-from logs import hook, log_hook
 
 logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
 player_logger = logging.getLogger("player cron")
-
-logger._log = hook(log_hook, logger._log)
-elo_logger._log = hook(log_hook, elo_logger._log)
-player_logger._log = hook(log_hook, player_logger._log)
 
 sql = None
 
@@ -77,15 +72,19 @@ async def get_games_played(player_id: str):
     return len(q)
 
 async def recalculate_elo():
+    elo_logger.info("Recalculating elo")
     base_elo = 1200
     
     # reset elo
+    elo_logger.debug(f"Resetting base elo ({base_elo})")
     await sql.execute("UPDATE `players` SET `elo` = %s", (base_elo,))
+    elo_logger.debug(f"Reset to {base_elo}")
     
     in_a_row = 0
     i = 1
     while True:
         try:
+            elo_logger.debug(f"Fetching game with id {i}")
             game = await fetch_game(i)
         except IndexError:
             in_a_row += 1
@@ -93,6 +92,7 @@ async def recalculate_elo():
                 break
             i += 1
             continue
+        elo_logger.debug(f"Fetched game with id {i}")
         
         in_a_row = 0
         
@@ -103,15 +103,19 @@ async def recalculate_elo():
         else: # is green
             winner_int = 1
         
+        elo_logger.debug(f"Updating elo for game id {i}")
         game.red, game.green = await update_elo(game.red, game.green, winner_int, k) # update elo
         game.players = [*game.red, *game.green]
+        elo_logger.debug(f"Done updating for game id {i}")
         
+        elo_logger.debug(f"Setting all players elo to updated value for game id {i}")
         for player in game.players:
             player.game_id = game.id
         
             await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
         
         i += 1
+    elo_logger.info("Done recalculating elo")
         
 # deprecated
 async def legacy_ranking_cron():

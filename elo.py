@@ -2,15 +2,10 @@ from typing import List, Tuple, Union
 import operator
 from objects import Player, Role
 import logging
-from logs import hook, log_hook
 
 logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
 player_logger = logging.getLogger("player cron")
-
-logger._log = hook(log_hook, logger._log)
-elo_logger._log = hook(log_hook, elo_logger._log)
-player_logger._log = hook(log_hook, player_logger._log)
 
 def get_team_elo(team):
     elo_sum = 0
