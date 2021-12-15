@@ -98,7 +98,7 @@ async def update_elo(team1, team2, winner: int, k: int=512):
                 if elo < change/2:
                     elo = change/2
                 p.elo += elo
-                elo_logger.debug(f"{p.codename} lost and elo was changed by {elo}")
+                elo_logger.debug(f"{p.codename} lost and elo was changed by {elo}, score: {p.game_player.score}, adj_score: {adj_score}")
             p.elo = round(p.elo)
 
     elo_logger.debug(f"Updating team 1's elo")
