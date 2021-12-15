@@ -50,11 +50,11 @@ async def update_elo(team1, team2, winner: int, k: int=512):
     # change in elo
     change1 = k * (score1 - expected1)
     change2 = k * (score2 - expected2)
-    elo_logger.debug(f"Team 1: {change1} Team 2: {change2}")
+    elo_logger.debug(f"Team 1: change: {change1} Team 2: change: {change2}")
     
     # split elo along each player depending on role and performance
     
-    elo_logger.debug("Splitting elo between players based on performance and role")
+    elo_logger.debug("Splitting elo")
     async def update_team_elo(team, change, team_value: int):
         total_adj_score = 0
         team_elo = 0
@@ -78,6 +78,8 @@ async def update_elo(team1, team2, winner: int, k: int=512):
             
             team_elo += p.elo # get team total elo for elo performance calculations
         
+        elo_logger.debug(f"total_adj_score: {total_adj_score}")
+        
         for p in team: # second loop to update elo
             
             # use adj score to determine how much elo each player gets by seeing how much they contributed (adjusted)
@@ -88,7 +90,7 @@ async def update_elo(team1, team2, winner: int, k: int=512):
                 # and adjust change with how good the player actually is compared to team
                 elo = change * (adj_score / total_adj_score)
                 p.elo += elo
-                elo_logger.debug(f"{p.codename} won and elo was changed by {elo}")
+                elo_logger.debug(f"{p.codename} won and elo was changed by +{elo}, score: {p.game_player.score}, adj_score: {adj_score}")
             else: # team lost
                 # 1-% contributed to team = adjusted for loss instead of win
                 # and adjust change with how good the player actually is compared to team
