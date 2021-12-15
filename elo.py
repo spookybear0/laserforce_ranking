@@ -86,17 +86,13 @@ async def update_elo(team1, team2, winner: int, k: int=512):
             if team_value == winner: # team won
                 # how much contributed to team
                 # and adjust change with how good the player actually is compared to team
-                score_elo = change * (adj_score / total_adj_score)
-                elo_elo = (change * (1-(p.elo / (team_elo / len(team)))))/3
-                elo = score_elo + elo_elo
+                elo = change * (adj_score / total_adj_score)
                 p.elo += elo
                 elo_logger.debug(f"{p.codename} won and elo was changed by {elo}")
             else: # team lost
                 # 1-% contributed to team = adjusted for loss instead of win
                 # and adjust change with how good the player actually is compared to team
-                score_elo = change * (1-(adj_score / total_adj_score))
-                elo_elo = (change * (p.elo / (team_elo / len(team))))/3
-                elo = score_elo + elo_elo
+                elo = change * (1-(adj_score / total_adj_score))
                 if elo < change/2:
                     elo = change/2
                 p.elo += elo
