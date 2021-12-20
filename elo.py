@@ -94,7 +94,7 @@ async def update_elo(team1, team2, winner: int, k: int=512):
             else: # team lost
                 # 1-% contributed to team = adjusted for loss instead of win
                 # and adjust change with how good the player actually is compared to team
-                elo = (change * (1-(adj_score / total_adj_score)))/3 + (change * ((p.elo / team_elo)))
+                elo = ((change * (1-(adj_score / total_adj_score))) + (change * ((p.elo / team_elo))))/3
                 p.elo += elo
                 elo_logger.debug(f"{p.codename} lost and elo was changed by {elo}, score: {p.game_player.score}, adj_score: {adj_score}")
             p.elo = round(p.elo)
