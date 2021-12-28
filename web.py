@@ -1,7 +1,8 @@
 from objects import Role, Game, GamePlayer, Team
 from glob import routes
 from logs import get_log
-from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game, init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players # type: ignore
+from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game,\
+                    init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex # type: ignore
 from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
 from aiohttp import web
 from async_cron.job import CronJob # type: ignore
@@ -200,6 +201,22 @@ async def admin_cron_player_stream_get(r: web.Request):
 @routes.get("/admin/cron/elo_stream")
 async def admin_cron_rank_stream_get(r: web.Request):
     return web.Response(text=get_log("elo_cron"), content_type="text/plain")
+
+@routes.get("/util/rfid")
+async def rfid_get(r: web.Request):
+    return await render_template(r, "rfid.html")
+
+@routes.post("/util/rfid")
+async def rfid_post(r: web.Request):
+    data = await r.post()
+    hex = data.get("hex")
+    decimal = data.get("decimal")
+    
+    if hex:
+        return web.Response(text=to_decimal(hex))
+    elif decimal:
+        return web.Response(text=to_hex(decimal))
+    return web.Response(text="You need to add data to the form")
 
 def start_cron():
     loop = asyncio.get_event_loop()

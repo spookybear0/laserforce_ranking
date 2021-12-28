@@ -33,6 +33,13 @@ def format_sql(to_format) -> List:
         final.append(i[0])
     return final
 
+# rfid
+def to_hex(tag: str):
+    return "0D00" + hex(int(tag)).strip("0x").upper()
+
+def to_decimal(tag: str):
+    return "000" + str(int(tag.strip("LF/").strip("0D00"), 16))
+
 async def get_top_100_by_role(role: Role, amount: int=100, start: int=0):
     q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount} OFFSET {start}")
     return list(q)
