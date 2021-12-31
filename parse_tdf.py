@@ -96,7 +96,7 @@ class SM5Stat:
     missiledTeam: int=None
 
 @dataclass
-class Game:
+class TDF_Game:
     # info
     file_version: float=None
     program_version: float=None
@@ -181,10 +181,10 @@ def sm5_stats(game, data):
     return game
 
 
-def parse_game(file_location: str):
+def parse_game(file_location: str) -> TDF_Game:
     file = open(file_location, "r", encoding="utf-16")
     
-    game = Game()
+    game = TDF_Game()
 
     count = 0
     while True: # c++-like parsing
@@ -213,9 +213,4 @@ def parse_game(file_location: str):
         
         game = cases[first_char](game, line) # get first char and use switch case to decide which function will decode it 
     
-    # pretty print class to file
-    open("parser_wip.txt", "w").write(str(game).replace("), ", ")\n    ").replace(", teams=[", "\nteams=[").replace("], ", "]\n").replace("=[", "=[\n    ").replace("]", "\n]").replace("'", '"'))
-    
     file.close()
-        
-parse_game("D:\\downloads\\4-2_20210713191932_-_Space_Marines_5_Tournament.tdf")

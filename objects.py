@@ -62,10 +62,20 @@ class Player:
 
 @dataclass_json
 @dataclass
-class Game:
+class SM5_Game:
     id: int
     winner: Team
     date_logged: str=""
     players=[]
     green=[]
+    red=[]
+    
+@dataclass_json
+@dataclass
+class Laserball_Game:
+    id: int
+    winner: Team
+    date_logged: str=""
+    players=[]
+    blue=[]
     red=[]

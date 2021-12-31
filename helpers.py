@@ -3,11 +3,13 @@ from types import CodeType
 import mysql # type: ignore
 from typing import List, Union, Tuple
 from config import config # type: ignore
-from objects import Player, Game, Role, RankMMR, Rank, GamePlayer, Team # type: ignore
+from objects import Player, SM5_Game, Role, RankMMR, Rank, GamePlayer, Team, Laserball_Game # type: ignore
 import laserforce # type: ignore
 import pymysql
 import asyncio
 from elo import get_win_chance, update_elo
+from parse_tdf import parse_game, TDF_Game
+import os
 
 logger = logging.getLogger("general")
 elo_logger = logging.getLogger("elo cron")
@@ -39,6 +41,10 @@ def to_hex(tag: str):
 
 def to_decimal(tag: str):
     return "000" + str(int(tag.strip("LF/").strip("0D00"), 16))
+
+async def parse_tdf_then_delete(file_location: str) -> TDF_Game:
+    game = parse_game(file_location)
+    os.remove(file_location)
 
 async def get_top_100_by_role(role: Role, amount: int=100, start: int=0):
     q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount} OFFSET {start}")
@@ -223,7 +229,7 @@ async def database_player(player_id: str, codename: str) -> None:
         except pymysql.ProgrammingError:
             pass
 
-async def log_game(game: Game) -> None:
+async def log_game(game: SM5_Game) -> None:
     elo_logger.info("Inserting game")
     await sql.execute("""INSERT INTO `games` (winner)
                         VALUES (%s);""", (game.winner))
@@ -294,9 +300,9 @@ async def fetch_game_players_team(game_id: int, team: Team) -> List[GamePlayer]:
         final.append(player)
     return final
     
-async def fetch_game(id: int) -> Game:
+async def fetch_game(id: int) -> SM5_Game:
     q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
-    game = Game(*q[0])
+    game = SM5_Game(*q[0])
     green = await fetch_game_players_team(game.id, Team.GREEN)
     red = await fetch_game_players_team(game.id, Team.RED)
     game.players = [*green, *red]

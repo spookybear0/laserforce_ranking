@@ -2,7 +2,8 @@ from objects import Role, Game, GamePlayer, Team
 from glob import routes
 from logs import get_log
 from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game,\
-                    init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex # type: ignore
+                    init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex,\
+                    database_tdf # type: ignore
 from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
 from aiohttp import web
 from async_cron.job import CronJob # type: ignore
@@ -33,6 +34,25 @@ msh.add_job(elo)
 async def render_template(r, template, *args, **kwargs) -> web.Response:
     text = templates.get_template(template).render(*args, **kwargs)
     return web.Response(text=text, content_type="text/html")
+
+@routes.get("/util/auto_upload_dl")
+async def auto_upload_dl(r: web.Request):
+    return web.FileResponse("./upload_scripts/upload.bat")
+
+@routes.post("/util/upload_tdf")
+async def auto_upload(r: web.Request):
+    data = await r.post()
+    type = data.get("type")
+    file = data["upload_file"]
+    
+    if type == "sm5":
+        open("./sm5_tdf/" + file.filename, "wb").write(file.file.read())
+        await database_tdf("./laserball_tdf/" + file.filename)
+    elif type == "laserball":
+        open("./laserball_tdf/" + file.filename, "wb").write(file.file.read())
+        await database_tdf("./laserball_tdf/" + file.filename)
+        
+    return web.HTTPOk()
 
 @routes.get("/top")
 async def top_get(r: web.Request):

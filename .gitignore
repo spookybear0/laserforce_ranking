@@ -114,3 +114,5 @@ dmypy.json
 .pyre/
 
 config.json
+sm5_tdf/*
+laserball_tdf/*
