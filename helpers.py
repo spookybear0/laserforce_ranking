@@ -42,10 +42,6 @@ def to_hex(tag: str):
 def to_decimal(tag: str):
     return "000" + str(int(tag.strip("LF/").strip("0D00"), 16))
 
-async def parse_tdf_then_delete(file_location: str) -> SM5_TDF_Game:
-    game = parse_sm5_game(file_location)
-    os.remove(file_location)
-
 async def get_top_100_by_role(role: Role, amount: int=100, start: int=0):
     q = await sql.fetchall(f"SELECT codename, player_id FROM players ORDER BY ranking_{role.value} DESC LIMIT {amount} OFFSET {start}")
     return list(q)

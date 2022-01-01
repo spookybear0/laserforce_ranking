@@ -2,13 +2,13 @@ from objects import Role, SM5_Game, GamePlayer, Laserball_Game, Team
 from glob import routes
 from logs import get_log
 from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_sm5_game,\
-                    init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex,\
-                    database_tdf # type: ignore
+                    init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex # type: ignore
 from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
 from aiohttp import web
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
 import multiprocessing as mp
+from parse_tdf import parse_sm5_game
 import asyncio
 import aiohttp_jinja2
 import jinja2
@@ -47,10 +47,10 @@ async def auto_upload(r: web.Request):
     
     if type == "sm5":
         open("./sm5_tdf/" + file.filename, "wb").write(file.file.read())
-        await database_tdf("./laserball_tdf/" + file.filename)
+        game = parse_sm5_game("./laserball_tdf/" + file.filename)
     elif type == "laserball":
         open("./laserball_tdf/" + file.filename, "wb").write(file.file.read())
-        await database_tdf("./laserball_tdf/" + file.filename)
+        game = parse_sm5_game("./laserball_tdf/" + file.filename)
         
     return web.HTTPOk()
 
