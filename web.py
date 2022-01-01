@@ -1,4 +1,4 @@
-from objects import Role, Game, GamePlayer, Team
+from objects import Role, SM5_Game, GamePlayer, Laserball_Game, Team
 from glob import routes
 from logs import get_log
 from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_sm5_game,\
@@ -163,7 +163,7 @@ async def log_game_post(r: web.Request):
     if not winner in ["green", "red"]:
         return web.Response(text="401: Error, invalid data! (no winner)")
     
-    game = Game(0, winner) # game_id is 0 becaue its undefined
+    game = SM5_Game(0, winner) # game_id is 0 becaue its undefined
     game.players = players
     game.green = green_players
     game.red = red_players
