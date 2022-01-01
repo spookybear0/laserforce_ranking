@@ -8,7 +8,7 @@ import laserforce # type: ignore
 import pymysql
 import asyncio
 from elo import get_win_chance, update_elo
-from parse_tdf import parse_game, TDF_Game
+from parse_tdf import parse_sm5_game, SM5_TDF_Game
 import os
 
 logger = logging.getLogger("general")
@@ -42,8 +42,8 @@ def to_hex(tag: str):
 def to_decimal(tag: str):
     return "000" + str(int(tag.strip("LF/").strip("0D00"), 16))
 
-async def parse_tdf_then_delete(file_location: str) -> TDF_Game:
-    game = parse_game(file_location)
+async def parse_tdf_then_delete(file_location: str) -> SM5_TDF_Game:
+    game = parse_sm5_game(file_location)
     os.remove(file_location)
 
 async def get_top_100_by_role(role: Role, amount: int=100, start: int=0):
@@ -59,12 +59,14 @@ async def get_total_players():
     return q[0]
 
 async def get_total_games():
-    q = await sql.fetchone("SELECT COUNT(*) FROM games")
-    return q[0]
+    q = await sql.fetchone("SELECT COUNT(*) FROM sm5_games")
+    q2 = await sql.fetchone("SELECT COUNT(*) FROM laserball_games")
+    return q[0] + q2[0]
 
 async def get_total_games_played():
-    q = await sql.fetchone("SELECT COUNT(*) FROM game_players")
-    return q[0]
+    q = await sql.fetchone("SELECT COUNT(*) FROM sm5_game_players")
+    q2 = await sql.fetchone("SELECT COUNT(*) FROM laserball_game_players")  
+    return q[0] + q2[0]
 
 async def get_mmr(player_id: str):
     q = await sql.fetchall("SELECT ranking_scout, ranking_heavy, ranking_commander, ranking_medic, ranking_ammo FROM `players` WHERE `player_id` = %s", (player_id))
@@ -80,9 +82,9 @@ async def get_mmr(player_id: str):
     return mmr
 
 async def get_games_played(player_id: str):
-    q = await sql.fetchall("SELECT * FROM `game_players` WHERE `player_id` = %s", (player_id))
-    q = format_sql(q)
-    return len(q)
+    q = await sql.fetchone("SELECT COUNT(*) FROM `sm5_game_players` WHERE `player_id` = %s", (player_id))
+    q2 = await sql.fetchone("SELECT COUNT(*) FROM `laserball_game_players` WHERE `player_id` = %s", (player_id))
+    return q[0] + q2[0]
 
 async def recalculate_elo():
     elo_logger.info("Recalculating elo")
@@ -98,7 +100,7 @@ async def recalculate_elo():
     while True:
         try:
             elo_logger.debug(f"Fetching game with id {i}")
-            game = await fetch_game(i)
+            game = await fetch_sm5_game(i)
         except IndexError:
             in_a_row += 1
             if in_a_row >= 100:
@@ -229,9 +231,9 @@ async def database_player(player_id: str, codename: str) -> None:
         except pymysql.ProgrammingError:
             pass
 
-async def log_game(game: SM5_Game) -> None:
+async def log_sm5_game(game: SM5_Game) -> None:
     elo_logger.info("Inserting game")
-    await sql.execute("""INSERT INTO `games` (winner)
+    await sql.execute("""INSERT INTO `sm5_games` (winner)
                         VALUES (%s);""", (game.winner))
     elo_logger.debug("Inserted game")
     
@@ -256,14 +258,14 @@ async def log_game(game: SM5_Game) -> None:
     for player in game.players:
         player.game_player.game_id = last_row
         
-        await sql.execute("""INSERT INTO `game_players` (player_id, game_id, team, role, score)
+        await sql.execute("""INSERT INTO `sm5_game_players` (player_id, game_id, team, role, score)
                             VALUES (%s, %s, %s, %s, %s)""", (player.player_id, player.game_player.game_id, player.game_player.team.value, player.game_player.role.value, player.game_player.score))
         
         await sql.execute("UPDATE `players` SET `elo` = %s WHERE `player_id` = %s", (player.elo, player.player_id))
     elo_logger.info("Done logging game")
     
-async def fetch_game_players(game_id: int) -> List[GamePlayer]:
-    q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s", (game_id))
+async def fetch_game_players(game_id: int, type="sm5") -> List[GamePlayer]:
+    q = await sql.fetchall(f"SELECT * FROM `{type}_game_players` WHERE `game_id` = %s", (game_id))
     final = []
 
     for game_player in q:
@@ -281,8 +283,8 @@ async def fetch_game_players(game_id: int) -> List[GamePlayer]:
         final.append(player)
     return final
 
-async def fetch_game_players_team(game_id: int, team: Team) -> List[GamePlayer]:
-    q = await sql.fetchall("SELECT * FROM `game_players` WHERE `game_id` = %s AND `team` = %s", (game_id, team.value))
+async def fetch_game_players_team(game_id: int, team: Team, type="sm5") -> List[GamePlayer]:
+    q = await sql.fetchall(f"SELECT * FROM `{type}_game_players` WHERE `game_id` = %s AND `team` = %s", (game_id, team.value))
     final = []
     
     for game_player in q:
@@ -300,11 +302,11 @@ async def fetch_game_players_team(game_id: int, team: Team) -> List[GamePlayer]:
         final.append(player)
     return final
     
-async def fetch_game(id: int) -> SM5_Game:
-    q = await sql.fetchall("SELECT * FROM `games` WHERE `id` = %s", (id))
+async def fetch_sm5_game(id: int) -> SM5_Game:
+    q = await sql.fetchall("SELECT * FROM `sm5_games` WHERE `id` = %s", (id))
     game = SM5_Game(*q[0])
-    green = await fetch_game_players_team(game.id, Team.GREEN)
-    red = await fetch_game_players_team(game.id, Team.RED)
+    green = await fetch_game_players_team(game.id, Team.GREEN, "sm5")
+    red = await fetch_game_players_team(game.id, Team.RED, "sm5")
     game.players = [*green, *red]
     game.green = green
     game.red = red
@@ -324,9 +326,9 @@ def remove_values_from_list(the_list, val):
 
 async def get_average_score(role: Role, player_id: str=None) -> int: # the world
     if player_id:
-        q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
+        q = await sql.fetchall(f"SELECT `score` FROM `sm5_game_players` WHERE `role` = %s AND NOT `player_id` = %s", (role.value, player_id))
     else:
-        q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s", (role.value))
+        q = await sql.fetchall(f"SELECT `score` FROM `sm5_game_players` WHERE `role` = %s", (role.value))
     q = remove_values_from_list(format_sql(q), 0)
     try:
         ret = average(q)
@@ -336,7 +338,7 @@ async def get_average_score(role: Role, player_id: str=None) -> int: # the world
 
 # deprecated
 async def get_my_average_score(role: Role, player_id: str): # my average score
-    q = await sql.fetchall(f"SELECT `score` FROM `game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
+    q = await sql.fetchall(f"SELECT `score` FROM `sm5_game_players` WHERE `role` = %s AND `player_id` = %s", (role.value, player_id))
     q = remove_values_from_list(format_sql(q), 0)
     try:
         ret = average(q)

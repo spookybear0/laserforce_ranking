@@ -96,7 +96,7 @@ class SM5Stat:
     missiledTeam: int=None
 
 @dataclass
-class TDF_Game:
+class SM5_TDF_Game:
     # info
     file_version: float=None
     program_version: float=None
@@ -181,10 +181,10 @@ def sm5_stats(game, data):
     return game
 
 
-def parse_game(file_location: str) -> TDF_Game:
+def parse_sm5_game(file_location: str) -> SM5_TDF_Game:
     file = open(file_location, "r", encoding="utf-16")
     
-    game = TDF_Game()
+    game = SM5_TDF_Game()
 
     count = 0
     while True: # c++-like parsing
