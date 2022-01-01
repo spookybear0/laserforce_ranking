@@ -1,7 +1,7 @@
 from objects import Role, Game, GamePlayer, Team
 from glob import routes
 from logs import get_log
-from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_game,\
+from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_sm5_game,\
                     init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex,\
                     database_tdf # type: ignore
 from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
@@ -169,7 +169,7 @@ async def log_game_post(r: web.Request):
     game.red = red_players
     
     try:
-        await log_game(game)
+        await log_sm5_game(game)
     except Exception as e:
         traceback.print_exc()
         return web.Response(text="500: Error, game was not logged!")
