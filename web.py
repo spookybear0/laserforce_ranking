@@ -1,9 +1,8 @@
-from objects import Role, SM5_Game, GamePlayer, Laserball_Game, Team
+from objects import Role, SM5_Game, SM5GamePlayer, Laserball_Game, LaserballGamePlayer, Team
 from glob import routes
 from logs import get_log
-from helpers import recalculate_elo, fetch_player, get_player, get_total_games, get_total_games_played, legacy_ranking_cron, log_sm5_game,\
-                    init_sql, player_cron, get_top_100, get_top_100_by_role, fetch_player_by_name, get_total_players, to_decimal, to_hex # type: ignore
-from elo import get_win_chance, matchmake_elo, matchmake_elo_from_elo
+from helpers import fetch_player, get_player, get_total_games, get_total_games_played, log_sm5_game,\
+                    init_sql, player_cron, get_top_100, fetch_player_by_name, get_total_players, to_decimal, to_hex # type: ignore
 from aiohttp import web
 from async_cron.job import CronJob # type: ignore
 from async_cron.schedule import Scheduler # type: ignore
@@ -24,12 +23,8 @@ templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("html"))
 app.router.add_static("/css/", path="./css/", name="css")
 
 msh = Scheduler()
-#ranking = CronJob(name="ranking").every(3).hour.go(legacy_ranking_cron)
-player = CronJob(name="player").every(6).hour.go(player_cron)
-elo = CronJob(name="elo").every().day.go(recalculate_elo)
-#msh.add_job(ranking)
-msh.add_job(player)
-msh.add_job(elo)
+#player = CronJob(name="player").every(6).hour.go(player_cron)
+#msh.add_job(player)
 
 async def render_template(r, template, *args, **kwargs) -> web.Response:
     text = templates.get_template(template).render(*args, **kwargs)
@@ -54,19 +49,13 @@ async def auto_upload(r: web.Request):
         
     return web.HTTPOk()
 
-@routes.get("/top")
-async def top_get(r: web.Request):
-    await init_sql()
-    scout = await get_top_100_by_role(Role.SCOUT)
-    heavy = await get_top_100_by_role(Role.HEAVY)
-    ammo = await get_top_100_by_role(Role.AMMO)
-    medic = await get_top_100_by_role(Role.MEDIC)
-    commander = await get_top_100_by_role(Role.COMMANDER)
-    return await render_template(r, "top.html", scout=scout, heavy=heavy, ammo=ammo, medic=medic, commander=commander)
+@routes.get("/log_sm5")
+async def log_sm5_game_get(r: web.Request):
+    return await render_template(r, "log_sm5.html")
 
-@routes.get("/log")
-async def log_game_get(r: web.Request):
-    return await render_template(r, "log.html")
+@routes.get("/log_laserball")
+async def log_sm5_game_get(r: web.Request):
+    return await render_template(r, "log_laserball.html")
 
 @routes.get("/admin/matchmake")
 async def matchmake_get(r: web.Request):
@@ -98,8 +87,8 @@ async def matchmake_post(r: web.Request):
     
     return web.Response(text=f"{match} {win_chance}")
 
-@routes.post("/log")
-async def log_game_post(r: web.Request):
+@routes.post("/log_sm5")
+async def log_sm5_game_post(r: web.Request):
     await init_sql()
     data = await r.post()
     
@@ -127,7 +116,7 @@ async def log_game_post(r: web.Request):
         except IndexError: # player doens't exist
             return web.Response(text=f"401: Error, invalid data! (codename, green, {player_name})")
         player_id = player.player_id
-        game = GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
+        game = SM5GamePlayer(player_id, 0, Team.RED, Role(player_role), int(player_score))
         red_game_players.append(game)
         player.game_player = game
         red_players.append(player)
@@ -144,7 +133,7 @@ async def log_game_post(r: web.Request):
         except IndexError: # player doens't exist
             return web.Response(text=f"401: Error, invalid data! (codename, red, {player_name})")
         player_id = player.player_id
-        game = GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
+        game = SM5GamePlayer(player_id, 0, Team.GREEN, Role(player_role), int(player_score))
         green_game_players.append(game)
         player.game_player = game
         green_players.append(player)

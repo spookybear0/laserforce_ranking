@@ -28,8 +28,9 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `sm5_games` (
   `id` int(11) NOT NULL,
-  `date_played` int(11) NOT NULL,
-  `winner` varchar(32) NOT NULL
+  `winner` varchar(32) NOT NULL,
+  `date_logged` int(11) NOT NULL,
+  `tdf` varchar(32) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -38,8 +39,9 @@ CREATE TABLE `sm5_games` (
 
 CREATE TABLE `laserball_games` (
   `id` int(11) NOT NULL,
-  `date_played` int(11) NOT NULL,
-  `winner` varchar(32) NOT NULL
+  `winner` varchar(32) NOT NULL,
+  `date_logged` int(11) NOT NULL,
+  `tdf` varchar(32) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -67,7 +69,6 @@ CREATE TABLE `laserball_game_players` (
   `assists` int(11) NOT NULL,
   `steals` int(11) NOT NULL,
   `clears` int(11) NOT NULL,
-  `passes` int(11) NOT NULL,
   `blocks` int(11) NOT NULL
 
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -81,13 +82,10 @@ CREATE TABLE `players` (
   `player_id` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
   `ipl_id` varchar(16) NOT NULL COLLATE utf8mb4_0900_ai_ci,
   `codename` varchar(32) NOT NULL UNIQUE COLLATE utf8mb4_0900_ai_ci,
-  `elo` int(11) DEFAULT 1200,
-  `rank` varchar(32) NOT NULL COLLATE utf8mb4_0900_ai_ci,
-  `ranking_scout` float(11) NOT NULL,
-  `ranking_heavy` float(11) NOT NULL,
-  `ranking_commander` float(11) NOT NULL,
-  `ranking_medic` float(11) NOT NULL,
-  `ranking_ammo` float(11) NOT NULL
+  `sm5_mu` float(11) DEFAULT 25,
+  `sm5_sigma` float(11) DEFAULT 8.333,
+  `laserball_mu` float(11) DEFAULT 25,
+  `laserball_sigma` float(11) DEFAULT 8.333,
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --

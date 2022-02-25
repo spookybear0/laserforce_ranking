@@ -13,6 +13,7 @@ class Role(Enum):
 class Team(Enum):
     RED = "red"
     GREEN = "green"
+    BLUE = "blue"
 
 class Rank(Enum):
     UNRANKED = "unranked"
@@ -36,13 +37,25 @@ class RankMMR(Enum):
 
 @dataclass_json
 @dataclass
-class GamePlayer:
+class SM5GamePlayer:
     player_id: int
     game_id: int
     team: Team
     role: Role
     score: int
     adj_score: int=None
+    
+@dataclass_json
+@dataclass
+class LaserballGamePlayer:
+    player_id: int
+    game_id: int
+    team: Team
+    goals: int
+    assists: int
+    steals: int
+    clears: int
+    blocks: int
 
 @dataclass_json  
 @dataclass
@@ -53,7 +66,11 @@ class Player:
     codename: str
     elo: int
     rank: str
-    game_player: GamePlayer=None
+    game_player: SM5GamePlayer=None
+    sm5_mu: float=25.0
+    sm5_sigma: float=8.333
+    laserball_mu: float=25.0
+    laserball_sigma: float=8.333
     ranking_scout: float=0.0
     ranking_heavy: float=0.0
     ranking_commander: float=0.0
@@ -65,7 +82,7 @@ class Player:
 class SM5_Game:
     id: int
     winner: Team
-    date_logged: str=""
+    date_logged: int
     players=[]
     green=[]
     red=[]
@@ -75,7 +92,7 @@ class SM5_Game:
 class Laserball_Game:
     id: int
     winner: Team
-    date_logged: str=""
+    date_logged: int
     players=[]
     blue=[]
     red=[]
