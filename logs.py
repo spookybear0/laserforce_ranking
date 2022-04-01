@@ -45,7 +45,8 @@ handler = logging.StreamHandler()
 handler.setFormatter(fmt)
 handler.setLevel(logging.ERROR)
 player_logger.addHandler(handler)
-    
+
+
 def get_log(log: str):
     with open(f"{log}.log", "r") as f:
         try:

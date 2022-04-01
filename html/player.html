@@ -102,13 +102,8 @@
                     <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Elo</span><span class="userlist-info-text">{{ player.elo }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Rank</span><span class="userlist-info-text">{{ player.rank }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Ranking Scout</span><span class="userlist-info-text">{{ player.ranking_scout }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Ranking Heavy</span><span class="userlist-info-text">{{ player.ranking_heavy }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Ranking Commander</span><span class="userlist-info-text">{{ player.ranking_commander }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Ranking Medic</span><span class="userlist-info-text">{{ player.ranking_medic }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Ranking Ammo</span><span class="userlist-info-text">{{ player.ranking_ammo }}</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">SM5 Rank</span><span class="userlist-info-text">{{ ordinal(player.sm5_rating) }}</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">Laserball Rank</span><span class="userlist-info-text">{{ ordinal(player.laserball_rating) }}</span></div>
                 </div>
             </div>
         </div>
