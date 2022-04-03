@@ -37,6 +37,7 @@ def get_win_chance(team1, team2, mode="sm5"):
     # predict
     return openskill.predict_win([team1, team2])
 
+
 def matchmake_elo(players, mode="sm5"):
     """
     This function essentially sorts players in descending
@@ -45,7 +46,7 @@ def matchmake_elo(players, mode="sm5"):
     """
 
     # get rating object
-    sorted(player, key=operator.attrgetter(f"{mode}_rating"), reverse=True)
+    players = sorted(players, key=operator.attrgetter(f"{mode}_rating"), reverse=True)
 
     team1 = []
     team2 = []
@@ -59,6 +60,6 @@ def matchmake_elo(players, mode="sm5"):
         except IndexError:  # odd number of players
             break
         players.pop(i)
-        i += 0
+        i += 1
 
     return (team1, team2)
