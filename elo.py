@@ -40,32 +40,6 @@ def get_win_chance(team1, team2, mode="sm5"):
     # predict
     return predict_win([team1, team2])
 
-
-def matchmake_elo_old(players, mode="sm5"):
-    """
-    This function essentially sorts players in descending
-    order than takes pairs starting from the best
-    and splitting the best up into seperate teams
-    """
-
-    # get rating object
-    players = sorted(players, key=operator.attrgetter(f"{mode}_rating"), reverse=True)
-
-    team1 = []
-    team2 = []
-
-    i = 0
-    while i < len(players):
-        team2.append(players[i])
-        players.pop(i)
-        try:
-            team1.append(players[i])
-        except IndexError:  # odd number of players
-            break
-        players.pop(i)
-
-    return (team1, team2)
-
 def matchmake_elo(players, mode="sm5"):
     # bruteforce sort
     shuffle(players)
