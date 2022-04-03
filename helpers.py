@@ -2,7 +2,7 @@ import logging
 import mysql  # type: ignore
 from typing import List, Union, Tuple
 from config import config  # type: ignore
-from objects import Player, SM5_Game, Role, RankMMR, Rank, SM5GamePlayer, LaserballGamePlayer, Team, Laserball_Game  # type: ignore
+from objects import Player, SM5_Game, Role, RankMMR, Rank, SM5GamePlayer, LaserballGamePlayer, Team, Laserball_Game, IterableRating  # type: ignore
 import laserforce  # type: ignore
 import pymysql
 from parse_tdf import parse_sm5_game, SM5_TDF_Game
@@ -102,8 +102,8 @@ async def fetch_player(id: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `id` = %s", (id))
     vals, sm5_rates, laserball_rates = (
         q[0][:4],
-        Rating(mu=q[0][4:][0], sigma=q[0][4:][1]),
-        Rating(mu=q[0][4:][0], sigma=q[0][4:][1]),
+        IterableRating(mu=q[0][4:][0], sigma=q[0][4:][1]),
+        IterableRating(mu=q[0][4:][0], sigma=q[0][4:][1]),
     )
     return Player(*vals, sm5_rates, laserball_rates)
 
@@ -114,8 +114,8 @@ async def get_player(player_id: str) -> Player:
     )
     vals, sm5_rates, laserball_rates = (
         q[0][:4],
-        Rating(mu=q[0][4:][0], sigma=q[0][4:][1]),
-        Rating(mu=q[0][4:][0], sigma=q[0][4:][1]),
+        IterableRating(mu=q[0][4:][0], sigma=q[0][4:][1]),
+        IterableRating(mu=q[0][4:][0], sigma=q[0][4:][1]),
     )
     return Player(*vals, sm5_rates, laserball_rates)
 
@@ -124,8 +124,8 @@ async def fetch_player_by_name(codename: int) -> Player:
     q = await sql.fetchall("SELECT * FROM `players` WHERE `codename` = %s", (codename))
     vals, sm5_rates, laserball_rates = (
         q[0][:4],
-        Rating(mu=q[0][4:][0], sigma=q[0][4:][1]),
-        Rating(mu=q[0][4:][0], sigma=q[0][4:][1]),
+        IterableRating(mu=q[0][4:][0], sigma=q[0][4:][1]),
+        IterableRating(mu=q[0][4:][0], sigma=q[0][4:][1]),
     )
     return Player(*vals, sm5_rates, laserball_rates)
 

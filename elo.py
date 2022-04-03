@@ -19,19 +19,15 @@ async def update_elo(red, green, winner):
     return (red, green)
 
 
-def matchmake_elo(players=None, players_elo=None):
+def matchmake_elo(players, mode="sm5"):
     """
     This function essentially sorts players in descending
     order than takes pairs starting from the best
     and splitting the best up into seperate teams
     """
 
-    if players:
-        players.sort(key=operator.attrgetter("elo"), reverse=True)
-    elif players_elo:
-        players_elo.sort(reverse=True)
-    else:
-        ValueError("Either players or elo must be specified")
+    # get rating object
+    sorted(player, key=operator.attrgetter(f"{mode}_rating"), reverse=True)
 
     team1 = []
     team2 = []

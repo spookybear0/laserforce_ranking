@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List
 from dataclasses_json import dataclass_json
-from openskill import Rating
+from openskill import Rating, ordinal
+from functools import total_ordering
 
 
 class Role(Enum):
@@ -64,6 +65,13 @@ class LaserballGamePlayer:
     clears: int
     blocks: int
 
+@total_ordering
+class IterableRating(Rating):
+    def ordinal(self):
+        return self.mu - 3 * self.sigma
+    
+    def __lt__(self, other):
+        return self.ordinal() < ordinal(other)
 
 @dataclass_json
 @dataclass
@@ -72,8 +80,8 @@ class Player:
     player_id: str
     ipl_id: str
     codename: str
-    sm5_rating: Rating
-    laserball_rating: Rating
+    sm5_rating: IterableRating
+    laserball_rating: IterableRating
     game_player: SM5GamePlayer = None
 
 
