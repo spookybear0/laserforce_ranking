@@ -22,6 +22,11 @@ from helpers import (
     to_decimal,
     to_hex,
 )  # type: ignore
+from elo import (
+    matchmake_elo,
+    get_win_chance,
+    attrgetter,
+)
 from aiohttp import web
 from async_cron.job import CronJob  # type: ignore
 from async_cron.schedule import Scheduler  # type: ignore
@@ -92,13 +97,13 @@ async def log_sm5_game_get(r: web.Request):
 async def matchmake_get(r: web.Request):
     return await render_template(r, "matchmake.html")
 
-
 @routes.post("/admin/matchmake")
 async def matchmake_post(r: web.Request):
     await init_sql()
     data = await r.post()
 
     players = []
+    mode = data.get("mode", "sm5")
 
     for i in range(1, 16 + 1):
         codename = data[f"player{i}"]
@@ -107,11 +112,21 @@ async def matchmake_post(r: web.Request):
         p = await fetch_player_by_name(codename)
         players.append(p)
 
-    match = matchmake_elo(players)
+    match = matchmake_elo(players, mode)
 
     win_chance = get_win_chance(*match)
+    
+    # format match
+    
+    def key(obj):
+        game = []
+        for i in range(len(obj)):
+            game.append(getattr(obj[i], "codename"))
+        return game
+    
+    match = attrgetter(list(match), key)
 
-    return web.Response(text=f"{match} {win_chance}")
+    return await render_template(r, "matchmake_results.html", team1=match[0], team2=match[1], win_chance=win_chance)
 
 
 @routes.post("/log_sm5")
