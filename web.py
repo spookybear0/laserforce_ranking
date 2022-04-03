@@ -95,6 +95,7 @@ async def matchmake_get(r: web.Request):
 
 @routes.post("/admin/matchmake")
 async def matchmake_post(r: web.Request):
+    await init_sql()
     data = await r.post()
 
     players = []
