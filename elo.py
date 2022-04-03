@@ -1,6 +1,6 @@
 from multiprocessing.sharedctypes import Value
 from typing import List, Tuple, Union
-from objects import Player, Role, Team
+from objects import Player, Role, Team, IterableRating
 import openskill
 import operator
 import logging
@@ -18,6 +18,24 @@ async def update_elo(red, green, winner):
 
     return (red, green)
 
+def attrgetter(obj, attr):
+    itr = obj.copy()
+    for i, j in enumerate(obj):
+        itr[i] = getattr(j, attr)
+    return itr
+
+
+def get_win_chance(team1, team2, mode="sm5"):
+    """
+    Gets win chance for two teams
+    """
+    
+    # get rating object for mode
+    team1 = attrgetter(team1, f"{mode}_rating")
+    team2 = attrgetter(team2, f"{mode}_rating")
+    
+    # predict
+    return openskill.predict_win([team1, team2])
 
 def matchmake_elo(players, mode="sm5"):
     """

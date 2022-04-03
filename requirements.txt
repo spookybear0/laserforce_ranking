@@ -1,3 +1,9 @@
 git+https://github.com/spookybear0/laserforce.py
 dataclasses-json
 openskill
+aiohttp
+aiomysql
+requests
+async_cron
+aiohttp_jinja2
+bcrypt

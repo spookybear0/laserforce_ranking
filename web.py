@@ -62,6 +62,9 @@ async def auto_upload(r: web.Request):
     data = await r.post()
     type = data.get("type")
     file = data["upload_file"]
+    
+    if not file:
+        return web.HTTPBadRequest("No file uploaded")
 
     if type == "sm5":
         open("./sm5_tdf/" + file.filename, "wb").write(file.file.read())
@@ -69,6 +72,8 @@ async def auto_upload(r: web.Request):
     elif type == "laserball":
         open("./laserball_tdf/" + file.filename, "wb").write(file.file.read())
         game = parse_sm5_game("./laserball_tdf/" + file.filename)
+    else:
+        return web.HTTPBadRequest("Unknown type")
 
     return web.HTTPOk()
 
@@ -98,18 +103,10 @@ async def matchmake_post(r: web.Request):
         codename = data[f"player{i}"]
         if codename == "":
             continue
-        try:
-            type = "player"
-            p = await fetch_player_by_name(codename)
-        except:
-            type = "elo"
-            p = int(codename)
+        p = await fetch_player_by_name(codename)
         players.append(p)
 
-    if type == "player":
-        match = matchmake_elo(players)
-    elif type == "elo":
-        match = matchmake_elo(elo=players)
+    match = matchmake_elo(players)
 
     win_chance = get_win_chance(*match)
 
