@@ -285,6 +285,8 @@ async def fetch_game_players_team(
             final.append(player)
     elif type == "laserball":
         for game_player in q:
+            nplayer = []
+            
             nplayer.append(game_player[0])
             nplayer.append(game_player[1])
             nplayer.append(Team(game_player[2]))

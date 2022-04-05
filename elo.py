@@ -1,7 +1,7 @@
 from multiprocessing.sharedctypes import Value
 from random import shuffle
 from typing import List, Tuple, Union
-from objects import Player, Role, Team, IterableRating
+from objects import Player, Role, SM5GamePlayer, Team, IterableRating
 from openskill import rate, ordinal, predict_win
 import logging
 
@@ -11,6 +11,9 @@ player_logger = logging.getLogger("player cron")
 
 
 async def update_elo(red, green, winner):
+    red = attrgetter(red, f"{mode}_rating")
+    green = attrgetter(green, f"{mode}_rating")
+    
     if winner == Team.RED:  # red won
         red, green = rate([red, green], ranks=[1, 2])
     else:  # green/blue won
