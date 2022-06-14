@@ -1,0 +1,4 @@
+<h1>Top 100</h1>
+{% for player in players %}
+<p>Codename: {{ player.codename }}, SM5: {{ player.sm5_rating|round(4) }}, Laserball: {{ player.laserball_rating|round(4) }}</p>
+{% endfor %}

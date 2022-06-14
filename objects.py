@@ -41,13 +41,21 @@ class Player:
     timestamp: datetime.datetime = datetime.datetime.now()
     game_player = None
     
+    @property
+    def sm5_rating(self):
+        return self.sm5_mu - 3 * self.sm5_sigma
+    
+    @property
+    def laserball_rating(self):
+        return self.laserball_mu - 3 * self.laserball_sigma
+    
     async def _set_lifetime_stats(self):
         data = await sql.fetchone("SELECT SUM(goals), SUM(assists), SUM(steals), SUM(clears), SUM(blocks) FROM laserball_game_players WHERE player_id = %s", (self.player_id,))
-        self.goals   = int(data[0])
-        self.assists = int(data[1])
-        self.steals  = int(data[2])
-        self.clears  = int(data[3])
-        self.blocks  = int(data[4])
+        self.goals   = int(data[0]) if data[0] else 0
+        self.assists = int(data[1]) if data[1] else 0
+        self.steals  = int(data[2]) if data[2] else 0
+        self.clears  = int(data[3]) if data[3] else 0
+        self.blocks  = int(data[4]) if data[4] else 0
     
     @classmethod
     async def from_id(cls, id: int):
@@ -57,8 +65,8 @@ class Player:
         return ret
 
     @classmethod
-    async def from_playerid(cls, name: str):
-        data = await sql.fetchone("SELECT * FROM players WHERE player_id = %s", (name,))
+    async def from_player_id(cls, player_id: str):
+        data = await sql.fetchone("SELECT * FROM players WHERE player_id = %s", (player_id,))
         ret = cls(*data)
         await ret._set_lifetime_stats()
         return ret

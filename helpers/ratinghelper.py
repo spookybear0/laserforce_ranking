@@ -1,5 +1,16 @@
-from objects import GameType, Team
+from objects import GameType, Team, LaserballGamePlayer
 import openskill
+
+def calculate_laserball_mvp_points(player: LaserballGamePlayer):
+    mvp_points = 0
+
+    mvp_points += player.goals   * 1
+    mvp_points += player.assists * 0.75
+    mvp_points += player.steals  * 0.5
+    mvp_points += player.clears  * 0.25 # clear implies a steal so the total gained is 0.75
+    mvp_points += player.blocks  * 0.3
+
+    return mvp_points
 
 # different than operator.attrgetter (legacy code)
 def attrgetter(obj, func):

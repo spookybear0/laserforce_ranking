@@ -25,7 +25,7 @@ def main():
     
     app.router.add_static("/assets/", path="./assets/", name="assets")
     router.add_all_routes(app)
-    web.run_app(app, host="localhost", port=8088, loop=loop)
+    web.run_app(app, host="localhost", port=8000, loop=loop)
     
 if __name__ == "__main__":
     main()
