@@ -116,3 +116,5 @@ dmypy.json
 config.json
 sm5_tdf/*
 laserball_tdf/*
+
+transfer.py
