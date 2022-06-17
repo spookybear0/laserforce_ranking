@@ -42,13 +42,21 @@ class Player:
     game_player = None
     
     @property
-    def sm5_rating(self):
+    def sm5_ordinal(self):
         return self.sm5_mu - 3 * self.sm5_sigma
     
     @property
-    def laserball_rating(self):
+    def laserball_ordinal(self):
         return self.laserball_mu - 3 * self.laserball_sigma
     
+    @property
+    def sm5_rating(self):
+        return openskill.Rating(self.sm5_mu, self.sm5_sigma)
+    
+    @property
+    def laserball_rating(self):
+        return openskill.Rating(self.laserball_mu, self.laserball_sigma)
+
     async def _set_lifetime_stats(self):
         data = await sql.fetchone("SELECT SUM(goals), SUM(assists), SUM(steals), SUM(clears), SUM(blocks) FROM laserball_game_players WHERE player_id = %s", (self.player_id,))
         self.goals   = int(data[0]) if data[0] else 0
