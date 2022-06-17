@@ -6,7 +6,7 @@ import asyncio
 from aiohttp import web
 from config import config
 from mysql import MySQLPool
-from shared import routes, app
+from shared import app
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 

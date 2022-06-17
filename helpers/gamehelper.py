@@ -2,6 +2,15 @@ from shared import sql
 from objects import Game, GameType
 from helpers import ratinghelper
 
+async def get_total_games_played():
+    q = await sql.fetchone("SELECT COUNT(*) FROM sm5_game_players")
+    q2 = await sql.fetchone("SELECT COUNT(*) FROM laserball_game_players")
+    return q[0] + q2[0]
+
+async def get_total_games():
+    q = await sql.fetchone("SELECT COUNT(*) FROM games")
+    return q[0]
+
 async def log_sm5_game(game: Game):
     await sql.execute("INSERT INTO `games` (winner, type) VALUES (%s, %s);", (game.winner, game.type.value))
     

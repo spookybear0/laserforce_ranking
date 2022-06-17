@@ -1,10 +1,25 @@
 from objects import Team, Role, Player, GameType, SM5GamePlayer, LaserballGamePlayer
 from shared import sql
 
-async def get_top_100(mode: GameType, amount: int = 100, start: int = 0):
+async def get_total_players():
+    q = await sql.fetchone("SELECT COUNT(*) FROM players")
+    return q[0]
+
+async def get_top(mode: GameType, amount: int = 100, start: int = 0):
     mode = mode.value
+
     q = await sql.fetchall(
-        f"SELECT player_id FROM players ORDER BY {mode}_mu - 3 * {mode}_sigma, player_id ASC LIMIT %s OFFSET %s",
+        f"SELECT player_id FROM players ORDER BY %s - 3 * %s, player_id ASC LIMIT %s OFFSET %s",
+        (mode + "_mu", mode + "_sigma", amount, start)
+    )
+    ret = []
+    for player_id in q:
+        ret.append(await Player.from_player_id(player_id))
+    return ret
+
+async def get_players(amount: int = 100, start: int = 0):
+    q = await sql.fetchall(
+        f"SELECT player_id FROM players ORDER BY player_id, player_id ASC LIMIT %s OFFSET %s",
         (amount, start)
     )
     ret = []
