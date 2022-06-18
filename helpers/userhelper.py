@@ -19,12 +19,12 @@ async def get_top(mode: GameType, amount: int = 100, start: int = 0):
 
 async def get_players(amount: int = 100, start: int = 0):
     q = await sql.fetchall(
-        f"SELECT player_id FROM players ORDER BY player_id, player_id ASC LIMIT %s OFFSET %s",
+        f"SELECT id FROM players ORDER BY id, id ASC LIMIT %s OFFSET %s",
         (amount, start)
     )
     ret = []
-    for player_id in q:
-        ret.append(await Player.from_player_id(player_id))
+    for id in q:
+        ret.append(await Player.from_id(id[0]))
     return ret
 
 async def get_data_from_form_sm5(players: list, game_players: list, data: dict, team: Team):

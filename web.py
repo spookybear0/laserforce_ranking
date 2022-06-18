@@ -8,7 +8,8 @@ from config import config
 from mysql import MySQLPool
 from shared import app
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+path = os.path.dirname(os.path.abspath(__file__))
+os.chdir(path)
 
 async def async_main():
     shared.sql = await MySQLPool.connect(config["db_host"], config["db_user"], config["db_password"], config["db_database"], config["db_port"])

@@ -74,6 +74,7 @@
         <div>
             <h2 style="text-align: center;">Matchmake</h2>
             <form class="modal-content animate" action="/admin/matchmake" method="post" style="text-align: center;">
+                <input type="text" placeholder="sm5" name="mode"><br><br><br><br>
                 <div class="container">
                     {% for i in range(16) %}
                     <input type="text" placeholder="Player Codename" name="player{{ i }}"><br><br>

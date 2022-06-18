@@ -67,7 +67,7 @@ class Player:
     
     @classmethod
     async def from_id(cls, id: int):
-        data = await sql.fetchall("SELECT * FROM players WHERE id = %s", (id,))
+        data = await sql.fetchone("SELECT * FROM players WHERE id = %s", (id,))
         if not data:
             raise ValueError("Player not found!")
         ret = cls(*data)
