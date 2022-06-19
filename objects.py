@@ -1,4 +1,5 @@
 from enum import Enum
+from laserforce import Player as IPLPlayer
 from dataclasses import dataclass
 from shared import sql
 import datetime
@@ -32,7 +33,6 @@ class Player:
     sm5_sigma: float
     laserball_mu: float
     laserball_sigma: float
-    games: int = 0
     goals: int = 0
     assists: int = 0
     steals: int = 0
@@ -56,6 +56,10 @@ class Player:
     @property
     def laserball_rating(self):
         return openskill.Rating(self.laserball_mu, self.laserball_sigma)
+
+    @property
+    def games(self) -> int:
+        return IPLPlayer.from_id(self.player_id).games
 
     async def _set_lifetime_stats(self):
         data = await sql.fetchone("SELECT SUM(goals), SUM(assists), SUM(steals), SUM(clears), SUM(blocks) FROM laserball_game_players WHERE player_id = %s", (self.player_id,))
