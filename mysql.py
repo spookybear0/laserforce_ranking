@@ -20,11 +20,42 @@ class MySQLPool:
     """
 
     def __init__(self):
-        """Creates the default values for the connector. Use the `conntect`
+        """Creates the default values for the connector. Use the `connect`
         classmethod instead."""
         self._pool: aiomysql.Pool = None
         self.last_row_id: int = 0
         self._loop: asyncio.AbstractEventLoop
+
+    @classmethod
+    async def connect_with_config(cls, loop: asyncio.AbstractEventLoop = None):
+        """Creates a connection to the MySQL server and establishes a pool.
+        Args:
+            config_name (str): The name of the configuration file to be used.
+            loop (AbstractEventLoop): The event loop that should be used
+                for the MySQL pool.
+        """
+        if not loop:
+            if os.name == "nt":
+                loop = asyncio.get_event_loop()
+            else:
+                import uvloop
+
+                loop = uvloop.new_event_loop()
+
+        # Create the object.
+        obj = cls()
+
+        # Connect to the MySQL server.
+        await obj.connect_local(
+            config["db_host"],
+            config["db_user"],
+            config["db_password"],
+            config["db_database"],
+            config["db_port"],
+            loop,
+        )
+
+        return obj
 
     @classmethod
     async def connect(

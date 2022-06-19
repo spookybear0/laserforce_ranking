@@ -7,4 +7,4 @@ from utils import render_template
 # shows top x
 @routes.get("/")
 async def index(request: web.Request):
-    return await render_template(request, "top.html", players=await userhelper.get_top(GameType.SM5, 20))
+    return await render_template(request, "top.html", players=await userhelper.get_top(GameType.SM5, 50))
