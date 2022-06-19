@@ -35,12 +35,12 @@ class MySQLPool:
                 for the MySQL pool.
         """
         if not loop:
-            if os.name == "nt":
-                loop = asyncio.get_event_loop()
-            else:
-                import uvloop
-
-                loop = uvloop.new_event_loop()
+            #if os.name == "nt":
+            loop = asyncio.get_event_loop()
+            #else:
+            #    import uvloop
+            #
+            #    loop = uvloop.new_event_loop()
 
         # Create the object.
         obj = cls()
