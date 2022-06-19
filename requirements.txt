@@ -1,4 +1,4 @@
-git+https://github.com/spookybear0/laserforce.py
+laserforce.py
 openskill
 aiohttp
 aiomysql

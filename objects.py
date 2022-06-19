@@ -69,7 +69,7 @@ class Player:
     async def from_id(cls, id: int):
         data = await sql.fetchone("SELECT * FROM players WHERE id = %s", (id,))
         if not data:
-            raise ValueError("Player not found!")
+            return None
         ret = cls(*data)
         await ret._set_lifetime_stats()
         return ret
@@ -78,7 +78,7 @@ class Player:
     async def from_player_id(cls, player_id: str):
         data = await sql.fetchone("SELECT * FROM players WHERE player_id = %s", (player_id,))
         if not data:
-            raise ValueError("Player not found!")
+            return None
         ret = cls(*data)
         await ret._set_lifetime_stats()
         return ret
@@ -87,7 +87,7 @@ class Player:
     async def from_name(cls, name: str):
         data = await sql.fetchone("SELECT * FROM players WHERE codename = %s", (name,))
         if not data:
-            raise ValueError("Player not found!")
+            return None
         ret = cls(*data)
         await ret._set_lifetime_stats()
         return ret

@@ -7,13 +7,15 @@ from objects import Player
 @routes.get("/admin/player/{id}")
 async def admin_player_get(request: web.Request):
     id = request.match_info["id"]
-    try:
-        player = await Player.from_player_id(id)
-    except ValueError:
-        try:
-            player = await Player.from_name(id)  # could be codename
-        except ValueError:
+
+    player = await Player.from_player_id(id)
+
+    if not player:
+        player = await Player.from_name(id)  # could be codename
+
+        if not player:
             raise web.HTTPNotFound(reason="Invalid ID")
+    
     return await render_template(request, "admin/player.html", player=player)
 
 @routes.post("/admin/player")
