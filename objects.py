@@ -32,7 +32,7 @@ class Player:
     sm5_sigma: float
     laserball_mu: float
     laserball_sigma: float
-    games: int
+    games: int = 0
     goals: int = 0
     assists: int = 0
     steals: int = 0
