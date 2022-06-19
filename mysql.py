@@ -35,12 +35,7 @@ class MySQLPool:
                 for the MySQL pool.
         """
         if not loop:
-            #if os.name == "nt":
             loop = asyncio.get_event_loop()
-            #else:
-            #    import uvloop
-            #
-            #    loop = uvloop.new_event_loop()
 
         # Create the object.
         obj = cls()
@@ -141,12 +136,7 @@ class MySQLPool:
             None if no results are found.
         """
         if not self._pool:
-            if os.name == "nt":
-                loop = asyncio.get_event_loop()
-            else:
-                import uvloop
-
-                loop = uvloop.new_event_loop()
+            loop = asyncio.get_event_loop()
 
             await self.connect_local(
                 config["db_host"],
@@ -182,12 +172,7 @@ class MySQLPool:
             Tuple of tuples with the results found.
         """
         if not self._pool:
-            if os.name == "nt":
-                loop = asyncio.get_event_loop()
-            else:
-                import uvloop
-
-                loop = uvloop.new_event_loop()
+            loop = asyncio.get_event_loop()
 
             await self.connect_local(
                 config["db_host"],
@@ -228,12 +213,7 @@ class MySQLPool:
             The ID of the last row affected.
         """
         if not self._pool:
-            if os.name == "nt":
-                loop = asyncio.get_event_loop()
-            else:
-                import uvloop
-
-                loop = uvloop.new_event_loop()
+            loop = asyncio.get_event_loop()
 
             await self.connect_local(
                 config["db_host"],
