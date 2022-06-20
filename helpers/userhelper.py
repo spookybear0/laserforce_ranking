@@ -18,8 +18,8 @@ async def get_top(mode: GameType, amount: int = 100, start: int = 0) -> List[Pla
     mode = mode.value
 
     q = await sql.fetchall(
-        "SELECT id FROM players ORDER BY %s - 3 * %s ASC LIMIT %s OFFSET %s",
-        (mode + "_mu", mode + "_sigma", amount, start)
+        f"SELECT id FROM players ORDER BY {mode}_mu - 3 * {mode}_sigma ASC LIMIT %s OFFSET %s",
+        (amount, start)
     )
     ret = []
     for id in q:
