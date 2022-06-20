@@ -1,6 +1,7 @@
 from shared import sql
-from objects import Game, GameType
+from objects import Game, GameType, Team
 from helpers import ratinghelper
+from typing import List
 
 async def get_total_games_played():
     q = await sql.fetchone("SELECT COUNT(*) FROM sm5_game_players")
@@ -90,3 +91,30 @@ async def log_laserball_game(game: Game):
             player.laserball_mu, player.laserball_sigma,
             player.id
         ))
+
+async def get_all_games() -> List[Game]:
+    games = []
+    game_count = await get_total_games()
+    for i in range(game_count):
+        game: Game = await Game.from_id(i)
+        games.append(game)
+    return games
+
+async def reset_ratings() -> None:
+    await sql.execute("UPDATE players SET sm5_mu = %s, sm5_sigma = %s, laserball_mu = %s, laserball_sigma = %s", (25, 8.333, 25, 8.333))
+
+async def relog_all_games() -> None:
+    games: List[Game] = await get_all_games()
+    print(games)
+
+    await sql.execute("TRUNCATE TABLE games")
+    await sql.execute("TRUNCATE TABLE sm5_game_players")
+    await sql.execute("TRUNCATE TABLE laserball_game_players")
+
+    await reset_ratings()
+
+    for game in games:
+        if game.type == GameType.SM5:
+            await log_sm5_game(game)
+        elif game.type == GameType.LASERBALL:
+            await log_laserball_game(game)

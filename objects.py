@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 from laserforce import Player as IPLPlayer
 from dataclasses import dataclass
 from shared import sql
@@ -127,8 +128,47 @@ class Game:
     green = []
     red = []
     blue = []
+
+    async def _get_game_players_team(self, team: Team, type: GameType=GameType.SM5) -> List[SM5GamePlayer]:
+        q = await sql.fetchall(
+            "SELECT * FROM %s WHERE `game_id` = %s AND `team` = %s",
+            (f"{type}_game_players", self.id, team.value),
+        )
+        final = []
+
+        if type == GameType.SM5:
+            for game_player in q:
+                player = await Player.from_id(game_player[0])
+
+                player.game_player = SM5GamePlayer(game_player[0], game_player[1], Team(game_player[2]),
+                                                   Role(game_player[3]), game_player[4])
+
+                final.append(player)
+        elif type == GameType.LASERBALL:
+            for game_player in q:
+                player = await Player.from_id(game_player[0])
+
+                player.game_player = LaserballGamePlayer(game_player[0], game_player[1], Team(game_player[2]),
+                                                        game_player[3], game_player[4], game_player[5],
+                                                        game_player[6], game_player[7])
+                final.append(player)
+        return final
+
+    async def _set_game_players(self):
+        self.red = await self._get_game_players_team(Team.RED, self.type)
+
+        if self.type == GameType.SM5:
+            self.green = await self._get_game_players_team(Team.GREEN)
+            self.players = [*self.red, *self.green]
+        elif self.type == GameType.LASERBALL:
+            self.blue = await self._get_game_players_team(Team.BLUE)
+            self.players = [*self.red, *self.blue]
     
     @classmethod
     async def from_id(cls, id: int):
         data = await sql.fetchall("SELECT * FROM games WHERE id = %s", (id,))
-        return cls(*data)
+        game = cls(*data)
+
+        await game._set_game_players()
+
+        return game

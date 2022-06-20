@@ -84,9 +84,11 @@ async def update_elo(team1, team2, winner, mode: GameType):
         
     # convert back to Player 
     for i, p in enumerate(team1):
-        setattr(p, f"{mode}_mu", team1_rating[i])
+        setattr(p, f"{mode}_mu", team1_rating[i].mu)
+        setattr(p, f"{mode}_sigma", team1_rating[i].sigma)
         
     for i, p in enumerate(team2):
-        setattr(p, f"{mode}_mu", team2_rating[i])
+        setattr(p, f"{mode}_mu", team2_rating[i].mu)
+        setattr(p, f"{mode}_sigma", team2_rating[i].sigma)
 
     return (team1, team2)
