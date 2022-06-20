@@ -56,7 +56,7 @@ async def log_sm5_post(request: web.Request):
     for player in players:
         if not player.game_player.role.value in ALL_ROLES:
             return web.Response(text="401: Error, invalid data! (role)")
-        if (len(player.player_id.split("-")) != 3) or not player.id == -1:
+        if (len(player.player_id.split("-")) != 3) and not player.id == -1:
             return web.Response(text="401: Error, invalid data! (id)")
 
     if not winner in ["green", "red"]:
