@@ -19,6 +19,7 @@ async def log_sm5_game(game: Game):
     game_id = last_row[0]
     
     game.red, game.green = await ratinghelper.update_elo(game.red, game.green, game.winner, GameType.SM5)
+    print(game.red, game.green)
     game.players = [*game.red, *game.green]
 
     # update openskill
@@ -37,6 +38,17 @@ async def log_sm5_game(game: Game):
                 player.game_player.score,
             ),
         )
+
+        # update rating
+        await sql.execute("""
+            UPDATE players SET
+            sm5_mu = %s,
+            sm5_sigma = %s
+            WHERE id = %s
+        """, (
+            player.sm5_mu, player.sm5_sigma,
+            player.id
+        ))
         
 async def log_laserball_game(game: Game):
     await sql.execute("INSERT INTO `games` (winner, type) VALUES (%s, %s);", (game.winner, game.type.value))
@@ -67,3 +79,14 @@ async def log_laserball_game(game: Game):
                 player.game_player.blocks,
             ),
         )
+
+        # update rating
+        await sql.execute("""
+            UPDATE players SET
+            laserball_mu = %s,
+            laserball_sigma = %s
+            WHERE id = %s
+        """, (
+            player.laserball_mu, player.laserball_sigma,
+            player.id
+        ))

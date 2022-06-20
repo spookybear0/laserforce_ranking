@@ -1,4 +1,4 @@
-from helpers import userhelper, gamehelper
+from helpers import userhelper, gamehelper, ratinghelper
 from aiohttp import web
 from shared import routes
 from utils import render_template
@@ -44,7 +44,6 @@ async def log_sm5_post(request: web.Request):
     except ValueError:
         print_exc()
         return web.Response(text="401: Error, invalid data! (green team)")
-        green_players.append(player)
         
     # make sure input is correct
     if len(red_players) == 0 or len(green_players) == 0:

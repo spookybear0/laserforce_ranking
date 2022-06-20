@@ -1,4 +1,4 @@
-from objects import GameType, Team, LaserballGamePlayer
+from objects import GameType, Team, LaserballGamePlayer, Player
 from random import shuffle
 import openskill
 
