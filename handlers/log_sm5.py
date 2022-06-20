@@ -62,7 +62,7 @@ async def log_sm5_post(request: web.Request):
         return web.Response(text="401: Error, invalid data! (no winner)")
 
     # assign all players to the game obj
-    game = Game(0, winner, GameType.SM5)  # game_id is 0 becaue its undefined
+    game = Game(-1, Team(winner), GameType.SM5)  # game_id is -1 becaue its undefined
     game.players = players
     game.green = green_players
     game.red = red_players
