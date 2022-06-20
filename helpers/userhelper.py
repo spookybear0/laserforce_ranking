@@ -60,6 +60,7 @@ async def get_data_from_form_sm5(players: List, game_players: List, data: Dict, 
             player = await Player.from_name(player_name)
 
         if not player: # player doens't exist
+            print(player_name)
             raise ValueError("Invalid data!")
         
         player_id = player.player_id
