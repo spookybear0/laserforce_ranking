@@ -131,14 +131,17 @@ class Game:
 
     async def _get_game_players_team(self, team: Team, type: GameType=GameType.SM5) -> List[SM5GamePlayer]:
         q = await sql.fetchall(
-            "SELECT * FROM %s WHERE `game_id` = %s AND `team` = %s",
-            (f"{type}_game_players", self.id, team.value),
+            f"SELECT * FROM {type.value}_game_players WHERE `game_id` = %s AND `team` = %s",
+            (self.id, team.value),
         )
         final = []
 
         if type == GameType.SM5:
             for game_player in q:
-                player = await Player.from_id(game_player[0])
+                if game_player[0] == "":
+                    player = Player(0, "", "", "", 25, 8.333, 25, 8.333)
+                else:
+                    player = await Player.from_player_id(game_player[0])
 
                 player.game_player = SM5GamePlayer(game_player[0], game_player[1], Team(game_player[2]),
                                                    Role(game_player[3]), game_player[4])
@@ -166,8 +169,11 @@ class Game:
     
     @classmethod
     async def from_id(cls, id: int):
-        data = await sql.fetchall("SELECT * FROM games WHERE id = %s", (id,))
+        data = await sql.fetchone("SELECT * FROM games WHERE id = %s", (id,))
         game = cls(*data)
+
+        game.type = GameType(game.type)
+        game.winner = Team(game.winner)
 
         await game._set_game_players()
 

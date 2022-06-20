@@ -13,7 +13,7 @@ async def get_total_games():
     return q[0]
 
 async def log_sm5_game(game: Game):
-    await sql.execute("INSERT INTO `games` (winner, type) VALUES (%s, %s);", (game.winner, game.type.value))
+    await sql.execute("INSERT INTO `games` (winner, type) VALUES (%s, %s);", (game.winner.value, game.type.value))
     
     # gets id of the inserted game
     last_row = await sql.fetchone("SELECT LAST_INSERT_ID();")
@@ -95,7 +95,8 @@ async def log_laserball_game(game: Game):
 async def get_all_games() -> List[Game]:
     games = []
     game_count = await get_total_games()
-    for i in range(game_count):
+
+    for i in range(1, game_count + 1):
         game: Game = await Game.from_id(i)
         games.append(game)
     return games
@@ -105,11 +106,10 @@ async def reset_ratings() -> None:
 
 async def relog_all_games() -> None:
     games: List[Game] = await get_all_games()
-    print(games)
 
-    await sql.execute("TRUNCATE TABLE games")
-    await sql.execute("TRUNCATE TABLE sm5_game_players")
-    await sql.execute("TRUNCATE TABLE laserball_game_players")
+    await sql.execute("TRUNCATE TABLE games;")
+    await sql.execute("TRUNCATE TABLE sm5_game_players;")
+    await sql.execute("TRUNCATE TABLE laserball_game_players;")
 
     await reset_ratings()
 
