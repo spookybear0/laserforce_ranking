@@ -54,7 +54,10 @@ async def get_data_from_form_sm5(players: List, game_players: List, data: Dict, 
         except KeyError:
             break
         
-        player = await Player.from_name(player_name)
+        if player_name == "DEFAULT":
+            player = Player(-1, "", "", "", 25, 8.333, 25, 8.333, 0)
+        else:
+            player = await Player.from_name(player_name)
 
         if not player: # player doens't exist
             raise ValueError("Invalid data!")
