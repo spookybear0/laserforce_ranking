@@ -5,6 +5,7 @@ from utils import render_template
 from objects import ALL_ROLES, GameType, Team, Game
 import traceback
 import bcrypt
+from traceback import print_exc
 
 @routes.get("/log_sm5")
 async def log_sm5_get(request: web.Request):
@@ -34,17 +35,20 @@ async def log_sm5_post(request: web.Request):
     try:
         await userhelper.get_data_from_form_sm5(red_players, red_game_players, data, Team.RED)
     except ValueError:
+        print_exc()
         return web.Response(text="401: Error, invalid data! (red team)")
     
     # get form data for green team (turn it into objects)
     try:
         await userhelper.get_data_from_form_sm5(green_players, green_game_players, data, Team.GREEN)
     except ValueError:
+        print_exc()
         return web.Response(text="401: Error, invalid data! (green team)")
         green_players.append(player)
         
     # make sure input is correct
     if len(red_players) == 0 or len(green_players) == 0:
+        print_exc()
         return web.Response(text="401: Error, invalid data! (invalid teams)")
 
     players = [*red_players, *green_players]
