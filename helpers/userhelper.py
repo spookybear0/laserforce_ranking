@@ -55,7 +55,7 @@ async def get_data_from_form_sm5(players: List, game_players: List, data: Dict, 
             break
         
         if player_name == "DEFAULT":
-            player = Player(-1, "", "", "", 25, 8.333, 25, 8.333, 0)
+            player = Player(-1, "", "", "DEFAULT", 25, 8.333, 25, 8.333, 0)
         else:
             player = await Player.from_name(player_name)
 
