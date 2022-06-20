@@ -20,7 +20,6 @@ async def log_sm5_game(game: Game):
     game_id = last_row[0]
     
     game.red, game.green = await ratinghelper.update_elo(game.red, game.green, game.winner, GameType.SM5)
-    print(game.red, game.green)
     game.players = [*game.red, *game.green]
 
     # update openskill
