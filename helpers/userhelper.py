@@ -10,6 +10,23 @@ async def get_total_players() -> int:
     q = await sql.fetchone("SELECT COUNT(*) FROM players")
     return q[0]
 
+# TODO: unimplemented
+async def get_win_rate(player: Union[Player, str], mode: GameType=None) -> float:
+    """
+    `player` can be either a Player object or a player id
+    Returns win chance of `player`
+    """
+    if isinstance(player, Player):
+        player = player.player_id
+    elif isinstance(player, str):
+        player = player.replace("-", "")
+
+    q = await sql.fetchone(
+        "SELECT win_chance FROM players WHERE id = %s",
+        (player,)
+    )
+    return q[0]
+
 async def get_top(mode: GameType, amount: int = 100, start: int = 0) -> List[Player]:
     """
     Returns top players from database in given mode

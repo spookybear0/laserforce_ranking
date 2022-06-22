@@ -15,7 +15,7 @@ async def auto_upload(request: web.Request):
     file = data["upload_file"]
     
     if not file:
-        return web.HTTPBadRequest("No file uploaded")
+        return web.HTTPBadRequest()
 
     if type == "sm5":
         open("./sm5_tdf/" + file.filename, "wb").write(file.file.read())
@@ -24,6 +24,6 @@ async def auto_upload(request: web.Request):
         open("./laserball_tdf/" + file.filename, "wb").write(file.file.read())
         #game = parse_laserball_game("./laserball_tdf/" + file.filename)
     else:
-        return web.HTTPBadRequest("Unknown type")
+        return web.HTTPBadRequest()
 
     return web.HTTPOk()

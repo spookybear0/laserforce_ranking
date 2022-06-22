@@ -117,3 +117,7 @@ async def relog_all_games() -> None:
             await log_sm5_game(game)
         elif game.type == GameType.LASERBALL:
             await log_laserball_game(game)
+
+async def get_wins(game_type: GameType, team: Team) -> None:
+    wins = await sql.fetchone("SELECT COUNT(*) FROM games WHERE winner = %s AND type = %s;", (team.value, game_type.value))
+    return wins[0]

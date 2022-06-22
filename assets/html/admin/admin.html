@@ -39,9 +39,15 @@
             color: white;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
             font-size: 16px;
             border-radius: 5px;
+            width: 10rem;
+            height: 5rem;
+            margin-left: 20px;
+            display: inline-block;
+        }
+
+        .inline-block {
             width: 10rem;
             height: 5rem;
             margin-left: 20px;
@@ -52,6 +58,7 @@
             background-color: #121212;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -61,12 +68,15 @@
     </div>
     <div class="content">
         <div>
+            <div class="btn" style="position: relative; bottom: 7px;">
+                    <canvas id="myChart" style="max-width:600px;"></canvas>
+            </div>
             <div class="btn">
                 <div>
                     <h2>{{ total_players }}</h2>
                 </div>
                 <div>
-                    <p style="position: relative;bottom: 20px;">Players</p>
+                    <p style="position: relative; bottom: 20px;">Players</p>
                 </div>
             </div>
             <div class="btn">
@@ -74,7 +84,7 @@
                     <h2>{{ total_games }}</h2>
                 </div>
                 <div>
-                    <p style="position: relative;bottom: 20px;">Games Logged</p>
+                    <p style="position: relative; bottom: 20px;">Games Logged</p>
                 </div>
             </div>
             <div class="btn">
@@ -82,9 +92,35 @@
                     <h2>{{ total_games_played }}</h2>
                 </div>
                 <div>
-                    <p style="position: relative;bottom: 20px;">Games Played</p>
+                    <p style="position: relative; bottom: 20px;">Games Played</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        var xValues = ["Red", "Green"];
+        var yValues = [{{ red_wins }}, {{ green_wins }}];
+        var barColors = [
+            "#b91d47",
+            "#00aba9"
+        ];
+    
+        new Chart("myChart", {
+            type: "pie",
+            data: {
+                labels: xValues,
+                datasets: [{
+                backgroundColor: barColors,
+                data: yValues
+                }]
+            },
+            options: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
+            }
+        });
+    </script>
 </body>

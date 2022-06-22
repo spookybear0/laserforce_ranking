@@ -2,6 +2,7 @@ from aiohttp import web
 from helpers import gamehelper, userhelper
 from utils import render_template
 from shared import routes
+from objects import GameType, Team
 
 @routes.get("/admin")
 async def admin(request: web.Request):
@@ -15,4 +16,6 @@ async def admin(request: web.Request):
         total_players=total_players,
         total_games=total_games,
         total_games_played=total_games_played,
+        red_wins=await gamehelper.get_wins(GameType.SM5, Team.RED),
+        green_wins=await gamehelper.get_wins(GameType.SM5, Team.GREEN)
     )
