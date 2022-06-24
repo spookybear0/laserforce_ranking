@@ -37,20 +37,6 @@
         margin-left: 250px;
     }
 
-    .btn {
-        background-color: #0096FF;
-        border: none;
-        color: white;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        border-radius: 5px;
-        width: 10rem;
-        height: 5rem;
-        margin-left: 20px;
-    }
-
     .userlist {
         border-radius: 15px;
         background: #1A1A1A;
@@ -86,6 +72,7 @@
         background-color: #121212;
     }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 <body>
     <div class="sidebar">
@@ -102,8 +89,37 @@
                     <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
+                    <div class="btn" style="position: relative; bottom: 7px;">
+                        <canvas id="myChart" style="max-width:600px;"></canvas>
+                        <p>SM5 Teams</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        var xValues = ["Red", "Green"];
+        var yValues = [{{ red_wins }}, {{ green_wins }}];
+        var barColors = [
+            "#b91d47",
+            "#00aba9"
+        ];
+    
+        new Chart("myChart", {
+            type: "pie",
+            data: {
+                labels: xValues,
+                datasets: [{
+                backgroundColor: barColors,
+                data: yValues
+                }]
+            },
+            options: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
+            }
+        });
+    </script>
 </body>

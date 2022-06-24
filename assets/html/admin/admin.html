@@ -1,63 +1,7 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/app.css">
-    <style type="text/css">
-        .important {
-            color: #336699;
-        }
 
-        .sidebar {
-            margin: 0;
-            padding: 0;
-            width: 200px;
-            background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
-            position: fixed;
-            height: 100%;
-            overflow: auto;
-        }
-
-        .sidebar a {
-            display: block;
-            color: white;
-            padding: 16px;
-            text-decoration: none;
-        }
-
-        .sidebar a.active {
-            background-color: #0096FF;
-            color: white;
-        }
-
-        .content {
-            margin-top: 20px;
-            margin-left: 250px;
-        }
-
-        .btn {
-            background-color: #0096FF;
-            border: none;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            font-size: 16px;
-            border-radius: 5px;
-            width: 10rem;
-            height: 5rem;
-            margin-left: 20px;
-            display: inline-block;
-        }
-
-        .inline-block {
-            width: 10rem;
-            height: 5rem;
-            margin-left: 20px;
-            display: inline-block;
-        }
-
-        body {
-            background-color: #121212;
-        }
-    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 </head>
 <body>
@@ -68,32 +12,21 @@
     </div>
     <div class="content">
         <div>
-            <div class="btn" style="position: relative; bottom: 7px;">
-                    <canvas id="myChart" style="max-width:600px;"></canvas>
+            <div class="btn" style="position: relative; top: 4px;">
+                <canvas id="myChart" style="max-width:600px;"></canvas>
+                <p>Games Logged</p>
             </div>
             <div class="btn">
-                <div>
-                    <h2>{{ total_players }}</h2>
-                </div>
-                <div>
-                    <p style="position: relative; bottom: 20px;">Players</p>
-                </div>
+                <h2>{{ total_players }}</h2>
+                <p>Players</p>
             </div>
             <div class="btn">
-                <div>
-                    <h2>{{ total_games }}</h2>
-                </div>
-                <div>
-                    <p style="position: relative; bottom: 20px;">Games Logged</p>
-                </div>
+                <h2>{{ total_games }}</h2>
+                <p>Games Logged</p>
             </div>
             <div class="btn">
-                <div>
-                    <h2>{{ total_games_played }}</h2>
-                </div>
-                <div>
-                    <p style="position: relative; bottom: 20px;">Games Played</p>
-                </div>
+                <h2>{{ total_games_played }}</h2>
+                <p>Games Played</p>
             </div>
         </div>
     </div>

@@ -104,6 +104,17 @@ async def reset_ratings() -> None:
     await sql.execute("UPDATE players SET sm5_mu = %s, sm5_sigma = %s, laserball_mu = %s, laserball_sigma = %s", (25, 8.333, 25, 8.333))
 
 async def relog_all_games() -> None:
+    """
+    if this fails i will need to manually add the games to the database
+    so
+    i really
+    hope
+    that it
+    doesn't
+    fail
+
+    PLEASd-= basokup the datasbase beorer rundniong thsi fgfcommandsd
+    """
     games: List[Game] = await get_all_games()
 
     await sql.execute("TRUNCATE TABLE games;")
@@ -118,6 +129,10 @@ async def relog_all_games() -> None:
         elif game.type == GameType.LASERBALL:
             await log_laserball_game(game)
 
-async def get_wins(game_type: GameType, team: Team) -> None:
+async def get_wins(game_type: GameType, team: Team) -> int:
     wins = await sql.fetchone("SELECT COUNT(*) FROM games WHERE winner = %s AND type = %s;", (team.value, game_type.value))
+    return wins[0]
+
+async def get_teams(game_type: GameType, team: Team, player_id: str) -> int:
+    wins = await sql.fetchone(f"SELECT COUNT(*) FROM {game_type.value}_game_players WHERE team = %s AND player_id = %s;", (team.value, player_id))
     return wins[0]

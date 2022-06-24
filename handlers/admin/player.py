@@ -1,4 +1,5 @@
 from aiohttp import web
+from objects import GameType, Team
 from helpers import gamehelper, userhelper
 from utils import render_template
 from shared import routes
@@ -16,7 +17,10 @@ async def admin_player_get(request: web.Request):
         if not player:
             raise web.HTTPNotFound(reason="Invalid ID")
     
-    return await render_template(request, "admin/player.html", player=player)
+    return await render_template(request, "admin/player.html",
+                                player=player,
+                                red_wins=await gamehelper.get_teams(GameType.SM5, Team.RED, player.player_id),
+                                green_wins=await gamehelper.get_teams(GameType.SM5, Team.GREEN, player.player_id))
 
 @routes.post("/admin/player")
 async def admin_player_post(request: web.Request):
