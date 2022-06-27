@@ -129,14 +129,14 @@ class Game:
     red = []
     blue = []
 
-    async def _get_game_players_team(self, team: Team, type: GameType=GameType.SM5) -> List[SM5GamePlayer]:
+    async def _get_game_players_team(self, team: Team) -> List[SM5GamePlayer]:
         q = await sql.fetchall(
-            f"SELECT * FROM {type.value}_game_players WHERE `game_id` = %s AND `team` = %s",
+            f"SELECT * FROM {self.type.value}_game_players WHERE `game_id` = %s AND `team` = %s",
             (self.id, team.value),
         )
         final = []
 
-        if type == GameType.SM5:
+        if self.type == GameType.SM5:
             for game_player in q:
                 if game_player[0] == "":
                     player = Player(0, "", "", "", 25, 8.333, 25, 8.333)
@@ -147,9 +147,12 @@ class Game:
                                                    Role(game_player[3]), game_player[4])
 
                 final.append(player)
-        elif type == GameType.LASERBALL:
+        elif self.type == GameType.LASERBALL:
             for game_player in q:
-                player = await Player.from_id(game_player[0])
+                if game_player[0] == "":
+                    player = Player(0, "", "", "", 25, 8.333, 25, 8.333)
+                else:
+                    player = await Player.from_player_id(game_player[0])
 
                 player.game_player = LaserballGamePlayer(game_player[0], game_player[1], Team(game_player[2]),
                                                         game_player[3], game_player[4], game_player[5],
@@ -158,7 +161,7 @@ class Game:
         return final
 
     async def _set_game_players(self):
-        self.red = await self._get_game_players_team(Team.RED, self.type)
+        self.red = await self._get_game_players_team(Team.RED)
 
         if self.type == GameType.SM5:
             self.green = await self._get_game_players_team(Team.GREEN)

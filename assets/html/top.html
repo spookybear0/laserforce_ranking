@@ -1,18 +1,9 @@
 <link rel="stylesheet" href="/assets/css/app.css">
 <h1>Top 100</h1>
 {% for player in players %}
+    {% set sm5 = player.sm5_ordinal|round(2) %}
 
-{% if player.sm5_ordinal < 0.2 %}
-{% set sm5 = 0 %}
-{% else %}
-{% set sm5 = player.sm5_ordinal|round(4) %}
-{% endif %}
+    {% set laserball = player.laserball_ordinal|round(2) %}
 
-{% if player.laserball_ordinal < 0.2 %}
-{% set laserball = 0 %}
-{% else %}
-{% set laserball = player.laserball_ordinal|round(4) %}
-{% endif %}
-
-<p>Codename: {{ player.codename }}, SM5: {{ sm5 }}, Laserball: {{ laserball }}</p>
+    <p>Codename: {{ player.codename }}, SM5: {{ sm5 }}, Laserball: {{ laserball }}</p>
 {% endfor %}
