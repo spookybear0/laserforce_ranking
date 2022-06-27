@@ -51,13 +51,13 @@ async def log_sm5_game(game: Game):
         ))
         
 async def log_laserball_game(game: Game):
-    await sql.execute("INSERT INTO `games` (winner, type) VALUES (%s, %s);", (game.winner, game.type.value))
+    await sql.execute("INSERT INTO `games` (winner, type) VALUES (%s, %s);", (game.winner.value, game.type.value))
     
     # gets id of the inserted game
     last_row = await sql.fetchone("SELECT LAST_INSERT_ID();")
     game_id = last_row[0]
     
-    game.red, game.green = await ratinghelper.update_elo(game.red, game.blue, game.winner, GameType.SM5)
+    game.red, game.blue = await ratinghelper.update_elo(game.red, game.blue, game.winner, GameType.LASERBALL)
     game.players = [*game.red, *game.blue]
 
     # update openskill
