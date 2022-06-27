@@ -78,9 +78,9 @@ async def update_elo(team1, team2, winner, mode: GameType):
         
     
     if winner == Team.RED:  # red won
-        team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating], ranks=[2, 1])
-    else:  # green/blue won
         team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating], ranks=[1, 2])
+    else:  # green/blue won
+        team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating], ranks=[2, 1])
         
     # convert back to Player 
     for i, p in enumerate(team1):

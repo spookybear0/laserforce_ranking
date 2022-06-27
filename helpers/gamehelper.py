@@ -95,7 +95,7 @@ async def get_all_games() -> List[Game]:
     games = []
     game_count = await get_total_games()
 
-    for i in range(1, game_count + 1):
+    for i in range(1, game_count + 50):
         game: Game = await Game.from_id(i)
         if game:
             games.append(game)
@@ -116,11 +116,13 @@ async def relog_all_games() -> None:
 
     PLEASd-= basokup the datasbase beorer rundniong thsi fgfcommandsd
     """
+    print("Getting all games...")
     games: List[Game] = await get_all_games()
 
     # > TRUNCATE THE TABLES
     # >>> BUT SIR
     # > JUST DO IT
+    print("Truncating tables")
     await sql.execute("TRUNCATE TABLE games;")
     await sql.execute("TRUNCATE TABLE sm5_game_players;")
     await sql.execute("TRUNCATE TABLE laserball_game_players;")
@@ -128,6 +130,7 @@ async def relog_all_games() -> None:
     await reset_ratings()
 
     for game in games:
+        print(f"Logging game {game.id} of type {game.type.value}")
         if game.type == GameType.SM5:
             await log_sm5_game(game)
         elif game.type == GameType.LASERBALL:
