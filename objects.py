@@ -173,6 +173,8 @@ class Game:
     @classmethod
     async def from_id(cls, id: int):
         data = await sql.fetchone("SELECT * FROM games WHERE id = %s", (id,))
+        if not data:
+            return None
         game = cls(*data)
 
         game.type = GameType(game.type)

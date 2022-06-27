@@ -97,7 +97,8 @@ async def get_all_games() -> List[Game]:
 
     for i in range(1, game_count + 1):
         game: Game = await Game.from_id(i)
-        games.append(game)
+        if game:
+            games.append(game)
     return games
 
 async def reset_ratings() -> None:
