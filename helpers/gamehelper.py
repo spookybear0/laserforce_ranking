@@ -117,6 +117,9 @@ async def relog_all_games() -> None:
     """
     games: List[Game] = await get_all_games()
 
+    # > TRUNCATE THE TABLES
+    # >>> BUT SIR
+    # > JUST DO IT
     await sql.execute("TRUNCATE TABLE games;")
     await sql.execute("TRUNCATE TABLE sm5_game_players;")
     await sql.execute("TRUNCATE TABLE laserball_game_players;")

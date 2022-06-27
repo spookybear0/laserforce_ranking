@@ -119,7 +119,7 @@ async def database_player(player: IPLPlayer) -> None:
     """
     Databases a player from a `laserforce.py` `IPLPlayer`
     """
-    player.id: str = "-".join(player.id) # convert list to str
+    player.id = "-".join(player.id) # convert list to str
     db_player: Player = await Player.from_player_id(player.id)
 
     # TODO: implement Player.update() and Player.create()
