@@ -55,7 +55,7 @@ async def log_laserball_post(request: web.Request):
     if not winner in ["blue", "red"]:
         return web.Response(text="401: Error, invalid data! (no winner)")
 
-    game = Game(0, winner, GameType.LASERBALL)  # game_id is 0 becaue its undefined
+    game = Game(0, Team(winner), GameType.LASERBALL)  # game_id is 0 becaue its undefined
     game.players = players
     game.blue = blue_players
     game.red = red_players
