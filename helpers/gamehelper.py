@@ -2,6 +2,7 @@ from shared import sql
 from objects import Game, GameType, Team
 from helpers import ratinghelper
 from typing import List
+import asyncio
 
 async def get_total_games_played():
     q = await sql.fetchone("SELECT COUNT(*) FROM sm5_game_players")
@@ -19,7 +20,7 @@ async def log_sm5_game(game: Game):
     last_row = await sql.fetchone("SELECT LAST_INSERT_ID();")
     game_id = last_row[0]
     
-    game.red, game.green = await ratinghelper.update_elo(game.red, game.green, game.winner, GameType.SM5)
+    game.red, game.green = await ratinghelper.update_elo(game, GameType.SM5)
     game.players = [*game.red, *game.green]
 
     # update openskill
@@ -57,7 +58,7 @@ async def log_laserball_game(game: Game):
     last_row = await sql.fetchone("SELECT LAST_INSERT_ID();")
     game_id = last_row[0]
     
-    game.red, game.blue = await ratinghelper.update_elo(game.red, game.blue, game.winner, GameType.LASERBALL)
+    game.red, game.blue = await ratinghelper.update_elo(game, GameType.LASERBALL)
     game.players = [*game.red, *game.blue]
 
     # update openskill
@@ -102,7 +103,7 @@ async def get_all_games() -> List[Game]:
     return games
 
 async def reset_ratings() -> None:
-    await sql.execute("UPDATE players SET sm5_mu = %s, sm5_sigma = %s, laserball_mu = %s, laserball_sigma = %s", (25, 8.333, 25, 8.333))
+    await sql.execute("UPDATE players SET sm5_mu = %s, sm5_sigma = %s, laserball_mu = %s, laserball_sigma = %s", (25, 25/3, 25, 25/3))
 
 async def relog_all_games() -> None:
     """
@@ -117,6 +118,9 @@ async def relog_all_games() -> None:
     PLEASd-= basokup the datasbase beorer rundniong thsi fgfcommandsd
     """
     print("Getting all games...")
+
+    await reset_ratings()
+
     games: List[Game] = await get_all_games()
 
     # > TRUNCATE THE TABLES
@@ -127,10 +131,9 @@ async def relog_all_games() -> None:
     await sql.execute("TRUNCATE TABLE sm5_game_players;")
     await sql.execute("TRUNCATE TABLE laserball_game_players;")
 
-    await reset_ratings()
-
     for game in games:
         print(f"Logging game {game.id} of type {game.type.value}")
+        await game._reload_elo()
         if game.type == GameType.SM5:
             await log_sm5_game(game)
         elif game.type == GameType.LASERBALL:
@@ -143,3 +146,26 @@ async def get_wins(game_type: GameType, team: Team) -> int:
 async def get_teams(game_type: GameType, team: Team, player_id: str) -> int:
     wins = await sql.fetchone(f"SELECT COUNT(*) FROM {game_type.value}_game_players WHERE team = %s AND player_id = %s;", (team.value, player_id))
     return wins[0]
+
+# i think this works
+async def get_win_percent(game_type: GameType, player_id: str) -> float:
+    wins = await sql.fetchone(f"""SELECT AVG(CASE WHEN games.winner = {game_type.value}_game_players.team THEN 1 ELSE 0 END)
+                                FROM games
+                                INNER JOIN {game_type.value}_game_players
+                                ON games.id = {game_type.value}_game_players.game_id
+                                WHERE {game_type.value}_game_players.player_id = %s;""",
+                            (player_id,))
+    if not wins[0]:
+        return 0.0
+    return float(wins[0])
+
+async def get_win_percent_overall(player_id: str) -> float:
+    wins = await sql.fetchone(f"""SELECT AVG(CASE WHEN games.winner = sm5_game_players.team OR games.winner = laserball_game_players.team THEN 1 ELSE 0 END)
+                                FROM games
+                                INNER JOIN sm5_game_players
+                                ON games.id = sm5_game_players.game_id
+                                INNER JOIN laserball_game_players
+                                ON games.id = laserball_game_players.game_id
+                                WHERE sm5_game_players.player_id = %s;""",
+                            (player_id,))
+    return float(wins[0])

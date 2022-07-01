@@ -1,4 +1,4 @@
-from objects import GameType, Team, LaserballGamePlayer, Player
+from objects import GameType, Team, LaserballGamePlayer, Player, Game
 from random import shuffle
 import openskill
 
@@ -58,14 +58,23 @@ def matchmake_elo(players, mode: GameType=GameType.SM5):
     return (best1, best2)
 
 # team1 is red, team2 is green/blue
-async def update_elo(team1, team2, winner, mode: GameType):
+async def update_elo(game: Game, mode: GameType):
     mode = mode.value.lower()
     
-    team1_mu = attrgetter(team1, f"{mode}_mu")
-    team1_sigma = attrgetter(team1, f"{mode}_sigma")
+    winner = game.winner
     
-    team2_mu = attrgetter(team2, f"{mode}_mu")
-    team2_sigma = attrgetter(team2, f"{mode}_sigma")
+    team1 = game.red
+    team1_mu = attrgetter(game.red, f"{mode}_mu")
+    team1_sigma = attrgetter(game.red, f"{mode}_sigma")
+    
+    if mode == "sm5":
+        team2 = game.green
+        team2_mu = attrgetter(game.green, f"{mode}_mu")
+        team2_sigma = attrgetter(game.green, f"{mode}_sigma")
+    else: # laserball
+        team2 = game.blue
+        team2_mu = attrgetter(game.blue, f"{mode}_mu")
+        team2_sigma = attrgetter(game.blue, f"{mode}_sigma")
     
     # convert to Rating
     team1_rating = []
@@ -75,13 +84,12 @@ async def update_elo(team1, team2, winner, mode: GameType):
     team2_rating = []
     for i in range(len(team2)):
         team2_rating.append(openskill.Rating(team2_mu[i], team2_sigma[i]))
-        
-    
+
     if winner == Team.RED:  # red won
-        team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating], ranks=[1, 2])
+        team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating])
     else:  # green/blue won
-        team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating], ranks=[2, 1])
-        
+        team2_rating, team1_rating = openskill.rate([team2_rating, team1_rating])
+
     # convert back to Player 
     for i, p in enumerate(team1):
         setattr(p, f"{mode}_mu", team1_rating[i].mu)

@@ -82,36 +82,55 @@
     </div>
     <div class="content">
         <div>
-            <h2 style="text-align: center; position: relative; left: 5.5rem;">Viewing player: {{ player.codename }}</h2>
+            <h2 style="text-align: center;">Viewing player: {{ player.codename }}</h2>
             <div>
                 <div class="userlist">
                     <div class="userlist-pos"><span class="userlist-username-text">ID</span><span class="userlist-info-text">{{ player.id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
-                    <div class="btn" style="position: relative; bottom: 7px;">
-                        <canvas id="myChart" style="max-width:600px;"></canvas>
-                        <p>SM5 Teams</p>
+                    <div class="userlist-pos"><span class="userlist-username-text">SM5 Win Percent</span><span class="userlist-info-text">{{ sm5_win_percent*100 }}%</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ laserball_win_percent*100 }}%</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ win_percent }}%</span></div>
+                    <div style="display: flex; float: left;">
+                        <div class="btn">
+                            <canvas id="sm5_teams" style="max-width:600px;"></canvas>
+                            <p>SM5 Teams</p>
+                        </div>
+                        <div class="btn">
+                            <canvas id="laserball_teams" style="max-width:600px;"></canvas>
+                            <p>Laserball Teams</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        var xValues = ["Red", "Green"];
-        var yValues = [{{ red_wins }}, {{ green_wins }}];
-        var barColors = [
-            "#b91d47",
-            "#00aba9"
-        ];
-    
-        new Chart("myChart", {
+        new Chart("sm5_teams", {
             type: "pie",
             data: {
-                labels: xValues,
+                labels: ["Red", "Green"],
                 datasets: [{
-                backgroundColor: barColors,
-                data: yValues
+                backgroundColor: ["#b91d47", "#00aba9"],
+                data: [{{ red_teams_sm5 }}, {{ green_teams_sm5 }}]
+                }]
+            },
+            options: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
+            }
+        });
+
+        new Chart("laserball_teams", {
+            type: "pie",
+            data: {
+                labels: ["Red", "Blue"],
+                datasets: [{
+                backgroundColor: ["#b91d47", "#0047AB"],
+                data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
                 }]
             },
             options: {

@@ -1,7 +1,7 @@
 from objects import GameType
 from aiohttp import web
 from shared import routes
-from helpers import userhelper
+from helpers import userhelper, gamehelper
 from utils import render_template
 
 # shows top x

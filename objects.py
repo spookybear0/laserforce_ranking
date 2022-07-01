@@ -169,6 +169,13 @@ class Game:
         elif self.type == GameType.LASERBALL:
             self.blue = await self._get_game_players_team(Team.BLUE)
             self.players = [*self.red, *self.blue]
+
+    async def _reload_elo(self):
+        for player in [*self.players, *self.red, *self.green, *self.blue]:
+            if self.type == GameType.SM5:
+                player.sm5_mu, player.sm5_sigma = await sql.fetchone("SELECT sm5_mu, sm5_sigma FROM players WHERE player_id = %s", (player.player_id,))
+            elif self.type == GameType.LASERBALL:
+                player.laserball_mu, player.laserball_sigma = await sql.fetchone("SELECT laserball_mu, laserball_sigma FROM players WHERE player_id = %s", (player.player_id,))
     
     @classmethod
     async def from_id(cls, id: int):
