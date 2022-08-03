@@ -27,7 +27,11 @@ async def admin_matchmake_post(request: web.Request):
 
     match = ratinghelper.matchmake_elo(players, mode)
 
+    team1 = match[0]
+    team2 = match[1]
+
     win_chance = ratinghelper.get_win_chance(*match)
+    draw_chance = round(ratinghelper.get_draw_chance(team1, team2), 3)
     
     # format match
     
@@ -42,4 +46,4 @@ async def admin_matchmake_post(request: web.Request):
     win_chance[0] = round(win_chance[0], 2)
     win_chance[1] = round(win_chance[1], 2)
 
-    return await render_template(request, "admin/matchmake_results.html", team1=match[0], team2=match[1], win_chance=win_chance)
+    return await render_template(request, "admin/matchmake_results.html", team1=match[0], team2=match[1], win_chance=win_chance, draw_chance=draw_chance)
