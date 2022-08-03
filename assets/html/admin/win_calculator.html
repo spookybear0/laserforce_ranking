@@ -68,17 +68,22 @@
     <div class="sidebar">
         <a href="/admin">Dashboard</a>
         <a href="/admin/players">Players</a>
-        <a class="active" href="/admin/matchmake">Matchmake</a>
-        <a href="/admin/win_chance">Win calculator</a>
+        <a href="/admin/matchmake">Matchmake</a>
+        <a class="active" href="/admin/win_chance">Win calculator</a>
     </div>
     <div class="content" >
         <div>
-            <h2 style="text-align: center;">Matchmake</h2>
-            <form class="modal-content animate" action="/admin/matchmake" method="post" style="text-align: center;">
+            <h2 style="text-align: center;">Win chance calculator</h2>
+            <form class="modal-content animate" action="/admin/win_chance" method="post" style="text-align: center;">
                 <input type="text" placeholder="sm5" name="mode"><br><br><br><br>
                 <div class="container">
-                    {% for i in range(16) %}
-                    <input type="text" placeholder="Player Codename" name="player{{ i }}"><br><br>
+                    <p>Team 1</p>
+                    {% for i in range(8) %}
+                    <input type="text" placeholder="Player Codename" name="1player{{ i }}"><br><br>
+                    {% endfor %}
+                    <p>Team 2</p>
+                    {% for i in range(8) %}
+                    <input type="text" placeholder="Player Codename" name="2player{{ i }}"><br><br>
                     {% endfor %}
                     <button type="submit">Submit</button>
                 </div>

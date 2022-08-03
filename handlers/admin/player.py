@@ -24,8 +24,8 @@ async def admin_player_get(request: web.Request):
                                 red_teams_laserball=await gamehelper.get_teams(GameType.LASERBALL, Team.RED, player.player_id),
                                 blue_teams_laserball=await gamehelper.get_teams(GameType.LASERBALL, Team.BLUE, player.player_id),
                                 sm5_win_percent=await gamehelper.get_win_percent(GameType.SM5, player.player_id),
-                                laserball_win_percent=await gamehelper.get_win_percent(GameType.LASERBALL, player.player_id),)
-                                #win_percent=await gamehelper.get_win_percent_overall(player.player_id))
+                                laserball_win_percent=await gamehelper.get_win_percent(GameType.LASERBALL, player.player_id),
+                                win_percent=await gamehelper.get_win_percent_overall(player.player_id))
 
 @routes.post("/admin/player")
 async def admin_player_post(request: web.Request):

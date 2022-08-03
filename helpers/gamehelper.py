@@ -4,6 +4,9 @@ from helpers import ratinghelper
 from typing import List
 import asyncio
 
+def avg(iter: List):
+    return sum(iter) / len(iter)
+
 async def get_total_games_played():
     q = await sql.fetchone("SELECT COUNT(*) FROM sm5_game_players")
     q2 = await sql.fetchone("SELECT COUNT(*) FROM laserball_game_players")
@@ -157,15 +160,27 @@ async def get_win_percent(game_type: GameType, player_id: str) -> float:
                             (player_id,))
     if not wins[0]:
         return 0.0
-    return float(wins[0])
+    return round(float(wins[0]), 2)
+
 
 async def get_win_percent_overall(player_id: str) -> float:
-    wins = await sql.fetchone(f"""SELECT AVG(CASE WHEN games.winner = sm5_game_players.team OR games.winner = laserball_game_players.team THEN 1 ELSE 0 END)
+    wins_1 = await sql.fetchall(f"""SELECT CASE WHEN games.winner = sm5_game_players.team THEN 1 ELSE 0 END
                                 FROM games
                                 INNER JOIN sm5_game_players
                                 ON games.id = sm5_game_players.game_id
-                                INNER JOIN laserball_game_players
-                                ON games.id = laserball_game_players.game_id
                                 WHERE sm5_game_players.player_id = %s;""",
                             (player_id,))
-    return float(wins[0])
+
+    wins_2 = await sql.fetchall(f"""SELECT CASE WHEN games.winner = laserball_game_players.team THEN 1 ELSE 0 END
+                                FROM games
+                                INNER JOIN laserball_game_players
+                                ON games.id = laserball_game_players.game_id
+                                WHERE laserball_game_players.player_id = %s;""",
+                            (player_id,))
+    
+    wins = []
+
+    for i in [*wins_1, *wins_2]:
+        wins.append(i[0])
+
+    return round(float(avg(wins)), 2)

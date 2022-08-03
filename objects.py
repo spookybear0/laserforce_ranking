@@ -62,7 +62,7 @@ class Player:
     def games(self) -> int:
         return IPLPlayer.from_id(self.player_id).games
 
-    async def _set_lifetime_stats(self):
+    async def _get_lifetime_stats(self):
         data = await sql.fetchone("SELECT SUM(goals), SUM(assists), SUM(steals), SUM(clears), SUM(blocks) FROM laserball_game_players WHERE player_id = %s", (self.player_id,))
         self.goals   = int(data[0]) if data[0] else 0
         self.assists = int(data[1]) if data[1] else 0
@@ -76,7 +76,7 @@ class Player:
         if not data:
             return None
         ret = cls(*data)
-        await ret._set_lifetime_stats()
+        await ret._get_lifetime_stats()
         return ret
 
     @classmethod
@@ -85,7 +85,7 @@ class Player:
         if not data:
             return None
         ret = cls(*data)
-        await ret._set_lifetime_stats()
+        await ret._get_lifetime_stats()
         return ret
     
     @classmethod
@@ -94,7 +94,7 @@ class Player:
         if not data:
             return None
         ret = cls(*data)
-        await ret._set_lifetime_stats()
+        await ret._get_lifetime_stats()
         return ret
     
 @dataclass

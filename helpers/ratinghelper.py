@@ -35,10 +35,21 @@ def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     # predict
     return openskill.predict_win([team1, team2])
 
+def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
+    """
+    Gets draw chance for two teams
+    """
+    mode = mode.value
+    # get rating object for mode
+    team1 = attrgetter(team1, f"{mode}_rating")
+    team2 = attrgetter(team2, f"{mode}_rating")
+    
+    # predict
+    return openskill.predict_draw([team1, team2])
+
 def matchmake_elo(players, mode: GameType=GameType.SM5):
     mode = mode.value
     # bruteforce sort
-    shuffle(players)
 
     team1 = players[:len(players)//2]
     team2 = players[len(players)//2:]
@@ -46,11 +57,12 @@ def matchmake_elo(players, mode: GameType=GameType.SM5):
     best1 = team1.copy()
     best2 = team2.copy()
     
+    # gets most fair teams
     for i in range(500):
         shuffle(players)
         team1 = players[:len(players)//2]
         team2 = players[len(players)//2:]
-        # woah
+        # checks if teams are more fair then previous best
         if abs(sum(attrgetter(team1, lambda x: getattr(x, f"{mode}_ordinal"))) - sum(attrgetter(team2, lambda x: getattr(x, f"{mode}_ordinal"))))\
             < abs(sum(attrgetter(best1, lambda x: getattr(x, f"{mode}_ordinal"))) - sum(attrgetter(best2, lambda x: getattr(x, f"{mode}_ordinal")))):
             best1, best2 = team1, team2

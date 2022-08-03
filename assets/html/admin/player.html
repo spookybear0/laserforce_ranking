@@ -79,6 +79,7 @@
         <a href="/admin">Dashboard</a>
         <a href="/admin/players">Players</a>
         <a href="/admin/matchmake">Matchmake</a>
+        <a href="/admin/win_chance">Win calculator</a>
     </div>
     <div class="content">
         <div>
@@ -93,6 +94,10 @@
                     <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ laserball_win_percent*100 }}%</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ win_percent }}%</span></div>
                     <div style="display: flex; float: left;">
+                        <div class="btn">
+                            <canvas id="teams" style="max-width:600px;"></canvas>
+                            <p>Teams</p>
+                        </div>
                         <div class="btn">
                             <canvas id="sm5_teams" style="max-width:600px;"></canvas>
                             <p>SM5 Teams</p>
@@ -131,6 +136,23 @@
                 datasets: [{
                 backgroundColor: ["#b91d47", "#0047AB"],
                 data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
+                }]
+            },
+            options: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
+            }
+        });
+
+        new Chart("teams", {
+            type: "pie",
+            data: {
+                labels: ["Red", "Blue", "Green"],
+                datasets: [{
+                backgroundColor: ["#b91d47", "#0047AB", "#00aba9"],
+                data: [{{ red_teams_laserball }} + {{ red_teams_sm5 }}, {{ blue_teams_laserball }}, {{ green_teams_sm5 }}]
                 }]
             },
             options: {
