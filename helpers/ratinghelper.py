@@ -15,13 +15,13 @@ def calculate_laserball_mvp_points(player: LaserballGamePlayer):
 
 # different than operator.attrgetter (legacy code)
 def attrgetter(obj, func):
-    itr = obj.copy()
-    for i, j in enumerate(obj):
+    ret = []
+    for i in obj:
         if callable(func):
-            itr[i] = func(j)
+            ret.append(func(i))
         else:
-            itr[i] = getattr(j, func)
-    return itr
+            ret.append(getattr(i, func))
+    return ret
 
 def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     """
