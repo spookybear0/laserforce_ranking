@@ -1,5 +1,5 @@
 from aiohttp import web
-from helpers import gamehelper, userhelper
+from helpers import gamehelper, userhelper, ratinghelper
 from utils import render_template
 from shared import routes
 from objects import GameType, Team

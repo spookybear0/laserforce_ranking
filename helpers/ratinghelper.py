@@ -19,6 +19,8 @@ def attrgetter(obj, func):
     for i in obj:
         if callable(func):
             ret.append(func(i))
+        elif isinstance(func, int):
+            ret.append(i[func])
         else:
             ret.append(getattr(i, func))
     return ret

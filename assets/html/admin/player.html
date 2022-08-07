@@ -42,8 +42,8 @@
         background: #1A1A1A;
         padding: 1rem;
         margin: auto;
-        width: 60%;
-        height: 80vh;
+        width: 70%;
+        height: 100vh;
     }
 
     .userlist-pos {
@@ -90,9 +90,9 @@
                     <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
                     <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">SM5 Win Percent</span><span class="userlist-info-text">{{ sm5_win_percent*100 }}%</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ laserball_win_percent*100 }}%</span></div>
-                    <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ win_percent*100 }}%</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">SM5 Win Percent</span><span class="userlist-info-text">{{ (sm5_win_percent*100)|round(2) }}%</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ (laserball_win_percent*100)|round(2) }}%</span></div>
+                    <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ (win_percent*100)|round(2) }}%</span></div>
                     <div style="display: flex; float: left;">
                         <div class="btn">
                             <canvas id="teams" style="max-width:600px;"></canvas>
@@ -107,6 +107,7 @@
                             <p>Laserball Teams</p>
                         </div>
                     </div>
+                    <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="data:image/png;base64,{{ role_plot }}"/>
                 </div>
             </div>
         </div>
