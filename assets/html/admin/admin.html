@@ -14,6 +14,10 @@
     <div class="content">
         <div>
             <div class="btn" style="position: relative; top: 4px;">
+                <canvas id="laserball_team_wins" style="max-width:600px;"></canvas>
+                <p>Laserball Team wins</p>
+            </div>
+            <div class="btn" style="position: relative; top: 4px;">
                 <canvas id="sm5_team_wins" style="max-width:600px;"></canvas>
                 <p>SM5 Team wins</p>
             </div>
@@ -39,7 +43,23 @@
                 labels: ["Red", "Green"],
                 datasets: [{
                 backgroundColor: ["#b91d47","#00aba9"],
-                data: [{{ red_wins }}, {{ green_wins }}]
+                data: [{{ sm5_red_wins }}, {{ sm5_green_wins }}]
+                }]
+            },
+            options: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
+            }
+        });
+        new Chart("laserball_team_wins", {
+            type: "pie",
+            data: {
+                labels: ["Red", "Blue"],
+                datasets: [{
+                backgroundColor: ["#b91d47","#0047AB"],
+                data: [{{ laserball_red_wins }}, {{ laserball_blue_wins }}]
                 }]
             },
             options: {

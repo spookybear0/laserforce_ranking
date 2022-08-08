@@ -16,6 +16,8 @@ async def admin(request: web.Request):
         total_players=total_players,
         total_games=total_games,
         total_games_played=total_games_played,
-        red_wins=await gamehelper.get_wins(GameType.SM5, Team.RED),
-        green_wins=await gamehelper.get_wins(GameType.SM5, Team.GREEN)
+        sm5_red_wins=await gamehelper.get_wins(GameType.SM5, Team.RED),
+        sm5_green_wins=await gamehelper.get_wins(GameType.SM5, Team.GREEN),
+        laserball_red_wins=await gamehelper.get_wins(GameType.LASERBALL, Team.RED),
+        laserball_blue_wins=await gamehelper.get_wins(GameType.SM5, Team.BLUE)
     )
