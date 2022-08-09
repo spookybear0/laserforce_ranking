@@ -183,4 +183,6 @@ async def get_win_percent_overall(player_id: str) -> float:
     for i in [*wins_1, *wins_2]:
         wins.append(i[0])
 
+    if not wins:
+        return 0.0
     return round(float(avg(wins)), 2)
