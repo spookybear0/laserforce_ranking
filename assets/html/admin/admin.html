@@ -13,12 +13,12 @@
     </div>
     <div class="content">
         <div>
-            <div class="btn" style="position: relative; top: 4px;">
-                <canvas id="laserball_team_wins" style="max-width:600px;"></canvas>
+            <div class="btn">
+                <canvas id="laserball_team_wins"></canvas>
                 <p>Laserball Team wins</p>
             </div>
-            <div class="btn" style="position: relative; top: 4px;">
-                <canvas id="sm5_team_wins" style="max-width:600px;"></canvas>
+            <div class="btn">
+                <canvas id="sm5_team_wins"></canvas>
                 <p>SM5 Team wins</p>
             </div>
             <div class="btn">
@@ -33,6 +33,8 @@
                 <h2>{{ total_games_played }}</h2>
                 <p>Games Played</p>
             </div>
+            <br>
+            <img style="width: 41.5em; padding: 20px;" src="data:image/png;base64,{{ role_plot }}"/>
         </div>
     </div>
 

@@ -1,13 +1,12 @@
+from helpers.userhelper import get_avg_role_score_plot
+from helpers.statshelper import img_to_b64
 from objects import GameType, Team
-from helpers.statshelper import barplot
 from utils import render_template
-from helpers import gamehelper, ratinghelper
+from helpers import gamehelper
 from objects import Player
 from shared import routes
 from aiohttp import web
 from shared import sql
-from io import BytesIO
-import base64
 
 @routes.get("/admin/player/{id}")
 async def admin_player_get(request: web.Request):
@@ -21,29 +20,11 @@ async def admin_player_get(request: web.Request):
         if not player:
             raise web.HTTPNotFound(reason="Invalid ID or codename")
 
-    data = []
-    
-    for role in ["commander", "heavy", "scout", "ammo", "medic"]:
-        q = await sql.fetchone("""SELECT AVG(score) FROM sm5_game_players
-                                  WHERE player_id = %s AND role = %s""",
-                              (player.player_id, role))
-        if q[0]:
-            data.append(int(q[0]))
-        else:
-            data.append(0)
-    
-    role_plot = barplot(["Commander", "Heavy", "Scout", "Ammo", "Medic"],
-                        data,
-                        f"Average score in relation to role\n{player.player_id}",
-                        "Role", "Average score")
-
-    role_plot_b64 = BytesIO()
-    role_plot.save(role_plot_b64, "PNG")
-    role_plot_b64 = base64.b64encode(role_plot_b64.getvalue())
+    role_plot = await get_avg_role_score_plot(player)
     
     return await render_template(request, "admin/player.html",
                                 player=player,
-                                role_plot=role_plot_b64.decode("utf-8"),
+                                role_plot=img_to_b64(role_plot),
                                 red_teams_sm5=await gamehelper.get_teams(GameType.SM5, Team.RED, player.player_id),
                                 green_teams_sm5=await gamehelper.get_teams(GameType.SM5, Team.GREEN, player.player_id),
                                 red_teams_laserball=await gamehelper.get_teams(GameType.LASERBALL, Team.RED, player.player_id),

@@ -1,8 +1,9 @@
 from typing import List, Tuple
 import matplotlib.pyplot as plt
-from PIL import Image
+from io import BytesIO
 import seaborn as sns
-import pandas as pd
+from PIL import Image
+import base64
 import PIL
 
 dark_mode = {"ytick.color" : "w",
@@ -11,6 +12,12 @@ dark_mode = {"ytick.color" : "w",
             "axes.edgecolor" : "w",
             "axes.titlecolor": "w"
 }
+
+def img_to_b64(img: PIL.Image) -> str:
+    img_b64 = BytesIO()
+    img.save(img_b64, "PNG")
+    img_b64 = base64.b64encode(img_b64.getvalue())
+    return img_b64.decode("utf-8")
 
 def clear_plt():
     fig = plt.figure()
