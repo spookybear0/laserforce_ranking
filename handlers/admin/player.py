@@ -1,5 +1,4 @@
-from helpers.userhelper import get_avg_role_score_plot
-from helpers.statshelper import img_to_b64
+from helpers.userhelper import get_median_role_score
 from objects import GameType, Team
 from utils import render_template
 from helpers import gamehelper
@@ -19,12 +18,11 @@ async def admin_player_get(request: web.Request):
 
         if not player:
             raise web.HTTPNotFound(reason="Invalid ID or codename")
-
-    role_plot = await get_avg_role_score_plot(player)
     
     return await render_template(request, "admin/player.html",
                                 player=player,
-                                role_plot=img_to_b64(role_plot),
+                                role_plot_data_player=await get_median_role_score(player),
+                                role_plot_data_world=await get_median_role_score(),
                                 red_teams_sm5=await gamehelper.get_teams(GameType.SM5, Team.RED, player.player_id),
                                 green_teams_sm5=await gamehelper.get_teams(GameType.SM5, Team.GREEN, player.player_id),
                                 red_teams_laserball=await gamehelper.get_teams(GameType.LASERBALL, Team.RED, player.player_id),

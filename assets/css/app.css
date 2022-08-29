@@ -421,10 +421,9 @@ canvas {
 }
 
 .inline-block {
-    width: 10rem;
-    height: 5rem;
-    margin-left: 20px;
     display: inline-block;
+    position: relative;
+    vertical-align: top;
 }
 
 body {

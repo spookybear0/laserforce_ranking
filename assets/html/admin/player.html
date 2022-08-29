@@ -107,12 +107,14 @@
                             <p>Laserball Teams</p>
                         </div>
                     </div>
-                    <img style="display: block; margin-left: auto; margin-right: auto; width: 30em; float: right;" src="data:image/png;base64,{{ role_plot }}"/>
+                    <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; float: left;" height="200px"></canvas>
                 </div>
             </div>
         </div>
     </div>
     <script>
+        Chart.defaults.global.defaultFontColor = "#FFFFFF";
+
         new Chart("sm5_teams", {
             type: "pie",
             data: {
@@ -160,6 +162,65 @@
                 legend: {
                     display: false,
                     fullSize: false
+                }
+            }
+        });
+
+        new Chart("avg_role_score", {
+            type: "bar",
+            data: {
+                labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+                datasets: [
+                    {
+                        label: "Player's Median Score",
+                        data: {{ role_plot_data_player }},
+                        backgroundColor: [
+                            "rgb(50, 116, 161)",
+                            "rgb(225, 129, 44)",
+                            "rgb(58, 146, 58)",
+                            "rgb(192, 61, 62)",
+                            "rgb(147, 114, 178)"
+                        ]
+                    },
+                    {
+                        label: "World's Median Score",
+                        data: {{ role_plot_data_world }},
+                        backgroundColor: [
+                            "rgb(50, 166, 161)",
+                            "rgb(225, 179, 44)",
+                            "rgb(58, 196, 58)",
+                            "rgb(192, 121, 62)",
+                            "rgb(147, 174, 178)"
+                        ]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks:{
+                            min: 0,
+                        },
+                        stacked: false,
+                    }],
+                    xAxes: {
+                        gridLines: {
+                            display: false,
+                        },
+                        stacked: false
+                    },
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: "rgb(255, 255, 255)"
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: "Median player score vs median world score"
+                    }
                 }
             }
         });

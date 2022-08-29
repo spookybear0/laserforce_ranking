@@ -4,16 +4,16 @@ from laserforce import Player as IPLPlayer
 from helpers.statshelper import barplot
 from shared import sql
 
-async def get_avg_role_score_plot(player: Optional[Player]=None):
+async def get_median_role_score(player: Optional[Player]=None):
     data = []
     
     for role in ["commander", "heavy", "scout", "ammo", "medic"]:
         if player:
-            q = await sql.fetchone("""SELECT AVG(score) FROM sm5_game_players
+            q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
                                     WHERE player_id = %s AND role = %s""",
                                 (player.player_id, role))
         else:
-            q = await sql.fetchone("""SELECT AVG(score) FROM sm5_game_players
+            q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
                                     WHERE role = %s""",
                                 (role))
         if q[0]:
@@ -21,15 +21,7 @@ async def get_avg_role_score_plot(player: Optional[Player]=None):
         else:
             data.append(0)
 
-    title = "Average score in relation to role"
-
-    if player:
-        title += f"\n{player.player_id}"
-        
-    return barplot(["Commander", "Heavy", "Scout", "Ammo", "Medic"],
-                        data,
-                        title,
-                        "Role", "Average score")
+    return data
 
 async def get_total_players() -> int:
     """
