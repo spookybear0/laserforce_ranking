@@ -26,7 +26,6 @@ def main():
     loop.run_until_complete(async_main())
     
     app.router.add_static("/assets/", path="./assets/", name="assets")
-    app.router.add_static("/scripts/", path="./assets/scripts/", name="scripts")
     router.add_all_routes(app)
     web.run_app(app, host="localhost", port=8000)
     
