@@ -1,11 +1,11 @@
 from helpers import gamehelper, userhelper
 from utils import render_template
 from objects import GameType, Team
-from shared import routes
-from aiohttp import web
+from shared import app
+from sanic import Request
 
-@routes.get("/admin")
-async def admin(request: web.Request):
+@app.get("/admin")
+async def admin(request: Request):
     total_players = await userhelper.get_total_players()
     total_games = await gamehelper.get_total_games()
     total_games_played = await gamehelper.get_total_games_played()

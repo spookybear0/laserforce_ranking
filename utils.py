@@ -1,6 +1,5 @@
-from aiohttp import web
-from shared import templates
+from shared import jinja
 
-async def render_template(r, template, *args, **kwargs) -> web.Response:
-    text = templates.get_template(template).render(*args, **kwargs)
-    return web.Response(text=text, content_type="text/html")
+async def render_template(r, template, *args, **kwargs):
+    text = jinja.render(template, r, *args, **kwargs)
+    return text

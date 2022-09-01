@@ -3,12 +3,14 @@ from objects import GameType, Team
 from utils import render_template
 from helpers import gamehelper
 from objects import Player
-from shared import routes
-from aiohttp import web
-from shared import sql
+from shared import app
+from sanic import Request, HTTPResponse, response, exceptions
+from shared import app
 
-@routes.get("/admin/player/{id}")
-async def admin_player_get(request: web.Request):
+sql = app.ctx.sql
+
+@app.get("/admin/player/{id}")
+async def admin_player_get(request: Request):
     id = request.match_info["id"]
 
     player = await Player.from_player_id(id)
@@ -17,7 +19,7 @@ async def admin_player_get(request: web.Request):
         player = await Player.from_name(id)  # could be codename
 
         if not player:
-            raise web.HTTPNotFound(reason="Invalid ID or codename")
+            raise exceptions.NotFound("Not found: Invalid ID or codename")
     
     return await render_template(request, "admin/player.html",
                                 player=player,
@@ -31,8 +33,8 @@ async def admin_player_get(request: web.Request):
                                 laserball_win_percent=await gamehelper.get_win_percent(GameType.LASERBALL, player.player_id),
                                 win_percent=await gamehelper.get_win_percent_overall(player.player_id))
 
-@routes.post("/admin/player")
-async def admin_player_post(request: web.Request):
+@app.post("/admin/player")
+async def admin_player_post(request: Request):
     data = await request.post()
     user = data["userid"]
-    raise web.HTTPFound(f"/admin/player/{user}")
+    return response.redirect(f"/admin/player/{user}")

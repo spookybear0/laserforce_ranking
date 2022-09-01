@@ -1,10 +1,9 @@
-from objects import GameType
-from aiohttp import web
-from shared import routes
-from helpers import userhelper, gamehelper
+from sanic import Request
+from shared import app
 from utils import render_template
 
 # shows top x
-@routes.get("/")
-async def index(request: web.Request):
-    return await render_template(request, "top.html", players=await userhelper.get_top(GameType.SM5, 50))
+@app.get("/")
+async def index(request: Request):
+    return await render_template(request, "index.html")
+    #return await render_template(request, "top.html", players=await userhelper.get_top(GameType.SM5, 50))

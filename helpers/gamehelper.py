@@ -1,8 +1,10 @@
-from shared import sql
+from shared import app
 from objects import Game, GameType, Team
 from helpers import ratinghelper
 from typing import List
 import asyncio
+
+sql = app.ctx.sql
 
 def avg(iter: List):
     return sum(iter) / len(iter)

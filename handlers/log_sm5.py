@@ -1,18 +1,17 @@
 from helpers import userhelper, gamehelper, ratinghelper
-from aiohttp import web
-from shared import routes
+from sanic import Request, exceptions, response
+from shared import app
 from utils import render_template
 from objects import ALL_ROLES, GameType, Team, Game
-import traceback
 import bcrypt
 from traceback import print_exc
 
-@routes.get("/log_sm5")
-async def log_sm5_get(request: web.Request):
+@app.get("/log_sm5")
+async def log_sm5_get(request: Request):
     return await render_template(request, "log_sm5.html")
 
-@routes.post("/log_sm5")
-async def log_sm5_post(request: web.Request):
+@app.post("/log_sm5")
+async def log_sm5_post(request: Request):
     data = await request.post()
 
     # super secure am i right boys
@@ -20,7 +19,7 @@ async def log_sm5_post(request: web.Request):
     pw = b"$2b$12$vHna8FDzqxkh5MblhUg.quyu6kj5uOnBL2dG6yC/9rvT4xAlsOnoe"
 
     if not bcrypt.checkpw(bytes(data["password"], encoding="utf-8"), pw):
-        return web.Response(text="403: Access Denied! (you have been reported to the fbi)")
+        raise exceptions.Forbidden("Access Denied! (you have been reported to the fbi)")
         
     winner = data["winner"]  # green or red
     
@@ -35,31 +34,26 @@ async def log_sm5_post(request: web.Request):
     try:
         await userhelper.get_data_from_form_sm5(red_players, red_game_players, data, Team.RED)
     except ValueError:
-        print_exc()
-        return web.Response(text="401: Error, invalid data! (red team)")
+        raise exceptions.BadRequest("Error, invalid data! (red team)")
     
     # get form data for green team (turn it into objects)
     try:
         await userhelper.get_data_from_form_sm5(green_players, green_game_players, data, Team.GREEN)
     except ValueError:
-        print_exc()
-        return web.Response(text="401: Error, invalid data! (green team)")
+        raise exceptions.BadRequest("Error, invalid data! (green team)")
         
     # make sure input is correct
     if len(red_players) == 0 or len(green_players) == 0:
-        print_exc()
-        return web.Response(text="401: Error, invalid data! (invalid teams)")
+        raise exceptions.BadRequest("Error, invalid data! (invalid teams)")
 
     players = [*red_players, *green_players]
 
     for player in players:
         if not player.game_player.role.value in ALL_ROLES:
-            return web.Response(text="401: Error, invalid data! (role)")
-        if (len(player.player_id.split("-")) != 3) and not player.id == -1:
-            return web.Response(text="401: Error, invalid data! (id)")
+            raise exceptions.BadRequest("Error, invalid data! (role)")
 
     if not winner in ["green", "red"]:
-        return web.Response(text="401: Error, invalid data! (no winner)")
+        raise exceptions.BadRequest("Error, invalid data! (no winner)")
 
     # assign all players to the game obj
     game = Game(-1, Team(winner), GameType.SM5)  # game_id is -1 becaue its undefined
@@ -67,10 +61,6 @@ async def log_sm5_post(request: web.Request):
     game.green = green_players
     game.red = red_players
 
-    try:
-        await gamehelper.log_sm5_game(game)
-    except Exception as e:
-        traceback.print_exc() # debug info
-        return web.Response(text="500: Error, game was not logged!")
+    await gamehelper.log_sm5_game(game)
     
-    return web.Response(text="200: Logged!")
+    return response.text("Logged!")

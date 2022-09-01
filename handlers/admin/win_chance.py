@@ -1,15 +1,15 @@
-from aiohttp import web
+from sanic import Request
 from helpers import ratinghelper
 from utils import render_template
-from shared import routes
+from shared import app
 from objects import GameType, Player
 
-@routes.get("/admin/win_chance")
-async def admin_win_chance_get(request: web.Request):
+@app.get("/admin/win_chance")
+async def admin_win_chance_get(request: Request):
     return await render_template(request, "admin/win_calculator.html")
 
-@routes.post("/admin/win_chance")
-async def admin_win_chance_post(request: web.Request):
+@app.post("/admin/win_chance")
+async def admin_win_chance_post(request: Request):
     data = await request.post()
 
     team1 = []

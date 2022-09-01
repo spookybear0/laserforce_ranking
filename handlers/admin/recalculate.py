@@ -1,8 +1,8 @@
-from aiohttp import web
+from sanic import Request, HTTPResponse
 from helpers import gamehelper
-from shared import routes
+from shared import app
 
-@routes.get("/admin/recalculate")
-async def recalculate(request: web.Request):
+@app.get("/admin/recalculate")
+async def recalculate(request: Request):
     await gamehelper.relog_all_games()
-    return web.HTTPOk()
+    return HTTPResponse("200 OK.", status=200)

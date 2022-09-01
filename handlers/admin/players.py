@@ -1,11 +1,11 @@
-from aiohttp import web
+from sanic import Request
 from helpers import gamehelper, userhelper
 from utils import render_template
-from shared import routes
+from shared import app
 
-@routes.get("/admin/players")
-async def admin_players(request: web.Request):
-    page = int(request.rel_url.query.get("page", 0))
+@app.get("/admin/players")
+async def admin_players(request: Request):
+    page = int(request.args.get("page", 0))
     
     return await render_template(
         request,

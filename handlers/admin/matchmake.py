@@ -1,15 +1,15 @@
-from aiohttp import web
+from sanic import Request
 from helpers import ratinghelper
 from utils import render_template
-from shared import routes
+from shared import app
 from objects import GameType, Player
 
-@routes.get("/admin/matchmake")
-async def admin_matchmake_get(request: web.Request):
+@app.get("/admin/matchmake")
+async def admin_matchmake_get(request: Request):
     return await render_template(request, "admin/matchmake.html")
 
-@routes.post("/admin/matchmake")
-async def admin_matchmake_post(request: web.Request):
+@app.post("/admin/matchmake")
+async def admin_matchmake_post(request: Request):
     data = await request.post()
 
     players = []

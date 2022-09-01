@@ -1,0 +1,24 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <title>{% block title %}{% endblock %} - laserforce.spoo.uk</title>
+    {% block html_head %}{% endblock %}
+</head>
+<body>
+    <ul class="nav-bar">
+        <li class="nav-item"><a class="active" href="/admin">Dashboard</a></li>
+        <li class="nav-item"><a href="/admin/players">Players</a></li>
+        <li class="nav-item"><a href="/admin/matchmake">Matchmake</a></li>
+        <li class="nav-item"><a href="/admin/win_chance">Win calculator</a></li>
+    </ul>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+  
+    <div id="footer">
+        {% block footer %}
+            
+        {% endblock %}
+    </div>
+</body>

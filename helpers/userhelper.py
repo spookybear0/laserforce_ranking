@@ -2,7 +2,9 @@ from objects import Team, Role, Player, GameType, SM5GamePlayer, LaserballGamePl
 from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
 from helpers.statshelper import barplot
-from shared import sql
+from shared import app
+
+sql = app.ctx.sql
 
 async def get_median_role_score(player: Optional[Player]=None):
     data = []
