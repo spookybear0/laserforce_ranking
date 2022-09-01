@@ -20,9 +20,6 @@ async def main():
 
     await server.startup()
     await server.serve_forever()
-
-    #app.run(host="localhost", port=8000, debug=True, loop=loop)
-    #web.run_app(app, host="localhost", port=8000)
     
 if __name__ == "__main__":
     asyncio.set_event_loop(asyncio.new_event_loop())
