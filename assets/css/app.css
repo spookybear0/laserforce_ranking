@@ -342,60 +342,100 @@ body {
 }
 
 .nav-bar {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
 }
 
 .nav-item {
-  float: left;
+    float: left;
 }
 
 .nav-item a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
 }
 
 .nav-item a:hover:not(.active) {
-  background-color: #111;
+    background-color: #111;
 }
 
 .active {
-  background-color: #00A9FD;
+    background-color: #00A9FD;
 }
 
 .userlist {
-  border-radius: 15px;
-  background: #1A1A1A;
-  padding: 1rem;
-  margin: auto;
-  width: 60%;
-  height: 80vh;
+    border-radius: 15px;
+    background: #1A1A1A;
+    padding: 1rem;
+    margin: auto;
+    width: 60%;
+    height: 80vh;
 }
 
 .userlist-pos {
-  border-radius: 10px;
-  padding: 0.2rem;
-  margin: 0.9rem;
-  background: #262626;
-  padding-bottom: 0.5rem;
+    border-radius: 10px;
+    padding: 0.2rem;
+    margin: 0.9rem;
+    background: #262626;
+    padding-bottom: 0.5rem;
 }
 
 .userlist-username-text {
-  font-size: 1.5rem;
-  position: relative;
-  left: 0.75rem;
-  bottom: 0.125rem;
+    font-size: 1.5rem;
+    position: relative;
+    left: 0.75rem;
+    bottom: 0.125rem;
 }
 
 .userlist-info-text {
-  float: right;
-  right: 0.25rem;
-  top: 0.25rem;
-  position: relative;
+    float: right;
+    right: 0.25rem;
+    top: 0.25rem;
+    position: relative;
+}
+
+.table-div {
+    margin: auto;
+    width: 40%;
+    padding: 2em;
+}
+
+table {
+    margin: auto;
+    padding: 1rem;
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr:nth-child(even) {
+    background-color: #252525;
+}
+
+th, td, tr {
+    text-align: center;
+    border: 1px solid lightgray;
+    padding: 5px;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-right {
+    text-align: right;
+}
+
+td {
+    color: lightgray;
 }

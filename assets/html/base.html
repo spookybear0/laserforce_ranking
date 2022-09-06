@@ -6,11 +6,15 @@
     {% block html_head %}{% endblock %}
 </head>
 <body>
+    {% set navigation_bar = [
+        ('/', 'Home'),
+        ('/players', 'Players'),
+        ('/tools', 'Tools')
+    ] -%}
     <ul class="nav-bar">
-        <li class="nav-item"><a class="active" href="/admin">Dashboard</a></li>
-        <li class="nav-item"><a href="/admin/players">Players</a></li>
-        <li class="nav-item"><a href="/admin/matchmake">Matchmake</a></li>
-        <li class="nav-item"><a href="/admin/win_chance">Win calculator</a></li>
+        {% for href, caption in navigation_bar %}
+            <li class="nav-item"><a {% if href == request.path %}class="active"{% endif %} href="{{ href|e }}">{{ caption|e }}</a></li>
+        {% endfor %}
     </ul>
     <div id="content">
         {% block content %}{% endblock %}

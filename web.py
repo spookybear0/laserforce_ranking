@@ -4,12 +4,11 @@ import asyncio
 import router
 from mysql import MySQLPool
 from shared import app
-
+import signal
 
 path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(path)
 sys.path.append(path)
-
 
 async def main():
     router.add_all_routes(app)
@@ -22,5 +21,9 @@ async def main():
     await server.serve_forever()
     
 if __name__ == "__main__":
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    asyncio.run(main())
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        print("Exiting...")
