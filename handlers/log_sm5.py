@@ -1,4 +1,4 @@
-from helpers import userhelper, gamehelper, ratinghelper
+from helpers import userhelper, gamehelper, webhelper
 from sanic import Request, exceptions, response
 from shared import app
 from utils import render_template
@@ -12,13 +12,13 @@ async def log_sm5_get(request: Request):
 
 @app.post("/log_sm5")
 async def log_sm5_post(request: Request):
-    data = await request.post()
+    data = webhelper.get_post(request)
 
     # super secure am i right boys
 
     pw = b"$2b$12$vHna8FDzqxkh5MblhUg.quyu6kj5uOnBL2dG6yC/9rvT4xAlsOnoe"
 
-    if not bcrypt.checkpw(bytes(data["password"], encoding="utf-8"), pw):
+    if not bcrypt.checkpw(bytes(data["password"][0], encoding="utf-8"), pw):
         raise exceptions.Forbidden("Access Denied! (you have been reported to the fbi)")
         
     winner = data["winner"]  # green or red

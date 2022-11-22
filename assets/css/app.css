@@ -406,24 +406,6 @@ body {
     padding: 2em;
 }
 
-table {
-    margin: auto;
-    padding: 1rem;
-    border: 1px solid lightgray;
-    border-collapse: collapse;
-    width: 100%;
-}
-
-tr:nth-child(even) {
-    background-color: #252525;
-}
-
-th, td, tr {
-    text-align: center;
-    border: 1px solid lightgray;
-    padding: 5px;
-}
-
 .align-center {
     text-align: center;
 }
@@ -436,6 +418,3 @@ th, td, tr {
     text-align: right;
 }
 
-td {
-    color: lightgray;
-}

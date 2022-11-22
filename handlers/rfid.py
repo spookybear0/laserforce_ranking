@@ -1,7 +1,7 @@
 from sanic import Request, exceptions
 from shared import app
 from utils import render_template
-from helpers import rfidhelper
+from helpers import rfidhelper, webhelper
 
 @app.get("/rfid")
 async def rfid(request: Request):
@@ -9,7 +9,7 @@ async def rfid(request: Request):
 
 @app.post("/rfid")
 async def rfid_post(request: Request):
-    data = await request.post()
+    data = webhelper.get_post(request)
     hex = data.get("hex")
     decimal = data.get("decimal")
 

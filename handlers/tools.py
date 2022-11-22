@@ -1,6 +1,6 @@
 from sanic import Request
 from shared import app
-from helpers import ratinghelper
+from helpers import ratinghelper, webhelper
 from utils import render_template
 from objects import GameType, Player
 
@@ -10,8 +10,7 @@ async def tools(request: Request):
 
 @app.post("/matchmake")
 async def admin_matchmake_post(request: Request):
-    print(request.body)
-    data = await request.post()
+    data = await webhelper.get_post(request)
 
     players = []
 
