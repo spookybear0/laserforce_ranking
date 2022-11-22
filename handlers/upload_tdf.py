@@ -1,6 +1,6 @@
 from sanic import Request, exceptions, response
 from shared import app
-from helpers import webhelper
+from utils import get_post
 
 @app.get("/util/auto_upload_dl")
 async def auto_upload_dl(request: Request):
@@ -8,7 +8,7 @@ async def auto_upload_dl(request: Request):
 
 @app.post("/util/upload_tdf")
 async def auto_upload(request: Request):
-    data = webhelper.get_post(request)
+    data = get_post(request)
     type = data.get("type")
     file = data["upload_file"]
     

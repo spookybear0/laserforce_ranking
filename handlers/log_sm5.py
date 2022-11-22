@@ -1,7 +1,7 @@
-from helpers import userhelper, gamehelper, webhelper
+from helpers import userhelper, gamehelper
 from sanic import Request, exceptions, response
 from shared import app
-from utils import render_template
+from utils import render_template, get_post
 from objects import ALL_ROLES, GameType, Team, Game
 import bcrypt
 from traceback import print_exc
@@ -12,7 +12,7 @@ async def log_sm5_get(request: Request):
 
 @app.post("/log_sm5")
 async def log_sm5_post(request: Request):
-    data = webhelper.get_post(request)
+    data = get_post(request)
 
     # super secure am i right boys
 

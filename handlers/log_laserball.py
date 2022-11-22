@@ -1,7 +1,7 @@
-from helpers import userhelper, gamehelper, webhelper
+from helpers import userhelper, gamehelper
 from sanic import Request, exceptions, response
 from shared import app
-from utils import render_template
+from utils import render_template, get_post
 from objects import ALL_ROLES, GameType, Team, Game
 import bcrypt
 
@@ -11,7 +11,7 @@ async def log_laserball_get(request: Request):
 
 @app.post("/log_laserball")
 async def log_laserball_post(request: Request):
-    data = webhelper.get_post(request)
+    data = get_post(request)
 
     # super secure am i right boys
 
