@@ -4,7 +4,7 @@ import asyncio
 import router
 from mysql import MySQLPool
 from shared import app
-import signal
+import sanic
 
 path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(path)
