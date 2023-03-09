@@ -1,6 +1,12 @@
-from aiohttp import web
-from shared import templates
+from shared import jinja
+from sanic import Request
 
-async def render_template(r, template, *args, **kwargs) -> web.Response:
-    text = templates.get_template(template).render(*args, **kwargs)
-    return web.Response(text=text, content_type="text/html")
+def get_post(request: Request):
+    data = request.form
+    for key in data:
+        data[key] = data[key][0]
+    return data
+
+async def render_template(r, template, *args, **kwargs):
+    text = jinja.render(template, r, *args, **kwargs)
+    return text

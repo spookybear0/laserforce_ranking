@@ -2,9 +2,11 @@ from enum import Enum
 from typing import List
 from laserforce import Player as IPLPlayer
 from dataclasses import dataclass
-from shared import sql
+from shared import app
 import datetime
 import openskill
+
+sql = app.ctx.sql
 
 ALL_ROLES = ("scout", "heavy", "commander", "medic", "ammo")
 

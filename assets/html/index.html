@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+{% block content %}
+
+<div class="content">
+    <div>
+        <div class="btn">
+            <canvas id="laserball_team_wins"></canvas>
+            <p>Laserball Team wins</p>
+        </div>
+        <div class="btn">
+            <canvas id="sm5_team_wins"></canvas>
+            <p>SM5 Team wins</p>
+        </div>
+        <div class="btn">
+            <h2>{{ total_players }}</h2>
+            <p>Players</p>
+        </div>
+        <div class="btn">
+            <h2>{{ total_games }}</h2>
+            <p>Games Logged</p>
+        </div>
+        <div class="btn">
+            <h2>{{ total_games_played }}</h2>
+            <p>Games Played</p>
+        </div>
+        <br>
+        <canvas class="inline-block" id="avg_role_score" style="max-width: 1090px; float: left;" height="150px"></canvas>
+    </div>
+</div>
+
+<script>
+    Chart.defaults.global.defaultFontColor = "#FFFFFF";
+
+    new Chart("sm5_team_wins", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Green"],
+            datasets: [{
+            backgroundColor: ["#b91d47","#00aba9"],
+            data: [{{ sm5_red_wins }}, {{ sm5_green_wins }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            }
+        }
+    });
+    new Chart("laserball_team_wins", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Blue"],
+            datasets: [{
+            backgroundColor: ["#b91d47","#0047AB"],
+            data: [{{ laserball_red_wins }}, {{ laserball_blue_wins }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            }
+        }
+    });
+
+    new Chart("avg_role_score", {
+        type: "bar",
+        data: {
+            labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+            datasets: [{
+                label: "Global Median Score",
+                data: {{ role_plot_data }},
+                backgroundColor: [
+                    "rgb(50, 116, 161)",
+                    "rgb(225, 129, 44)",
+                    "rgb(58, 146, 58)",
+                    "rgb(192, 61, 62)",
+                    "rgb(147, 114, 178)"
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    ticks:{
+                        min: 0,
+                    }
+                }]
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "rgb(255, 255, 255)"
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Median player score vs median world score"
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

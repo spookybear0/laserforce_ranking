@@ -1,8 +1,10 @@
-from shared import sql
+from shared import app
 from objects import Game, GameType, Team
 from helpers import ratinghelper
 from typing import List
 import asyncio
+
+sql = app.ctx.sql
 
 def avg(iter: List):
     return sum(iter) / len(iter)
@@ -146,6 +148,18 @@ async def get_wins(game_type: GameType, team: Team) -> int:
     wins = await sql.fetchone("SELECT COUNT(*) FROM games WHERE winner = %s AND type = %s;", (team.value, game_type.value))
     return wins[0]
 
+async def get_wins_player(game_type: GameType, team: Team, player_id: str) -> int:
+    wins = await sql.fetchone(f"""SELECT COUNT(*) FROM games 
+        INNER JOIN {game_type.value}_game_players
+        ON games.id = {game_type.value}_game_players.game_id
+        WHERE games.winner = %s AND games.type = %s
+        AND {game_type.value}_game_players.player_id = %s
+        AND {game_type.value}_game_players.team = %s;""",
+        (team.value, game_type.value, player_id, team.value)
+    )
+    
+    return wins[0]
+
 async def get_teams(game_type: GameType, team: Team, player_id: str) -> int:
     wins = await sql.fetchone(f"SELECT COUNT(*) FROM {game_type.value}_game_players WHERE team = %s AND player_id = %s;", (team.value, player_id))
     return wins[0]
@@ -160,7 +174,7 @@ async def get_win_percent(game_type: GameType, player_id: str) -> float:
                             (player_id,))
     if not wins[0]:
         return 0.0
-    return round(float(wins[0]), 2)
+    return float(wins[0])
 
 
 async def get_win_percent_overall(player_id: str) -> float:
@@ -185,4 +199,4 @@ async def get_win_percent_overall(player_id: str) -> float:
 
     if not wins:
         return 0.0
-    return round(float(avg(wins)), 2)
+    return float(avg(wins))

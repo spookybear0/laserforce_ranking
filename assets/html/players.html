@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Players{% endblock %}
+
+{% block html_head %}
+<style>
+    p {
+        text-align: center;
+        padding-top: 0.5em;
+        font-size: 24;
+    }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+
+    td {
+        color: lightgray;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="table-div">
+    <table>
+        <tbody>
+            <tr>
+                <th class="align-left">Codename</th>
+                <th class="align-left">Player ID</th>
+                <th class="align-right">SM5 Rating</th>
+                <th class="align-right">Laserball Rating</th>
+            </tr>
+            {% for player in players %}
+                {% if not loop.index > 25 %}
+                    <tr>
+                        <td class="align-left"><a style="color: #2fa4e7;" href="/player/{{ player.player_id }}">{{ player.codename }}</a></td>
+                        <td class="align-left">{{ player.player_id }}</td>
+                        <td class="align-right">{{ player.sm5_ordinal|round(2) }}</td>
+                        <td class="align-right">{{ player.laserball_ordinal|round(2) }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page > 0 %}<a href="/players?page={{ page-1 }}"><p style="float: left;">Prev</p></a>{% endif %}
+    <a href="/players?page={{ page+1 }}"><p style="float: right;">Next</p></a>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Replay Viewer{% endblock %}
+
+
+{% block html_head %}
+
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+<style>
+    .py-overlay {
+        display: none;
+        visibility: hidden;
+    }
+
+    .replay_viewer {
+        width: 100%;
+        height: calc(100% - 128px);
+        display: flex;
+        flex-direction: row;
+    }
+
+    .team_box {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        margin: 0.5em;
+        margin-left: 5em;
+    }
+
+    .event_box {
+        width: 50%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        margin: 0.5em;
+        margin-left: 5em;
+        margin-top: 5em;
+    }
+
+    .team {
+        display: inline-block;
+        width: 75%;
+        height: 40%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        vertical-align: top;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        
+        border: 2px solid gray;
+        border-radius: 10px;
+    }
+
+    .event {
+        display: inline-block;
+        width: 75%;
+        height: 70%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+
+        border: 2px solid gray;
+        border-radius: 10px;
+    }
+
+    .player {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        vertical-align: top;
+        margin: 0.25em;
+        align-items: center;
+        border-radius: 8px;
+    }
+
+    .player-top {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+
+    }
+
+    .player-bottom {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .role {
+        margin-left: 0.25em;
+        margin-right: 0.25em;
+        max-height: 30px;
+    }
+
+    table {
+        display: inline-block;
+        width: 75%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        vertical-align: top;
+        
+        border: 2px solid gray;
+        border-radius: 10px;
+
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 0.25em;
+    }
+
+    th, td, tr {
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="replay_viewer">
+    <div class="team_box">
+        {% for team in game.teams %}
+            {% if team.players|length == 0 %}
+                {% continue %}
+            {% endif %}
+            <table>
+                <tr>
+                    <th><p>Role</p></th>
+                    <th><p>Codename</p></th>
+                    <th><p>Score</p></th>
+                    <th><p>Lives</p></th>
+                    <th><p>Shots</p></th>
+                    <th><p>Missiles</p></th>
+                    <th><p>Spec</p></th>
+                    <th><p>Accuracy</p></th>
+                </tr>
+                {% for player in team.players %}
+                    <tr>
+                        <td><img src="assets/roles/{{ player.role.name.lower() }}_white.png" alt="role image" width="30" height="30"></td>
+                        <td><p class="player_codename">{{ player.codename }}</p></td>
+                        <td><p class="player_score"></p>0</td>
+                        <td><p class="player_lives"></p>0</td>
+                        <td><p class="player_shots"></p>0</td>
+                        <td><p class="player_missiles">0</p></td>
+                        <td><p class="player_spec"></p>0</td>
+                        <td><p class="player_acc"></p>0</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    </div>
+    <div class="event_box">
+        <div class="event">
+
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

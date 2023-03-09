@@ -1,0 +1,30 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <title>{% block title %}{% endblock %} - laserforce.spoo.uk</title>
+    {% block html_head %}{% endblock %}
+</head>
+<body>
+    {% set navigation_bar = [
+        ('/', 'Home'),
+        ('/players', 'Players'),
+        ('/tools', 'Tools'),
+        ('/replay_viewer', 'Replays'),
+        ('/about', 'About'),
+    ] -%}
+    <ul class="nav-bar">
+        {% for href, caption in navigation_bar %}
+            <li class="nav-item"><a {% if href == request.path %}class="active"{% endif %} href="{{ href|e }}">{{ caption|e }}</a></li>
+        {% endfor %}
+    </ul>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+  
+    <div id="footer">
+        {% block footer %}
+            
+        {% endblock %}
+    </div>
+</body>

@@ -1,14 +1,14 @@
 from sanic import Request
+from shared import app
 from helpers import ratinghelper
 from utils import render_template, get_post
-from shared import app
 from objects import GameType, Player
 
-@app.get("/admin/matchmake")
-async def admin_matchmake_get(request: Request):
-    return await render_template(request, "admin/matchmake.html")
+@app.get("/tools")
+async def tools(request: Request):
+    return await render_template(request, "tools.html")
 
-@app.post("/admin/matchmake")
+@app.post("/matchmake")
 async def admin_matchmake_post(request: Request):
     data = get_post(request)
 

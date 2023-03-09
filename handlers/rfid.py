@@ -1,20 +1,29 @@
-from aiohttp import web
-from shared import routes
-from utils import render_template
+from sanic import Request, exceptions, HTTPResponse
+from shared import app
+from utils import render_template, get_post
 from helpers import rfidhelper
 
-@routes.get("/rfid")
-async def rfid(request: web.Request):
+@app.get("/rfid")
+async def rfid(request: Request):
     return await render_template(request, "rfid.html")
 
-@routes.post("/rfid")
-async def rfid_post(request: web.Request):
-    data = await request.post()
-    hex = data.get("hex")
-    decimal = data.get("decimal")
+@app.post("/rfid")
+async def rfid_post(request: Request):
+    print(request.form)
+    data = get_post(request)
+
+    # data.get() wont work for some reason so we have to do this
+    hex = None
+    if "hex" in data:
+        hex = data["hex"]
+
+    decimal = None
+    if "decimal" in data:
+        decimal = data["decimal"]
 
     if hex:
-        return web.Response(text=rfidhelper.to_decimal(hex))
+        return HTTPResponse(str(rfidhelper.to_decimal(hex)))
     elif decimal:
-        return web.Response(text=rfidhelper.to_hex(decimal))
-    return web.Response(text="You need to add data to the form")
+        return HTTPResponse(str(rfidhelper.to_hex(decimal)))
+
+    raise exceptions.BadRequest("Form data must be filled out.")

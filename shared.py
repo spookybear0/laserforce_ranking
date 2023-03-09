@@ -1,9 +1,8 @@
 from mysql import MySQLPool
-from aiohttp import web
-import aiohttp_jinja2
 import jinja2
+from sanic import Sanic
+from sanic_jinja2 import SanicJinja2
 
-app = web.Application()
-routes = web.RouteTableDef()
-templates = aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("assets/html"))
-sql = MySQLPool()
+app = Sanic("laserforce-rankings")
+jinja = SanicJinja2(app, loader=jinja2.FileSystemLoader("./assets/html"), pkg_path="assets/html", extensions=["jinja2.ext.loopcontrols"])
+app.ctx.sql = MySQLPool()

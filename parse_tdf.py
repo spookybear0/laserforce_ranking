@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from enum import Enum
 
@@ -33,76 +33,77 @@ class Level(Enum):
 
 @dataclass
 class Teams:
-    id: int = None
-    name: str = None
-    color_enum: int = None  # unknown how this works
-    color_name: str = None
+    id: int
+    name: str
+    color_enum: int  # unknown how this works
+    color_name: str
+    players: List["Entity"] = field(default_factory=list)
 
 
 @dataclass
 class Entity:
-    time: int = None
-    id: str = None  # ipl token id
-    type: str = None
-    codename: str = None
-    team: int = None
-    level: int = None
-    role: Role = None  # enum role of entity
-    battlesuit: str = None
+    time: int
+    id: str  # ipl token id
+    type: str
+    codename: str
+    team: int
+    level: int
+    role: Role  # enum role of entity
+    battlesuit: str
 
 
 @dataclass
 class Event:
-    time: int = None
-    type: int = None
-    entity1: str = None  # ipl token id
-    action: str = None
-    entity2: str = None  # ipl token id
+    time: int
+    type: int
+    entity1: str  # ipl token id
+    action: str
+    entity2: str  # ipl token id
 
 
 @dataclass
 class ScoreChange:
-    time: int = None
-    entity: str = None  # ipl token id
-    old: int = None  # score before change (new - delta)
-    delta: int = None  # how much it changed (new - old)
-    new: int = None  # after the change (old + delta)
+    time: int
+    entity: str  # ipl token id
+    old: int  # score before change (new - delta)
+    delta: int  # how much it changed (new - old)
+    new: int  # after the change (old + delta)
 
 
 @dataclass
 class EntityEnd:
-    time: int = None
-    id: str = None
-    type: int = None
-    score: int = None
+    time: int
+    id: str
+    type: int
+    score: int
 
 
 @dataclass
 class SM5Stat:
-    id: str = None
-    shotsHit: int = None
-    shotsFired: int = None
-    timesZapped: int = None
-    timesMissiled: int = None
-    missileHits: int = None
-    nukesDetonated: int = None
-    nukesActivated: int = None
-    nukeCancels: int = None
-    medicHits: int = None
-    ownMedicHits: int = None
-    medicNukes: int = None
-    scoutRapid: int = None
-    lifeBoost: int = None
-    ammoBoost: int = None
-    livesLeft: int = None
-    shotsLeft: int = None
-    penalties: int = None
-    shot3Hit: int = None
-    ownNukeCancels: int = None
-    shotOpponent: int = None
-    shotTeam: int = None
-    missiledOpponent: int = None
-    missiledTeam: int = None
+    id: str
+    shotsHit: int
+    shotsFired: int
+    timesZapped: int
+    timesMissiled: int
+    missileHits: int
+    nukesDetonated: int
+    nukesActivated: int
+    nukeCancels: int
+    medicHits: int
+    ownMedicHits: int
+    medicNukes: int
+    scoutRapid: int
+    lifeBoost: int
+    ammoBoost: int
+    livesLeft: int
+    shotsLeft: int
+    penalties: int
+    shot3Hit: int
+    ownNukeCancels: int
+    shotOpponent: int
+    shotTeam: int
+    missiledOpponent: int
+    missiledTeam: int
 
 
 @dataclass
@@ -120,22 +121,24 @@ class SM5_TDF_Game:
     penalties: int = None
 
     # team info
-    teams: List[Teams] = None
+    teams: List[Teams] = field(default_factory=list)
+
+    bases: List[Entity] = field(default_factory=list)
 
     # players and targets init
-    entities: List[Entity] = None
+    entities: List[Entity] = field(default_factory=list)
 
     # game events (including zaps)
-    events: List[Event] = None
+    events: List[Event] = field(default_factory=list)
 
     # each time scores were updated
-    score_changes: List[ScoreChange] = None
+    score_changes: List[ScoreChange] = field(default_factory=list)
 
     # final score (when eliminated or game end) (INCLUDES BASE, score=0)
-    entity_end: List[EntityEnd] = None
+    entity_end: List[EntityEnd] = field(default_factory=list)
 
     # each players sm5 stats
-    sm5_stats: List[SM5Stat] = None
+    sm5_stats: List[SM5Stat] = field(default_factory=list)
 
 
 def comment(game, data):
@@ -165,21 +168,31 @@ def team(game, data):
     return game
 
 
-def entity_start(game, data):
+def entity_start(game: SM5_TDF_Game, data):
     if not game.entities:
         game.entities = []
-    game.entities.append(
-        Entity(
-            int(data[0]),
-            data[1],
-            data[2],
-            data[3],
-            Team(int(data[4])),
-            int(data[5]),
-            Role(int(data[6])),
-            data[7],
-        )
+    ent = Entity(
+        int(data[0]),
+        data[1],
+        data[2],
+        data[3],
+        Team(int(data[4])),
+        int(data[5]),
+        Role(int(data[6])),
+        data[7],
     )
+    game.entities.append(ent)
+
+    if ent.role == Role.BASE:
+        if not game.bases:
+            game.bases = []
+        game.bases.append(ent)
+    else:
+        for team in game.teams:
+            if team.id == int(data[4]):
+                team.players.append(ent)
+                break
+
     return game
 
 
@@ -285,8 +298,9 @@ def parse_sm5_game(file_location: str) -> SM5_TDF_Game:
         ]  # remove first element of data list because it is already parsed
         line[-1] = line[-1].strip("\n")  # remove newline
 
-        game = cases[first_char](
-            game, line
-        )  # get first char and use switch case to decide which function will decode it
+        # get first char and use switch case to decide which function will decode it
+        game = cases[first_char](game, line)
 
     file.close()
+
+    return game
