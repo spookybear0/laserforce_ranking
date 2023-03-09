@@ -19,8 +19,6 @@ async def player_get(request: Request, id: str):
 
         if not player:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
-
-    print(await gamehelper.get_wins_player(GameType.SM5, Team.RED, player.player_id), await gamehelper.get_wins_player(GameType.SM5, Team.GREEN, player.player_id),)
     
     return await render_template(request, "player.html",
                                 # general player info
