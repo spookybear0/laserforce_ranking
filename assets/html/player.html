@@ -45,7 +45,7 @@
         padding: 1rem;
         margin: auto;
         width: 70%;
-        height: 100vh;
+        height: 110vh;
         margin-top: 20px;
     }
 
@@ -81,27 +81,37 @@
 {% block content %}
 
 <body>
-    <div class="userlist">
-        <h1 style="text-align: left; padding-left: 0.5em;">{{ player.codename }}</h2>
-        <div class="userlist-pos"><span class="userlist-username-text">ID</span><span class="userlist-info-text">{{ player.id }}</span></div>
-        <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
-        <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
-        <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
-        <div class="userlist-pos"><span class="userlist-username-text">SM5 Win Percent</span><span class="userlist-info-text">{{ (sm5_win_percent*100)|round(1) }}%</span></div>
-        <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ (laserball_win_percent*100)|round(1) }}%</span></div>
-        <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ (win_percent*100)|round(1) }}%</span></div>
-        <div style="display: flex; float: left;">
-            <div class="btn">
-                <canvas id="sm5_teams" style="max-width:600px;"></canvas>
-                <p>SM5 Teams</p>
+    <div style="height: 115vh;">
+        <div class="userlist">
+            <h1 style="text-align: left; padding-left: 0.5em;">{{ player.codename }}</h2>
+            <div class="userlist-pos"><span class="userlist-username-text">ID</span><span class="userlist-info-text">{{ player.id }}</span></div>
+            <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
+            <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
+            <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
+            <div class="userlist-pos"><span class="userlist-username-text">SM5 Win Percent</span><span class="userlist-info-text">{{ (sm5_win_percent*100)|round(1) }}%</span></div>
+            <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ (laserball_win_percent*100)|round(1) }}%</span></div>
+            <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ (win_percent*100)|round(1) }}%</span></div>
+            <div style="float: left; padding-left: 5rem; padding-top: 2.5rem;">
+                <div style="display: flex; float: left;">
+                    <div class="btn">
+                        <canvas id="sm5_teams" style="max-width:600px;"></canvas>
+                        <p>SM5 Teams</p>
+                    </div>
+                    <div class="btn">
+                        <canvas id="laserball_teams" style="max-width:600px;"></canvas>
+                        <p>Laserball Teams</p>
+                    </div>
+                </div>
+                
+                <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; float: left; clear: both;" height="200px"></canvas>
             </div>
-            <div class="btn">
-                <canvas id="laserball_teams" style="max-width:600px;"></canvas>
-                <p>Laserball Teams</p>
+
+            <div style="padding-right: 5rem; padding-top: 2.5rem;">
+                <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; float: right;" height="275px"></canvas>
             </div>
         </div>
-        <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; float: left;" height="200px"></canvas>
     </div>
+
     <script>
         Chart.defaults.global.defaultFontColor = "#FFFFFF";
 
@@ -202,6 +212,52 @@
                     title: {
                         display: true,
                         text: "Median player score vs median world score"
+                    }
+                }
+            }
+        });
+
+        // median score vs world radar chart
+
+        new Chart("avg_role_score_radar", {
+            type: "radar",
+            data: {
+                labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+                datasets: [
+                    {
+                        label: "Player's Median Score",
+                        data: {{ role_plot_data_player }},
+                        backgroundColor: "rgba(50, 116, 161, 0.5)"
+                    },
+                    {
+                        label: "World's Median Score",
+                        data: {{ role_plot_data_world }},
+                        backgroundColor: "rgba(50, 166, 161, 0.5)"
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Median player score vs median world score"
+                    }
+                },
+                scale: {
+                    gridLines: {
+                        color: "rgba(255, 255, 255, 0.75)"
+                    },
+                    ticks: {
+                        display: false // Hides the labels in the middel (numbers)
+                    },
+                    pointLabels: {
+                        fontSize: 12
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 5
                     }
                 }
             }
