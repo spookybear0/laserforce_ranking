@@ -45,7 +45,7 @@
         padding: 1rem;
         margin: auto;
         width: 70%;
-        height: 110vh;
+        height: 90vh;
         margin-top: 20px;
     }
 
@@ -74,6 +74,20 @@
     body {
         background-color: #121212;
     }
+
+    h1 {
+        margin-bottom: 0;
+    }
+
+    h3, h5 {
+        margin-top: 0.75rem;
+        margin-bottom: 0;
+    }
+
+    h1, h3, h5 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 </style>
 
 {% endblock %}
@@ -81,32 +95,37 @@
 {% block content %}
 
 <body>
-    <div style="height: 115vh;">
+    <div>
         <div class="userlist">
-            <h1 style="text-align: left; padding-left: 0.5em;">{{ player.codename }}</h2>
-            <div class="userlist-pos"><span class="userlist-username-text">ID</span><span class="userlist-info-text">{{ player.id }}</span></div>
-            <div class="userlist-pos"><span class="userlist-username-text">IPL ID</span><span class="userlist-info-text">{{ player.ipl_id }}</span></div>
-            <div class="userlist-pos"><span class="userlist-username-text">Player ID</span><span class="userlist-info-text">{{ player.player_id }}</span></div>
-            <div class="userlist-pos"><span class="userlist-username-text">Codename</span><span class="userlist-info-text">{{ player.codename }}</span></div>
-            <div class="userlist-pos"><span class="userlist-username-text">SM5 Win Percent</span><span class="userlist-info-text">{{ (sm5_win_percent*100)|round(1) }}%</span></div>
-            <div class="userlist-pos"><span class="userlist-username-text">Laserball Win Percent</span><span class="userlist-info-text">{{ (laserball_win_percent*100)|round(1) }}%</span></div>
-            <div class="userlist-pos"><span class="userlist-username-text">Overall Win Percent</span><span class="userlist-info-text">{{ (win_percent*100)|round(1) }}%</span></div>
-            <div style="float: left; padding-left: 5rem; padding-top: 2.5rem;">
+            <div style="float: left; margin-left: 0; margin-right: 0;">
+                <span title="Codename"><h1 style="font-size: 50px;">{{ player.codename }}</h1></span>
+
+                <span title="Player ID"><h3>{{ player.player_id }}</h3></span>
+                <span title="IPL ID"><h5>{{ player.ipl_id }}</h5></span>
+            </div>
+
+            <div style="float: right; margin-left: 0; margin-right: 0; margin-top: 2.094rem;">
+                <a href="http://www.iplaylaserforce.com/mission-stats/?t={{ player.ipl_id[1:] }}" target="_blank" rel="noopener noreferrer"><h3 style="color: #2fa4e7;">View on IPL</h3></a>
+            </div>
+
+            <div style="clear: both;"></div>
+            
+            <div style="float: left; padding-left: 5rem; padding-top: 5rem;">
                 <div style="display: flex; float: left;">
                     <div class="btn">
                         <canvas id="sm5_teams" style="max-width:600px;"></canvas>
-                        <p>SM5 Teams</p>
+                        <span title="{{ (sm5_win_percent*100)|round(1) }}%"><p>SM5 Teams</p></span>
                     </div>
                     <div class="btn">
                         <canvas id="laserball_teams" style="max-width:600px;"></canvas>
-                        <p>Laserball Teams</p>
+                        <span title="{{ (laserball_win_percent*100)|round(1) }}%"><p>Laserball Teams</p></span>
                     </div>
                 </div>
                 
                 <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; float: left; clear: both;" height="200px"></canvas>
             </div>
 
-            <div style="padding-right: 5rem; padding-top: 2.5rem;">
+            <div style="padding-right: 5rem; padding-top: 5rem;">
                 <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; float: right;" height="275px"></canvas>
             </div>
         </div>
@@ -260,7 +279,22 @@
                         radius: 5
                     }
                 }
-            }
+            },
+            plugins: [{
+
+                beforeDraw: function(c) {
+                    var legends = c.legend.legendItems;
+                    legends.forEach(function(e) {
+                        if (e.fillStyle = "rgba(50, 116, 161, 0.5)") {
+                            e.fillStyle = "rgb(50, 116, 161)";
+                        }
+                        else if (e.fillStyle = "rgba(50, 166, 161, 0.5)") {
+                            e.fillStyle = "rgb(50, 166, 161)";
+                        }
+                    });
+                }
+
+            }]
         });
     </script>
 </body>
