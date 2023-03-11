@@ -30,18 +30,79 @@
     td {
         color: lightgray;
     }
+
+    th {
+        cursor: pointer;
+    }
 </style>
+
+<script>
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, should_switch, dir, switchcount = 0;
+        table = document.getElementById("player_table");
+        switching = true;
+        dir = "asc";
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                should_switch = false;
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                console.log(Number(x.innerHTML), Number(y.innerHTML), Number(x.innerHTML) > Number(y.innerHTML));
+
+                if (!isNaN(x.innerHTML)) {
+                    var inner_x = Number(x.innerHTML);
+                }
+                else {
+                    var inner_x = x.innerHTML.toLowerCase();
+                }
+
+                if (!isNaN(y.innerHTML)) {
+                    var inner_y = Number(y.innerHTML);
+                }
+                else {
+                    var inner_y = y.innerHTML.toLowerCase();
+                }
+
+                if (dir == "asc") {
+                    if (inner_x > inner_y) {
+                        should_switch = true;
+                        break;
+                    }
+                }
+                else if (dir == "desc") {
+                    if (inner_x < inner_y) {
+                        should_switch = true;
+                        break;
+                    }
+                }
+            }
+            if (should_switch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount ++;
+            } else {
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+        }
+</script>
+
 {% endblock %}
 
 {% block content %}
 <div class="table-div">
-    <table>
+    <table id="player_table">
         <tbody>
             <tr>
-                <th class="align-left">Codename</th>
-                <th class="align-left">Player ID</th>
-                <th class="align-right">SM5 Rating</th>
-                <th class="align-right">Laserball Rating</th>
+                <th class="align-left" onclick="sortTable(0)">Codename</th>
+                <th class="align-left" onclick="sortTable(1)">Player ID</th>
+                <th class="align-right" onclick="sortTable(2)">SM5 Rating</th>
+                <th class="align-right" onclick="sortTable(3)">Laserball Rating</th>
             </tr>
             {% for player in players %}
                 {% if not loop.index > 25 %}
