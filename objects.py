@@ -174,11 +174,19 @@ class Game:
 
     async def _reload_elo(self):
         for player in [*self.players, *self.red, *self.green, *self.blue]:
+            if player.player_id == "":
+                continue
             if self.type == GameType.SM5:
                 player.sm5_mu, player.sm5_sigma = await sql.fetchone("SELECT sm5_mu, sm5_sigma FROM players WHERE player_id = %s", (player.player_id,))
             elif self.type == GameType.LASERBALL:
                 player.laserball_mu, player.laserball_sigma = await sql.fetchone("SELECT laserball_mu, laserball_sigma FROM players WHERE player_id = %s", (player.player_id,))
-    
+
+    def get_team_score(self, team: Team) -> int:
+        if self.type == GameType.SM5:
+            return sum([player.game_player.score for player in self.players if player.game_player.team == team])
+        elif self.type == GameType.LASERBALL:
+            return sum([player.game_player.goals for player in self.players if player.game_player.team == team])
+
     @classmethod
     async def from_id(cls, id: int):
         data = await sql.fetchone("SELECT * FROM games WHERE id = %s", (id,))

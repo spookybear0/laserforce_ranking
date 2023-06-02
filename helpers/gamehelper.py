@@ -134,15 +134,15 @@ async def relog_all_games() -> None:
     print("Truncating tables")
     await sql.execute("TRUNCATE TABLE games;")
     await sql.execute("TRUNCATE TABLE sm5_game_players;")
-    await sql.execute("TRUNCATE TABLE laserball_game_players;")
+    #await sql.execute("TRUNCATE TABLE laserball_game_players;")
 
     for game in games:
         print(f"Logging game {game.id} of type {game.type.value}")
         await game._reload_elo()
         if game.type == GameType.SM5:
             await log_sm5_game(game)
-        elif game.type == GameType.LASERBALL:
-            await log_laserball_game(game)
+        #elif game.type == GameType.LASERBALL:
+        #    await log_laserball_game(game)
 
 async def get_wins(game_type: GameType, team: Team) -> int:
     wins = await sql.fetchone("SELECT COUNT(*) FROM games WHERE winner = %s AND type = %s;", (team.value, game_type.value))

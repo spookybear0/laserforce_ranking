@@ -10,12 +10,17 @@ path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(path)
 sys.path.append(path)
 
-async def main():
+async def main() -> None:
     router.add_all_routes(app)
     app.static("assets", "assets", name="assets")
 
     app.ctx.sql = await MySQLPool.connect_with_config()
-    server = await app.create_server(host="localhost", port=8000, return_asyncio_server=True)
+
+    debug = False
+    if "--debug" in sys.argv or "--dev" in sys.argv:
+        debug = True
+
+    server = await app.create_server(host="localhost", port=8000, debug=debug, return_asyncio_server=True)
 
     await server.startup()
     await server.serve_forever()

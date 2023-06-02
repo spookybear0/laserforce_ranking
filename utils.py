@@ -1,4 +1,4 @@
-from shared import jinja
+from shared import app
 from sanic import Request
 
 def get_post(request: Request):
@@ -8,5 +8,5 @@ def get_post(request: Request):
     return data
 
 async def render_template(r, template, *args, **kwargs):
-    text = jinja.render(template, r, *args, **kwargs)
+    text = app.ctx.jinja.render(template, r, *args, **kwargs)
     return text

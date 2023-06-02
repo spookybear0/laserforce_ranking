@@ -8,10 +8,12 @@ from traceback import print_exc
 
 @app.get("/log_sm5")
 async def log_sm5_get(request: Request):
+    return exceptions.SanicException("Deprecated!", status_code=299)
     return await render_template(request, "log_sm5.html")
 
 @app.post("/log_sm5")
 async def log_sm5_post(request: Request):
+    return exceptions.SanicException("Deprecated!", status_code=299)
     data = get_post(request)
 
     # super secure am i right boys

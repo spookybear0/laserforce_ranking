@@ -118,4 +118,5 @@ sm5_tdf/*
 laserball_tdf/*
 
 transfer.py
-.idea/*
+.idea/* 
+*.code-workspace

@@ -5,12 +5,15 @@ from utils import render_template, get_post
 from objects import ALL_ROLES, GameType, Team, Game
 import bcrypt
 
+
 @app.get("/log_laserball")
 async def log_laserball_get(request: Request):
+    return exceptions.SanicException("Deprecated!", status_code=299)
     return await render_template(request, "log_laserball.html")
 
 @app.post("/log_laserball")
 async def log_laserball_post(request: Request):
+    return exceptions.SanicException("Deprecated!", status_code=299)
     data = get_post(request)
 
     # super secure am i right boys

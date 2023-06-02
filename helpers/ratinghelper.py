@@ -1,6 +1,80 @@
 from objects import GameType, Team, LaserballGamePlayer, Player, Game
 from random import shuffle
 import openskill
+import math
+from scipy.stats import norm
+
+### TS 2
+
+cdf = norm.cdf
+
+beta = 25 / 6
+tau = 1 / 300
+
+def win_probability(team1, team2, mode: str="sm5"):
+    delta_mu = sum(getattr(player, f"{mode}_mu") for player in team1) - sum(getattr(player, f"{mode}_mu") for player in team2)
+    sum_sigma = sum(getattr(player, f"{mode}_sigma") ** 2 for player in team1) + sum(getattr(player, f"{mode}_sigma") ** 2 for player in team2)
+    size = len(team1) + len(team2)
+    denominator = math.sqrt(size * (beta ** 2) + sum_sigma)
+    return cdf(delta_mu / denominator)
+
+def update_team_ratings(team1, team2, winner, mode: str, K):
+    ranks = [1, 0] if team1 == winner else [0, 1]
+    delta_mu = sum(getattr(player, f"{mode}_mu") for player in team1) - sum(getattr(player, f"{mode}_mu") for player in team2)
+    sum_sigma = sum(getattr(player, f"{mode}_sigma") ** 2 for player in team1) + sum(getattr(player, f"{mode}_sigma") ** 2 for player in team2)
+    size = len(team1) + len(team2)
+    denominator = math.sqrt(size * (beta ** 2) + sum_sigma)
+    team1_perf = sum(player.performance for player in team1)
+    team2_perf = sum(player.performance for player in team2)
+    team1_quality = (team1_perf / (team1_perf + team2_perf)) if (team1_perf + team2_perf) != 0 else 0.5
+    team2_quality = (team2_perf / (team1_perf + team2_perf)) if (team1_perf + team2_perf) != 0 else 0.5
+    player_updates = []
+    for player in team1 + team2:
+        if player in team1:
+            rank = ranks[0]
+            quality = team1_quality
+        else:
+            rank = ranks[1]
+            quality = team2_quality
+
+        # performance multiplier
+        # example: a player has 0.75 performance, so they get 75% of the performance of the team
+        # this will change depending on the team won
+        # for example if their team won, the multiplier will be 
+        if player.game_player.team == winner:
+            perf_mult = player.performance + 1
+        else:
+            perf_mult = -player.performance + 1
+        
+        new_mu = getattr(player, f"{mode}_mu") + K * quality * 50 * (rank - win_probability(team1, team2, mode)) * perf_mult
+
+        new_sigma = math.sqrt((1 - K * quality) * getattr(player, f"{mode}_sigma") ** 2 + K * quality * (1 - quality) * delta_mu ** 2 / denominator)
+
+        player_updates.append((player, new_mu, new_sigma))
+    return player_updates
+
+def update_game_ratings(team1, team2, winner_team: Team, mode: str="sm5"):
+    if winner_team == Team.RED:
+        winner = 0
+    else:
+        winner = 1
+    
+    teams = [team1, team2]
+
+    K = 0.1
+
+    player_updates = []
+    for i in range(len(teams)):
+        for j in range(i + 1, len(teams)):
+            team1 = teams[i]
+            team2 = teams[j]
+
+            player_updates += update_team_ratings(team1, team2, winner, mode, K)
+    for player, new_mu, new_sigma in player_updates:
+        setattr(player, f"{mode}_mu", float(new_mu))
+        setattr(player, f"{mode}_sigma", float(new_sigma))
+
+### END TS 2
 
 def calculate_laserball_mvp_points(player: LaserballGamePlayer):
     mvp_points = 0
@@ -78,39 +152,18 @@ async def update_elo(game: Game, mode: GameType):
     winner = game.winner
     
     team1 = game.red
-    team1_mu = attrgetter(game.red, f"{mode}_mu")
-    team1_sigma = attrgetter(game.red, f"{mode}_sigma")
     
     if mode == "sm5":
         team2 = game.green
-        team2_mu = attrgetter(game.green, f"{mode}_mu")
-        team2_sigma = attrgetter(game.green, f"{mode}_sigma")
     else: # laserball
         team2 = game.blue
-        team2_mu = attrgetter(game.blue, f"{mode}_mu")
-        team2_sigma = attrgetter(game.blue, f"{mode}_sigma")
-    
-    # convert to Rating
-    team1_rating = []
-    for i in range(len(team1)):
-        team1_rating.append(openskill.Rating(team1_mu[i], team1_sigma[i]))
-    
-    team2_rating = []
-    for i in range(len(team2)):
-        team2_rating.append(openskill.Rating(team2_mu[i], team2_sigma[i]))
 
-    if winner == Team.RED:  # red won
-        team1_rating, team2_rating = openskill.rate([team1_rating, team2_rating])
-    else:  # green/blue won
-        team2_rating, team1_rating = openskill.rate([team2_rating, team1_rating])
+    for player in team1:
+        player.performance = player.game_player.score / game.get_team_score(player.game_player.team)
 
-    # convert back to Player 
-    for i, p in enumerate(team1):
-        setattr(p, f"{mode}_mu", team1_rating[i].mu)
-        setattr(p, f"{mode}_sigma", team1_rating[i].sigma)
-        
-    for i, p in enumerate(team2):
-        setattr(p, f"{mode}_mu", team2_rating[i].mu)
-        setattr(p, f"{mode}_sigma", team2_rating[i].sigma)
+    for player in team2:
+        player.performance = player.game_player.score / game.get_team_score(player.game_player.team)
+
+    update_game_ratings(team1, team2, winner, mode)
 
     return (team1, team2)

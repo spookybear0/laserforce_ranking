@@ -4,7 +4,6 @@ from utils import render_template
 from helpers import gamehelper, userhelper
 from objects import GameType, Team
 
-# shows top x
 @app.get("/")
 async def index(request: Request):
     total_players = await userhelper.get_total_players()
@@ -22,4 +21,3 @@ async def index(request: Request):
         laserball_blue_wins=await gamehelper.get_wins(GameType.SM5, Team.BLUE),
         role_plot_data=await userhelper.get_median_role_score()
     )
-    #return await render_template(request, "top.html", players=await userhelper.get_top(GameType.SM5, 50))
