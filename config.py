@@ -9,6 +9,7 @@ default_config = {
     "db_password": "",
     "db_port": 3306,
     "db_database": "laserforce",
+    "sentry_dsn": "",
 }
 
 config_options = list(default_config.keys())
