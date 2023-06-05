@@ -3,6 +3,7 @@ from random import shuffle
 import openskill
 import math
 from scipy.stats import norm
+from sanic.log import logger
 
 ### TS 2
 
@@ -18,7 +19,7 @@ def win_probability(team1, team2, mode: str="sm5"):
     denominator = math.sqrt(size * (beta ** 2) + sum_sigma)
     return cdf(delta_mu / denominator)
 
-def update_team_ratings(team1, team2, winner, mode: str, K):
+def update_team_ratings(team1, team2, winner, mode: str, k):
     ranks = [1, 0] if team1 == winner else [0, 1]
     delta_mu = sum(getattr(player, f"{mode}_mu") for player in team1) - sum(getattr(player, f"{mode}_mu") for player in team2)
     sum_sigma = sum(getattr(player, f"{mode}_sigma") ** 2 for player in team1) + sum(getattr(player, f"{mode}_sigma") ** 2 for player in team2)
@@ -46,9 +47,9 @@ def update_team_ratings(team1, team2, winner, mode: str, K):
         else:
             perf_mult = -player.performance + 1
         
-        new_mu = getattr(player, f"{mode}_mu") + K * quality * 50 * (rank - win_probability(team1, team2, mode)) * perf_mult
+        new_mu = getattr(player, f"{mode}_mu") + k * quality * 50 * (rank - win_probability(team1, team2, mode)) * perf_mult
 
-        new_sigma = math.sqrt((1 - K * quality) * getattr(player, f"{mode}_sigma") ** 2 + K * quality * (1 - quality) * delta_mu ** 2 / denominator)
+        new_sigma = math.sqrt((1 - k * quality) * getattr(player, f"{mode}_sigma") ** 2 + k * quality * (1 - quality) * delta_mu ** 2 / denominator)
 
         player_updates.append((player, new_mu, new_sigma))
     return player_updates
@@ -61,7 +62,7 @@ def update_game_ratings(team1, team2, winner_team: Team, mode: str="sm5"):
     
     teams = [team1, team2]
 
-    K = 0.1
+    k = 0.1
 
     player_updates = []
     for i in range(len(teams)):
@@ -69,7 +70,7 @@ def update_game_ratings(team1, team2, winner_team: Team, mode: str="sm5"):
             team1 = teams[i]
             team2 = teams[j]
 
-            player_updates += update_team_ratings(team1, team2, winner, mode, K)
+            player_updates += update_team_ratings(team1, team2, winner, mode, k)
     for player, new_mu, new_sigma in player_updates:
         setattr(player, f"{mode}_mu", float(new_mu))
         setattr(player, f"{mode}_sigma", float(new_sigma))
@@ -103,6 +104,9 @@ def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     """
     Gets win chance for two teams
     """
+
+    logger.debug(f"Getting win chance for {team1} vs {team2}")
+
     mode = mode.value
     # get rating object for mode
     team1 = attrgetter(team1, f"{mode}_rating")
@@ -115,6 +119,9 @@ def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     """
     Gets draw chance for two teams
     """
+
+    logger.debug(f"Getting draw chance for {team1} vs {team2}")
+
     mode = mode.value
     # get rating object for mode
     team1 = attrgetter(team1, f"{mode}_rating")
@@ -144,26 +151,3 @@ def matchmake_elo(players, mode: GameType=GameType.SM5):
             best1, best2 = team1, team2
     
     return (best1, best2)
-
-# team1 is red, team2 is green/blue
-async def update_elo(game: Game, mode: GameType):
-    mode = mode.value.lower()
-    
-    winner = game.winner
-    
-    team1 = game.red
-    
-    if mode == "sm5":
-        team2 = game.green
-    else: # laserball
-        team2 = game.blue
-
-    for player in team1:
-        player.performance = player.game_player.score / game.get_team_score(player.game_player.team)
-
-    for player in team2:
-        player.performance = player.game_player.score / game.get_team_score(player.game_player.team)
-
-    update_game_ratings(team1, team2, winner, mode)
-
-    return (team1, team2)

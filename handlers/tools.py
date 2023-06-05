@@ -3,6 +3,7 @@ from shared import app
 from helpers import ratinghelper
 from utils import render_template, get_post
 from objects import GameType, Player
+from sanic.log import logger
 
 @app.get("/tools")
 async def tools(request: Request):
@@ -10,6 +11,8 @@ async def tools(request: Request):
 
 @app.post("/matchmake")
 async def matchmake_post(request: Request):
+    logger.debug("Matchmaking")
+
     data = get_post(request)
 
     players = []
