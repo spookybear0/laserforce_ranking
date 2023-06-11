@@ -10,16 +10,16 @@ async def auto_upload_dl(request: Request):
 async def auto_upload(request: Request):
     data = get_post(request)
     type = data.get("type")
-    file = data["upload_file"]
+    file = request.files.get("upload_file")
     
-    if not file:
+    if file is None:
         raise exceptions.BadRequest()
 
     if type == "sm5":
-        open("./sm5_tdf/" + file.filename, "wb").write(file.file.read())
+        open("./sm5_tdf/" + file.name, "wb").write(file.body)
         #game = parse_sm5_game("./sm5_tdf/" + file.filename)
     elif type == "laserball":
-        open("./laserball_tdf/" + file.filename, "wb").write(file.file.read())
+        open("./laserball_tdf/" + file.name, "wb").write(file.body)
         #game = parse_laserball_game("./laserball_tdf/" + file.filename)
     else:
         raise exceptions.BadRequest()

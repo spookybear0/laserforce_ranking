@@ -14,7 +14,8 @@ sentry_sdk.init(
 
     traces_sample_rate=1.0,
     profiles_sample_rate=1.0,
-    send_default_pii=True
+    send_default_pii=True,
+    environment=config["sentry_environment"]
 )
 
 app = Sanic("laserforce_rankings")

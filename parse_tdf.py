@@ -271,7 +271,7 @@ def parse_sm5_game(file_location: str) -> SM5_TDF_Game:
     game = SM5_TDF_Game()
 
     count = 0
-    while True:  # c++-like parsing
+    while True:
         count += 1
 
         line = file.readline()

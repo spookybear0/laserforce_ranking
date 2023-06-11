@@ -10,6 +10,7 @@ default_config = {
     "db_port": 3306,
     "db_database": "laserforce",
     "sentry_dsn": "",
+    "sentry_environment": "production",
 }
 
 config_options = list(default_config.keys())
