@@ -21,15 +21,13 @@ async def main() -> None:
 
     app.ctx.sql = await MySQLPool.connect_with_config()
 
-    #await Tortoise.init(
-    #    db_url=f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce",
-    #    modules={"models": ["db.models"]}
-    #)
+    await Tortoise.init(
+        db_url=f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce",
+        modules={"models": ["db.models"]}
+    )
 
     #await Tortoise.generate_schemas()
-    #await migrate_from_sql()
-
-    #await tdfhelper.parse_sm5_game("D:\\code\\python\\projects\\laserforce_ranking\\sm5_tdf\\4-2_20210713191932_-_Space_Marines_5_Tournament.tdf")
+    #await migrate_from_sql(True)
 
     debug = False
     if "--debug" in sys.argv or "--dev" in sys.argv:
