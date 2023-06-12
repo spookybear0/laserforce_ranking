@@ -12,8 +12,6 @@ async def api_game(request: Request, id: int):
     logger.info(f"Game {id} requested")
     game = await SM5Game.filter(id=id).first()
 
-    print(await game.to_dict())
-
     if game is None:
         return exceptions.NotFound("Game not found!", status_code=404)
 
