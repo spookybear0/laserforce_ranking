@@ -13,7 +13,7 @@ import sanic
 from tortoise import Tortoise
 from config import config
 from db.migrations import migrate_from_sql
-
+from helpers import tdfhelper
 
 async def main() -> None:
     router.add_all_routes(app)
@@ -28,6 +28,8 @@ async def main() -> None:
 
     #await Tortoise.generate_schemas()
     #await migrate_from_sql(True)
+
+    #await tdfhelper.parse_all_tdfs()
 
     debug = False
     if "--debug" in sys.argv or "--dev" in sys.argv:

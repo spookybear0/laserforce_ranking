@@ -112,21 +112,72 @@ class SM5Game(Model):
     async def get_green_players(self):
         return await self.players.filter(team=Team.GREEN)
     
+    async def to_dict(self):
+        # convert the entire game to a dict
+        # this is used for the api
+        final = {}
+
+        final["id"] = self.id
+        final["winner"] = self.winner.value
+        final["tdf_name"] = self.tdf_name
+        final["file_version"] = self.file_version
+        final["software_version"] = self.software_version
+        final["arena"] = self.arena
+        final["mission_type"] = self.mission_type
+        final["mission_name"] = self.mission_name
+        final["start_time"] = str(self.start_time)
+        final["mission_duration"] = self.mission_duration
+        final["log_time"] = str(self.log_time)
+        final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
+        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in await self.entity_starts.all()]
+        final["events"] = [await (await event).to_dict() for event in await self.events.all()]
+        final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
+        final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
+        final["sm5_stats"] = [await (await sm5_stat).to_dict() for sm5_stat in await self.sm5_stats.all()]
+
+        return final
+    
 class Teams(Model):
     index = fields.IntField()
     name = fields.CharField(50)
     color_enum = fields.IntField() # no idea what this enum is
     color_name = fields.CharField(50)
 
+    async def to_dict(self):
+        final = {}
+
+        final["index"] = self.index
+        final["name"] = self.name
+        final["color_enum"] = int(self.color_enum)
+        final["color_name"] = self.color_name
+
+        return final
+
 class EntityStarts(Model):
+    id = fields.IntField(pk=True)
     time = fields.IntField() # time in milliseconds
-    entity_id = fields.CharField(50, pk=True) # id of the entity
+    entity_id = fields.CharField(50) # id of the entity
     type = fields.CharField(50) # can be [player, standard-target, maybe more]
     name = fields.CharField(75) # name of the entity
     team = fields.ForeignKeyField("models.Teams")
     level = fields.IntField() # for sm5 this is always 0
     role = fields.IntEnumField(IntRole) # 0 for targets, no idea what it is for laserball
     battlesuit = fields.CharField(50) # for targets its the target name
+
+    async def to_dict(self):
+        final = {}
+
+        final["id"] = self.id
+        final["time"] = self.time
+        final["entity_id"] = self.entity_id
+        final["type"] = self.type
+        final["name"] = self.name
+        final["team"] = (await self.team).index
+        final["level"] = self.level
+        final["role"] = int(self.role)
+        final["battlesuit"] = self.battlesuit
+
+        return final
 
 class Events(Model):
     time = fields.IntField() # time in milliseconds
@@ -137,21 +188,51 @@ class Events(Model):
     # TODO: maybe make this not a json field
     arguments = fields.JSONField()
 
+    async def to_dict(self):
+        final = {}
+
+        final["time"] = self.time
+        final["type"] = int(self.type)
+        final["arguments"] = self.arguments
+
+        return final
+
 class Scores(Model):
     time = fields.IntField() # time in milliseconds
-    entity = fields.ForeignKeyField("models.EntityStarts", to_field="entity_id")
+    entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     old = fields.IntField()
     delta = fields.IntField()
     new = fields.IntField()
 
+    async def to_dict(self):
+        final = {}
+
+        final["time"] = self.time
+        final["entity"] = (await self.entity).entity_id
+        final["old"] = self.old
+        final["delta"] = self.delta
+        final["new"] = self.new
+
+        return final
+
 class EntityEnds(Model):
     time = fields.IntField() # time in milliseconds
-    entity = fields.ForeignKeyField("models.EntityStarts", to_field="entity_id")
+    entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     type = fields.IntField() # don't know what enum this is
     score = fields.IntField()
 
+    async def to_dict(self):
+        final = {}
+
+        final["time"] = self.time
+        final["entity"] = (await self.entity).entity_id
+        final["type"] = self.type
+        final["score"] = self.score
+
+        return final
+
 class SM5Stats(Model):
-    entity = fields.ForeignKeyField("models.EntityStarts", to_field="entity_id")
+    entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     shots_hit = fields.IntField()
     shots_fired = fields.IntField()
     times_zapped = fields.IntField()
@@ -176,6 +257,35 @@ class SM5Stats(Model):
     missiled_opponent = fields.IntField()
     missiled_team = fields.IntField()
 
+    async def to_dict(self):
+        final = {}
+
+        final["entity"] = (await self.entity).entity_id
+        final["shots_hit"] = self.shots_hit
+        final["shots_fired"] = self.shots_fired
+        final["times_zapped"] = self.times_zapped
+        final["times_missiled"] = self.times_missiled
+        final["missile_hits"] = self.missile_hits
+        final["nukes_detonated"] = self.nukes_detonated
+        final["nukes_activated"] = self.nukes_activated
+        final["nuke_cancels"] = self.nuke_cancels
+        final["medic_hits"] = self.medic_hits
+        final["own_medic_hits"] = self.own_medic_hits
+        final["medic_nukes"] = self.medic_nukes
+        final["scout_rapid_fires"] = self.scout_rapid_fires
+        final["life_boosts"] = self.life_boosts
+        final["ammo_boosts"] = self.ammo_boosts
+        final["lives_left"] = self.lives_left
+        final["shots_left"] = self.shots_left
+        final["penalties"] = self.penalties
+        final["shot_3_hits"] = self.shot_3_hits
+        final["own_nuke_cancels"] = self.own_nuke_cancels
+        final["shot_opponent"] = self.shot_opponent
+        final["shot_team"] = self.shot_team
+        final["missiled_opponent"] = self.missiled_opponent
+        final["missiled_team"] = self.missiled_team
+
+        return final
 
 # legacy models
     
@@ -189,7 +299,7 @@ class LegacySM5Game(Model):
         return f"LegacySM5Game()"
     
     def __repr__(self) -> str:
-        return f"<LegacySM5Game"
+        return f"<LegacySM5Game>"
     
     async def get_red_players(self):
         return await self.players.filter(team=Team.RED)

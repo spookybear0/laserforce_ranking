@@ -1,6 +1,7 @@
 from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, EntityEnds, Scores, IntRole, SM5Stats
 from datetime import datetime
 from objects import Team
+from sanic.log import logger
 import json
 import os
 
@@ -43,6 +44,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 mission_name = data[2]
                 start_time = data[3]
                 mission_duration = int(data[4])
+
+                # check if game already exists
+                if game := await SM5Game.filter(start_time=start_time, arena=arena).first():
+                    return game
+
             case "2": # team info
                 teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4]))
             case "3": # entity start
@@ -97,10 +103,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
         entities = await EntityStarts.filter(team=t, type="player").all()
         for e in entities:
-            e_end = await EntityEnds.filter(entity=e).first()
+            e_end = await EntityEnds.filter(entity__entity_id=e.entity_id).first()
+
             if index == 1:
                 team1_score += e_end.score
-            else: # 2
+            elif index == 2: # 2
                 team2_score += e_end.score
 
         index += 1
@@ -113,7 +120,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         raise Exception("Edge case: draw")
 
     # may need to be adjusted for more team colors/names
-    
+
     red_colors = ["Solid Red", "Fire", "Red"]
     green_colors = ["Solid Blue", "Ice", "Earth", "Blue", "Solid Green", "Green"]
 
@@ -136,3 +143,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.sm5_stats.add(*sm5_stats)
 
     await game.save()
+
+
+async def parse_all_tdfs() -> None: # iterate through sm5_tdf folder
+    for file in os.listdir("sm5_tdf"):
+        if file.endswith(".tdf"):
+            logger.info(f"Parsing {file}")
+            await parse_sm5_game(os.path.join("sm5_tdf", file))

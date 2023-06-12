@@ -4,15 +4,24 @@
 
 {% block html_head %}
 
+<script>
+    game_id = {{ game_id }};
+</script>
+
 <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
 <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<py-config>
+    terminal = false
+    [splashscreen]
+        enabled = false
+    
+    [[fetch]]
+    from = "../../assets/python/"
+    files = ["helpers.py"]
+</py-config>
+<py-script src="../../assets/python/replay.py"></py-script>
 
 <style>
-    .py-overlay {
-        display: none;
-        visibility: hidden;
-    }
-
     .replay_viewer {
         width: 100%;
         height: calc(100% - 128px);
@@ -57,16 +66,17 @@
         border-radius: 10px;
     }
 
-    .event {
+    .events {
         display: inline-block;
         width: 75%;
         height: 70%;
-        padding: 0;
+        padding: 5px;
         margin: 0;
         border: 0;
 
         border: 2px solid gray;
         border-radius: 10px;
+        overflow: auto;
     }
 
     .player {
@@ -126,38 +136,33 @@
 
 <div class="replay_viewer">
     <div class="team_box">
-        {% for team in game.teams %}
-            {% if team.players|length == 0 %}
-                {% continue %}
-            {% endif %}
-            <table>
-                <tr>
-                    <th><p>Role</p></th>
-                    <th><p>Codename</p></th>
-                    <th><p>Score</p></th>
-                    <th><p>Lives</p></th>
-                    <th><p>Shots</p></th>
-                    <th><p>Missiles</p></th>
-                    <th><p>Spec</p></th>
-                    <th><p>Accuracy</p></th>
-                </tr>
-                {% for player in team.players %}
-                    <tr>
-                        <td><img src="assets/roles/{{ player.role.name.lower() }}_white.png" alt="role image" width="30" height="30"></td>
-                        <td><p class="player_codename">{{ player.codename }}</p></td>
-                        <td><p class="player_score"></p>0</td>
-                        <td><p class="player_lives"></p>0</td>
-                        <td><p class="player_shots"></p>0</td>
-                        <td><p class="player_missiles">0</p></td>
-                        <td><p class="player_spec"></p>0</td>
-                        <td><p class="player_acc"></p>0</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        {% endfor %}
+        <table id="fire_team">
+            <tr>
+                <th><p>Role</p></th>
+                <th><p>Codename</p></th>
+                <th><p>Score</p></th>
+                <th><p>Lives</p></th>
+                <th><p>Shots</p></th>
+                <th><p>Missiles</p></th>
+                <th><p>Spec</p></th>
+                <th><p>Accuracy</p></th>
+            </tr>
+        </table>
+        <table id="earth_team">
+            <tr>
+                <th><p>Role</p></th>
+                <th><p>Codename</p></th>
+                <th><p>Score</p></th>
+                <th><p>Lives</p></th>
+                <th><p>Shots</p></th>
+                <th><p>Missiles</p></th>
+                <th><p>Spec</p></th>
+                <th><p>Accuracy</p></th>
+            </tr>
+        </table>
     </div>
     <div class="event_box">
-        <div class="event">
+        <div class="events" id="events">
 
         </div>
     </div>
