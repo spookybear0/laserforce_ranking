@@ -10,6 +10,7 @@ from sanic.log import logger
 @app.get("/api/game/<id:int>")
 async def api_game(request: Request, id: int):
     logger.info(f"Game {id} requested")
+    return response.json({"test": "test"})
     game = await SM5Game.filter(id=id).first()
 
     if game is None:
