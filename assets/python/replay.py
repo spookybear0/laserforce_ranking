@@ -276,7 +276,7 @@ async def main_loop(game):
 
 
 async def main():
-    resp = await request(f"/api/game/{js.game_id}", headers={"Access-Control-Allow-Origin": "*", "mode": "cors"})
+    resp = await request(f"/api/game/{js.game_id}")
     game = await resp.json()
     await main_loop(game)
     
