@@ -31,7 +31,6 @@ def get_defaults_from_role(role) -> RoleDefaults:
 
 async def main_loop(game):
     for player in game["entity_starts"]:
-        print(player)
         if player["type"] != "player":
             continue
 
@@ -91,8 +90,6 @@ async def main_loop(game):
 
         old_scroll_top = event_box.scrollTop + event_box.clientHeight
         old_scroll_height = event_box.scrollHeight
-
-        print(old_scroll_height, old_scroll_top)
 
         event_box.innerHTML += f'<p>{"".join(updated_arguments)}</p>'
 
@@ -192,19 +189,27 @@ async def main_loop(game):
             case 405: # nuke opponent
                 nuker = get_entity_from_id(game, event["arguments"][0])
 
-                for player in game["players"]:
+                for player in game["entity_starts"]:
                     if player["team"] != nuker["team"]:
                         player["lives"] -= 3
 
                 nuker["score"] += 500
             case 500: # resupply ammo
+                resupplier = get_entity_from_id(game, event["arguments"][0])
                 resupplyee = get_entity_from_id(game, event["arguments"][2])
                 defaults = get_defaults_from_role(resupplyee["role"])
 
+                resupplier["shots_fired"] += 1
+                resupplier["shots_hit"] += 1
+
                 resupplyee["shots"] += defaults.shots_resupply
             case 502: # resupply lives
+                resupplier = get_entity_from_id(game, event["arguments"][0])
                 resupplyee = get_entity_from_id(game, event["arguments"][2])
                 defaults = get_defaults_from_role(resupplyee["role"])
+
+                resupplier["shots_fired"] += 1
+                resupplier["shots_hit"] += 1
 
                 resupplyee["lives"] += defaults.lives_resupply
             case 510: # ammo boost
@@ -214,6 +219,8 @@ async def main_loop(game):
                     if player["team"] == booster["team"]: # TODO: check if downed
                         defaults = get_defaults_from_role(player["role"])
                         player["shots"] += defaults.shots_resupply
+                        if player["shots"] > defaults.shots_max:
+                            player["shots"] = defaults.shots_max
             case 512: # lives boost
                 booster = get_entity_from_id(game, event["arguments"][0])
 
@@ -221,6 +228,9 @@ async def main_loop(game):
                     if player["team"] == booster["team"]:
                         defaults = get_defaults_from_role(player["role"])
                         player["lives"] += defaults.lives_resupply
+                        if player["lives"] > defaults.lives_max:
+                            player["lives"] = defaults.lives_max
+
             case 600: # penalty
                 penaltyee = get_entity_from_id(game, event["arguments"][2])
                 penaltyee["score"] -= 1000
@@ -232,16 +242,6 @@ async def main_loop(game):
                 continue
 
             defaults = get_defaults_from_role(player["role"])
-            
-            #player["row"].innerHTML = f'''
-            #    <td><img src="/assets/roles/{defaults.name}_white.png" alt="role image" width="30" height="30"></td>
-            #    <td><p class="player_codename">{player["name"]}</p></td>
-            #    <td><p class="player_score">{player["score"]}</p></td>
-            #    <td><p class="player_lives">{player["lives"]}</p></td>
-            #    <td><p class="player_shots">{player["shots"]}</p></td>
-            #    <td><p class="player_missiles">{player["missiles"]}</p></td>
-            #    <td><p class="player_spec">{player["spec"]}</p></td>
-            #'''
 
             # update
             if player["shots_fired"] == 0:
@@ -278,8 +278,7 @@ async def main_loop(game):
 async def main():
     resp = await request(f"/api/game/{js.game_id}", headers={"mode": "no-cors"})
     game = await resp.json()
-    print("game loaded")
-    print(await main_loop(game), "main loop started")
+    await main_loop(game)
     
 
 async def error_wrap():
