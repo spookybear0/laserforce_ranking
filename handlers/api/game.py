@@ -13,6 +13,6 @@ async def api_game(request: Request, id: int):
     game = await SM5Game.filter(id=id).first()
 
     if game is None:
-        return exceptions.NotFound("Game not found!", status_code=404)
+        raise exceptions.NotFound("Game not found!", status_code=404)
 
     return response.json(await game.to_dict())

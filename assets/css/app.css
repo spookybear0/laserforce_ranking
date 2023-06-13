@@ -418,3 +418,35 @@ body {
     text-align: right;
 }
 
+
+.userlist {
+  border-radius: 15px;
+  background: #1A1A1A;
+  padding: 1rem;
+  margin: auto;
+  width: 70%;
+  height: 90vh;
+  margin-top: 20px;
+}
+
+.userlist-pos {
+  border-radius: 10px;
+  padding: 0.2rem;
+  margin: 0.9rem;
+  background: #262626;
+  padding-bottom: 0.5rem;
+}
+
+.userlist-username-text {
+  font-size: 1.5rem;
+  position: relative;
+  left: 0.75rem;
+  bottom: 0.125rem;
+}
+
+.userlist-info-text {
+  float: right;
+  right: 0.25rem;
+  top: 0.25rem;
+  position: relative;
+}

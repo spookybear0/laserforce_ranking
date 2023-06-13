@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Replay Viewer{% endblock %}
+{% block title %}Replay{% endblock %}
 
 
 {% block html_head %}
@@ -24,7 +24,7 @@
 <style>
     .replay_viewer {
         width: 100%;
-        height: calc(100% - 128px);
+        height: calc(100% - 164px);
         display: flex;
         flex-direction: row;
     }
@@ -33,44 +33,28 @@
         width: 50%;
         display: flex;
         flex-direction: column;
-        justify-content: space-around;
+        justify-content: flex-start;
         margin: 0.5em;
-        margin-left: 5em;
+        margin-left: 15em;
+        margin-top: 5em;
     }
 
     .event_box {
         width: 50%;
         height: 100%;
         display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-        margin: 0.5em;
-        margin-left: 5em;
-        margin-top: 5em;
-    }
-
-    .team {
-        display: inline-block;
-        width: 75%;
-        height: 40%;
-        padding: 0;
-        margin: 0;
-        border: 0;
-        vertical-align: top;
-
-        display: flex;
         flex-direction: column;
-        justify-content: space-around;
-        
-        border: 2px solid gray;
-        border-radius: 10px;
+        margin: 0;
+        margin-left: 15em;
+        margin-top: 5em;
+        margin-right: 15em;
     }
 
     .events {
         display: inline-block;
-        width: 75%;
+        width: 100%;
         height: 70%;
-        padding: 5px;
+        padding: 10px;
         margin: 0;
         border: 0;
 
@@ -110,9 +94,9 @@
 
     table {
         display: inline-block;
-        width: 75%;
-        padding: 0;
-        margin: 0;
+        width: min-content;
+        padding: 10px;
+        margin-bottom: 3rem;
         border: 0;
         vertical-align: top;
         
@@ -128,6 +112,19 @@
 
     th, td, tr {
         text-align: left;
+    }
+
+    .controls {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        margin-top: 2rem;
+        width: 100%;
+    }
+
+    .control {
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
     }
 </style>
 {% endblock %}
@@ -163,7 +160,18 @@
     </div>
     <div class="event_box">
         <div class="events" id="events">
-
+            
+        </div>
+        <div class="controls">
+            <button id="play" class="control">Play</button>
+            <select id="speed" class="control">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="2.0">2.0x</option>
+                <option value="4.0">4.0x</option>
+            </select>
+            <button id="restart" class="control">Restart</button>
         </div>
     </div>
 </div>

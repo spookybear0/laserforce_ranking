@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Game{% endblock %}
+
+
+{% block html_head %}
+
+<style>
+    .team_box {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        margin: 0.5em;
+        margin-left: 5em;
+    }
+
+    .team {
+        display: inline-block;
+        width: 45%;
+        height: 35%;
+        padding: 1rem;
+        margin: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        border: 0;
+        vertical-align: top;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        
+        border: 2px solid gray;
+        border-radius: 10px;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div>
+    <div class="userlist">
+        <div style="margin-left: 0; margin-right: 0; text-align: center;">
+            <span title="Game Date"><h2 style="font-size: 25px;">Game at {{ game_date }}</h2></span>
+            <span title="Replay" style="color: #2fa4e7;"><h3><a href="/game/{{ game_id }}/replay">Replay</a></h3></span>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <div class="team">
+        </div>
+        <div class="team">
+        </div>
+    </div>
+</div>
+
+</body>
+
+{% endblock %}

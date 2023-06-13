@@ -3,10 +3,75 @@ import asyncio
 import time
 from helpers import request, RoleDefaults, CommanderDefaults, HeavyDefaults, ScoutDefaults, AmmoDefaults, MedicDefaults
 import traceback
+from pyodide.ffi import create_proxy
+from threading import Event
+from typing import Optional
+
+restart_event = False
+restart_event_received = False
 
 fire_table = js.document.getElementById("fire_team")
 earth_table = js.document.getElementById("earth_team")
 event_box = js.document.getElementById("events")
+speed_text = js.document.getElementById("speed")
+play_button = js.document.getElementById("play")
+restart_button = js.document.getElementById("restart")
+started = False
+play = False
+start_time: float = 0.0
+game: Optional[dict] = None
+
+def play_pause(arg):
+    global play, started, start_time
+    play = not play
+    if play:
+        play_button.innerHTML = "Pause"
+    else:
+        play_button.innerHTML = "Play"
+
+    if not started:
+        started = True
+        start_time = time.time()
+
+async def restart(arg):
+    global play, started, start_time, game, restart_event, restart_event_received
+
+    restart_event = True
+    while not restart_event_received:
+        await asyncio.sleep(0.01)
+
+    play = False
+    started = False
+    start_time = 0.0
+    play_button.innerHTML = "Play"
+    event_box.innerHTML = ""
+
+    for player in game["entity_starts"]:
+        if player["type"] != "player":
+            continue
+
+        defaults = get_defaults_from_role(player["role"])
+
+        player["row"].getElementsByTagName("td")[2].getElementsByTagName("p")[0].innerHTML = 0
+        player["row"].getElementsByTagName("td")[3].getElementsByTagName("p")[0].innerHTML = defaults.lives
+        player["row"].getElementsByTagName("td")[4].getElementsByTagName("p")[0].innerHTML = defaults.shots
+        player["row"].getElementsByTagName("td")[5].getElementsByTagName("p")[0].innerHTML = defaults.missiles
+        player["row"].getElementsByTagName("td")[6].getElementsByTagName("p")[0].innerHTML = 0
+        player["row"].getElementsByTagName("td")[7].getElementsByTagName("p")[0].innerHTML = "0.00%"
+        player["lives"] = defaults.lives
+        player["shots"] = defaults.shots
+        player["missiles"] = defaults.missiles
+        player["downed"] = False
+        player["rapid_fire"] = False
+        player["special_points"] = 0
+        player["shots_hit"] = 0
+        player["shots_fired"] = 0
+
+
+    await play_events(game)
+
+play_button.addEventListener("click", create_proxy(play_pause))
+restart_button.addEventListener("click", create_proxy(restart))
 
 def get_team_from_id(game, id):
     for team in game["teams"]:
@@ -29,7 +94,8 @@ def get_defaults_from_role(role) -> RoleDefaults:
 
     return defaults
 
-async def main_loop(game):
+async def setup_game(game):
+    global play, start_time, restart_event, restart_event_received
     for player in game["entity_starts"]:
         if player["type"] != "player":
             continue
@@ -74,20 +140,36 @@ async def main_loop(game):
         player["row"] = row
         player["table"] = table
 
+    # TODO: add downed attribute to player
+
+
+async def play_events(game):
+    global play, start_time, restart_event, restart_event_received
     # iterate through events at certain time, don't run the event unless it's time
     # event["time"] is in milliseconds
 
-    start_time = time.time()
-
     for event in game["events"]:
+        if restart_event:
+            restart_event = False
+            restart_event_received = True
+            return
+
+        while not play:
+            if restart_event:
+                restart_event = False
+                restart_event_received = True
+                return
+            await asyncio.sleep(0.01)
+
         event["type"] = int(event["type"])
+
         # wait until it's time to run the event
-        while time.time() - start_time < event["time"] / 1000:
-            await asyncio.sleep(0.1)
+        while int(time.time() - start_time)*float(speed_text.value) < event["time"] / 1000:
+            await asyncio.sleep(0.01)
         
         updated_arguments = []
         for arg in event["arguments"]:
-            if arg.startswith("#"):
+            if arg.startswith("#") or arg.startswith("@"):
                 updated_arguments.append(get_entity_from_id(game, arg)["name"])
             else:
                 updated_arguments.append(arg)
@@ -151,7 +233,8 @@ async def main_loop(game):
 
                 victim = get_entity_from_id(game, event["arguments"][2])
                 victim["score"] -= 20
-                victim["lives"] -= 1
+                if victim["lives"] > 0:
+                    victim["lives"] -= 1
             case 207: # damaged teammate
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
@@ -172,7 +255,8 @@ async def main_loop(game):
 
                 victim = get_entity_from_id(game, event["arguments"][2])
                 victim["score"] -= 20
-                victim["lives"] -= 1
+                if victim["lives"] > 0:
+                    victim["lives"] -= 1
             case 303: # missile base
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["missiles"] -= 1
@@ -191,6 +275,7 @@ async def main_loop(game):
 
                 victim = get_entity_from_id(game, event["arguments"][2])
                 victim["score"] -= 100
+                victim["lives"] -= 2
             case 308: # missile teammate
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["missiles"] -= 1
@@ -198,6 +283,7 @@ async def main_loop(game):
 
                 victim = get_entity_from_id(game, event["arguments"][2])
                 victim["score"] -= 100
+                victim["lives"] -= 2
             case 400: # rapid fire
                 player = get_entity_from_id(game, event["arguments"][0])
                 player["special_points"] -= 15
@@ -209,8 +295,11 @@ async def main_loop(game):
                 nuker = get_entity_from_id(game, event["arguments"][0])
 
                 for player in game["entity_starts"]:
-                    if player["team"] != nuker["team"]:
-                        player["lives"] -= 3
+                    if player["team"] != nuker["team"] and player["type"] == "player":
+                        if player["lives"] < 3:
+                            player["lives"] = 0
+                        else:
+                            player["lives"] -= 3
 
                 nuker["score"] += 500
             case 500: # resupply ammo
@@ -242,8 +331,8 @@ async def main_loop(game):
             case 510: # ammo boost
                 booster = get_entity_from_id(game, event["arguments"][0])
 
-                for player in game["players"]:
-                    if player["team"] == booster["team"]: # TODO: check if downed
+                for player in game["entity_starts"]:
+                    if player["team"] == booster["team"] and player["type"] == "player" and not player["downed"]:
                         defaults = get_defaults_from_role(player["role"])
                         player["shots"] += defaults.shots_resupply
                         if player["shots"] > defaults.shots_max:
@@ -251,8 +340,8 @@ async def main_loop(game):
             case 512: # lives boost
                 booster = get_entity_from_id(game, event["arguments"][0])
 
-                for player in game["players"]:
-                    if player["team"] == booster["team"]:
+                for player in game["entity_starts"]:
+                    if player["team"] == booster["team"] and player["type"] == "player" and not player["downed"]:
                         defaults = get_defaults_from_role(player["role"])
                         player["lives"] += defaults.lives_resupply
                         if player["lives"] > defaults.lives_max:
@@ -300,12 +389,16 @@ async def main_loop(game):
                     rows[i].parentNode.insertBefore(rows[i + 1], rows[i])
                     switching = True
 
-
+async def play_replay(game):
+    await setup_game(game)
+    await play_events(game)
 
 async def main():
+    global game
+    print("Starting replay")
     resp = await request(f"/api/game/{js.game_id}")
     game = await resp.json()
-    await main_loop(game)
+    await play_replay(game)
     
 
 async def error_wrap():
