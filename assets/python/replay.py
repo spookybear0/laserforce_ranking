@@ -82,8 +82,6 @@ async def main_loop(game):
         # wait until it's time to run the event
         while time.time() - start_time < event["time"] / 1000:
             await asyncio.sleep(0.1)
-        # check if the timing is right print
-        print(event["time"]/1000, time.time() - start_time, event["time"]/1000 - (time.time() - start_time))
         
         updated_arguments = []
         for arg in event["arguments"]:
@@ -206,8 +204,9 @@ async def main_loop(game):
                 resupplier["shots_fired"] += 1
                 resupplier["shots_hit"] += 1
 
-                if resupplyee["shots"] < defaults.shots_max:
-                    resupplyee["shots"] += defaults.shots_resupply
+                resupplyee["shots"] += defaults.shots_resupply
+                if resupplyee["shots"] > defaults.shots_max:
+                    resupplyee["shots"] = defaults.shots_max
             case 502: # resupply lives
                 resupplier = get_entity_from_id(game, event["arguments"][0])
                 resupplyee = get_entity_from_id(game, event["arguments"][2])
@@ -216,8 +215,9 @@ async def main_loop(game):
                 resupplier["shots_fired"] += 1
                 resupplier["shots_hit"] += 1
 
-                if resupplyee["lives"] < defaults.lives_max:
-                    resupplyee["lives"] += defaults.lives_resupply
+                resupplyee["lives"] += defaults.lives_resupply
+                if resupplyee["lives"] > defaults.lives_max:
+                    resupplyee["lives"] = defaults.lives_max
             case 510: # ammo boost
                 booster = get_entity_from_id(game, event["arguments"][0])
 
