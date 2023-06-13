@@ -130,10 +130,31 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         winner = Team.GREEN
     else:
         raise Exception("Invalid team color") # or can't find correct team color
+    
+    # determine if the game should be ranked automatically
 
-    game = await SM5Game.create(winner=winner, tdf_name=os.path.basename(file_location), file_version=file_version,
+    ranked = True
+    ended_early = False
+
+    # first check if either team has more than 7 players or less than 5 players
+
+    team1_len = len(await EntityStarts.filter(team=team1, type="player").all())
+    team2_len = len(await EntityStarts.filter(team=team2, type="player").all())
+
+    if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
+        ranked = False
+
+    # check if game was ended early (but not by elimination)
+
+    # if it didn't end naturally
+    if not await EntityEnds.filter(type=EventType.MISSION_END).exists():
+        ranked = False
+        ended_early = True
+
+
+    game = await SM5Game.create(winner=winner, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
-                                start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration)
+                                start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
     
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)

@@ -88,6 +88,8 @@ class SM5Game(Model):
     arena = fields.CharField(20) # x-y, x=continent, y=arena (ex: 4-43)
     mission_type = fields.IntField() # no idea what this enum is
     mission_name = fields.CharField(100)
+    ranked = fields.BooleanField() # will this game affect player ratings and stats.
+    ended_early = fields.BooleanField() # did the game end early?
     start_time = fields.DatetimeField()
     mission_duration = fields.IntField() # in seconds
     log_time = fields.DatetimeField(auto_now_add=True)

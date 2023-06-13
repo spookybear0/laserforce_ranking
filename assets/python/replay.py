@@ -65,10 +65,12 @@ async def main_loop(game):
         player["lives"] = defaults.lives
         player["shots"] = defaults.shots
         player["missiles"] = defaults.missiles
+        player["downed"] = False
         player["special_points"] = 0
         player["shots_hit"] = 0
         player["shots_fired"] = 0
         player["score"] = 0
+        player["rapid_fire"] = False
         player["row"] = row
         player["table"] = table
 
@@ -103,21 +105,25 @@ async def main_loop(game):
             case 201: # miss
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
             case 202: # miss base
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
             case 203: # shot base
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
             case 204: # destroy base
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
                 if shooter["role"] != 2: # not heavy
                     shooter["special_points"] += 5
                 shooter["score"] += 1001
@@ -125,7 +131,8 @@ async def main_loop(game):
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
                 if shooter["role"] != 2: # not heavy
                     shooter["special_points"] += 1
                 shooter["score"] += 100
@@ -136,7 +143,8 @@ async def main_loop(game):
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
                 if shooter["role"] != 2: # not heavy
                     shooter["special_points"] += 1
                 shooter["score"] += 100
@@ -148,7 +156,8 @@ async def main_loop(game):
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
                 shooter["score"] -= 100
 
                 victim = get_entity_from_id(game, event["arguments"][2])
@@ -157,7 +166,8 @@ async def main_loop(game):
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
-                shooter["shots"] -= 1
+                if shooter["role"] != 4: # not ammo
+                    shooter["shots"] -= 1
                 shooter["score"] -= 100
 
                 victim = get_entity_from_id(game, event["arguments"][2])
@@ -189,7 +199,9 @@ async def main_loop(game):
                 victim = get_entity_from_id(game, event["arguments"][2])
                 victim["score"] -= 100
             case 400: # rapid fire
-                pass # TODO: implement rapid fire
+                player = get_entity_from_id(game, event["arguments"][0])
+                player["special_points"] -= 15
+                player["rapid_fire"] = True
             case 404: # activate nuke
                 nuker = get_entity_from_id(game, event["arguments"][0])
                 nuker["special_points"] -= 20
@@ -212,6 +224,8 @@ async def main_loop(game):
                 resupplyee["shots"] += defaults.shots_resupply
                 if resupplyee["shots"] > defaults.shots_max:
                     resupplyee["shots"] = defaults.shots_max
+                
+                resupplyee["rapid_fire"] = False
             case 502: # resupply lives
                 resupplier = get_entity_from_id(game, event["arguments"][0])
                 resupplyee = get_entity_from_id(game, event["arguments"][2])
@@ -223,6 +237,8 @@ async def main_loop(game):
                 resupplyee["lives"] += defaults.lives_resupply
                 if resupplyee["lives"] > defaults.lives_max:
                     resupplyee["lives"] = defaults.lives_max
+
+                resupplyee["rapid_fire"] = False
             case 510: # ammo boost
                 booster = get_entity_from_id(game, event["arguments"][0])
 
