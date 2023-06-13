@@ -54,7 +54,7 @@ async def main_loop(game):
             <td><p class="player_lives">{defaults.lives}</p></td>
             <td><p class="player_shots">{defaults.shots}</p></td>
             <td><p class="player_missiles">{defaults.missiles}</p></td>
-            <td><p class="player_spec">0</p></td>
+            <td><p class="player_special_points">0</p></td>
             <td><p class="player_accuracy">0.00%</p></td>
         '''
 
@@ -65,7 +65,7 @@ async def main_loop(game):
         player["lives"] = defaults.lives
         player["shots"] = defaults.shots
         player["missiles"] = defaults.missiles
-        player["spec"] = 0
+        player["special_points"] = 0
         player["shots_hit"] = 0
         player["shots_fired"] = 0
         player["score"] = 0
@@ -118,14 +118,16 @@ async def main_loop(game):
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
                 shooter["shots"] -= 1
-                shooter["spec"] += 5
+                if shooter["role"] != 2: # not heavy
+                    shooter["special_points"] += 5
                 shooter["score"] += 1001
             case 205: # damaged opponent
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
                 shooter["shots"] -= 1
-                shooter["spec"] += 1
+                if shooter["role"] != 2: # not heavy
+                    shooter["special_points"] += 1
                 shooter["score"] += 100
 
                 victim = get_entity_from_id(game, event["arguments"][2])
@@ -135,7 +137,8 @@ async def main_loop(game):
                 shooter["shots_fired"] += 1
                 shooter["shots_hit"] += 1
                 shooter["shots"] -= 1
-                shooter["spec"] += 1
+                if shooter["role"] != 2: # not heavy
+                    shooter["special_points"] += 1
                 shooter["score"] += 100
 
                 victim = get_entity_from_id(game, event["arguments"][2])
@@ -163,7 +166,8 @@ async def main_loop(game):
             case 303: # missile base
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["missiles"] -= 1
-                shooter["spec"] += 5
+                if shooter["role"] != 2: # not heavy
+                    shooter["special_points"] += 5
                 shooter["score"] += 1001
             case 304: # missile missed
                 shooter = get_entity_from_id(game, event["arguments"][0])
@@ -171,7 +175,8 @@ async def main_loop(game):
             case 306: # missile opponent
                 shooter = get_entity_from_id(game, event["arguments"][0])
                 shooter["missiles"] -= 1
-                shooter["spec"] += 2
+                if shooter["role"] != 2: # not heavy
+                    shooter["special_points"] += 2
                 shooter["score"] += 500
 
                 victim = get_entity_from_id(game, event["arguments"][2])
@@ -187,7 +192,7 @@ async def main_loop(game):
                 pass # TODO: implement rapid fire
             case 404: # activate nuke
                 nuker = get_entity_from_id(game, event["arguments"][0])
-                nuker["spec"] -= 20
+                nuker["special_points"] -= 20
             case 405: # nuke opponent
                 nuker = get_entity_from_id(game, event["arguments"][0])
 
@@ -259,7 +264,7 @@ async def main_loop(game):
             player["row"].getElementsByTagName("td")[3].getElementsByTagName("p")[0].innerHTML = player["lives"]
             player["row"].getElementsByTagName("td")[4].getElementsByTagName("p")[0].innerHTML = player["shots"]
             player["row"].getElementsByTagName("td")[5].getElementsByTagName("p")[0].innerHTML = player["missiles"]
-            player["row"].getElementsByTagName("td")[6].getElementsByTagName("p")[0].innerHTML = player["spec"]
+            player["row"].getElementsByTagName("td")[6].getElementsByTagName("p")[0].innerHTML = player["special_points"]
             player["row"].getElementsByTagName("td")[7].getElementsByTagName("p")[0].innerHTML = accuracy
 
             table = player["table"]
