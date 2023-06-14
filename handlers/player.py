@@ -11,7 +11,6 @@ sql = app.ctx.sql
 
 @app.get("/player/<id>")
 async def player_get(request: Request, id: str):
-
     player = await Player.from_player_id(id)
 
     if not player:

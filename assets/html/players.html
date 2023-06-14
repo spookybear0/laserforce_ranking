@@ -107,7 +107,7 @@
             {% for player in players %}
                 {% if not loop.index > 25 %}
                     <tr>
-                        <td class="align-left"><a style="color: #2fa4e7;" href="/player/{{ player.player_id }}">{{ player.codename }}</a></td>
+                        <td class="align-left"><a href="/player/{{ player.player_id }}">{{ player.codename }}</a></td>
                         <td class="align-left">{{ player.player_id }}</td>
                         <td class="align-right">{{ player.sm5_ordinal|round(2) }}</td>
                         <td class="align-right">{{ player.laserball_ordinal|round(2) }}</td>

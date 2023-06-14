@@ -1,5 +1,5 @@
 from typing import Any
-from tortoise import Model, fields
+from tortoise import Model, fields, functions
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
 import openskill
@@ -44,6 +44,17 @@ class IntRole(IntEnum):
     SCOUT = 3
     AMMO = 4
     MEDIC = 5
+
+    def __str__(self) -> str:
+        names = {
+            0: "Base",
+            1: "Commander",
+            2: "Heavy",
+            3: "Scout",
+            4: "Ammo",
+            5: "Medic"
+        }
+        return names.get(self.value, "Base")
 
 
 class Player(Model):
@@ -108,11 +119,11 @@ class SM5Game(Model):
     def __repr__(self) -> str:
         return f"<SM5Game ({self.tdf_name})>"
     
-    async def get_red_players(self):
-        return await self.players.filter(team=Team.RED)
+    async def get_red_score(self):
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire").values_list("score")))
     
-    async def get_green_players(self):
-        return await self.players.filter(team=Team.GREEN)
+    async def get_green_score(self):
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Earth").values_list("score")))
     
     async def to_dict(self):
         # convert the entire game to a dict

@@ -24,6 +24,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     entity_ends = []
     sm5_stats = []
 
+    token_to_entity = {}
+
     linenum = 0
     while True:
         linenum += 1
@@ -61,21 +63,24 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
+                
+                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=data[4],
+                                        team=team, level=int(data[6]), role=int(data[7]), battlesuit=data[8])
 
-                entity_starts.append(await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=data[4],
-                                    team=team, level=int(data[6]), role=int(data[7]), battlesuit=data[8]))
+                entity_starts.append(entity_start)
+                token_to_entity[data[2]] = entity_start
             case "4": # event
                 if data[2] == "0B03": # base awarded
                     data[2] = 2819 # keeping my system in integers
                 events.append(await Events.create(time=int(data[1]), type=EventType(int(data[2])), arguments=json.dumps(data[3:])))
             case "5": # score
-                scores.append(await Scores.create(time=int(data[1]), entity=await EntityStarts.filter(entity_id=data[2]).first(), old=int(data[3]),
+                scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                     delta=int(data[4]), new=int(data[5])))
             case "6": # entity end
-                entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=await EntityStarts.filter(entity_id=data[2]).first(),
+                entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                     type=int(data[3]), score=int(data[4])))
             case "7": # sm5 stats
-                sm5_stats.append(await SM5Stats.create(entity=await EntityStarts.filter(entity_id=data[1]).first(),
+                sm5_stats.append(await SM5Stats.create(entity=token_to_entity[data[1]],
                     shots_hit=int(data[2]), shots_fired=int(data[3]), times_zapped=int(data[4]), times_missiled=int(data[5]),
                     missile_hits=int(data[6]), nukes_detonated=int(data[7]), nukes_activated=int(data[8]), nuke_cancels=int(data[9]),
                     medic_hits=int(data[10]), own_medic_hits=int(data[11]), medic_nukes=int(data[12]), scout_rapid_fires=int(data[13]),

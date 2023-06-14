@@ -8,5 +8,5 @@ def get_post(request: Request):
     return data
 
 async def render_template(r, template, *args, **kwargs):
-    text = app.ctx.jinja.render(template, r, *args, **kwargs)
+    text = await app.ctx.jinja.render_async(template, r, *args, **kwargs)
     return text

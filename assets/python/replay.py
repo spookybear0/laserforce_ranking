@@ -303,12 +303,8 @@ async def play_events(game):
 
                 nuker["score"] += 500
             case 500: # resupply ammo
-                resupplier = get_entity_from_id(game, event["arguments"][0])
                 resupplyee = get_entity_from_id(game, event["arguments"][2])
                 defaults = get_defaults_from_role(resupplyee["role"])
-
-                resupplier["shots_fired"] += 1
-                resupplier["shots_hit"] += 1
 
                 resupplyee["shots"] += defaults.shots_resupply
                 if resupplyee["shots"] > defaults.shots_max:
@@ -316,12 +312,8 @@ async def play_events(game):
                 
                 resupplyee["rapid_fire"] = False
             case 502: # resupply lives
-                resupplier = get_entity_from_id(game, event["arguments"][0])
                 resupplyee = get_entity_from_id(game, event["arguments"][2])
                 defaults = get_defaults_from_role(resupplyee["role"])
-
-                resupplier["shots_fired"] += 1
-                resupplier["shots_hit"] += 1
 
                 resupplyee["lives"] += defaults.lives_resupply
                 if resupplyee["lives"] > defaults.lives_max:

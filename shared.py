@@ -21,6 +21,6 @@ sentry_sdk.init(
 
 app = Sanic("laserforce_rankings")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-app.ctx.jinja = SanicJinja2(app, loader=jinja2.FileSystemLoader("./assets/html"), pkg_path="assets/html", extensions=["jinja2.ext.loopcontrols"])
+app.ctx.jinja = SanicJinja2(app, loader=jinja2.FileSystemLoader("./assets/html"), pkg_path="assets/html", extensions=["jinja2.ext.loopcontrols"], enable_async=True)
 app.ctx.sql = MySQLPool()
 app.ctx.config = config
