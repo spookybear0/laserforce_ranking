@@ -172,7 +172,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
 
 async def parse_all_tdfs() -> None: # iterate through sm5_tdf folder
-    for file in os.listdir("sm5_tdf"):
+    directory = os.listdir("sm5_tdf")
+    directory.sort() # first file is the oldest
+
+    for file in directory:
         if file.endswith(".tdf"):
             logger.info(f"Parsing {file}")
             await parse_sm5_game(os.path.join("sm5_tdf", file))
