@@ -156,6 +156,17 @@ class Teams(Model):
     color_enum = fields.IntField() # no idea what this enum is
     color_name = fields.CharField(50)
 
+    @property
+    def enum(self):
+        conversions = {
+            "Fire": Team.RED,
+            "Earth": Team.GREEN,
+            "Red": Team.RED,
+            "Green": Team.GREEN
+        }
+
+        return conversions[self.color_name]
+
     async def to_dict(self):
         final = {}
 

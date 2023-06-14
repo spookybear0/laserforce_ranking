@@ -143,8 +143,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # first check if either team has more than 7 players or less than 5 players
 
-    team1_len = len(await EntityStarts.filter(team=team1, type="player").all())
-    team2_len = len(await EntityStarts.filter(team=team2, type="player").all())
+    team1_len = await EntityEnds.filter(entity__team=team1, entity__type="player").count()
+    team2_len = await EntityEnds.filter(entity__team=team2, entity__type="player").count()
 
     if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
         ranked = False

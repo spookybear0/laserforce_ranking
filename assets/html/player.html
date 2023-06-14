@@ -56,6 +56,32 @@
         padding-left: 1rem;
         padding-right: 1rem;
     }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 80%;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+
+    td {
+        color: lightgray;
+    }
+
+    .recent_games {
+        margin-top: 5rem;
+    }
 </style>
 
 {% endblock %}
@@ -77,194 +103,51 @@
             </div>
 
             <div style="clear: both;"></div>
-            
-            <div style="float: left; padding-left: 5rem; padding-top: 5rem;">
-                <div style="display: flex; float: left;">
-                    <div class="btn">
-                        <canvas id="sm5_teams" style="max-width: 600px;"></canvas>
-                        <span title="{{ (sm5_win_percent*100)|round(1) }}%"><p>SM5 Teams</p></span>
-                    </div>
-                    <div class="btn">
-                        <canvas id="laserball_teams" style="max-width: 600px;"></canvas>
-                        <span title="{{ (laserball_win_percent*100)|round(1) }}%"><p>Laserball Teams</p></span>
-                    </div>
-                </div>
-                
-                <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; float: left; clear: both;" height="200px"></canvas>
-            </div>
 
-            <div style="padding-right: 5rem; padding-top: 5rem;">
-                <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; float: right;" height="275px"></canvas>
+            <div class="recent_games">
+                <h2 style="text-align: center;">Recent Games</h2>
+                <table>
+                    <tr>
+                        <th>Game</th>
+                        <th>Win/Loss</th>
+                        <th>Role</th>
+                        <th>Score</th>
+                        <th>Lives Left</th>
+                        <th>Shots Left</th>
+                        <th>Team</th>
+                        <th>Accuracy</th>
+                        <th>K/D</th>
+                        <th>Missiled Other</th>
+                        <th>Missiled</th>
+                        <th>Shot Team</th>
+                        <th>Missiled Team</th>
+                        <th>Medic Hits</th>
+                    </tr>
+                    {% for game in recent_games %}
+                        {% set entity_start = get_entity_start(game, player) %}
+                        {% set entity_end = get_entity_end(game, entity_start) %}
+                        {% set sm5_stats = get_sm5_stat(game, entity_start) %}
+                        <tr>
+                            <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                            <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
+                            <td style="width: 30px;"><img src="/assets/roles/{{entity_start.role|string|lower}}_white.png" alt="role image" width="30" height="30"></td>
+                            <td>{{ entity_end.score }}</td>
+                            <td>{{ sm5_stats.lives_left }}</td>
+                            <td>{{ sm5_stats.shots_left }}</td>
+                            <td style="color: {{ 'orangered' if entity_start.team.color_name == 'Fire' else 'greenyellow' }}">{{ entity_start.team.color_name }}</td>
+                            <td>{{ sm5_stats.shots_fired and ((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2) }}%</td>
+                            <td>{{ sm5_stats.times_zapped and (sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2) }}</td>
+                            <td>{{ sm5_stats.missiled_opponent }}</td>
+                            <td>{{ sm5_stats.times_missiled }}</td>
+                            <td>{{ sm5_stats.shot_team }}</td>
+                            <td>{{ sm5_stats.missiled_team }}</td>
+                            <td>{{ sm5_stats.medic_hits }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
             </div>
         </div>
     </div>
-
-    <script>
-        Chart.defaults.global.defaultFontColor = "#FFFFFF";
-
-        new Chart("sm5_teams", {
-            type: "pie",
-            // wins, inner
-            data: {
-                labels: ["Red", "Green", "Red Wins", "Green Wins"],
-                datasets: [
-                    {
-                        backgroundColor: ["#b91d47", "#00aba9"],
-                        data: [{{ red_teams_sm5 }}, {{ green_teams_sm5 }}]
-                    },
-                    {
-                        backgroundColor: ["#000000", "#000000", "#b91d47", "#00aba9"],
-                        data: [0, 0, {{ red_wins_sm5 }}, {{ green_wins_sm5}}]
-                    }
-                ]
-            },
-
-
-            options: {
-                legend: {
-                    display: false,
-                    fullSize: false
-                }
-            }
-        });
-
-        new Chart("laserball_teams", {
-            type: "pie",
-            data: {
-                labels: ["Red", "Blue"],
-                datasets: [{
-                backgroundColor: ["#b91d47", "#0047AB"],
-                data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
-                }]
-            },
-            options: {
-                legend: {
-                    display: false,
-                    fullSize: false
-                }
-            }
-        });
-
-        new Chart("avg_role_score", {
-            type: "bar",
-            data: {
-                labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
-                datasets: [
-                    {
-                        label: "Player's Median Score",
-                        data: {{ role_plot_data_player }},
-                        backgroundColor: [
-                            "rgb(50, 116, 161)",
-                            "rgb(225, 129, 44)",
-                            "rgb(58, 146, 58)",
-                            "rgb(192, 61, 62)",
-                            "rgb(147, 114, 178)"
-                        ]
-                    },
-                    {
-                        label: "World's Median Score",
-                        data: {{ role_plot_data_world }},
-                        backgroundColor: [
-                            "rgb(50, 166, 161)",
-                            "rgb(225, 179, 44)",
-                            "rgb(58, 196, 58)",
-                            "rgb(192, 121, 62)",
-                            "rgb(147, 174, 178)"
-                        ]
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    yAxes: [{
-                        ticks:{
-                            min: 0,
-                        },
-                        stacked: false,
-                    }],
-                    xAxes: {
-                        gridLines: {
-                            display: false,
-                        },
-                        stacked: false
-                    },
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: "rgb(255, 255, 255)"
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: "Median player score vs median world score"
-                    }
-                }
-            }
-        });
-
-        // median score vs world radar chart
-
-        new Chart("avg_role_score_radar", {
-            type: "radar",
-            data: {
-                labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
-                datasets: [
-                    {
-                        label: "Player's Median Score",
-                        data: {{ role_plot_data_player }},
-                        backgroundColor: "rgba(50, 116, 161, 0.5)"
-                    },
-                    {
-                        label: "World's Median Score",
-                        data: {{ role_plot_data_world }},
-                        backgroundColor: "rgba(50, 166, 161, 0.5)"
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: "Median player score vs median world score"
-                    }
-                },
-                scale: {
-                    gridLines: {
-                        color: "rgba(255, 255, 255, 0.75)"
-                    },
-                    ticks: {
-                        display: false // Hides the labels in the middel (numbers)
-                    },
-                    pointLabels: {
-                        fontSize: 12
-                    }
-                },
-                elements: {
-                    point: {
-                        radius: 5
-                    }
-                }
-            },
-            plugins: [{
-
-                beforeDraw: function(c) {
-                    var legends = c.legend.legendItems;
-                    legends.forEach(function(e) {
-                        if (e.fillStyle = "rgba(50, 116, 161, 0.5)") {
-                            e.fillStyle = "rgb(50, 116, 161)";
-                        }
-                        else if (e.fillStyle = "rgba(50, 166, 161, 0.5)") {
-                            e.fillStyle = "rgb(50, 166, 161)";
-                        }
-                    });
-                }
-
-            }]
-        });
-    </script>
 </body>
 
 {% endblock %}
