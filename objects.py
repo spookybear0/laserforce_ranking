@@ -11,6 +11,7 @@ sql = app.ctx.sql
 ALL_ROLES = ("scout", "heavy", "commander", "medic", "ammo")
 
 class Team(Enum):
+    NONE = "none" # used for draws
     RED = "red"
     GREEN = "green"
     BLUE = "blue"

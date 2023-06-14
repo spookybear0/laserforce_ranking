@@ -122,6 +122,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     elif team2_score > team1_score:
         winner_model = team2
     else:
+        winner_model = None
         raise Exception("Edge case: draw")
 
     # may need to be adjusted for more team colors/names
@@ -129,33 +130,19 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     red_colors = ["Solid Red", "Fire", "Red"]
     green_colors = ["Solid Blue", "Ice", "Earth", "Blue", "Solid Green", "Green"]
 
-    if winner_model.color_name in red_colors:
+    if winner_model is None:
+        winner = Team.NONE
+    elif winner_model.color_name in red_colors:
         winner = Team.RED
     elif winner_model.color_name in green_colors:
         winner = Team.GREEN
     else:
         raise Exception("Invalid team color") # or can't find correct team color
-    
-    # determine if the game should be ranked automatically
+
+    # default values, will be changed later
 
     ranked = True
     ended_early = False
-
-    # first check if either team has more than 7 players or less than 5 players
-
-    team1_len = await EntityEnds.filter(entity__team=team1, entity__type="player").count()
-    team2_len = await EntityEnds.filter(entity__team=team2, entity__type="player").count()
-
-    if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
-        ranked = False
-
-    # check if game was ended early (but not by elimination)
-
-    # if it didn't end naturally
-    if not await EntityEnds.filter(type=EventType.MISSION_END).exists():
-        ranked = False
-        ended_early = True
-
 
     game = await SM5Game.create(winner=winner, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
@@ -169,6 +156,49 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.sm5_stats.add(*sm5_stats)
 
     await game.save()
+
+    # determine if the game should be ranked automatically
+
+    # first check if either team has more than 7 players or less than 5 players
+
+    team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").count()
+    team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").count()
+
+    if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
+        ranked = False
+
+    # check if game was ended early (but not by elimination)
+
+    # if it didn't end naturally
+    if not await game.events.filter(type=EventType.MISSION_END).exists():
+        ranked = False
+        ended_early = True
+
+    game.ranked = ranked
+    game.ended_early = ended_early
+
+    await game.save()
+
+    logger.info("Resyncing player table")
+
+    # add new players to the database
+
+    for e in entity_starts:
+        if e.type == "player":
+            # update ipl_id if it's empty
+            if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).ipl_id == "":
+                player = await Player.filter(codename=e.name).first()
+                player.ipl_id = e.entity_id
+                await player.save()
+            # update player name if we have a new one and we have ipl_id
+            elif await Player.filter(ipl_id=e.entity_id).exists() and (await Player.filter(ipl_id=e.entity_id).first()).codename != e.name:
+                player.name = e.name
+                await player.save()
+            # create new player if we don't have a name or ipl_id
+            elif not await Player.filter(codename=e.name).exists() and not await Player.filter(ipl_id=e.entity_id).exists():
+                await Player.create(player_id="", codename=e.name, ipl_id=e.entity_id)
+
+    logger.info(f"Finished parsing {file_location}")
 
 
 async def parse_all_tdfs() -> None: # iterate through sm5_tdf folder
