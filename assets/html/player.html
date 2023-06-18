@@ -110,6 +110,7 @@
                     <tr>
                         <th>Game</th>
                         <th>Win/Loss</th>
+                        <th>Rating Change (approx.)</th>
                         <th>Role</th>
                         <th>Score</th>
                         <th>Lives Left</th>
@@ -130,6 +131,11 @@
                         <tr>
                             <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
+                            {% if entity_end.rating_change_mu %}
+                                <td style="color: {{ 'greenyellow' if entity_end.rating_change_mu - 3 * entity_end.rating_change_sigma < 0 else 'orangered' }}">{{ -(entity_end.rating_change_mu - 3 * entity_end.rating_change_sigma)|round(2) }}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
                             <td style="width: 30px;"><img src="/assets/roles/{{entity_start.role|string|lower}}_white.png" alt="role image" width="30" height="30"></td>
                             <td>{{ entity_end.score }}</td>
                             <td>{{ sm5_stats.lives_left }}</td>

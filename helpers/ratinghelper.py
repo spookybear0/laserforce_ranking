@@ -1,81 +1,13 @@
-from objects import GameType, Team, LaserballGamePlayer, Player, Game
+from objects import Team, LaserballGamePlayer
 from random import shuffle
-import openskill
+from openskill import Rating, rate, ordinal
 import math
 from scipy.stats import norm
 from sanic.log import logger
-
-### TS 2
-
-cdf = norm.cdf
-
-beta = 25 / 6
-tau = 1 / 300
-
-def win_probability(team1, team2, mode: str="sm5"):
-    delta_mu = sum(getattr(player, f"{mode}_mu") for player in team1) - sum(getattr(player, f"{mode}_mu") for player in team2)
-    sum_sigma = sum(getattr(player, f"{mode}_sigma") ** 2 for player in team1) + sum(getattr(player, f"{mode}_sigma") ** 2 for player in team2)
-    size = len(team1) + len(team2)
-    denominator = math.sqrt(size * (beta ** 2) + sum_sigma)
-    return cdf(delta_mu / denominator)
-
-def update_team_ratings(team1, team2, winner, mode: str, k):
-    ranks = [1, 0] if team1 == winner else [0, 1]
-    delta_mu = sum(getattr(player, f"{mode}_mu") for player in team1) - sum(getattr(player, f"{mode}_mu") for player in team2)
-    sum_sigma = sum(getattr(player, f"{mode}_sigma") ** 2 for player in team1) + sum(getattr(player, f"{mode}_sigma") ** 2 for player in team2)
-    size = len(team1) + len(team2)
-    denominator = math.sqrt(size * (beta ** 2) + sum_sigma)
-    team1_perf = sum(player.performance for player in team1)
-    team2_perf = sum(player.performance for player in team2)
-    team1_quality = (team1_perf / (team1_perf + team2_perf)) if (team1_perf + team2_perf) != 0 else 0.5
-    team2_quality = (team2_perf / (team1_perf + team2_perf)) if (team1_perf + team2_perf) != 0 else 0.5
-    player_updates = []
-    for player in team1 + team2:
-        if player in team1:
-            rank = ranks[0]
-            quality = team1_quality
-        else:
-            rank = ranks[1]
-            quality = team2_quality
-
-        # performance multiplier
-        # example: a player has 0.75 performance, so they get 75% of the performance of the team
-        # this will change depending on the team won
-        # for example if their team won, the multiplier will be 
-        if player.game_player.team == winner:
-            perf_mult = player.performance + 1
-        else:
-            perf_mult = -player.performance + 1
-        
-        new_mu = getattr(player, f"{mode}_mu") + k * quality * 50 * (rank - win_probability(team1, team2, mode)) * perf_mult
-
-        new_sigma = math.sqrt((1 - k * quality) * getattr(player, f"{mode}_sigma") ** 2 + k * quality * (1 - quality) * delta_mu ** 2 / denominator)
-
-        player_updates.append((player, new_mu, new_sigma))
-    return player_updates
-
-def update_game_ratings(team1, team2, winner_team: Team, mode: str="sm5"):
-    if winner_team == Team.RED:
-        winner = 0
-    else:
-        winner = 1
-    
-    teams = [team1, team2]
-
-    k = 0.1
-
-    player_updates = []
-    for i in range(len(teams)):
-        for j in range(i + 1, len(teams)):
-            team1 = teams[i]
-            team2 = teams[j]
-
-            player_updates += update_team_ratings(team1, team2, winner, mode, k)
-    for player, new_mu, new_sigma in player_updates:
-        setattr(player, f"{mode}_mu", float(new_mu))
-        setattr(player, f"{mode}_sigma", float(new_sigma))
-
-### END TS 2
+from typing import List, Tuple
+from db.models import SM5Game, Events, EntityStarts, EventType, Player, EntityEnds
+from helpers import userhelper
+import time
 
 def calculate_laserball_mvp_points(player: LaserballGamePlayer):
     mvp_points = 0
@@ -88,66 +20,205 @@ def calculate_laserball_mvp_points(player: LaserballGamePlayer):
 
     return mvp_points
 
-# different than operator.attrgetter (legacy code)
-def attrgetter(obj, func):
-    ret = []
-    for i in obj:
-        if callable(func):
-            ret.append(func(i))
-        elif isinstance(func, int):
-            ret.append(i[func])
+# sm5 elo helper functions
+
+async def rate_sm5_encounter(player1, player2, weight: float, rank=None):
+    if rank is None:
+        rank = [0, 1]
+
+    player1_new, player2_new = rate([[player1], [player2]], rank=rank)
+
+    player1_new = player1_new[0]
+    player2_new = player2_new[0]
+
+    player1_change = player1_new.mu - player1.mu
+    player2_change = player2_new.mu - player2.mu
+
+    player1_new.mu = player1_change * weight + player1.mu
+    player2_new.mu = player2_change * weight + player2.mu
+
+    return player1_new, player2_new
+
+async def rate_sm5_game(game: SM5Game, team1_rating: List[Tuple[Rating, Rating]], team2_rating: List[Tuple[Rating, Rating]], rank=None):
+    if rank is None:
+        rank = [0, 1]
+    
+    
+    team1 = list(map(lambda x: x[0], team1_rating))
+    team2 = list(map(lambda x: x[0], team2_rating))
+
+    team1_new, team2_new = rate([team1, team2], rank=rank)
+
+    # get the change in mu for each player then apply weights
+
+    team1_change = list(map(lambda x: x[0].mu - x[1].mu, zip(team1_new, team1)))
+    team2_change = list(map(lambda x: x[0].mu - x[1].mu, zip(team2_new, team2)))
+
+    # apply weights
+
+    team1_final = []
+    team2_final = []
+
+    # update this to add the rating_chance to entity_ends
+
+    if rank == [0, 1]:
+        for i in range(len(team1_change)):
+            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu
+            team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
+            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
+        for i in range(len(team2_change)):
+            team2_change[i] *= team2_rating[i][1].mu/team2_rating[i][0].mu
+            team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
+            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
+    else:
+        for i in range(len(team1_change)):
+            team1_change[i] *= team1_rating[i][1].mu/team1_rating[i][0].mu
+            team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
+            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
+        for i in range(len(team2_change)):
+            team2_change[i] *= team2_rating[i][0].mu/team2_rating[i][1].mu
+            team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
+            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
+
+    return team1_final, team2_final
+
+async def update_sm5_ratings(game: SM5Game) -> bool:
+    """
+    Updates the sm5 ratings for a game
+    it first calculates the individual player ratings
+    then it calculates the team ratings
+    then it updates the player ratings through openskill
+
+    returns: True if successful, False if not
+    it could return False if the game is not ranked
+    """
+
+    if not game.ranked:
+        return False
+
+    # calculate player encounter performance
+
+    # get all players
+
+    players = await game.entity_starts.filter(type="player")
+
+    events: List[Events] = await game.events.filter(type__in=
+        [EventType.DAMAGED_OPPONENT, EventType.DOWNED_OPPONENT, EventType.MISSILE_DAMAGE_OPPONENT,
+        EventType.MISSILE_DOWN_OPPONENT, EventType.RESUPPLY_LIVES, EventType.RESUPPLY_AMMO]
+    ).order_by("time").all() # only get the events that we need
+
+    players_elo = {x.entity_id: Rating() for x in players}
+
+    doubles = {}
+    total_double_boost = {}
+
+    for event in events:
+        match event.type:
+            case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
+                shooter = await userhelper.player_from_token(game, event.arguments[0])
+                shooter_elo = players_elo[shooter.entity_id]
+                target = await userhelper.player_from_token(game, event.arguments[2])
+                target_elo = players_elo[target.entity_id]
+
+                shooter_elo, target_elo = await rate_sm5_encounter(shooter_elo, target_elo, 1, [0, 1])
+
+                players_elo[shooter.entity_id] = shooter_elo
+                players_elo[target.entity_id] = target_elo
+            case EventType.MISSILE_DAMAGE_OPPONENT | EventType.MISSILE_DOWN_OPPONENT:
+                shooter = await userhelper.player_from_token(game, event.arguments[0])
+                shooter_elo =  players_elo[shooter.entity_id]
+                target = await userhelper.player_from_token(game, event.arguments[2])
+                target_elo = players_elo[target.entity_id]
+
+                shooter_elo, target_elo = await rate_sm5_encounter(shooter_elo, target_elo, 1.2, [0, 1])
+
+                players_elo[shooter.entity_id] = shooter_elo
+                players_elo[target.entity_id] = target_elo
+            case EventType.RESUPPLY_AMMO | EventType.RESUPPLY_LIVES:
+                # check if player got doubles
+
+                resubber = await userhelper.player_from_token(game, event.arguments[0])
+
+                double = doubles.get((await resubber.team).index)
+
+                if total_double_boost.get(event.arguments[0]) is None:
+                    total_double_boost[event.arguments[0]] = 0
+
+                if not double:
+                    doubles[(await resubber.team).index] = {resubber.entity_id: [event.time, event.arguments[2]]}
+                elif len(double) == 1:
+                    # check if it's close enough to be a double
+                    other_time = double[list(double.keys())[0]][0]
+                    other_resubbe = double[list(double.keys())[0]][1]
+
+                    if abs(other_time - event.time) > 2000 or event.arguments[2] != other_resubbe: # 2 seconds
+                        # not a double
+                        doubles[(await resubber.team).index] = {}
+                        continue
+
+                    boost = (-0.1*total_double_boost[event.arguments[0]]) + 0.5
+
+                    players_elo[resubber.entity_id].mu += boost
+                    players_elo[list(double.keys())[0]].mu += boost
+
+                    total_double_boost[event.arguments[0]] += boost
+                    
+                    doubles[(await resubber.team).index] = {}
+
+    players_t1 = []
+    players_t2 = []
+    players_rating_t1 = [] # (rating, best_player_rating)
+    players_rating_t2 = []
+
+    for player in players:
+        # get the next best player that isn't this player
+
+
+        best_player = None
+        
+        for other_player in players:
+            if (await other_player.team).index != (await player.team).index:
+                continue
+
+            if best_player is None:
+                best_player = other_player
+                continue
+
+            other_player_rating = ordinal((players_elo[other_player.entity_id].mu, players_elo[other_player.entity_id].sigma))
+            best_player_rating = ordinal((players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma))
+
+            if other_player_rating > best_player_rating:
+                best_player = other_player
+
+        if (await player.team).color_name == "Fire":
+            players_t1.append(await Player.get(ipl_id=player.entity_id))
+            players_rating_t1.append((
+                Rating(players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma),
+                Rating(players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma),
+                player
+            ))
         else:
-            ret.append(getattr(i, func))
-    return ret
+            players_t2.append(await Player.get(ipl_id=player.entity_id))
+            players_rating_t2.append((
+                Rating(players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma),
+                Rating(players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma),
+                player
+            ))
 
-def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
-    """
-    Gets win chance for two teams
-    """
+    # update player elo
 
-    logger.debug(f"Getting win chance for {team1} vs {team2}")
+    ranks = [0, 1] if game.winner == Team.RED else [1, 0]
 
-    mode = mode.value
-    # get rating object for mode
-    team1 = attrgetter(team1, f"{mode}_rating")
-    team2 = attrgetter(team2, f"{mode}_rating")
-    
-    # predict
-    return openskill.predict_win([team1, team2])
+    team1, team2 = await rate_sm5_game(game, players_rating_t1, players_rating_t2, ranks)
 
-def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
-    """
-    Gets draw chance for two teams
-    """
+    for team1_p, team1_rating in zip(players_t1, team1):
+        team1_p.sm5_mu = team1_rating.mu
+        team1_p.sm5_sigma = team1_rating.sigma
+        await team1_p.save()
 
-    logger.debug(f"Getting draw chance for {team1} vs {team2}")
+    for team2_p, team2_rating in zip(players_t2, team2):
+        team2_p.sm5_mu = team2_rating.mu
+        team2_p.sm5_sigma = team2_rating.sigma
+        await team2_p.save()
 
-    mode = mode.value
-    # get rating object for mode
-    team1 = attrgetter(team1, f"{mode}_rating")
-    team2 = attrgetter(team2, f"{mode}_rating")
-    
-    # predict
-    return openskill.predict_draw([team1, team2])
-
-def matchmake_elo(players, mode: GameType=GameType.SM5):
-    mode = mode.value
-    # bruteforce sort
-
-    team1 = players[:len(players)//2]
-    team2 = players[len(players)//2:]
-    
-    best1 = team1.copy()
-    best2 = team2.copy()
-    
-    # gets most fair teams
-    for i in range(500):
-        shuffle(players)
-        team1 = players[:len(players)//2]
-        team2 = players[len(players)//2:]
-        # checks if teams are more fair then previous best
-        if abs(sum(attrgetter(team1, lambda x: getattr(x, f"{mode}_ordinal"))) - sum(attrgetter(team2, lambda x: getattr(x, f"{mode}_ordinal"))))\
-            < abs(sum(attrgetter(best1, lambda x: getattr(x, f"{mode}_ordinal"))) - sum(attrgetter(best2, lambda x: getattr(x, f"{mode}_ordinal")))):
-            best1, best2 = team1, team2
-    
-    return (best1, best2)
+    return True

@@ -3,6 +3,14 @@ from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
 from helpers.statshelper import barplot
 from shared import app
+from db.models import EntityStarts, SM5Game
+
+
+async def player_from_token(game: SM5Game, token: str) -> EntityStarts:
+    return await game.entity_starts.filter(entity_id=token).first()
+
+
+### BELOW IS DEPRECATED ###
 
 sql = app.ctx.sql
 

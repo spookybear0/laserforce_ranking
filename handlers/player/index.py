@@ -15,7 +15,7 @@ async def get_entity_start(game, player):
     return await game.entity_starts.filter(entity_id=player.ipl_id).first()
 
 async def get_entity_end(game, entity_start):
-    return await game.entity_ends.filter(entity_id=entity_start.id).first()
+    return await game.entity_ends.filter(entity=entity_start.id).first()
 
 async def get_sm5_stat(game, entity_start):
     return await game.sm5_stats.filter(entity_id=entity_start.id).first()

@@ -2,6 +2,7 @@ from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, E
 from datetime import datetime
 from objects import Team
 from sanic.log import logger
+from helpers import ratinghelper
 import json
 import os
 
@@ -173,6 +174,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     if not await game.events.filter(type=EventType.MISSION_END).exists():
         ranked = False
         ended_early = True
+    # if it ended naturally but before 3 minutes
+    elif (await game.events.filter(type=EventType.MISSION_END).first()).time < 180000:
+        ranked = False
+        ended_early = False # technically ended early but by elimination, not someone stopping the game
 
     game.ranked = ranked
     game.ended_early = ended_early
@@ -197,6 +202,16 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             # create new player if we don't have a name or ipl_id
             elif not await Player.filter(codename=e.name).exists() and not await Player.filter(ipl_id=e.entity_id).exists():
                 await Player.create(player_id="", codename=e.name, ipl_id=e.entity_id)
+
+    # update player rankings
+
+    if ranked:
+        logger.info(f"Updating player ranking for game {game.id}")
+
+        if await ratinghelper.update_sm5_ratings(game):
+            logger.info(f"Updated player rankings for game {game.id}")
+        else:
+            logger.error(f"Failed to update player rankings for game {game.id}")
 
     logger.info(f"Finished parsing {file_location}")
 

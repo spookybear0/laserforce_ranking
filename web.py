@@ -13,7 +13,8 @@ import sanic
 from tortoise import Tortoise
 from config import config
 from db.migrations import migrate_from_sql
-from helpers import tdfhelper
+from helpers import tdfhelper, ratinghelper
+from db.models import SM5Game, Player
 
 async def main() -> None:
     router.add_all_routes(app)
@@ -29,7 +30,10 @@ async def main() -> None:
     #await Tortoise.generate_schemas()
     #await migrate_from_sql(True)
 
+    #await Player.all().update(sm5_mu=25, sm5_sigma=25/3)
+
     #await tdfhelper.parse_all_tdfs()
+    
 
     debug = False
     if "--debug" in sys.argv or "--dev" in sys.argv:

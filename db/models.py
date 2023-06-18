@@ -59,9 +59,9 @@ class IntRole(IntEnum):
 
 class Player(Model):
     id = fields.IntField(pk=True)
-    player_id = fields.CharField(50)
+    player_id = fields.CharField(50, unique=True)
     codename = fields.CharField(50)
-    ipl_id = fields.CharField(50, default="")
+    ipl_id = fields.CharField(50, default="", unique=True)
     sm5_mu = fields.FloatField(default=25)
     sm5_sigma = fields.FloatField(default=8.333)
     laserball_mu = fields.FloatField(default=25)
@@ -187,6 +187,11 @@ class EntityStarts(Model):
     level = fields.IntField() # for sm5 this is always 0
     role = fields.IntEnumField(IntRole) # 0 for targets, no idea what it is for laserball
     battlesuit = fields.CharField(50) # for targets its the target name
+    
+    @property
+    def player(self):
+        # get the player object from the entity
+        return Player.get(ipl_id=self.entity_id)
 
     async def to_dict(self):
         final = {}
@@ -244,6 +249,8 @@ class EntityEnds(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     type = fields.IntField() # don't know what enum this is
     score = fields.IntField()
+    rating_change_mu = fields.FloatField(null=True) # only for players, only for ranked games
+    rating_change_sigma = fields.FloatField(null=True) # only for players, only for ranked games
 
     async def to_dict(self):
         final = {}
@@ -252,6 +259,8 @@ class EntityEnds(Model):
         final["entity"] = (await self.entity).entity_id
         final["type"] = self.type
         final["score"] = self.score
+        final["rating_change_mu"] = self.rating_change_mu
+        final["rating_change_sigma"] = self.rating_change_sigma
 
         return final
 
