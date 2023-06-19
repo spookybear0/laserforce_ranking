@@ -63,20 +63,20 @@ async def rate_sm5_game(game: SM5Game, team1_rating: List[Tuple[Rating, Rating]]
 
     if rank == [0, 1]:
         for i in range(len(team1_change)):
-            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu
-            team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
-            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
-        for i in range(len(team2_change)):
-            team2_change[i] *= team2_rating[i][1].mu/team2_rating[i][0].mu
-            team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
-            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
-    else:
-        for i in range(len(team1_change)):
             team1_change[i] *= team1_rating[i][1].mu/team1_rating[i][0].mu
             team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
             await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
         for i in range(len(team2_change)):
             team2_change[i] *= team2_rating[i][0].mu/team2_rating[i][1].mu
+            team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
+            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
+    else:
+        for i in range(len(team1_change)):
+            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu
+            team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
+            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
+        for i in range(len(team2_change)):
+            team2_change[i] *= team2_rating[i][1].mu/team2_rating[i][0].mu
             team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
             await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
 

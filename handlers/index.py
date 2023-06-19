@@ -3,7 +3,9 @@ from shared import app
 from utils import render_template
 from helpers import gamehelper, userhelper
 from objects import GameType, Team
+from helpers.statshelper import sentry_trace
 
+@sentry_trace
 @app.get("/")
 async def index(request: Request):
     total_players = await userhelper.get_total_players()

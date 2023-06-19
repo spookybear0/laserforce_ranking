@@ -6,7 +6,9 @@ from utils import render_template
 from db.models import SM5Game
 from sanic import exceptions, response
 from sanic.log import logger
+from helpers.statshelper import sentry_trace
 
+@sentry_trace
 @app.get("/api/game/<id:int>")
 async def api_game(request: Request, id: int):
     logger.info(f"Game {id} requested")

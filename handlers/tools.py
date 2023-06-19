@@ -4,11 +4,13 @@ from helpers import ratinghelper
 from utils import render_template, get_post
 from objects import GameType, Player
 from sanic.log import logger
+from helpers.statshelper import sentry_trace
 
 @app.get("/tools")
 async def tools(request: Request):
     return await render_template(request, "tools.html")
 
+@sentry_trace
 @app.post("/matchmake")
 async def matchmake_post(request: Request):
     logger.debug("Matchmaking")

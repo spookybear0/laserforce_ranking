@@ -110,7 +110,7 @@
                     <tr>
                         <th>Game</th>
                         <th>Win/Loss</th>
-                        <th>Rating Change (approx.)</th>
+                        <th title="This is the rating change of the estimated skill (the mu value)">Estimated Skill Change (μ)</th>
                         <th>Role</th>
                         <th>Score</th>
                         <th>Lives Left</th>
@@ -132,7 +132,7 @@
                             <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.rating_change_mu %}
-                                <td style="color: {{ 'greenyellow' if entity_end.rating_change_mu - 3 * entity_end.rating_change_sigma < 0 else 'orangered' }}">{{ -(entity_end.rating_change_mu - 3 * entity_end.rating_change_sigma)|round(2) }}</td>
+                                <td title="mu: {{ entity_end.rating_change_mu|round(2) }}, sigma: {{ entity_end.rating_change_sigma|round(2) }}" style="color: {{ 'greenyellow' if entity_end.rating_change_mu > 0 else 'orangered' }}">{{ "+" if entity_end.rating_change_mu > 0 else "" }}{{ entity_end.rating_change_mu|round(2) }}</td>
                             {% else %}
                                 <td></td>
                             {% endif %}

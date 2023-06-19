@@ -3,7 +3,9 @@ from shared import app
 from utils import render_template
 from db.models import Player
 from tortoise.expressions import F
+from helpers.statshelper import sentry_trace
 
+@sentry_trace
 @app.get("/players")
 async def index(request: Request):
     page = int(request.args.get("page", 0))

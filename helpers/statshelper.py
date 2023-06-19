@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import seaborn as sns
 from PIL import Image
+from sentry_sdk import Hub, start_transaction
 import base64
 import PIL
 
@@ -59,3 +60,20 @@ def barplot(labels: List[str], data: List[int], title: str="", xlabel: str="", y
 
     clear_plt()
     return img
+
+# performance helpers
+
+def sentry_trace(func):
+    """
+    Async sentry tracing decorator
+    """
+    async def wrapper(*args, **kwargs):
+        transaction = Hub.current.scope.transaction
+        if transaction:
+            with transaction.start_child(op=func.__name__):
+                return await func(*args, **kwargs)
+        else:
+            with start_transaction(op=func.__name__, name=func.__name__):
+                return await func(*args, **kwargs)
+
+    return wrapper
