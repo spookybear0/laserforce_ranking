@@ -5,8 +5,9 @@ from db.models import SM5Game, EntityEnds, SM5Stats
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 
-@sentry_trace
+
 @app.get("/game/<id:int>/")
+@sentry_trace
 async def game_index(request: Request, id: int):
     game = await SM5Game.filter(id=id).first()
     

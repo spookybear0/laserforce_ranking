@@ -8,8 +8,8 @@ from sanic import exceptions, response
 from sanic.log import logger
 from helpers.statshelper import sentry_trace
 
-@sentry_trace
 @app.get("/api/game/<id:int>")
+@sentry_trace
 async def api_game(request: Request, id: int):
     logger.info(f"Game {id} requested")
     game = await SM5Game.filter(id=id).first()

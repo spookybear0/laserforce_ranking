@@ -92,8 +92,8 @@
     }
 
     function onReady() {
-        sortTable(document.getElementById("fire_table"), 3)
-        sortTable(document.getElementById("earth_table"), 3)
+        sortTable(document.getElementById("fire_table"), 4)
+        sortTable(document.getElementById("earth_table"), 4)
 
         if ({{ earth_score }} > {{ fire_score }}) {
             document.getElementById("teams").appendChild(document.getElementById("fire_team"));
@@ -124,6 +124,7 @@
                 <table id="fire_table">
                     <th style="width: 50px;"><p>Role</p></th>
                     <th><p>Codename</p></th>
+                    <th title="This is the rating change of the estimated skill (the mu value)"><p>Estimated Skill Change (μ)</p></th>
                     <th><p>Score</p></th>
                     <th><p>Lives</p></th>
                     <th><p>Shots</p></th>
@@ -142,6 +143,7 @@
                             <tr>
                                 <td style="width: 30px"><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
+                                <td title="mu: {{ entity_end.rating_change_mu|round(2) }}, sigma: {{ entity_end.rating_change_sigma|round(2) }}" style="color: {{ 'greenyellow' if entity_end.rating_change_mu > 0 else 'orangered' }}">{{ "+" if entity_end.rating_change_mu > 0 else "" }}{{ entity_end.rating_change_mu|round(2) }}</td>
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
@@ -163,6 +165,7 @@
                 <table id="earth_table">
                     <th style="width: 50px;"><p>Role</p></th>
                     <th><p>Codename</p></th>
+                    <th title="This is the rating change of the estimated skill (the mu value)"><p>Estimated Skill Change (μ)</p></th>
                     <th><p>Score</p></th>
                     <th><p>Lives</p></th>
                     <th><p>Shots</p></th>
@@ -180,6 +183,7 @@
                             <tr>
                                 <td><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
+                                <td title="mu: {{ entity_end.rating_change_mu|round(2) }}, sigma: {{ entity_end.rating_change_sigma|round(2) }}" style="color: {{ 'greenyellow' if entity_end.rating_change_mu > 0 else 'orangered' }}">{{ "+" if entity_end.rating_change_mu > 0 else "" }}{{ entity_end.rating_change_mu|round(2) }}</td>
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>

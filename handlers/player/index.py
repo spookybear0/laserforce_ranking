@@ -21,8 +21,8 @@ async def get_entity_end(game, entity_start):
 async def get_sm5_stat(game, entity_start):
     return await game.sm5_stats.filter(entity_id=entity_start.id).first()
 
-@sentry_trace
 @app.get("/player/<id>")
+@sentry_trace
 async def player_get(request: Request, id: Union[int, str]):
     id = unquote(id)
 

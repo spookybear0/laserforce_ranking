@@ -10,8 +10,8 @@ from helpers.statshelper import sentry_trace
 async def tools(request: Request):
     return await render_template(request, "tools.html")
 
-@sentry_trace
 @app.post("/matchmake")
+@sentry_trace
 async def matchmake_post(request: Request):
     logger.debug("Matchmaking")
 
