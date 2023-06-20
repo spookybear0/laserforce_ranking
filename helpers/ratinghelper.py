@@ -44,8 +44,10 @@ async def rate_sm5_game(game: SM5Game, team1_rating: List[Tuple[Rating, Rating]]
         rank = [0, 1]
     
     
-    team1 = list(map(lambda x: x[0], team1_rating))
-    team2 = list(map(lambda x: x[0], team2_rating))
+    team1 = list(map(lambda x: x[3], team1_rating))
+    team2 = list(map(lambda x: x[3], team2_rating))
+
+    print(rank, team1, team2)
 
     team1_new, team2_new = rate([team1, team2], rank=rank)
 
@@ -63,22 +65,25 @@ async def rate_sm5_game(game: SM5Game, team1_rating: List[Tuple[Rating, Rating]]
 
     if rank == [0, 1]:
         for i in range(len(team1_change)):
-            team1_change[i] *= team1_rating[i][1].mu/team1_rating[i][0].mu
-            team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
-            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
-        for i in range(len(team2_change)):
-            team2_change[i] *= team2_rating[i][0].mu/team2_rating[i][1].mu
-            team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
-            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
-    else:
-        for i in range(len(team1_change)):
-            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu
-            team1_final.append(Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
-            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(rating_change_mu=team1_change[i], rating_change_sigma=team1_rating[i][0].sigma)
+            # this team won
+            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu + 1
+            team1_final.append(Rating(team1_new[i].mu + team1_change[i], team1_new[i].sigma))
+            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(current_rating_mu=team1_new[i].mu + team1_change[i], current_rating_sigma=team1_new[i].sigma)
         for i in range(len(team2_change)):
             team2_change[i] *= team2_rating[i][1].mu/team2_rating[i][0].mu
-            team2_final.append(Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
-            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(rating_change_mu=team2_change[i], rating_change_sigma=team2_rating[i][0].sigma)
+            team2_final.append(Rating(team2_new[i].mu + team2_change[i], team2_new[i].sigma))
+            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(current_rating_mu=team2_new[i].mu + team2_change[i], current_rating_sigma=team2_new[i].sigma)
+    else:
+        for i in range(len(team1_change)):
+            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][0].mu
+            team1_final.append(Rating(team1_new[i].mu + team1_change[i], team1_new[i].sigma))
+            await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(current_rating_mu=team1_new[i].mu + team1_change[i], current_rating_sigma=team1_new[i].sigma)
+        for i in range(len(team2_change)):
+            # this team won
+            print(team2_rating[i][0].mu/team2_rating[i][1].mu + 1, team2_change[i], team2_rating[i][2].name, "t2")
+            team2_change[i] *= team2_rating[i][0].mu/team2_rating[i][1].mu + 1
+            team2_final.append(Rating(team2_new[i].mu + team2_change[i], team2_new[i].sigma))
+            await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(current_rating_mu=team2_new[i].mu + team2_change[i], current_rating_sigma=team2_new[i].sigma)
 
     return team1_final, team2_final
 
@@ -190,19 +195,23 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
             if other_player_rating > best_player_rating:
                 best_player = other_player
 
+        real_player = await Player.get(ipl_id=player.entity_id)
+
         if (await player.team).color_name == "Fire":
             players_t1.append(await Player.get(ipl_id=player.entity_id))
             players_rating_t1.append((
                 Rating(players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma),
                 Rating(players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma),
-                player
+                player,
+                Rating(real_player.sm5_mu, real_player.sm5_sigma)
             ))
         else:
             players_t2.append(await Player.get(ipl_id=player.entity_id))
             players_rating_t2.append((
                 Rating(players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma),
                 Rating(players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma),
-                player
+                player,
+                Rating(real_player.sm5_mu, real_player.sm5_sigma)
             ))
 
     # update player elo

@@ -110,7 +110,7 @@
                     <tr>
                         <th>Game</th>
                         <th>Win/Loss</th>
-                        <th title="This is the rating change of the estimated skill (the mu value)">Estimated Skill Change (μ)</th>
+                        <th>Current rating</th>
                         <th>Role</th>
                         <th>Score</th>
                         <th>Lives Left</th>
@@ -123,6 +123,8 @@
                         <th>Shot Team</th>
                         <th>Missiled Team</th>
                         <th>Medic Hits</th>
+                        <th>Ended Early</th>
+                        <th>Ranked</th>
                     </tr>
                     {% for game in recent_games %}
                         {% set entity_start = get_entity_start(game, player) %}
@@ -131,8 +133,8 @@
                         <tr>
                             <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
-                            {% if entity_end.rating_change_mu %}
-                                <td title="mu: {{ entity_end.rating_change_mu|round(2) }}, sigma: {{ entity_end.rating_change_sigma|round(2) }}" style="color: {{ 'greenyellow' if entity_end.rating_change_mu > 0 else 'orangered' }}">{{ "+" if entity_end.rating_change_mu > 0 else "" }}{{ entity_end.rating_change_mu|round(2) }}</td>
+                            {% if entity_end.current_rating_mu %}
+                                <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}" style="color: {{ 'greenyellow' if entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma > 0 else 'orangered' }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                             {% else %}
                                 <td></td>
                             {% endif %}
@@ -148,6 +150,8 @@
                             <td>{{ sm5_stats.shot_team }}</td>
                             <td>{{ sm5_stats.missiled_team }}</td>
                             <td>{{ sm5_stats.medic_hits }}</td>
+                            <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
+                            <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                         </tr>
                     {% endfor %}
                 </table>

@@ -249,8 +249,8 @@ class EntityEnds(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     type = fields.IntField() # don't know what enum this is
     score = fields.IntField()
-    rating_change_mu = fields.FloatField(null=True) # only for players, only for ranked games
-    rating_change_sigma = fields.FloatField(null=True) # only for players, only for ranked games
+    current_rating_mu = fields.FloatField(null=True) # only for players, only for ranked games
+    current_rating_sigma = fields.FloatField(null=True) # only for players, only for ranked games
 
     async def to_dict(self):
         final = {}
