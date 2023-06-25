@@ -259,8 +259,8 @@ class EntityEnds(Model):
         final["entity"] = (await self.entity).entity_id
         final["type"] = self.type
         final["score"] = self.score
-        final["rating_change_mu"] = self.rating_change_mu
-        final["rating_change_sigma"] = self.rating_change_sigma
+        final["current_rating_mu"] = self.current_rating_mu
+        final["current_rating_sigma"] = self.current_rating_sigma
 
         return final
 
