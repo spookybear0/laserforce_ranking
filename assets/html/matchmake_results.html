@@ -1,22 +1,36 @@
-<html>
-    <head>
-        <link rel="stylesheet" href="/assets/css/app.css">
-    </head>
-    <body>
+{% extends "base.html" %}
+{% block title %}Tools{% endblock %}
+
+{% block content %}
+    <style>
+        .win_chances {
+            padding: 3rem;
+        }
+
+        .indent {
+            padding-left: 1rem;
+        }
+    </style>
+
+    <div class="win_chances">
         Team 1
-        <br>
-        {{ team1 }}
         <br><br>
+        {% for player in team1 %}
+            <p class="indent">{{ player }}</p>
+            <br>
+        {% endfor %}
+        <br><br><br>
         Team 2
-        <br>
-        {{ team2 }}
         <br><br>
-        Win Chance [team1, team2]
-        <br>
-        {{ win_chance }}
+        {% for player in team2 %}
+            <p class="indent">{{ player }}</p>
+            <br>
+        {% endfor %}
         <br><br>
-        Draw Chance
+        Team 1 has a {{ (win_chance[0]*100)|round(2) }}% chance of winning
         <br>
-        {{ draw_chance }}
-    </body>
-</html>
+        Team 2 has a {{ (win_chance[1]*100)|round(2) }}% chance of winning
+        <br><br>
+        There is a {{ (draw_chance*100)|round(2) }}% chance of a draw (if the teams are equally skilled)
+    </div>
+{% endblock %}

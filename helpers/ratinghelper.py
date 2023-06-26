@@ -1,11 +1,12 @@
 from objects import Team, LaserballGamePlayer
 from random import shuffle
-from openskill import Rating, rate, ordinal
+from openskill import Rating, rate, ordinal, predict_draw, predict_win
 import math
 from scipy.stats import norm
 from sanic.log import logger
 from typing import List, Tuple
 from db.models import SM5Game, Events, EntityStarts, EventType, Player, EntityEnds
+from objects import GameType
 from helpers import userhelper
 import time
 
@@ -231,3 +232,58 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
         await team2_p.save()
 
     return True
+
+def matchmake(players, mode: GameType=GameType.SM5):
+    mode = mode.value
+    # bruteforce sort
+
+    team1 = players[:len(players)//2]
+    team2 = players[len(players)//2:]
+    
+    best1 = team1.copy()
+    best2 = team2.copy()
+    
+    # gets most fair teams
+    for i in range(500):
+        shuffle(players)
+        team1 = players[:len(players)//2]
+        team2 = players[len(players)//2:]
+
+        func = lambda x: getattr(x, f"{mode}_ordinal")
+
+        # checks if teams are more fair then previous best
+        if abs(sum(map(func, team1)) - sum(map(func, team2)))\
+            < abs(sum(map(func, best1)) - sum(map(func, best2))):
+            best1, best2 = team1, team2
+    
+    return (best1, best2)
+
+def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
+    """
+    Gets win chance for two teams
+    """
+
+    logger.debug(f"Getting win chance for {team1} vs {team2}")
+
+    mode = mode.value
+    # get rating object for mode
+    team1 = list(map(lambda x: getattr(x, f"{mode}_rating"), team1))
+    team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
+    
+    # predict
+    return predict_win([team1, team2])
+
+def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
+    """
+    Gets draw chance for two teams
+    """
+
+    logger.debug(f"Getting draw chance for {team1} vs {team2}")
+
+    mode = mode.value
+    # get rating object for mode
+    team1 = list(map(lambda x: getattr(x, f"{mode}_rating"), team1))
+    team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
+    
+    # predict
+    return predict_draw([team1, team2])

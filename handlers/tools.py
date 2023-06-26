@@ -16,6 +16,7 @@ async def matchmake_post(request: Request):
     logger.debug("Matchmaking")
 
     data = get_post(request)
+    print(data)
 
     players = []
 
@@ -24,13 +25,16 @@ async def matchmake_post(request: Request):
     mode = GameType(mode)
 
     for i in range(16):
-        codename = data[f"player{i}"]
+        try:
+            codename = data[f"player{i}"]
+        except KeyError:
+            continue
         if codename == "":
             continue
         p = await Player.from_name(codename)
         players.append(p)
 
-    match = ratinghelper.matchmake_elo(players, mode)
+    match = ratinghelper.matchmake(players, mode)
 
     team1 = match[0]
     team2 = match[1]
@@ -46,7 +50,7 @@ async def matchmake_post(request: Request):
             game.append(getattr(obj[i], "codename"))
         return game
     
-    match = ratinghelper.attrgetter(list(match), key)
+    match = list(map(key, list(match)))
 
     win_chance[0] = round(win_chance[0], 2)
     win_chance[1] = round(win_chance[1], 2)
