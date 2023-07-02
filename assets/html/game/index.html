@@ -146,7 +146,7 @@
                                 <td style="width: 30px"><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu %}
-                                    <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}" style="color: {{ 'greenyellow' if (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma) > 0 else 'orangered' }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                    <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
@@ -190,7 +190,7 @@
                                 <td><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu %}
-                                    <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}" style="color: {{ 'greenyellow' if (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma) > 0 else 'orangered' }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>

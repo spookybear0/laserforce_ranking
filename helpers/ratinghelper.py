@@ -48,8 +48,6 @@ async def rate_sm5_game(game: SM5Game, team1_rating: List[Tuple[Rating, Rating]]
     team1 = list(map(lambda x: x[3], team1_rating))
     team2 = list(map(lambda x: x[3], team2_rating))
 
-    print(rank, team1, team2)
-
     team1_new, team2_new = rate([team1, team2], rank=rank)
 
     # get the change in mu for each player then apply weights

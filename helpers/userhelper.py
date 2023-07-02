@@ -1,37 +1,58 @@
-from objects import Team, Role, Player, GameType, SM5GamePlayer, LaserballGamePlayer
+from objects import Team, Role, GameType, SM5GamePlayer, LaserballGamePlayer
 from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
 from helpers.statshelper import barplot
 from shared import app
-from db.models import EntityStarts, SM5Game
-
+from db.models import EntityStarts, SM5Game, EntityEnds, Player, IntRole
+from statistics import median
 
 async def player_from_token(game: SM5Game, token: str) -> EntityStarts:
     return await game.entity_starts.filter(entity_id=token).first()
+
+async def get_median_role_score(player: Optional[Player]=None):
+    """
+    Returns a list of median scores for each role for a player.
+
+    If player is None, returns a list of median scores for each role for all players.
+    """
+    data = []
+
+    for role in range(1, 6):
+        if player:
+            score = median(await EntityEnds.filter(entity_id=player.ipl_id, entity__role=IntRole(role), entity__sm5games__ranked=True).values_list("score", flat=True))
+        else:
+            score = median(await EntityEnds.filter(entity__role=IntRole(role), entity__sm5games__ranked=True).values_list("score", flat=True))
+        if score:
+            data.append(int(score))
+        else:
+            data.append(0)
+
+    return data
 
 
 ### BELOW IS DEPRECATED ###
 
 sql = app.ctx.sql
 
-async def get_median_role_score(player: Optional[Player]=None):
-    data = []
-    
-    for role in ["commander", "heavy", "scout", "ammo", "medic"]:
-        if player:
-            q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
-                                    WHERE player_id = %s AND role = %s""",
-                                (player.player_id, role))
-        else:
-            q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
-                                    WHERE role = %s""",
-                                (role))
-        if q[0]:
-            data.append(int(q[0]))
-        else:
-            data.append(0)
 
-    return data
+# async def get_median_role_score(player: Optional[Player]=None):
+#     data = []
+    
+#     for role in ["commander", "heavy", "scout", "ammo", "medic"]:
+#         if player:
+#             q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
+#                                     WHERE player_id = %s AND role = %s""",
+#                                 (player.player_id, role))
+#         else:
+#             q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
+#                                     WHERE role = %s""",
+#                                 (role))
+#         if q[0]:
+#             data.append(int(q[0]))
+#         else:
+#             data.append(0)
+
+#     return data
 
 async def get_total_players() -> int:
     """

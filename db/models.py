@@ -55,6 +55,25 @@ class IntRole(IntEnum):
             5: "Medic"
         }
         return names.get(self.value, "Base")
+    
+    @classmethod
+    def from_role(cls, role: Role) -> int:
+        return cls({
+            Role.COMMANDER: 1,
+            Role.HEAVY: 2,
+            Role.SCOUT: 3,
+            Role.AMMO: 4,
+            Role.MEDIC: 5
+        }.get(role, 0))
+    
+    def to_role(self) -> Role:
+        return {
+            1: Role.COMMANDER,
+            2: Role.HEAVY,
+            3: Role.SCOUT,
+            4: Role.AMMO,
+            5: Role.MEDIC
+        }.get(self.value)
 
 
 class Player(Model):

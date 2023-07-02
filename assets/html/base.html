@@ -17,10 +17,11 @@
 </head>
 <body>
     {% set navigation_bar = [
-        ('/', 'Home'),
-        ('/players', 'Players'),
-        ('/tools', 'Tools'),
-        ('/about', 'About'),
+        ("/", "Home"),
+        ("/players", "Players"),
+        ("/games", "Games"),
+        ("/tools", "Tools"),
+        ("/about", "About")
     ] -%}
     <ul class="nav-bar">
         {% for href, caption in navigation_bar %}

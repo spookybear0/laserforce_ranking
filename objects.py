@@ -15,6 +15,9 @@ class Team(Enum):
     RED = "red"
     GREEN = "green"
     BLUE = "blue"
+
+    def standardize(self):
+        return self.value.capitalize()
     
 class Role(Enum):
     SCOUT = "scout"

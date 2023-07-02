@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Games{% endblock %}
+
+{% block html_head %}
+<style>
+    p {
+        text-align: center;
+        padding-top: 0.5em;
+        font-size: 24;
+    }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+
+    td {
+        color: lightgray;
+    }
+
+    th {
+        cursor: pointer;
+    }
+    
+    .table-div {
+        width: 50%;
+    }
+</style>
+
+<script>
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, should_switch, dir, switchcount = 0;
+        table = document.getElementById("game_table");
+        switching = true;
+        dir = "asc";
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                should_switch = false;
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                console.log(Number(x.innerHTML), Number(y.innerHTML), Number(x.innerHTML) > Number(y.innerHTML));
+
+                if (!isNaN(x.innerHTML)) {
+                    var inner_x = Number(x.innerHTML);
+                }
+                else {
+                    var inner_x = x.innerHTML.toLowerCase();
+                }
+
+                if (!isNaN(y.innerHTML)) {
+                    var inner_y = Number(y.innerHTML);
+                }
+                else {
+                    var inner_y = y.innerHTML.toLowerCase();
+                }
+
+                if (dir == "asc") {
+                    if (inner_x > inner_y) {
+                        should_switch = true;
+                        break;
+                    }
+                }
+                else if (dir == "desc") {
+                    if (inner_x < inner_y) {
+                        should_switch = true;
+                        break;
+                    }
+                }
+            }
+            if (should_switch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount ++;
+            } else {
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+        }
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="table-div">
+    <table id="game_table">
+        <tbody>
+            <tr>
+                <th onclick="sortTable(0)">Date Played</th>
+                <th onclick="sortTable(1)">Mission</th>
+                <th onclick="sortTable(2)">Winner</th>
+                <th onclick="sortTable(3)">Ended Early</th>
+                <th onclick="sortTable(4)">Ranked</th>
+            </tr>
+            {% for game in games %}
+                <tr>
+                    <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                    <td>{{ game.mission_name }}</td>
+                    <td style="color: {{'greenyellow' if game.winner.value == 'green' else 'orangered'}};">{{ game.winner.standardize() }}</td>
+                    <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
+                    <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page > 0 %}<a href="/games?page={{ page-1 }}"><p style="float: left;">Prev</p></a>{% endif %}
+    <a href="/games?page={{ page+1 }}"><p style="float: right;">Next</p></a>
+</div>
+{% endblock %}

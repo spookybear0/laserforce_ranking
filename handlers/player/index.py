@@ -36,7 +36,7 @@ async def player_get(request: Request, id: Union[int, str]):
         
     recent_games = SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(10)
     
-    return await render_template(request, "player.html",
+    return await render_template(request, "player/player.html",
                                 # general player info
                                 player=player,
                                 recent_games=recent_games,
