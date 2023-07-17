@@ -124,7 +124,6 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         winner_model = team2
     else:
         winner_model = None
-        raise Exception("Edge case: draw")
 
     # may need to be adjusted for more team colors/names
 

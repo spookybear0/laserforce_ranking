@@ -94,6 +94,10 @@
             }
         }
         }
+    
+    window.onload = function() {
+        sortTable(0);
+    }
 </script>
 
 {% endblock %}
@@ -112,7 +116,7 @@
             {% for game in games %}
                 <tr>
                     <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    <td>{{ game.mission_name }}</td>
+                    <td>{{ "Space Marines 5" if game.mission_name == "Space Marines 5 Tournament Edition" else game.mission_name }}</td>
                     <td style="color: {{'greenyellow' if game.winner.value == 'green' else 'orangered'}};">{{ game.winner.standardize() }}</td>
                     <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                     <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
