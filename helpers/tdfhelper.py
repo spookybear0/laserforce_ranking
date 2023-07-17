@@ -197,6 +197,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 await player.save()
             # update player name if we have a new one and we have ipl_id
             elif await Player.filter(ipl_id=e.entity_id).exists() and (await Player.filter(ipl_id=e.entity_id).first()).codename != e.name:
+                player = await Player.filter(ipl_id=e.entity_id).first()
                 player.name = e.name
                 await player.save()
             # create new player if we don't have a name or ipl_id
