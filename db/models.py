@@ -351,6 +351,7 @@ class SM5Stats(Model):
         final["missiled_team"] = self.missiled_team
 
         return final
+
     
 class LaserballGame(Model):
     id = fields.IntField(pk=True)
@@ -372,13 +373,13 @@ class LaserballGame(Model):
     events = fields.ManyToManyField("models.Events")
     scores = fields.ManyToManyField("models.Scores")
     entity_ends = fields.ManyToManyField("models.EntityEnds")
-
+    laserball_stats = fields.ManyToManyField("models.LaserballStats")
 
     def __str__(self) -> str:
-        return f"SM5Game ({self.start_time})"
+        return f"LaserballGame ({self.start_time})"
     
     def __repr__(self) -> str:
-        return f"<SM5Game ({self.tdf_name})>"
+        return f"<LaserballGame ({self.tdf_name})>"
     
     async def get_red_score(self):
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire").values_list("score")))
@@ -407,7 +408,37 @@ class LaserballGame(Model):
         final["events"] = [await (await event).to_dict() for event in await self.events.all()]
         final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
         final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
-        final["sm5_stats"] = [await (await sm5_stat).to_dict() for sm5_stat in await self.sm5_stats.all()]
+        final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in await self.laserball_stats.all()]
+
+        return final
+    
+class LaserballStats(Model):
+    entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
+    goals = fields.IntField()
+    assists = fields.IntField()
+    passes = fields.IntField()
+    steals = fields.IntField()
+    clears = fields.IntField()
+    blocks = fields.IntField()
+    started_with_ball = fields.IntField()
+    times_stolen = fields.IntField()
+    times_blocked = fields.IntField()
+    passes_received = fields.IntField()
+
+    async def to_dict(self):
+        final = {}
+
+        final["entity"] = (await self.entity).entity_id
+        final["goals"] = self.goals
+        final["assists"] = self.assists
+        final["passes"] = self.passes
+        final["steals"] = self.steals
+        final["clears"] = self.clears
+        final["blocks"] = self.blocks
+        final["started_with_ball"] = self.started_with_ball
+        final["times_stolen"] = self.times_stolen
+        final["times_blocked"] = self.times_blocked
+        final["passes_received"] = self.passes_received
 
         return final
 

@@ -1,7 +1,7 @@
 from sanic import Request
 from shared import app
 from utils import render_template
-from db.models import SM5Game, EntityEnds, SM5Stats, LaserballGame
+from db.models import SM5Game, EntityEnds, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 
@@ -29,7 +29,7 @@ async def game_index(request: Request, type: str, id: int):
             raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "game/laserball.html",
-            game=game, EntityEnds=EntityEnds,
+            game=game, EntityEnds=EntityEnds, LaserballStats=LaserballStats,
             fire_score=await game.get_red_score(),
             ice_score=await game.get_blue_score()
         )

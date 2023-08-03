@@ -1,4 +1,5 @@
-from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, EntityEnds, Scores, IntRole, SM5Stats, LaserballGame
+from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, EntityEnds, Scores, IntRole, SM5Stats, LaserballGame, LaserballStats
+from typing import List, Dict
 from datetime import datetime
 from objects import Team
 from sanic.log import logger
@@ -21,11 +22,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     mission_duration = 0
 
     teams: Teams = []
-    entity_starts: EntityStarts = []
+    entity_starts: List[EntityStarts] = []
     events: Events = []
     scores: Scores = []
-    entity_ends: EntityEnds = []
-    sm5_stats: SM5Stats = []
+    entity_ends: List[EntityEnds] = []
+    sm5_stats: List[SM5Stats] = []
 
     token_to_entity = {}
 
@@ -241,6 +242,9 @@ async def parse_laserball_game(file_location: str):
     scores: Scores = []
     entity_ends: EntityEnds = []
 
+    laserball_stats: Dict[str, LaserballStats] = {}
+    number_of_rounds = 0
+
     token_to_entity = {}
 
     linenum = 0
@@ -286,9 +290,55 @@ async def parse_laserball_game(file_location: str):
 
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
+
+                if entity_start.type == "player":
+                    laserball_stats[entity_start.entity_id] = await LaserballStats.create(
+                        entity=entity_start,
+                        goals=0,
+                        assists=0,
+                        passes=0,
+                        steals=0,
+                        clears=0,
+                        blocks=0,
+                        started_with_ball=0,
+                        times_stolen=0,
+                        times_blocked=0,
+                        passes_received=0
+                    )
             case "4": # event
                 # handle special laserball events
-                events.append(await Events.create(time=int(data[1]), type=EventType(int(data[2])), arguments=json.dumps(data[3:])))
+
+                event_type = EventType(int(data[2]))
+                args = data[3:]
+
+                if event_type == EventType.GETS_BALL:
+                    laserball_stats[args[0]].started_with_ball += 1
+                    await laserball_stats[args[0]].save()
+                elif event_type == EventType.GOAL:
+                    laserball_stats[args[0]].goals += 1
+                    await laserball_stats[args[0]].save()
+                elif event_type == EventType.STEAL:
+                    laserball_stats[args[0]].steals += 1
+                    laserball_stats[args[2]].times_stolen += 1
+                    await laserball_stats[args[0]].save()
+                    await laserball_stats[args[2]].save()
+                elif event_type == EventType.CLEAR:
+                    laserball_stats[args[0]].clears += 1
+                    await laserball_stats[args[0]].save()
+                elif event_type == EventType.BLOCK:
+                    laserball_stats[args[0]].blocks += 1
+                    laserball_stats[args[2]].times_blocked += 1
+                    await laserball_stats[args[0]].save()
+                    await laserball_stats[args[2]].save()
+                elif event_type == EventType.PASS:
+                    laserball_stats[args[0]].passes += 1
+                    laserball_stats[args[2]].passes_received += 1
+                    await laserball_stats[args[0]].save()
+                    await laserball_stats[args[2]].save()
+                elif event_type == EventType.ROUND_END:
+                    number_of_rounds += 1
+
+                events.append(await Events.create(time=int(data[1]), type=event_type, arguments=json.dumps(data[3:])))
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                     delta=int(data[4]), new=int(data[5])))
@@ -360,6 +410,7 @@ async def parse_laserball_game(file_location: str):
     await game.events.add(*events)
     await game.scores.add(*scores)
     await game.entity_ends.add(*entity_ends)
+    await game.laserball_stats.add(*laserball_stats.values())
 
     await game.save()
 

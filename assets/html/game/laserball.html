@@ -93,12 +93,12 @@
     }
 
     function onReady() {
-        sortTable(document.getElementById("fire_table"), 4)
-        sortTable(document.getElementById("ice_table"), 4)
-
         if ({{ ice_score }} > {{ fire_score }}) {
             document.getElementById("teams").appendChild(document.getElementById("fire_team"));
         }
+
+        sortTable(document.getElementById("fire_table"), 3)
+        sortTable(document.getElementById("ice_table"), 3)
     }
 
     document.addEventListener("DOMContentLoaded", onReady);
@@ -125,13 +125,22 @@
                 <table id="fire_table">
                     <th><p>Codename</p></th>
                     {% if game.ranked %}
-                        <th><p>Current rating</p></th>
+                        <th><p>Current Rating</p></th>
                     {% endif %}
                     <th><p>Goals</p></th>
+                    <!--Assists don't exist yet since we have to calculate them manually-->
+                    <th><p>Steals</p></th>
+                    <th><p>Clears</p></th>
+                    <th><p>Passes</p></th>
+                    <th><p>Blocks</p></th>
+                    <th><p>Started With Ball</p></th>
+                    <th><p>Stolen</p></th>
+                    <th><p>Blocked</p></th>
+                    <th><p>K/D Ratio</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
                             {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
-
+                            {% set laserball_stats = LaserballStats.filter(entity=entity)[0] %}
                             <tr>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu and game.ranked %}
@@ -140,7 +149,15 @@
                                 {% if game.ranked %}
                                     <td><p></p></td>
                                 {% endif %}
-                                <td><p>{{ entity_end.score }}</p></td>
+                                <td><p>{{ laserball_stats.goals }}</p></td>
+                                <td><p>{{ laserball_stats.steals }}</p></td>
+                                <td><p>{{ laserball_stats.clears }}</p></td>
+                                <td><p>{{ laserball_stats.passes }}</p></td>
+                                <td><p>{{ laserball_stats.blocks }}</p></td>
+                                <td><p>{{ laserball_stats.started_with_ball }}</p></td>
+                                <td><p>{{ laserball_stats.times_stolen }}</p></td>
+                                <td><p>{{ laserball_stats.times_blocked }}</p></td>
+                                <td><p>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -152,12 +169,22 @@
                 <table id="blue_table">
                     <th><p>Codename</p></th>
                     {% if game.ranked %}
-                        <th><p>Current rating</p></th>
+                        <th><p>Current Rating</p></th>
                     {% endif %}
                     <th><p>Goals</p></th>
+                    <!--Assists don't exist yet since we have to calculate them manually-->
+                    <th><p>Steals</p></th>
+                    <th><p>Clears</p></th>
+                    <th><p>Passes</p></th>
+                    <th><p>Blocks</p></th>
+                    <th><p>Started With Ball</p></th>
+                    <th><p>Stolen</p></th>
+                    <th><p>Blocked</p></th>
+                    <th><p>K/D Ratio</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
                             {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
+                            {% set laserball_stats = LaserballStats.filter(entity=entity)[0] %}
                             <tr>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu and game.ranked %}
@@ -166,7 +193,15 @@
                                 {% if game.ranked %}
                                     <td><p></p></td>
                                 {% endif %}
-                                <td><p>{{ entity_end.score }}</p></td>
+                                <td><p>{{ laserball_stats.goals }}</p></td>
+                                <td><p>{{ laserball_stats.steals }}</p></td>
+                                <td><p>{{ laserball_stats.clears }}</p></td>
+                                <td><p>{{ laserball_stats.passes }}</p></td>
+                                <td><p>{{ laserball_stats.blocks }}</p></td>
+                                <td><p>{{ laserball_stats.started_with_ball }}</p></td>
+                                <td><p>{{ laserball_stats.times_stolen }}</p></td>
+                                <td><p>{{ laserball_stats.times_blocked }}</p></td>
+                                <td><p>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
