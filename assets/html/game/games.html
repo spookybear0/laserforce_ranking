@@ -122,7 +122,13 @@
                         <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                     {% endif %}
                     <td>{{ game.mission_name }}</td>
-                    <td style="color: {{'greenyellow' if game.winner.value == 'red' else 'orangered'}};">{{ game.winner.standardize() }}</td>
+                    {% if game.winner.value == "blue" %}
+                        <td style="color: #0096FF;">{{ game.winner.standardize() }}</td>
+                    {% elif game.winner.value == "red" %}
+                        <td style="color: orangered;">{{ game.winner.standardize() }}</td>
+                    {% else %}
+                        <td style="color: greenyellow;">{{ game.winner.standardize() }}</td>
+                    {% endif %}
                     <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                     <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                 </tr>
