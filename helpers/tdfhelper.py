@@ -3,8 +3,10 @@ from datetime import datetime
 from objects import Team
 from sanic.log import logger
 from helpers import ratinghelper
+import aiohttp
 import json
 import os
+
 
 async def parse_sm5_game(file_location: str) -> SM5Game:
     file = open(file_location, "r", encoding="utf-16")
@@ -189,6 +191,9 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     logger.info("Resyncing player table")
 
     # add new players to the database
+
+    # TODO: find a way to get the player_id from the tdf file
+    # or from the token (ipl_id which is the same as the entity_id)
 
     for e in entity_starts:
         if e.type == "player":
