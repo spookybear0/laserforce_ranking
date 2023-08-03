@@ -1,19 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Index{% endblock %}
 
-{% block html_head %}
-
-<style>
-    .btns {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-</style>
-
-{% endblock %}
-
 {% block content %}
 
 <div class="content">
@@ -36,7 +23,7 @@
         </div>
         <br>
     </div>
-    <canvas class="inline-block" id="avg_role_score" style="float: left; max-width: 100%;"></canvas>
+    <canvas class="inline-block" id="avg_role_score" style="float: left; max-width: 100%; height: 50%; margin: auto;"></canvas>
 </div>
 
 <script>

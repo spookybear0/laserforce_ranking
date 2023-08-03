@@ -324,11 +324,18 @@ canvas {
     border-radius: 5px;
     width: 12em;
     height: 8em;
-    margin-bottom: 20px;
-    margin-right: 20px;
     display: inline-block;
     position: relative;
     vertical-align: top;
+    margin: 10px;
+}
+
+.btns {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 10px;
 }
 
 .inline-block {
@@ -348,6 +355,7 @@ body {
 .active {
     background-color: #00A9FD;
 }
+
 
 /* desktop only */
 @media screen and (min-width: 992px) {
@@ -374,6 +382,14 @@ body {
     .nav-dropdown {
         display: none;
     }
+
+    .btns {
+        padding-top: 0px;
+    }
+
+    .content {
+        margin-top: 15px;
+    }
 }
 
 /*
@@ -389,7 +405,7 @@ dropdown menu
         display: block;
         color: white;
         text-align: center;
-        padding: 20px 20px;
+        padding: 2.5vh 20px;
         text-decoration: none;
     }
 
@@ -403,15 +419,41 @@ dropdown menu
         padding: 0;
         overflow: hidden;
         background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+        font-size: 2rem;
     }
 
     .nav-dropdown {
         display: block;
         color: white;
         text-align: left;
-        padding: 30px 20px;
+        padding: 3.5vh 20px;
         text-decoration: none;
         overflow: hidden;
+        font-size: 2rem;
+    }
+
+    body {
+        /* change the zoom for mobile */
+        zoom: 150%;
+    }
+
+    .content {
+        margin: 25px auto;
+        width: 90%;
+    }
+
+    .btn {
+        width: 16rem;
+        height: 10rem;
+        font-size: 1.5rem;
+    }
+
+    .btn canvas {
+        margin-bottom: 15px;
+    }
+
+    .btns {
+        margin-bottom: 30px;
     }
 }
 
