@@ -405,7 +405,7 @@ dropdown menu
         display: block;
         color: white;
         text-align: center;
-        padding: 10% 20px;
+        padding: 30px 20px;
         text-decoration: none;
     }
 
@@ -426,7 +426,7 @@ dropdown menu
         display: block;
         color: white;
         text-align: left;
-        padding: 10% 20px;
+        padding: 45px 20px;
         text-decoration: none;
         overflow: hidden;
         font-size: 2rem;
