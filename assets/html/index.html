@@ -1,10 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Index{% endblock %}
 
+{% block html_head %}
+
+<style>
+    .btns {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+</style>
+
+{% endblock %}
+
 {% block content %}
 
 <div class="content">
-    <div>
+    <div class="btns">
         <div class="btn">
             <canvas id="laserball_team_wins"></canvas>
             <p>Laserball Team wins</p>
@@ -22,8 +35,8 @@
             <p>Games Logged</p>
         </div>
         <br>
-        <canvas class="inline-block" id="avg_role_score" style="max-width: 1090px; float: left;" height="150px"></canvas>
     </div>
+    <canvas class="inline-block" id="avg_role_score" style="float: left; max-width: 100%;"></canvas>
 </div>
 
 <script>

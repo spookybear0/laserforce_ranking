@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}Game{% endblock %}
+
+
+{% block html_head %}
+
+<style>
+    .team_box {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        margin: 0.5em;
+        margin-left: 5em;
+        margin-right: 5em;
+    }
+
+    .team {
+        display: inline-block;
+        height: 35%;
+        padding: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        margin-left: 5em;
+        margin-right: 5em;
+        border: 0;
+        vertical-align: top;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+    }
+
+    td {
+        color: lightgray;
+        padding: 2px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    .userlist {
+        border-radius: 15px;
+        background: #1A1A1A;
+        padding: 1rem;
+        margin: auto;
+        width: 70%;
+        height: 120vh;
+        margin-top: 20px;
+    }
+
+    body {
+        height: 130vh;
+    }
+</style>
+
+<script>
+    function compareValues(a, b) {
+        return (a>b) ? -1 : (a<b) ? 1 : 0;
+      }
+      
+    function sortTable(table, colnum) {
+        let rows = Array.from(table.querySelectorAll("tr"));
+        
+        rows = rows.slice(1);
+        
+        let qs = `td:nth-child(${colnum})`;
+        
+        rows.sort( (r1,r2) => {
+            let t1 = r1.querySelector(qs);
+            let t2 = r2.querySelector(qs);
+        
+            return compareValues(parseInt(t1.textContent), parseInt(t2.textContent));
+        });
+        
+        rows.forEach(row => table.appendChild(row));
+    }
+
+    function onReady() {
+        sortTable(document.getElementById("fire_table"), 4)
+        sortTable(document.getElementById("earth_table"), 4)
+
+        if ({{ earth_score }} > {{ fire_score }}) {
+            document.getElementById("teams").appendChild(document.getElementById("fire_team"));
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", onReady);
+</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div>
+    <div class="userlist">
+        <div style="margin-left: 0; margin-right: 0; text-align: center;">
+            <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</h2></span>
+            <span title="Replay"><h3><a href="/game/{{ game.id }}/replay">Replay</a></h3></span>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <div id="teams">
+            <div id="fire_team" class="team">
+                <h2 style="font-size: 20px; color: orangered;">Fire Team: {{ fire_score }}</h2>
+
+                <table id="fire_table">
+                    <th style="width: 50px;"><p>Role</p></th>
+                    <th><p>Codename</p></th>
+                    {% if game.ranked %}
+                        <th><p>Current rating</p></th>
+                    {% endif %}
+                    <th><p>Score</p></th>
+                    <th><p>Lives</p></th>
+                    <th><p>Shots</p></th>
+                    <th><p>Accuracy</p></th>
+                    <th><p>K/D</p></th>
+                    <th><p>Missiled Other</p></th>
+                    <th><p>Missiled</p></th>
+                    <th><p>Shot Team</p></th>
+                    <th><p>Missiled Team</p></th>
+                    <th><p>Medic Hits</p></th>
+                    {% for entity in game.entity_starts %}
+                        {% if entity.type == "player" and entity.team.index == 0 %}
+                            {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
+                            {% set sm5_stats = SM5Stats.filter(entity=entity)[0] %}
+
+                            <tr>
+                                <td style="width: 30px"><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
+                                <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
+                                {% if entity_end.current_rating_mu %}
+                                    <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                {% endif %}
+                                <td><p>{{ entity_end.score }}</p></td>
+                                <td><p>{{ sm5_stats.lives_left }}</p></td>
+                                <td><p>{{ sm5_stats.shots_left }}</p></td>
+                                <td><p>{{ sm5_stats.shots_fired and ((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2) }}%</p></td>
+                                <td><p>{{ sm5_stats.times_zapped and (sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2) }}</p></td>
+                                <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
+                                <td><p>{{ sm5_stats.times_missiled }}</p></td>
+                                <td><p>{{ sm5_stats.shot_team }}</p></td>
+                                <td><p>{{ sm5_stats.missiled_team}}</p></td>
+                                <td><p>{{ sm5_stats.medic_hits}}</p></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            <div id="earth_team" class="team">
+                <h2 style="font-size: 20px; color: greenyellow;">Earth Team: {{ earth_score }}</h2>
+
+                <table id="earth_table">
+                    <th style="width: 50px;"><p>Role</p></th>
+                    <th><p>Codename</p></th>
+                    {% if game.ranked %}
+                        <th><p>Current rating</p></th>
+                    {% endif %}
+                    <th><p>Score</p></th>
+                    <th><p>Lives</p></th>
+                    <th><p>Shots</p></th>
+                    <th><p>Accuracy</p></th>
+                    <th><p>K/D</p></th>
+                    <th><p>Missiled Other</p></th>
+                    <th><p>Missiled</p></th>
+                    <th><p>Shot Team</p></th>
+                    <th><p>Missiled Team</p></th>
+                    <th><p>Medic Hits</p></th>
+                    {% for entity in game.entity_starts %}
+                        {% if entity.type == "player" and entity.team.index == 1 %}
+                            {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
+                            {% set sm5_stats = SM5Stats.filter(entity=entity)[0] %}
+                            <tr>
+                                <td><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
+                                <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
+                                {% if entity_end.current_rating_mu %}
+                                <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                {% endif %}
+                                <td><p>{{ entity_end.score }}</p></td>
+                                <td><p>{{ sm5_stats.lives_left }}</p></td>
+                                <td><p>{{ sm5_stats.shots_left }}</p></td>
+                                <td><p>{{ sm5_stats.shots_fired and ((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2) }}%</p></td>
+                                <td><p>{{ sm5_stats.times_zapped and (sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2) }}</p></td>
+                                <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
+                                <td><p>{{ sm5_stats.times_missiled }}</p></td>
+                                <td><p>{{ sm5_stats.shot_team }}</p></td>
+                                <td><p>{{ sm5_stats.missiled_team}}</p></td>
+                                <td><p>{{ sm5_stats.medic_hits}}</p></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+{% endblock %}

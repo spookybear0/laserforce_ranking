@@ -1,4 +1,5 @@
 from objects import Team, Role, GameType, SM5GamePlayer, LaserballGamePlayer
+from objects import Player as LegacyPlayer
 from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
 from helpers.statshelper import barplot
@@ -104,7 +105,7 @@ async def get_players(amount: int = 100, start: int = 0) -> List[Player]:
     )
     ret = []
     for id_ in q:
-        ret.append(await Player.from_id(id_[0]))
+        ret.append(await LegacyPlayer.from_id(id_[0]))
     return ret
 
 async def get_data_from_form_sm5(players: List, game_players: List, data: Dict, team: Team) -> None:

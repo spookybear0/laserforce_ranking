@@ -304,8 +304,8 @@ body {
 }
 
 .content {
-    margin-top: 20px;
-    margin-left: 250px;
+    margin: 50px auto;
+    width: 70%;
 }
 
 canvas {
@@ -324,8 +324,8 @@ canvas {
     border-radius: 5px;
     width: 12em;
     height: 8em;
-    margin-left: 20px;
     margin-bottom: 20px;
+    margin-right: 20px;
     display: inline-block;
     position: relative;
     vertical-align: top;
@@ -341,26 +341,6 @@ body {
     background-color: #121212;
 }
 
-.nav-bar {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
-}
-
-.nav-item {
-    float: left;
-}
-
-.nav-item a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
 .nav-item a:hover:not(.active) {
     background-color: #111;
 }
@@ -368,6 +348,73 @@ body {
 .active {
     background-color: #00A9FD;
 }
+
+/* desktop only */
+@media screen and (min-width: 992px) {
+    .nav-bar {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+    }
+    
+    .nav-item a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 20px;
+        text-decoration: none;
+    }
+
+    .nav-item {
+        float: left;
+    }
+
+    .nav-dropdown {
+        display: none;
+    }
+}
+
+/*
+mobile only
+dropdown menu
+*/
+@media screen and (max-width: 991px) {
+    .nav-item {
+        display: none;
+    }
+
+    .nav-item a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 20px 20px;
+        text-decoration: none;
+    }
+
+    .nav-item a:hover:not(.active) {
+        background-color: #111;
+    }
+
+    .nav-bar {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+    }
+
+    .nav-dropdown {
+        display: block;
+        color: white;
+        text-align: left;
+        padding: 30px 20px;
+        text-decoration: none;
+        overflow: hidden;
+    }
+}
+
 
 .userlist {
     border-radius: 15px;

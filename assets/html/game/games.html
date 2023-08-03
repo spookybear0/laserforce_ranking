@@ -53,20 +53,20 @@
                 should_switch = false;
                 x = rows[i].getElementsByTagName("TD")[n];
                 y = rows[i + 1].getElementsByTagName("TD")[n];
-                console.log(Number(x.innerHTML), Number(y.innerHTML), Number(x.innerHTML) > Number(y.innerHTML));
+                console.log(x.textContent, y.textContent, x.textContent > y.textContent);
 
-                if (!isNaN(x.innerHTML)) {
-                    var inner_x = Number(x.innerHTML);
+                if (!isNaN(x.textContent)) {
+                    var inner_x = Number(x.textContent);
                 }
                 else {
-                    var inner_x = x.innerHTML.toLowerCase();
+                    var inner_x = x.textContent.toLowerCase();
                 }
 
-                if (!isNaN(y.innerHTML)) {
-                    var inner_y = Number(y.innerHTML);
+                if (!isNaN(y.textContent)) {
+                    var inner_y = Number(y.textContent);
                 }
                 else {
-                    var inner_y = y.innerHTML.toLowerCase();
+                    var inner_y = y.textContent.toLowerCase();
                 }
 
                 if (dir == "asc") {
@@ -97,6 +97,7 @@
     
     window.onload = function() {
         sortTable(0);
+        sortTable(0);
     }
 </script>
 
@@ -115,9 +116,13 @@
             </tr>
             {% for game in games %}
                 <tr>
-                    <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    <td>{{ "Space Marines 5" if game.mission_name == "Space Marines 5 Tournament Edition" else game.mission_name }}</td>
-                    <td style="color: {{'greenyellow' if game.winner.value == 'green' else 'orangered'}};">{{ game.winner.standardize() }}</td>
+                    {% if "Laserball" in game.mission_name %}
+                        <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                    {% else %} <!--sm5-->
+                        <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                    {% endif %}
+                    <td>{{ game.mission_name }}</td>
+                    <td style="color: {{'greenyellow' if game.winner.value == 'red' else 'orangered'}};">{{ game.winner.standardize() }}</td>
                     <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                     <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                 </tr>

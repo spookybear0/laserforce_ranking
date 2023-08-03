@@ -1,6 +1,57 @@
 {% extends "base.html" %}
 {% block title %}About{% endblock %}
 
+
+{% block html_head %}
+<style>
+    .info_div {
+        width: 50%;
+        text-align: center;
+        margin: auto;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+
+<div>
+    <div class="info_div">
+        <h1>Website info</h1>
+        <p>
+            This site was made for Invasion Laser Tag members for the purpose of tracking their stats and comparing them to other members. 
+            The project is made for fun but improvements will continue to be made. If you have any comments or suggestions please contact me at
+            <a href="mailto:collinmcarroll@gmail.com">collinmcarroll@gmail.com</a>.
+            
+            <br><br>
+            Made with Python 3.10, sanic, jinja2, and tortoise-orm with mysql.
+        </p>
+        <h1>Project goals and ambitions</h1>
+        <p>
+            To create a more fair and balanced matchmaking system for SM5 and Laserball to create more fair, fun, and competitive games. 
+            Games that are more even are more fun for everyone. This project is also a way to track your stats and see how you compare to other players.
+        </p>
+        <h1>Planned features</h1>
+        <p>
+            <li>More statistics</li>
+            <li>Laserball support</li>
+            <li>Better mobile support</li>
+            <li>Improved look of the site</li>
+            <li>Faster replay system</li>
+            <li>Best player by role</li>
+            <li>New domain name</li>
+        </p>
+        <h1>SM5 matchmaking/ranking system</h1>
+        <p>
+            The ranking system used in this project is a modified version of the TrueSkill algorithm. It is a Bayesian ranking system that
+            takes into account the number of players, the number of teams, and the number of players per team. It is also used in games such as Halo 5. 
+            For this use case, the algorithm is modified to take into account player performance for each game. The reason for this is so that
+            you can't just be carried by your team to a higher rank. The modified algorithm is similar to VALORANT in that it takes into account
+            every single "encounter" which then boosts your "performance" for that game. This is way more fair to support players who don't get
+            as much score as a role such as Commander. The algorithm gives boosts to players who perform well in their role such as launching nukes,
+            resupplying teammates, using boosts, and killing 3 hits as a 1 hit. This algorithm may be changed to use <b>MVP Points</b> that are used
+            in lfstats.com, but these can much more easily be farmed and abused by someone going offensive medic and getting a ton of MVP points.
+        </p>
+    </div>
+</div>
 
 {% endblock %}

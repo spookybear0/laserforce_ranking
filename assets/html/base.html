@@ -1,6 +1,7 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <title>Laserforce Ranking - {% block title %}{% endblock %}</title>
 
@@ -12,6 +13,23 @@
     <meta property="og:title" content="Laserforce Ranking - {{ self.title() }}">
     <meta property="og:description" content="Laserforce Ranking for Invasion Laser Tag SM5.">
     <meta property="og:image" content="">
+
+    <script>
+        function toggleNav() {
+            // animate the nav-items
+
+            var nav_items = document.getElementsByClassName("nav-item");
+
+            for (var i = 0; i < nav_items.length; i++) {
+                if (nav_items[i].style.display == "block") {
+                    nav_items[i].style.display = "none";
+                }
+                else {
+                    nav_items[i].style.display = "block";
+                }
+            }
+        }
+    </script>
     
     {% block html_head %}{% endblock %}
 </head>
@@ -24,6 +42,9 @@
         ("/about", "About")
     ] -%}
     <ul class="nav-bar">
+        <div class="nav-dropdown">
+            <i class="fa-solid fa-bars fa-lg" onclick="toggleNav()"></i>
+        </div>
         {% for href, caption in navigation_bar %}
             <li class="nav-item"><a {% if href == request.path %}class="active"{% endif %} href="{{ href|e }}">{{ caption|e }}</a></li>
         {% endfor %}

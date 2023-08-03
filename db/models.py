@@ -5,6 +5,7 @@ from enum import Enum, IntEnum
 import openskill
 
 class EventType(IntEnum):
+    # basic and sm5 events
     MISSION_START = 100
     MISSION_END = 101
     SHOT_EMPTY = 200 # unused?
@@ -36,6 +37,18 @@ class EventType(IntEnum):
     PENALTY = 600
     ACHIEVEMENT = 900
     BASE_AWARDED = 2819 # (technically #0B03 in hex)
+
+    # laserball events
+
+    PASS = 1100
+    GOAL = 1101
+    STEAL = 1103
+    BLOCK = 1104
+    ROUND_START = 1105
+    ROUND_END = 1106
+    GETS_BALL = 1107 # at the start of the round
+    CLEAR = 1109
+    
 
 class IntRole(IntEnum):
     BASE = 0 # or no role
@@ -78,9 +91,9 @@ class IntRole(IntEnum):
 
 class Player(Model):
     id = fields.IntField(pk=True)
-    player_id = fields.CharField(50, unique=True)
+    player_id = fields.CharField(50)
     codename = fields.CharField(50)
-    ipl_id = fields.CharField(50, default="", unique=True)
+    ipl_id = fields.CharField(50, default="")
     sm5_mu = fields.FloatField(default=25)
     sm5_sigma = fields.FloatField(default=8.333)
     laserball_mu = fields.FloatField(default=25)
@@ -234,7 +247,7 @@ class Events(Model):
     # can be token or string for announcement
     # now make the field
     # TODO: maybe make this not a json field
-    arguments = fields.JSONField()
+    arguments = fields.JSONField() # list of arguments
 
     async def to_dict(self):
         final = {}
@@ -336,6 +349,65 @@ class SM5Stats(Model):
         final["shot_team"] = self.shot_team
         final["missiled_opponent"] = self.missiled_opponent
         final["missiled_team"] = self.missiled_team
+
+        return final
+    
+class LaserballGame(Model):
+    id = fields.IntField(pk=True)
+    winner = fields.CharEnumField(Team)
+    tdf_name = fields.CharField(100)
+    file_version = fields.CharField(20) # version is a decimal number, we can just store it as a string
+    software_version = fields.CharField(20) # ditto ^
+    arena = fields.CharField(20) # x-y, x=continent, y=arena (ex: 4-43)
+    mission_type = fields.IntField() # no idea what this enum is
+    mission_name = fields.CharField(100)
+    ranked = fields.BooleanField() # will this game affect player ratings and stats.
+    ended_early = fields.BooleanField() # did the game end early?
+    start_time = fields.DatetimeField()
+    mission_duration = fields.IntField() # in seconds
+    log_time = fields.DatetimeField(auto_now_add=True)
+    # there is a field in the tdf called "penatly", no idea what it is
+    teams = fields.ManyToManyField("models.Teams")
+    entity_starts = fields.ManyToManyField("models.EntityStarts")
+    events = fields.ManyToManyField("models.Events")
+    scores = fields.ManyToManyField("models.Scores")
+    entity_ends = fields.ManyToManyField("models.EntityEnds")
+
+
+    def __str__(self) -> str:
+        return f"SM5Game ({self.start_time})"
+    
+    def __repr__(self) -> str:
+        return f"<SM5Game ({self.tdf_name})>"
+    
+    async def get_red_score(self):
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire").values_list("score")))
+    
+    async def get_blue_score(self):
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice").values_list("score")))
+    
+    async def to_dict(self):
+        # convert the entire game to a dict
+        # this is used for the api
+        final = {}
+
+        final["id"] = self.id
+        final["winner"] = self.winner.value
+        final["tdf_name"] = self.tdf_name
+        final["file_version"] = self.file_version
+        final["software_version"] = self.software_version
+        final["arena"] = self.arena
+        final["mission_type"] = self.mission_type
+        final["mission_name"] = self.mission_name
+        final["start_time"] = str(self.start_time)
+        final["mission_duration"] = self.mission_duration
+        final["log_time"] = str(self.log_time)
+        final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
+        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in await self.entity_starts.all()]
+        final["events"] = [await (await event).to_dict() for event in await self.events.all()]
+        final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
+        final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
+        final["sm5_stats"] = [await (await sm5_stat).to_dict() for sm5_stat in await self.sm5_stats.all()]
 
         return final
 
