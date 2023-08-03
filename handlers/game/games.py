@@ -12,8 +12,8 @@ async def index(request: Request):
 
     # get both sm5 and laserball games
 
-    sm5_games = await SM5Game.all().limit(10).offset(10 * page)
-    lb_games = await LaserballGame.all().limit(10).offset(10 * page)
+    sm5_games = await SM5Game.all().order_by("-start_time").limit(10).offset(10 * page)
+    lb_games = await LaserballGame.all().order_by("-start_time").limit(10).offset(10 * page)
 
     # sort by date
 

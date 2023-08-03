@@ -58,12 +58,20 @@
                 if (!isNaN(x.textContent)) {
                     var inner_x = Number(x.textContent);
                 }
+                // dates
+                else if (x.textContent.includes("/")) {
+                    var inner_x = new Date(x.textContent);
+                }
                 else {
                     var inner_x = x.textContent.toLowerCase();
                 }
 
                 if (!isNaN(y.textContent)) {
                     var inner_y = Number(y.textContent);
+                }
+                // dates
+                else if (y.textContent.includes("/")) {
+                    var inner_y = new Date(y.textContent);
                 }
                 else {
                     var inner_y = y.textContent.toLowerCase();
