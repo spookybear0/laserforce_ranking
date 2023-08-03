@@ -31,5 +31,5 @@ async def game_index(request: Request, type: str, id: int):
             request, "game/laserball.html",
             game=game, EntityEnds=EntityEnds,
             fire_score=await game.get_red_score(),
-            earth_score=await game.get_blue_score()
+            ice_score=await game.get_blue_score()
         )
