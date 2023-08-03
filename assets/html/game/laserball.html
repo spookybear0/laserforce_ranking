@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Game{% endblock %}
+{% block title %}Laserball game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}{% endblock %}
 
 
 {% block html_head %}
@@ -112,7 +112,7 @@
 <div>
     <div class="userlist">
         <div style="margin-left: 0; margin-right: 0; text-align: center;">
-            <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</h2></span>
+            <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}</h2></span>
             <span title="Replay"><h3><a href="/game/{{ game.id }}/replay">Replay</a></h3></span>
         </div>
 
