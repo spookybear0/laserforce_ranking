@@ -356,6 +356,69 @@ body {
     background-color: #00A9FD;
 }
 
+.userlist {
+    border-radius: 15px;
+    background: #1A1A1A;
+    padding: 1rem;
+    margin: auto;
+    width: 60%;
+    height: 80vh;
+}
+
+.userlist-pos {
+    border-radius: 10px;
+    padding: 0.2rem;
+    margin: 0.9rem;
+    background: #262626;
+    padding-bottom: 0.5rem;
+}
+
+.userlist-username-text {
+    font-size: 1.5rem;
+    position: relative;
+    left: 0.75rem;
+    bottom: 0.125rem;
+}
+
+.userlist-info-text {
+    float: right;
+    right: 0.25rem;
+    top: 0.25rem;
+    position: relative;
+}
+
+.userlist {
+    border-radius: 15px;
+    background: #1A1A1A;
+    padding: 1rem;
+    margin: auto;
+    width: 70%;
+    height: 90vh;
+    margin-top: 20px;
+  }
+  
+  .userlist-pos {
+    border-radius: 10px;
+    padding: 0.2rem;
+    margin: 0.9rem;
+    background: #262626;
+    padding-bottom: 0.5rem;
+  }
+  
+  .userlist-username-text {
+    font-size: 1.5rem;
+    position: relative;
+    left: 0.75rem;
+    bottom: 0.125rem;
+  }
+  
+  .userlist-info-text {
+    float: right;
+    right: 0.25rem;
+    top: 0.25rem;
+    position: relative;
+  }
+
 
 /* desktop only */
 @media screen and (min-width: 992px) {
@@ -390,6 +453,12 @@ body {
     .content {
         margin-top: 15px;
     }
+
+    .table-div {
+        margin: auto;
+        width: 40%;
+        padding: 2em;
+    }
 }
 
 /*
@@ -405,7 +474,7 @@ dropdown menu
         display: block;
         color: white;
         text-align: center;
-        padding: 30px 20px;
+        padding: 2vh 20px;
         text-decoration: none;
     }
 
@@ -426,7 +495,7 @@ dropdown menu
         display: block;
         color: white;
         text-align: left;
-        padding: 45px 20px;
+        padding: 3vh 20px;
         text-decoration: none;
         overflow: hidden;
         font-size: 2rem;
@@ -449,50 +518,29 @@ dropdown menu
     }
 
     .btn canvas {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+        margin-top: 10px;
     }
 
     .btns {
         margin-bottom: 30px;
     }
-}
 
+    .table-div {
+        margin: auto;
+        padding: 2em;
+        width: 90%;
+    }
 
-.userlist {
-    border-radius: 15px;
-    background: #1A1A1A;
-    padding: 1rem;
-    margin: auto;
-    width: 60%;
-    height: 80vh;
-}
+    th, td, tr {
+        font-size: 1.5rem;
+    }
 
-.userlist-pos {
-    border-radius: 10px;
-    padding: 0.2rem;
-    margin: 0.9rem;
-    background: #262626;
-    padding-bottom: 0.5rem;
-}
-
-.userlist-username-text {
-    font-size: 1.5rem;
-    position: relative;
-    left: 0.75rem;
-    bottom: 0.125rem;
-}
-
-.userlist-info-text {
-    float: right;
-    right: 0.25rem;
-    top: 0.25rem;
-    position: relative;
-}
-
-.table-div {
-    margin: auto;
-    width: 40%;
-    padding: 2em;
+    .userlist {
+        background: rgba(0, 0, 0, 0);
+        padding: 0;
+        margin-left: 1rem;
+    }
 }
 
 .align-center {
@@ -505,39 +553,6 @@ dropdown menu
 
 .align-right {
     text-align: right;
-}
-
-
-.userlist {
-  border-radius: 15px;
-  background: #1A1A1A;
-  padding: 1rem;
-  margin: auto;
-  width: 70%;
-  height: 90vh;
-  margin-top: 20px;
-}
-
-.userlist-pos {
-  border-radius: 10px;
-  padding: 0.2rem;
-  margin: 0.9rem;
-  background: #262626;
-  padding-bottom: 0.5rem;
-}
-
-.userlist-username-text {
-  font-size: 1.5rem;
-  position: relative;
-  left: 0.75rem;
-  bottom: 0.125rem;
-}
-
-.userlist-info-text {
-  float: right;
-  right: 0.25rem;
-  top: 0.25rem;
-  position: relative;
 }
 
 a {

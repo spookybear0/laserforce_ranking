@@ -68,6 +68,83 @@
     body {
         height: 130vh;
     }
+
+    .desktop_notif {
+        text-align: center;
+        display: none;
+    }
+
+    @media screen and (max-width: 991px) {
+        .userlist {
+            background: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        h2, h3 {
+            zoom: 1.5;
+        }
+
+        .team_score {
+            zoom: 2;
+        }
+
+        table {
+            table-layout: auto;
+        }
+
+        table tr td:nth-child(n+8) {
+            display: none;
+        }
+        
+        table tr th:nth-child(n+8) {
+            display: none;
+        }
+
+        table tr td:nth-child(2) {
+            display: none;
+        }
+        
+        table tr th:nth-child(2) {
+            display: none;
+        }
+
+        .team {
+            margin-left: 0;
+            margin-right: 0;
+            margin-top: 0;
+        }
+
+        #teams {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .role {
+            width: 75px;
+        }
+
+        .desktop_notif {
+            display: block;
+        }
+
+        table {
+            word-wrap: break-word;
+        }
+
+        .desktop_notif {
+            display: block;
+        }
+
+        #content {
+            height: 100%;
+        }
+
+        body {
+            height: 85%;
+        }
+    }
 </style>
 
 <script>
@@ -120,7 +197,7 @@
 
         <div id="teams">
             <div id="fire_team" class="team">
-                <h2 style="font-size: 20px; color: orangered;">Fire Team: {{ fire_score }}</h2>
+                <h2 style="font-size: 20px; color: orangered;" class="team_score">Fire Team: {{ fire_score }}</h2>
 
                 <table id="fire_table">
                     <th><p>Codename</p></th>
@@ -164,7 +241,7 @@
                 </table>
             </div>
             <div id="blue_team" class="team">
-                <h2 style="font-size: 20px; color: #0096FF;">Ice Team: {{ ice_score }}</h2>
+                <h2 style="font-size: 20px; color: #0096FF;" class="team_score">Ice Team: {{ ice_score }}</h2>
 
                 <table id="blue_table">
                     <th><p>Codename</p></th>
@@ -208,6 +285,7 @@
                 </table>
             </div>
         </div>
+        <h1 class="desktop_notif">For more detailed stats, please view the website on desktop.</h1>
     </div>
 </div>
 

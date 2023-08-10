@@ -82,6 +82,63 @@
     .recent_games {
         margin-top: 5rem;
     }
+
+    .info-div {
+        float: left;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .ipl-div {
+        float: right;
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 2.094rem;
+    }
+
+    @media screen and (max-width: 991px) {
+        h1 {
+            text-align: center;
+        }
+
+        .info-div {
+            float: none;
+            margin: auto;
+            zoom: 1.5;
+        }
+
+        .info-div span {
+            text-align: center;
+        }
+
+        .ipl-div {
+            text-align: center;
+            float: none;
+            margin: auto;
+            zoom: 1.5;
+        }
+
+        .userlist {
+            margin: auto;
+            width: 90%;
+        }
+
+        .recent_games {
+            margin-top: 2.5rem;
+        }
+
+        table tr td:nth-child(n+6) {
+            display: none;
+        }
+        
+        table tr th:nth-child(n+6) {
+            display: none;
+        }
+
+        .recent_games h2 {
+            zoom: 1.5;
+        }
+    }
 </style>
 
 {% endblock %}
@@ -91,14 +148,14 @@
 <body>
     <div>
         <div class="userlist">
-            <div style="float: left; margin-left: 0; margin-right: 0;">
+            <div class="info-div">
                 <span title="Codename"><h1 style="font-size: 50px;">{{ player.codename }}</h1></span>
 
                 <span title="Player ID"><h3>{{ player.player_id }}</h3></span>
                 <span title="IPL ID"><h5>{{ player.ipl_id }}</h5></span>
             </div>
 
-            <div style="float: right; margin-left: 0; margin-right: 0; margin-top: 2.094rem;">
+            <div class="ipl-div">
                 <a href="http://www.iplaylaserforce.com/mission-stats/?t={{ player.ipl_id[1:] }}" target="_blank" rel="noopener noreferrer"><h3 style="color: #2fa4e7;">View on IPL</h3></a>
             </div>
 
@@ -131,7 +188,7 @@
                         {% set entity_end = get_entity_end(game, entity_start) %}
                         {% set sm5_stats = get_sm5_stat(game, entity_start) %}
                         <tr>
-                            <td><a href="/game/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                            <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu %}
                             <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}" style="font-weight: 500; color: white;">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>

@@ -29,9 +29,9 @@ async def player_get(request: Request, id: Union[int, str]):
     player = await Player.get_or_none(player_id=id)
 
     if not player:
-        player = await Player.get_or_none(codename=id) # could be codename
-
-        if not player:
+        try:
+            player = await Player.filter(codename=id).first() # could be codename
+        except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
         
     recent_games = SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(10)

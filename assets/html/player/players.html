@@ -99,18 +99,18 @@
     <table id="player_table">
         <tbody>
             <tr>
-                <th class="align-left" onclick="sortTable(0)">Codename</th>
-                <th class="align-left" onclick="sortTable(1)">Player ID</th>
-                <th class="align-right" onclick="sortTable(2)">SM5 Rating</th>
-                <th class="align-right" onclick="sortTable(3)">Laserball Rating</th>
+                <th onclick="sortTable(0)">Codename</th>
+                <th onclick="sortTable(1)">Player ID</th>
+                <th onclick="sortTable(2)">SM5 Rating</th>
+                <th onclick="sortTable(3)">Laserball Rating</th>
             </tr>
             {% for player in players %}
                 {% if not loop.index > 25 %}
                     <tr>
-                        <td class="align-left"><a href="/player/{{ player.codename }}">{{ player.codename }}</a></td>
-                        <td class="align-left">{{ player.player_id }}</td>
-                        <td class="align-right">{{ player.sm5_ordinal|round(2) }}</td>
-                        <td class="align-right">{{ player.laserball_ordinal|round(2) }}</td>
+                        <td><a href="/player/{{ player.codename }}">{{ player.codename }}</a></td>
+                        <td>{{ player.player_id }}</td>
+                        <td>{{ player.sm5_ordinal|round(2) }}</td>
+                        <td>{{ player.laserball_ordinal|round(2) }}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
