@@ -1,8 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Tools{% endblock %}
 
+{% block html_head %}
+
+<style>
+    .left_div {
+        float: left;
+        padding-left: 25%;
+    }
+
+    .right_div {
+        float: right;
+        padding-right: 25%;
+    }
+
+    @media screen and (max-width: 991px) {
+        .left_div {
+            float: none;
+            margin: auto;
+            padding-left: 0;
+        }
+
+        .right_div {
+            float: none;
+            margin: auto;
+            padding-right: 0;
+        }
+        
+        #content {
+            width: 100%;
+            zoom: 2.5;
+        }
+    }
+</style>
+
+{% endblock %}
+
 {% block content %}
-<div style="float: left; padding-left: 25%;">
+<div class="left_div">
     <h2 style="text-align: center;">Matchmake</h2>
     <form class="modal-content animate" action="/matchmake" method="post" style="text-align: center;">
         <input type="text" placeholder="sm5" name="mode"><br><br><br><br>
@@ -14,7 +49,7 @@
         </div>
     </form>
 </div>
-<div style="float: right; padding-right: 25%;">
+<div class="right_div">
     <h2 style="text-align: center;">Win chance calculator</h2>
     <form class="modal-content animate" action="/win_chance" method="post" style="text-align: center;">
         <input type="text" placeholder="sm5" name="mode"><br><br><br><br>
