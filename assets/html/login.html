@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block html_head %}
+
+<style>
+    form {
+        margin: 0 auto;
+        width: 25%;
+        padding: 1em;
+        border: 1px solid #262626;
+        background: #1A1A1A;
+        border-radius: 1em;
+        height: 50%;
+    }
+
+    form div {
+        width: 90%;
+        margin: 0 auto;
+        position: relative;
+        top: 50%;
+        transform: translate(0, -50%);
+        padding: 10px;
+    }
+
+    input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 0.5em;
+        margin: 0.5em 0;
+        background: #262626;
+        border: 1px solid #999;
+        border-radius: 4px;
+        color: #fff;
+        height: 4em;
+    }
+
+    input[type="submit"] {
+        padding: 0.4em;
+        margin: 0.5em 0;
+        background: #262626;
+        border: 1px solid #999;
+        border-radius: 4px;
+        color: #fff;
+        cursor: pointer;
+        width: 50%;
+        margin-left: 25%;
+        margin-top: 2em;
+    }
+
+    .center { /* Center the content vertically and horizontally */
+        position: relative;
+        top: 50%;
+        padding: 10px;
+    }
+
+    @media screen and (max-width: 992px) {
+        #content {
+            zoom: 2;
+        }
+
+        form {
+            width: 80%;
+        }
+
+        form div {
+            width: 100%;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<h1 style="text-align: center;">Login</h1>
+<form class="center">
+    <div class="center">
+        <input type="text" name="codename" placeholder="Codename" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="submit" value="Login">
+    </div>
+</form>
+
+{% endblock %}

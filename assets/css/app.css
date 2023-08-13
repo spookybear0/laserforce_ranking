@@ -491,6 +491,15 @@ dropdown menu
         font-size: 2rem;
     }
 
+    .login-bar {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+        font-size: 2rem;
+    }
+
     .nav-dropdown {
         display: block;
         color: white;

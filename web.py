@@ -36,7 +36,7 @@ async def main() -> None:
         modules={"models": ["db.models"]}
     )
 
-    #await repopulate_database()
+    await repopulate_database()
 
     debug = False
     if "--debug" in sys.argv or "--dev" in sys.argv:

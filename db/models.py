@@ -87,7 +87,25 @@ class IntRole(IntEnum):
             4: Role.AMMO,
             5: Role.MEDIC
         }.get(self.value)
+    
 
+class Permission(IntEnum):
+    USER = 0
+    ADMIN = 1
+
+# user accounts
+class User(Model):
+    id = fields.IntField(pk=True)
+    username = fields.CharField(50)
+    password = fields.CharField(100) # hashed password
+    permissions = fields.IntEnumField(Permission, default=Permission.USER)
+    timestamp = fields.DatetimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.discord_name}#{self.discord_discriminator} ({self.discord_id})"
+
+    def __repr__(self) -> str:
+        return f"<User {self.discord_name}#{self.discord_discriminator} ({self.discord_id})>"
 
 class Player(Model):
     id = fields.IntField(pk=True)
