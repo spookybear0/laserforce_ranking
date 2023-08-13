@@ -242,7 +242,10 @@ class Player(Model):
         for role in range(5):
             entities = await EntityStarts.filter(role=role, entity_id=self.ipl_id).values_list("id", flat=True)
             scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
-            scores.append(statistics.median(scores_role))
+            try:
+                scores.append(statistics.median(scores_role))
+            except statistics.StatisticsError:
+                scores.append(0)
 
         return scores
     
@@ -259,7 +262,10 @@ class Player(Model):
         for role in range(5):
             entities = await EntityStarts.filter(role=role).values_list("id", flat=True)
             scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
-            scores.append(statistics.median(scores_role))
+            try:
+                scores.append(statistics.median(scores_role))
+            except statistics.StatisticsError:
+                scores.append(0)
 
         return scores
 
