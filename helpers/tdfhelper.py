@@ -9,6 +9,16 @@ import json
 import os
 
 
+def element_to_color(element: str) -> str:
+    conversion = {
+        "Fire": "Red",
+        "Ice": "Blue",
+        "Earth": "Green",
+        "None": "None"
+    }
+
+    return conversion[element]
+
 async def parse_sm5_game(file_location: str) -> SM5Game:
     file = open(file_location, "r", encoding="utf-16")
 
@@ -56,7 +66,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     return game
 
             case "2": # team info
-                teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4]))
+                teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))
             case "3": # entity start
                 team = None
 
@@ -147,7 +157,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     ranked = True
     ended_early = False
 
-    game = await SM5Game.create(winner=winner, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
+    game = await SM5Game.create(winner=winner, winner_color=winner.value, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
     
@@ -273,7 +283,7 @@ async def parse_laserball_game(file_location: str):
                     return game
 
             case "2": # team info
-                teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4]))
+                teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))
             case "3": # entity start
                 team = None
 
@@ -401,7 +411,7 @@ async def parse_laserball_game(file_location: str):
     ranked = True
     ended_early = False
 
-    game = await LaserballGame.create(winner=winner, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
+    game = await LaserballGame.create(winner=winner, winner_color=winner.value, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
     

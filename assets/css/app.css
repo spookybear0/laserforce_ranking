@@ -393,6 +393,7 @@ body {
     margin: auto;
     width: 70%;
     height: fit-content;
+    display: inline-block;
     padding-bottom: 2rem;
     margin-top: 20px;
     margin-bottom: 5rem;
@@ -523,7 +524,7 @@ dropdown menu
 
     .btn {
         width: 16rem;
-        height: 10rem;
+        height: 12rem;
         font-size: 1.5rem;
     }
 

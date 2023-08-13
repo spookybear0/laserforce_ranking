@@ -100,6 +100,24 @@
         text-align: right;
     }
 
+    .button-div {
+        float: left;
+    }
+
+    .left-div {
+        float: left;
+        margin: auto;
+        margin-top: 2rem;
+    }
+
+    .left-side {
+        float: left;
+    }
+
+    .right-side {
+        float: right;
+    }
+
     @media screen and (max-width: 991px) {
         h1 {
             text-align: center;
@@ -146,6 +164,25 @@
         .right_align {
             text-align: center;
         }
+
+        .button-div {
+            float: none;
+            margin: auto;
+        }
+
+        .left-div {
+            float: none;
+        }
+
+        .left-side {
+            float: none;
+            margin: auto;
+        }
+
+        .right-side {
+            float: none;
+            margin: auto;
+        }
     }
 </style>
 
@@ -154,8 +191,8 @@
 {% block content %}
 
 <body>
-    <div>
-        <div class="userlist">
+    <div style="text-align: center;">
+        <div class="userlist" style="text-align: left;">
             <div class="info-div">
                 <span title="Codename"><h1 style="font-size: 50px;">{{ player.codename }}</h1></span>
 
@@ -224,8 +261,178 @@
                     {% endfor %}
                 </table>
             </div>
+            <div class="left-div">
+                <div class="btns">
+                    <div class="btn">
+                        <canvas id="sm5_teams" style="max-width:600px;"></canvas>
+                        <p>SM5 Teams</p>
+                    </div>
+                    <div class="btn">
+                        <canvas id="laserball_teams" style="max-width:600px;"></canvas>
+                        <p>Laserball Teams</p>
+                    </div>
+                </div>
+                
+                <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; clear: both; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+            </div>
+
+            <div style="padding-top: 2.5rem;">
+                <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="275px" class="rights-side"></canvas>
+            </div>
         </div>
     </div>
 </body>
+
+<script>
+    Chart.defaults.global.defaultFontColor = "#FFFFFF";
+
+    new Chart("sm5_teams", {
+        type: "pie",
+        // wins, inner
+        data: {
+            labels: ["Red", "Green", "Red Wins", "Green Wins"],
+            datasets: [
+                {
+                    backgroundColor: ["#b91d47", "#00aba9"],
+                    data: [{{ red_teams_sm5 }}, {{ green_teams_sm5 }}]
+                },
+                {
+                    backgroundColor: ["#000000", "#000000", "#b91d47", "#00aba9"],
+                    data: [0, 0, {{ red_wins_sm5 }}, {{ green_wins_sm5}}]
+                }
+            ]
+        },
+
+
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            }
+        }
+    });
+
+    new Chart("laserball_teams", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Blue"],
+            datasets: [{
+            backgroundColor: ["#b91d47", "#0047AB"],
+            data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            }
+        }
+    });
+
+    new Chart("avg_role_score", {
+        type: "bar",
+        data: {
+            labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+            datasets: [
+                {
+                    label: "Player's Median Score",
+                    data: {{ role_plot_data_player }},
+                    backgroundColor: [
+                        "rgb(50, 116, 161)",
+                        "rgb(225, 129, 44)",
+                        "rgb(58, 146, 58)",
+                        "rgb(192, 61, 62)",
+                        "rgb(147, 114, 178)"
+                    ]
+                },
+                {
+                    label: "World's Median Score",
+                    data: {{ role_plot_data_world }},
+                    backgroundColor: [
+                        "rgb(50, 166, 161)",
+                        "rgb(225, 179, 44)",
+                        "rgb(58, 196, 58)",
+                        "rgb(192, 121, 62)",
+                        "rgb(147, 174, 178)"
+                    ]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    ticks:{
+                        min: 0,
+                    },
+                    stacked: false,
+                }],
+                xAxes: {
+                    gridLines: {
+                        display: false,
+                    },
+                    stacked: false
+                },
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "rgb(255, 255, 255)"
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Median player score vs median world score"
+                }
+            }
+        }
+    });
+
+    // median score vs world radar chart
+
+    new Chart("avg_role_score_radar", {
+        type: "radar",
+        data: {
+            labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+            datasets: [
+                {
+                    label: "Player's Median Score",
+                    data: {{ role_plot_data_player }},
+                    backgroundColor: "rgba(50, 116, 161, 0.5)"
+                },
+                {
+                    label: "World's Median Score",
+                    data: {{ role_plot_data_world }},
+                    backgroundColor: "rgba(50, 166, 161, 0.5)"
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Median player score vs median world score"
+                }
+            },
+            scale: {
+                gridLines: {
+                    color: "rgba(255, 255, 255, 0.75)"
+                },
+                ticks: {
+                    display: false // Hides the labels in the middel (numbers)
+                },
+                pointLabels: {
+                    fontSize: 12
+                }
+            },
+            elements: {
+                point: {
+                    radius: 5
+                }
+            }
+        }
+    });
+</script>
 
 {% endblock %}

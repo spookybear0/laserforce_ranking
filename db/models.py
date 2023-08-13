@@ -1,9 +1,11 @@
-from typing import Any, Optional
+from typing import List, Optional
 from tortoise import Model, fields, functions
+from tortoise.expressions import F, Q, Function
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
 from collections import Counter
 import openskill
+import statistics
 
 class EventType(IntEnum):
     # basic and sm5 events
@@ -163,6 +165,104 @@ class Player(Model):
         data = Counter(battlesuits)
         return data.most_common(1)[0][0]
     
+    async def times_played_as_team(self, team: Team, game_type: GameType=None) -> int:
+        """
+        If game_type is None, all game types are counted
+        """
+
+        if team == Team.RED:
+            team_color = "Fire"
+        elif team == Team.BLUE:
+            team_color = "Ice"
+        else:
+            team_color = "Earth"
+            
+        if game_type is None:
+            return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color).count()
+        else:
+            game_type_filter_name = "space marines" if game_type == GameType.SM5 else "laserball"
+            return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color, sm5games__mission_name__icontains=game_type_filter_name).count()
+        
+    async def times_played_as_role(self, role: Role) -> int:
+        return await EntityStarts.filter(entity_id=self.ipl_id, role=IntRole.from_role(role)).count()
+    
+    async def get_win_percent(self, game_type: GameType=None) -> float:
+        """
+        If game_type is None, all game types are counted
+        """
+
+        if game_type is None:
+            #return None
+
+            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").count()
+            losses = await EntityStarts.filter(entity_id=self.ipl_id).exclude(team=F("winner"), sm5games__winner__not_isnull="").count()
+        else:
+            game_type_filter_name = "space marines" if game_type == GameType.SM5 else "laserball"
+            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__mission_name__icontains=game_type_filter_name).count()
+            losses = await EntityStarts.filter(entity_id=self.ipl_id, sm5games__mission_name__icontains=game_type_filter_name).exclude(team=F("winner")).count()
+    
+        if wins + losses == 0:
+            return 0
+        
+        return wins / (wins + losses)
+    
+    async def get_wins_as_team(self, team: Team, game_type: GameType=None) -> int:
+        """
+        If game_type is None, all game types are counted
+        """
+
+        if team == Team.RED:
+            team_color = "Fire"
+        elif team == Team.BLUE:
+            team_color = "Ice"
+        else:
+            team_color = "Earth"
+            
+        if game_type is None:
+            #return None
+
+            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").filter(team__color_name=team_color).count()
+        else:
+            game_type_filter_name = "space marines" if game_type == GameType.SM5 else "laserball"
+            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__mission_name__icontains=game_type_filter_name).filter(team__color_name=team_color).count()
+        
+        return wins
+    
+    # custom funcs for plotting
+    
+    async def get_median_role_score(self) -> List[float]:
+        """
+        SM5 only
+
+        returns: roles median score in order of Role enum (Commander, Heavy, Scout, Ammo, Medic)
+        """
+
+        scores = []
+
+        for role in range(5):
+            entities = await EntityStarts.filter(role=role, entity_id=self.ipl_id).values_list("id", flat=True)
+            scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
+            scores.append(statistics.median(scores_role))
+
+        return scores
+    
+    @staticmethod
+    async def get_median_role_score_world() -> List[float]:
+        """
+        SM5 only
+
+        returns: roles median score in order of Role enum (Commander, Heavy, Scout, Ammo, Medic)
+        """
+
+        scores = []
+
+        for role in range(5):
+            entities = await EntityStarts.filter(role=role).values_list("id", flat=True)
+            scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
+            scores.append(statistics.median(scores_role))
+
+        return scores
+
     def __str__(self) -> str:
         return f"{self.codename} ({self.player_id})"
     
@@ -172,6 +272,7 @@ class Player(Model):
 class SM5Game(Model):
     id = fields.IntField(pk=True)
     winner = fields.CharEnumField(Team)
+    winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
     file_version = fields.CharField(20) # version is a decimal number, we can just store it as a string
     software_version = fields.CharField(20) # ditto ^
@@ -247,6 +348,7 @@ class Teams(Model):
     name = fields.CharField(50)
     color_enum = fields.IntField() # no idea what this enum is
     color_name = fields.CharField(50)
+    real_color_name = fields.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
 
     @property
     def enum(self):
@@ -254,7 +356,9 @@ class Teams(Model):
             "Fire": Team.RED,
             "Earth": Team.GREEN,
             "Red": Team.RED,
-            "Green": Team.GREEN
+            "Green": Team.GREEN,
+            "Blue": Team.BLUE,
+            "Ice": Team.BLUE,
         }
 
         return conversions[self.color_name]
@@ -454,6 +558,7 @@ class SM5Stats(Model):
 class LaserballGame(Model):
     id = fields.IntField(pk=True)
     winner = fields.CharEnumField(Team)
+    winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
     file_version = fields.CharField(20) # version is a decimal number, we can just store it as a string
     software_version = fields.CharField(20) # ditto ^

@@ -49,7 +49,24 @@ async def player_get(request: Request, id: Union[int, str]):
         get_entity_end=get_entity_end,
         get_sm5_stat=get_sm5_stat,
         favorite_role=favorite_role,
-        favorite_battlesuit=favorite_battlesuit
+        favorite_battlesuit=favorite_battlesuit,
+        # team rate pies (sm5/laserball)
+        red_teams_sm5=await player.times_played_as_team(Team.RED, GameType.SM5),
+        green_teams_sm5=await player.times_played_as_team(Team.GREEN, GameType.SM5),
+        red_teams_laserball=await player.times_played_as_team(Team.RED, GameType.LASERBALL),
+        blue_teams_laserball=await player.times_played_as_team(Team.BLUE, GameType.LASERBALL),
+        # win percents (sm5, laserball, all)
+        sm5_win_percent=await player.get_win_percent(GameType.SM5),
+        laserball_win_percent=await player.get_win_percent(GameType.LASERBALL),
+        win_percent=await player.get_win_percent(),
+        # games won as team (sm5, laserball)
+        red_wins_sm5=await player.get_wins_as_team(Team.RED, GameType.SM5),
+        green_wins_sm5=await player.get_wins_as_team(Team.GREEN, GameType.SM5),
+        red_wins_laserball=await player.get_wins_as_team(Team.RED, GameType.LASERBALL),
+        blue_wins_laserball=await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL),
+        # role score plot (sm5)
+        role_plot_data_player=await player.get_median_role_score(),
+        role_plot_data_world=await Player.get_median_role_score_world(),
     )
 
 @app.post("/player")

@@ -109,7 +109,7 @@
                     <tr>
                         <td><a href="/player/{{ player.codename }}">{{ player.codename }}</a></td>
                         <td>{{ player.player_id }}</td>
-                        <td>{{ player.sm5_ordinal|round(2) }}</td>
+                        <td title="mu: {{player.sm5_mu|round(2)}}, sigma: {{player.sm5_sigma|round(2)}}">{{ player.sm5_ordinal|round(2) }}</td>
                         <td>{{ player.laserball_ordinal|round(2) }}</td>
                     </tr>
                 {% endif %}
