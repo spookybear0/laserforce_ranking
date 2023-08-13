@@ -96,6 +96,10 @@
         margin-top: 2.094rem;
     }
 
+    .right_align {
+        text-align: right;
+    }
+
     @media screen and (max-width: 991px) {
         h1 {
             text-align: center;
@@ -138,6 +142,10 @@
         .recent_games h2 {
             zoom: 1.5;
         }
+
+        .right_align {
+            text-align: center;
+        }
     }
 </style>
 
@@ -159,7 +167,10 @@
                 <a href="http://www.iplaylaserforce.com/mission-stats/?t={{ player.ipl_id[1:] }}" target="_blank" rel="noopener noreferrer"><h3 style="color: #2fa4e7;">View on IPL</h3></a>
             </div>
 
-            <div style="clear: both;"></div>
+            <div style="clear: both; padding-top: 2rem;"></div>
+
+            <h3 class="right_align">Favorite role: {{ favorite_role }}</h3>
+            <h3 class="right_align">Favorite battlesuit: {{ favorite_battlesuit }}</h3>
 
             <div class="recent_games">
                 <h2 style="text-align: center;">Recent Games</h2>

@@ -33,8 +33,12 @@ async def player_get(request: Request, id: Union[int, str]):
             player = await Player.filter(codename=id).first() # could be codename
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
-        
+    
+    # TODO: laserball
     recent_games = SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(10)
+
+    favorite_role = await player.get_favorite_role()
+    favorite_battlesuit = await player.get_favorite_battlesuit()
     
     return await render_template(
         request, "player/player.html",
@@ -44,6 +48,8 @@ async def player_get(request: Request, id: Union[int, str]):
         get_entity_start=get_entity_start,
         get_entity_end=get_entity_end,
         get_sm5_stat=get_sm5_stat,
+        favorite_role=favorite_role,
+        favorite_battlesuit=favorite_battlesuit
     )
 
 @app.post("/player")

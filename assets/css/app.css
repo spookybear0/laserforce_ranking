@@ -362,7 +362,6 @@ body {
     padding: 1rem;
     margin: auto;
     width: 60%;
-    height: 80vh;
 }
 
 .userlist-pos {
@@ -393,9 +392,11 @@ body {
     padding: 1rem;
     margin: auto;
     width: 70%;
-    height: 90vh;
+    height: fit-content;
+    padding-bottom: 2rem;
     margin-top: 20px;
-  }
+    margin-bottom: 5rem;
+}
   
   .userlist-pos {
     border-radius: 10px;

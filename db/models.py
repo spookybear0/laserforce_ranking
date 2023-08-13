@@ -1,7 +1,8 @@
-from typing import Any
+from typing import Any, Optional
 from tortoise import Model, fields, functions
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
+from collections import Counter
 import openskill
 
 class EventType(IntEnum):
@@ -117,12 +118,6 @@ class Player(Model):
     laserball_mu = fields.FloatField(default=25)
     laserball_sigma = fields.FloatField(default=8.333)
     timestamp = fields.DatetimeField(auto_now=True)
-
-    def __str__(self) -> str:
-        return f"{self.codename} ({self.player_id})"
-    
-    def __repr__(self) -> str:
-        return f"<Player {self.codename} ({self.player_id})>"
     
     @property
     def sm5_ordinal(self):
@@ -139,6 +134,40 @@ class Player(Model):
     @property
     def laserball_rating(self):
         return openskill.Rating(self.laserball_mu, self.laserball_sigma)
+    
+    async def get_favorite_role(self) -> Optional[Role]:
+        """
+        SM5 only
+        """
+
+        # get the most played role
+        role = await EntityStarts.filter(entity_id=self.ipl_id).annotate(count=functions.Count("role")).order_by("-count").first()
+        if role is None:
+            return None
+        return role.role
+    
+    async def get_favorite_battlesuit(self) -> Optional[str]:
+        """
+        SM5 only
+        """
+
+        # battlesuit is an entitystarts attribute which is a string
+        # we need to count each time a battlesuit is used and return the most used one
+
+        battlesuits = await EntityStarts.filter(entity_id=self.ipl_id).values_list("battlesuit", flat=True)
+
+        if not battlesuits:
+            return None
+        
+        # find most common battlesuit
+        data = Counter(battlesuits)
+        return data.most_common(1)[0][0]
+    
+    def __str__(self) -> str:
+        return f"{self.codename} ({self.player_id})"
+    
+    def __repr__(self) -> str:
+        return f"<Player {self.codename} ({self.player_id})>"
 
 class SM5Game(Model):
     id = fields.IntField(pk=True)
@@ -186,8 +215,6 @@ class SM5Game(Model):
     
     async def get_entity_end_from_token(self, token: str):
         return await self.entity_ends.filter(entity_id=token).first()
-    
-
 
     
     async def to_dict(self):
@@ -283,6 +310,9 @@ class EntityStarts(Model):
         final["battlesuit"] = self.battlesuit
 
         return final
+    
+    def __str__(self):
+        return f"<EntityStarts id={self.id} entity_id={self.entity_id} type={self.type} name={self.name} team={self.team} level={self.level} role={self.role} battlesuit={self.battlesuit}>"
 
 class Events(Model):
     time = fields.IntField() # time in milliseconds
@@ -319,6 +349,12 @@ class Scores(Model):
         final["new"] = self.new
 
         return final
+    
+    def __str__(self) -> str:
+        return f"<Score {self.old} -> {self.new} ({self.delta})>"
+    
+    def __repr__(self) -> str:
+        return str(self)
 
 class EntityEnds(Model):
     time = fields.IntField() # time in milliseconds
@@ -351,6 +387,12 @@ class EntityEnds(Model):
         final["current_rating_sigma"] = self.current_rating_sigma
 
         return final
+    
+    def __str__(self) -> str:
+        return f"<EntityEnd {self.entity_id} {self.score}>"
+    
+    def __repr__(self) -> str:
+        return str(self)
 
 class SM5Stats(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
