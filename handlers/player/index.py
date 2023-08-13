@@ -36,14 +36,15 @@ async def player_get(request: Request, id: Union[int, str]):
         
     recent_games = SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(10)
     
-    return await render_template(request, "player/player.html",
-                                # general player info
-                                player=player,
-                                recent_games=recent_games,
-                                get_entity_start=get_entity_start,
-                                get_entity_end=get_entity_end,
-                                get_sm5_stat=get_sm5_stat,
-                                )
+    return await render_template(
+        request, "player/player.html",
+        # general player info
+        player=player,
+        recent_games=recent_games,
+        get_entity_start=get_entity_start,
+        get_entity_end=get_entity_end,
+        get_sm5_stat=get_sm5_stat,
+    )
 
 @app.post("/player")
 async def player_post(request: Request):

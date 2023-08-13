@@ -175,6 +175,21 @@ class SM5Game(Model):
     async def get_green_score(self):
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Earth").values_list("score")))
     
+    async def get_entity_start_from_player(self, player: Player):
+        return await self.entity_starts.filter(player=player).first()
+    
+    async def get_entity_start_from_token(self, token: str):
+        return await self.entity_starts.filter(entity_id=token).first()
+    
+    async def get_entity_end_from_player(self, player: Player):
+        return await self.entity_ends.filter(player=player).first()
+    
+    async def get_entity_end_from_token(self, token: str):
+        return await self.entity_ends.filter(entity_id=token).first()
+    
+
+
+    
     async def to_dict(self):
         # convert the entire game to a dict
         # this is used for the api
@@ -238,10 +253,21 @@ class EntityStarts(Model):
     role = fields.IntEnumField(IntRole) # 0 for targets, no idea what it is for laserball
     battlesuit = fields.CharField(50) # for targets its the target name
     
-    @property
-    def player(self):
+    async def get_player(self) -> Player:
         # get the player object from the entity
-        return Player.get(ipl_id=self.entity_id)
+        return await Player.get(ipl_id=self.entity_id)
+    
+    # UNTESTED
+    async def get_entity_end(self) -> "EntityEnds":
+        return await self.game.entity_ends.filter(entity_id=self.entity_id).first()
+    
+    # UNTESTED
+    async def get_sm5_stats(self) -> "SM5Stats":
+        return await self.game.sm5_stats.filter(entity_id=self.entity_id).first()
+    
+    # UNTESTED
+    async def get_score(self) -> int:
+        return (await self.get_entity_end()).score
 
     async def to_dict(self):
         final = {}
@@ -301,6 +327,18 @@ class EntityEnds(Model):
     score = fields.IntField()
     current_rating_mu = fields.FloatField(null=True) # only for players, only for ranked games
     current_rating_sigma = fields.FloatField(null=True) # only for players, only for ranked games
+
+    async def get_player(self) -> Player:
+        # get the player object from the entity
+        return await Player.get(ipl_id=self.entity_id)
+    
+    # UNTESTED
+    async def get_entity_start(self) -> EntityStarts:
+        return await self.game.entity_starts.filter(entity_id=self.entity_id).first()
+    
+    # UNTESTED
+    async def get_sm5_stats(self) -> "SM5Stats":
+        return await self.game.sm5_stats.filter(entity_id=self.entity_id).first()
 
     async def to_dict(self):
         final = {}
