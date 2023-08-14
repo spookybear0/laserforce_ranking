@@ -184,6 +184,15 @@
             margin: auto;
         }
     }
+
+    @media screen and (min-width: 992px) {
+        .stats {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            margin-top: 2rem;
+        }
+    }
 </style>
 
 {% endblock %}
@@ -261,23 +270,25 @@
                     {% endfor %}
                 </table>
             </div>
-            <div class="left-div">
-                <div class="btns">
-                    <div class="btn">
-                        <canvas id="sm5_teams" style="max-width:600px;"></canvas>
-                        <p>SM5 Teams</p>
+            <div class="stats">
+                <div>
+                    <div class="btns">
+                        <div class="btn">
+                            <canvas id="sm5_teams" style="max-width:600px;"></canvas>
+                            <p>SM5 Teams</p>
+                        </div>
+                        <div class="btn">
+                            <canvas id="laserball_teams" style="max-width:600px;"></canvas>
+                            <p>Laserball Teams</p>
+                        </div>
                     </div>
-                    <div class="btn">
-                        <canvas id="laserball_teams" style="max-width:600px;"></canvas>
-                        <p>Laserball Teams</p>
-                    </div>
+                    
+                    <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; clear: both; margin-top: 2rem;" height="200px" class="left-side"></canvas>
                 </div>
-                
-                <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; clear: both; margin-top: 2rem;" height="200px" class="left-side"></canvas>
-            </div>
 
-            <div style="padding-top: 2.5rem;">
-                <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="275px" class="rights-side"></canvas>
+                <div>
+                    <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="475px" width="475px" class="right-side"></canvas>
+                </div>
             </div>
         </div>
     </div>
