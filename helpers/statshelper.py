@@ -1,65 +1,37 @@
 from typing import List, Tuple
-import matplotlib.pyplot as plt
-from io import BytesIO
-import seaborn as sns
-from PIL import Image
 from sentry_sdk import Hub, start_transaction
-import base64
-import PIL
+from db.models import SM5Game
 
-dark_mode = {"ytick.color" : "w",
-            "xtick.color" : "w",
-            "axes.labelcolor" : "w",
-            "axes.edgecolor" : "w",
-            "axes.titlecolor": "w"
-}
+# stats helpers
 
-def img_to_b64(img: PIL.Image) -> str:
-    img_b64 = BytesIO()
-    img.save(img_b64, "PNG")
-    img_b64 = base64.b64encode(img_b64.getvalue())
-    return img_b64.decode("utf-8")
+async def get_average_red_score_at_time_sm5(time: int) -> int:
+    """
+    Gets the average red score at a given time
+    by going through all games and finding the
+    average red score at the given time
+    """
 
-def clear_plt():
-    fig = plt.figure()
-    plt.figure().clear()
-    plt.close()
-    plt.cla()
-    plt.clf()
+    scores = []
 
-def lineplot(data: Tuple[List[int]], title: str="", xlabel: str="", ylabel: str="", *args, **kwargs) -> Image.Image:
-    plt.style.use("dark_background")
-    fig = sns.regplot(*data, ci=None, *args, **kwargs).figure
+    for game in await SM5Game.all():
+        scores.append(await game.get_red_score_at_time(time))
 
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    return sum(scores) // len(scores)
 
-    fig.canvas.draw()
+async def get_average_green_score_at_time_sm5(time: int) -> int:
+    """
+    Gets the average green score at a given time
+    by going through all games and finding the
+    average green score at the given time
+    """
 
-    img = PIL.Image.frombytes("RGB", fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
+    scores = []
 
-    clear_plt()
-    return img
+    for game in await SM5Game.all():
+        scores.append(await game.get_green_score_at_time(time))
 
-def barplot(labels: List[str], data: List[int], title: str="", xlabel: str="", ylabel: str="", *args, **kwargs):
-    plt.rcParams.update(dark_mode)
-    plot = sns.barplot(x=labels, y=data, *args, **kwargs)
-    fig = plot.figure
-
-    plot.set_facecolor("#121212")
-    fig.patch.set_facecolor("#1A1A1A")
+    return sum(scores) // len(scores)
     
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-
-    fig.canvas.draw()
-
-    img = PIL.Image.frombytes("RGB", fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
-
-    clear_plt()
-    return img
 
 # performance helpers
 

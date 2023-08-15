@@ -1,7 +1,7 @@
 from sanic import Request
 from shared import app
 from utils import render_template
-from helpers import gamehelper, userhelper
+from helpers import statshelper, userhelper
 from objects import GameType, Team
 from helpers.statshelper import sentry_trace
 from db.models import SM5Game, Player, EntityEnds, LaserballGame
@@ -29,5 +29,5 @@ async def index(request: Request):
         sm5_green_wins=sm5_green_wins,
         laserball_red_wins=laserball_red_wins,
         laserball_blue_wins=laserball_blue_wins,
-        role_plot_data=await userhelper.get_median_role_score()
+        role_plot_data=await userhelper.get_median_role_score(),
     )

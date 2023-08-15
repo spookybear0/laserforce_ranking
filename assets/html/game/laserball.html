@@ -338,11 +338,24 @@
             scales: {
                 xAxes: [{
                     ticks: {
+                        fontColor: "white",
+                        callback: function(value, index, values) {
+                            return value + ":00"
+                        },
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Time",
                         fontColor: "white"
                     }
                 }],
                 yAxes: [{
                     ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Score",
                         fontColor: "white"
                     }
                 }]

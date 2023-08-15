@@ -2,7 +2,6 @@ from objects import Team, Role, GameType, SM5GamePlayer, LaserballGamePlayer
 from objects import Player as LegacyPlayer
 from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
-from helpers.statshelper import barplot
 from shared import app
 from db.models import EntityStarts, SM5Game, EntityEnds, Player, IntRole
 from statistics import median
