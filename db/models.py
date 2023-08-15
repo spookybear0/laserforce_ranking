@@ -323,6 +323,13 @@ class SM5Game(Model):
     async def get_entity_end_from_token(self, token: str):
         return await self.entity_ends.filter(entity_id=token).first()
 
+    # funcs for getting total score at a certain time for a team
+    
+    async def get_red_score_at_time(self, time: int): # time in seconds
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
+    
+    async def get_green_score_at_time(self, time: int): # time in seconds
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Earth").values_list("delta")))
     
     async def to_dict(self):
         # convert the entire game to a dict
