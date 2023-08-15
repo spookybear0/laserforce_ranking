@@ -157,8 +157,13 @@
     }
 
     function onReady() {
-        sortTable(document.getElementById("fire_table"), 3)
-        sortTable(document.getElementById("earth_table"), 3)
+        row = 3;
+        {% if game.ranked %}
+            row = 4;
+        {% endif %}
+
+        sortTable(document.getElementById("fire_table"), row)
+        sortTable(document.getElementById("earth_table"), row)
 
         if ({{ earth_score }} > {{ fire_score }}) {
             document.getElementById("teams").appendChild(document.getElementById("fire_team"));

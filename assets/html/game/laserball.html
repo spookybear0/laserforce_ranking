@@ -174,8 +174,13 @@
             document.getElementById("teams").appendChild(document.getElementById("fire_team"));
         }
 
-        sortTable(document.getElementById("fire_table"), 3)
-        sortTable(document.getElementById("ice_table"), 3)
+        row = 2;
+        {% if game.ranked %}
+            row = 3;
+        {% endif %}
+
+        sortTable(document.getElementById("fire_table"), row)
+        sortTable(document.getElementById("ice_table"), row)
     }
 
     document.addEventListener("DOMContentLoaded", onReady);
@@ -240,10 +245,10 @@
                     {% endfor %}
                 </table>
             </div>
-            <div id="blue_team" class="team">
+            <div id="ice_team" class="team">
                 <h2 style="font-size: 20px; color: #0096FF;" class="team_score">Ice Team: {{ ice_score }}</h2>
 
-                <table id="blue_table">
+                <table id="ice_table">
                     <th><p>Codename</p></th>
                     {% if game.ranked %}
                         <th><p>Current Rating</p></th>
