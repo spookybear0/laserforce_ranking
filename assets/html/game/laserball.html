@@ -55,16 +55,6 @@
         background-color: #252525;
     }
 
-    .userlist {
-        border-radius: 15px;
-        background: #1A1A1A;
-        padding: 1rem;
-        margin: auto;
-        width: 70%;
-        height: 120vh;
-        margin-top: 20px;
-    }
-
     body {
         height: 130vh;
     }
@@ -72,6 +62,10 @@
     .desktop_notif {
         text-align: center;
         display: none;
+    }
+
+    #score_chart {
+        max-width: 90%;
     }
 
     @media screen and (max-width: 991px) {
@@ -143,6 +137,10 @@
 
         body {
             height: 85%;
+        }
+
+        #score_chart {
+            max-width: 100%;
         }
     }
 </style>
@@ -290,9 +288,68 @@
                 </table>
             </div>
         </div>
+        <div id="stats">
+            <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
+        </div>
+
         <h1 class="desktop_notif">For more detailed stats, please view the website on desktop.</h1>
     </div>
 </div>
+
+<script>
+    new Chart("score_chart", {
+        type: "line",
+        data: {
+            labels: {{score_chart_labels}},
+            datasets: [
+            {
+                label: "Fire Team Goals",
+                data: {{score_chart_data_red}},
+                borderColor: "orangered",
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0,
+                pointHitRadius: 10
+            },
+            {
+                label: "Ice Team Goals",
+                data: {{score_chart_data_blue}},
+                borderColor: "#0096FF",
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0,
+                pointHitRadius: 10
+            }
+            ]
+        },
+        options: {
+            responsive: true,
+            // change label colors to white
+            legend: {
+                labels: {
+                    fontColor: "white"
+                }
+            },
+            title: {
+                display: true,
+                text: "Goals Scored Over Time",
+                fontColor: "white"
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white"
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "white"
+                    }
+                }]
+            }
+        }
+    });
+</script>
 
 </body>
 

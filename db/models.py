@@ -603,6 +603,12 @@ class LaserballGame(Model):
     async def get_blue_score(self):
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice").values_list("score")))
     
+    async def get_red_score_at_time(self, time):
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
+    
+    async def get_blue_score_at_time(self, time):
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Ice").values_list("delta")))
+    
     async def to_dict(self):
         # convert the entire game to a dict
         # this is used for the api
