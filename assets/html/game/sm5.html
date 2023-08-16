@@ -329,7 +329,11 @@
                     ticks: {
                         fontColor: "white",
                         callback: function(value, index, values) {
-                            return value + ":00"
+                            if (value.toString().endsWith(".5")) {
+                                return value.toString().slice(0, -2) + ":30";
+                            } else {
+                                return value + ":00";
+                            }
                         },
                     },
                     scaleLabel: {

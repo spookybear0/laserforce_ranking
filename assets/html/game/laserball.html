@@ -297,6 +297,8 @@
 </div>
 
 <script>
+    already_shown_rounds = [];
+
     new Chart("score_chart", {
         type: "line",
         data: {
@@ -307,7 +309,7 @@
                 data: {{score_chart_data_red}},
                 borderColor: "orangered",
                 fill: false,
-                tension: 0.1,
+                tension: 0.2,
                 pointRadius: 0,
                 pointHitRadius: 10
             },
@@ -316,7 +318,7 @@
                 data: {{score_chart_data_blue}},
                 borderColor: "#0096FF",
                 fill: false,
-                tension: 0.1,
+                tension: 0.2,
                 pointRadius: 0,
                 pointHitRadius: 10
             }
@@ -324,7 +326,6 @@
         },
         options: {
             responsive: true,
-            // change label colors to white
             legend: {
                 labels: {
                     fontColor: "white"
@@ -337,18 +338,44 @@
             },
             scales: {
                 xAxes: [{
+                    id: "xAxis1",
                     ticks: {
                         fontColor: "white",
                         callback: function(value, index, values) {
-                            return value + ":00"
-                        },
+                            if (value["x"].toString().endsWith(".5")) {
+                                return value["x"].toString().slice(0, -2) + ":30";
+                            } else {
+                                return value["x"] + ":00";
+                            }
+                        }
                     },
                     scaleLabel: {
                         display: true,
                         labelString: "Time",
                         fontColor: "white"
                     }
-                }],
+                },
+                {
+                    id: "xAxis2",
+                    position: "top",
+                    data: {{score_chart_data_rounds}},
+                    ticks: {
+                        fontColor: "white",
+                        callback: function(value, index, values) {
+                            if (already_shown_rounds.includes(value["y"])) {
+                                return "";
+                            }
+                            already_shown_rounds.push(value["y"]);
+                            return value["y"];
+                        },
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Current Round",
+                        fontColor: "white"
+                    }
+                }
+                ],
                 yAxes: [{
                     ticks: {
                         fontColor: "white",
