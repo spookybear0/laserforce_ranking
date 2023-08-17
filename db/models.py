@@ -239,7 +239,7 @@ class Player(Model):
 
         scores = []
 
-        for role in range(5):
+        for role in range(1, 6):
             entities = await EntityStarts.filter(role=role, entity_id=self.ipl_id).values_list("id", flat=True)
             scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
             try:
@@ -259,7 +259,7 @@ class Player(Model):
 
         scores = []
 
-        for role in range(5):
+        for role in range(1, 6):
             entities = await EntityStarts.filter(role=role).values_list("id", flat=True)
             scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
             try:

@@ -325,6 +325,19 @@
             ]
         },
         options: {
+            tooltips: {
+                callbacks: {
+                    title: function(tooltipItem, data) {
+                        // show formatted time
+
+                        if (data["labels"][tooltipItem[0]["index"]]["x"].toString().endsWith(".5")) {
+                            return data["labels"][tooltipItem[0]["index"]]["x"].toString().slice(0, -2) + ":30";
+                        } else {
+                            return data["labels"][tooltipItem[0]["index"]]["x"] + ":00";
+                        }
+                    },
+                }
+            },
             responsive: true,
             legend: {
                 labels: {

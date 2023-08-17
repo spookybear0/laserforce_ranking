@@ -3,11 +3,6 @@
 
 {% block html_head %}
 
-<head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
-    <link rel="stylesheet" href="/assets/css/app.css">
-</head>
-
 <style type="text/css">
     .important {
         color: #336699;
@@ -81,6 +76,10 @@
 
     .recent_games {
         margin-top: 5rem;
+        margin-bottom: 5rem;
+
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .info-div {
@@ -219,7 +218,7 @@
             <h3 class="right_align">Favorite battlesuit: {{ favorite_battlesuit }}</h3>
 
             <div class="recent_games">
-                <h2 style="text-align: center;">Recent Games</h2>
+                <h2 style="text-align: center;">Recent SM5 Games</h2>
                 <table>
                     <tr>
                         <th>Game</th>
@@ -240,7 +239,7 @@
                         <th>Ended Early</th>
                         <th>Ranked</th>
                     </tr>
-                    {% for game in recent_games %}
+                    {% for game in recent_games_sm5 %}
                         {% set entity_start = get_entity_start(game, player) %}
                         {% set entity_end = get_entity_end(game, entity_start) %}
                         {% set sm5_stats = get_sm5_stat(game, entity_start) %}
@@ -270,6 +269,61 @@
                     {% endfor %}
                 </table>
             </div>
+
+            <div class="recent_games">
+                <h2 style="text-align: center;">Recent Laserball Games</h2>
+                <table>
+                    <tr>
+                        <th>Game</th>
+                        <th>Win/Loss</th>
+                        <th>Current rating</th>
+                        <th>Goals</th>
+                        <th>Steals</th>
+                        <th>Clears</th>
+                        <th>Passes</th>
+                        <th>Blocks</th>
+                        <th>Team</th>
+                        <th>Started With Ball</th>
+                        <th>Stolen</th>
+                        <th>Blocked</th>
+                        <th>K/D Ratio</th>
+                        <th>Ended Early</th>
+                        <th>Ranked</th>
+                    </tr>
+                    {% for game in recent_games_laserball %}
+                        {% set entity_start = get_entity_start(game, player) %}
+                        {% set entity_end = get_entity_end(game, entity_start) %}
+                        {% set laserball_stats = get_laserball_stat(game, entity_start) %}
+
+                        {% if not laserball_stats %}
+                            {% continue %}
+                        {% endif %}
+
+                        <tr>
+                            <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                            <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
+                            {% if entity_end.current_rating_mu %}
+                            <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ entity_end.current_rating_mu|round(2) }}</td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
+                            <td>{{ laserball_stats.goals }}</td>
+                            <td>{{ laserball_stats.steals }}</td>
+                            <td>{{ laserball_stats.clears }}</td>
+                            <td>{{ laserball_stats.passes }}</td>
+                            <td>{{ laserball_stats.blocks }}</td>
+                            <td style="color: {{ 'orangered' if entity_start.team.color_name == 'Fire' else '#0096FF' }}">{{ entity_start.team.color_name }}</td>
+                            <td>{{ laserball_stats.started_with_ball }}</td>
+                            <td>{{ laserball_stats.times_stolen }}</td>
+                            <td>{{ laserball_stats.times_blocked }}</td>
+                            <td>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</td>
+                            <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
+                            <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
             <div class="stats">
                 <div>
                     <div class="btns">

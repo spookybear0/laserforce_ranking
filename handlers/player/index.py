@@ -7,7 +7,7 @@ from sanic import Request, HTTPResponse, response, exceptions
 from shared import app
 from urllib.parse import unquote
 from typing import Union
-from db.models import Player, SM5Game
+from db.models import Player, SM5Game, LaserballGame
 from helpers.statshelper import sentry_trace
 
 sql = app.ctx.sql
@@ -20,6 +20,9 @@ async def get_entity_end(game, entity_start):
 
 async def get_sm5_stat(game, entity_start):
     return await game.sm5_stats.filter(entity_id=entity_start.id).first()
+
+async def get_laserball_stat(game, entity_start):
+    return await game.laserball_stats.filter(entity=entity_start).first()
 
 @app.get("/player/<id>")
 @sentry_trace
@@ -34,8 +37,8 @@ async def player_get(request: Request, id: Union[int, str]):
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
     
-    # TODO: laserball
-    recent_games = SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(10)
+    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
+    recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
 
     favorite_role = await player.get_favorite_role()
     favorite_battlesuit = await player.get_favorite_battlesuit()
@@ -44,10 +47,12 @@ async def player_get(request: Request, id: Union[int, str]):
         request, "player/player.html",
         # general player info
         player=player,
-        recent_games=recent_games,
+        recent_games_sm5=recent_games_sm5,
+        recent_games_laserball=recent_games_laserball,
         get_entity_start=get_entity_start,
         get_entity_end=get_entity_end,
         get_sm5_stat=get_sm5_stat,
+        get_laserball_stat=get_laserball_stat,
         favorite_role=favorite_role,
         favorite_battlesuit=favorite_battlesuit,
         # team rate pies (sm5/laserball)

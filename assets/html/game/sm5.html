@@ -312,6 +312,21 @@
             ]
         },
         options: {
+            tooltips: {
+                callbacks: {
+                    title: function(tooltipItem, data) {
+                        // show formatted time
+
+                        var time = data.labels[tooltipItem[0].index];
+
+                        if (time.toString().endsWith(".5")) {
+                            return time.toString().slice(0, -2) + ":30";
+                        } else {
+                            return time + ":00";
+                        }
+                    },
+                }
+            },
             responsive: true,
             // change label colors to white
             legend: {
