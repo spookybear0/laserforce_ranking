@@ -380,11 +380,17 @@
     new Chart("laserball_teams", {
         type: "pie",
         data: {
-            labels: ["Red", "Blue"],
-            datasets: [{
-            backgroundColor: ["#b91d47", "#0047AB"],
-            data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
-            }]
+            labels: ["Red", "Blue", "Red Wins", "Blue Wins"],
+            datasets: [
+                {
+                    backgroundColor: ["#b91d47", "#0047AB"],
+                    data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
+                },
+                {
+                    backgroundColor: ["#000000", "#000000", "#b91d47", "#0047AB"],
+                    data: [0, 0, {{ red_wins_laserball }}, {{ blue_wins_laserball }}]
+                }
+            ]
         },
         options: {
             legend: {

@@ -180,8 +180,11 @@ class Player(Model):
         if game_type is None:
             return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color).count()
         else:
-            game_type_filter_name = "space marines" if game_type == GameType.SM5 else "laserball"
-            return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color, sm5games__mission_name__icontains=game_type_filter_name).count()
+            if game_type == GameType.SM5:
+                return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color, sm5games__mission_name__icontains="space marines").count()
+            elif game_type == GameType.LASERBALL:
+                return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color, laserballgames__mission_name__icontains="laserball").count()
+            
         
     async def times_played_as_role(self, role: Role) -> int:
         return await EntityStarts.filter(entity_id=self.ipl_id, role=IntRole.from_role(role)).count()
@@ -219,13 +222,13 @@ class Player(Model):
             team_color = "Earth"
             
         if game_type is None:
-            #return None
-
             wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").filter(team__color_name=team_color).count()
         else:
-            game_type_filter_name = "space marines" if game_type == GameType.SM5 else "laserball"
-            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__mission_name__icontains=game_type_filter_name).filter(team__color_name=team_color).count()
-        
+            if game_type == game_type.SM5:
+                wins = await EntityStarts.filter(sm5games__mission_name__icontains="space marines", entity_id=self.ipl_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
+            else: # laserball
+                wins = await EntityStarts.filter(laserballgames__mission_name__icontains="laserball", entity_id=self.ipl_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
+                print(wins)
         return wins
     
     # custom funcs for plotting
