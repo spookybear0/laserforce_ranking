@@ -1,10 +1,9 @@
 laserforce.py
 openskill
-aiohttp
 aiomysql
 async_cron
-aiohttp_jinja2
 bcrypt
 sanic-cors
 sanic
 tortoise-orm
+sanic_session
