@@ -6,6 +6,7 @@ from enum import Enum, IntEnum
 from collections import Counter
 import openskill
 import statistics
+import bcrypt
 
 class EventType(IntEnum):
     # basic and sm5 events
@@ -96,20 +97,6 @@ class Permission(IntEnum):
     USER = 0
     ADMIN = 1
 
-# user accounts
-class User(Model):
-    id = fields.IntField(pk=True)
-    username = fields.CharField(50)
-    password = fields.CharField(100) # hashed password
-    permissions = fields.IntEnumField(Permission, default=Permission.USER)
-    timestamp = fields.DatetimeField(auto_now=True)
-
-    def __str__(self) -> str:
-        return f"{self.discord_name}#{self.discord_discriminator} ({self.discord_id})"
-
-    def __repr__(self) -> str:
-        return f"<User {self.discord_name}#{self.discord_discriminator} ({self.discord_id})>"
-
 class Player(Model):
     id = fields.IntField(pk=True)
     player_id = fields.CharField(50)
@@ -120,6 +107,10 @@ class Player(Model):
     laserball_mu = fields.FloatField(default=25)
     laserball_sigma = fields.FloatField(default=8.333)
     timestamp = fields.DatetimeField(auto_now=True)
+
+    # account stuff
+    password = fields.CharField(100, null=True) # hashed password
+    permissions = fields.IntEnumField(Permission, default=Permission.USER)
     
     @property
     def sm5_ordinal(self):
@@ -136,6 +127,13 @@ class Player(Model):
     @property
     def laserball_rating(self):
         return openskill.Rating(self.laserball_mu, self.laserball_sigma)
+    
+    # account stuff
+
+    def check_password(self, password: str) -> bool:
+        return bcrypt.checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
+    
+    # stats
     
     async def get_favorite_role(self) -> Optional[Role]:
         """

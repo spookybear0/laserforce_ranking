@@ -5,6 +5,7 @@ from laserforce import Player as IPLPlayer
 from shared import app
 from db.models import EntityStarts, SM5Game, EntityEnds, Player, IntRole
 from statistics import median
+import bcrypt
 
 async def player_from_token(game: SM5Game, token: str) -> EntityStarts:
     return await game.entity_starts.filter(entity_id=token).first()
@@ -29,70 +30,26 @@ async def get_median_role_score(player: Optional[Player]=None):
 
     return data
 
+def hash_password(password: str) -> str:
+    """
+    Hashes a password using bcrypt
+    """
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+def check_password(password: str, hashed: str) -> bool:
+    """
+    Checks a password against a hash using bcrypt
+
+    Takes a plaintext password and a hashed password
+    """
+    try:
+        return bcrypt.checkpw(password.encode(), hashed.encode())
+    except ValueError:
+        return False
 
 ### BELOW IS DEPRECATED ###
 
 sql = app.ctx.sql
-
-
-# async def get_median_role_score(player: Optional[Player]=None):
-#     data = []
-    
-#     for role in ["commander", "heavy", "scout", "ammo", "medic"]:
-#         if player:
-#             q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
-#                                     WHERE player_id = %s AND role = %s""",
-#                                 (player.player_id, role))
-#         else:
-#             q = await sql.fetchone("""SELECT median(score) FROM sm5_game_players
-#                                     WHERE role = %s""",
-#                                 (role))
-#         if q[0]:
-#             data.append(int(q[0]))
-#         else:
-#             data.append(0)
-
-#     return data
-
-async def get_total_players() -> int:
-    """
-    Returns total amount of players in database
-    """
-    q = await sql.fetchone("SELECT COUNT(*) FROM players")
-    return q[0]
-
-# TODO: unimplemented
-async def get_win_rate(player: Union[Player, str], mode: GameType=None) -> float:
-    """
-    `player` can be either a Player object or a player id
-    Returns win chance of `player`
-    """
-    if isinstance(player, Player):
-        player = player.player_id
-    elif isinstance(player, str):
-        player = player.replace("-", "")
-
-    q = await sql.fetchone(
-        "SELECT win_chance FROM players WHERE id = %s",
-        (player,)
-    )
-    return q[0]
-
-async def get_top(mode: GameType, amount: int = 100, start: int = 0) -> List[Player]:
-    """
-    Returns top players from database in given mode
-    amount and start are used for pagination
-    """
-    mode = mode.value
-
-    q = await sql.fetchall(
-        f"SELECT id FROM players WHERE sm5_mu <> 25 AND sm5_sigma <> 8.333 ORDER BY {mode}_mu - 3 * {mode}_sigma DESC LIMIT %s OFFSET %s",
-        (amount, start)
-    )
-    ret = []
-    for id in q:
-        ret.append(await Player.from_id(id))
-    return ret
 
 async def get_players(amount: int = 100, start: int = 0) -> List[Player]:
     """
@@ -106,65 +63,6 @@ async def get_players(amount: int = 100, start: int = 0) -> List[Player]:
     for id_ in q:
         ret.append(await LegacyPlayer.from_id(id_[0]))
     return ret
-
-async def get_data_from_form_sm5(players: List, game_players: List, data: Dict, team: Team) -> None:
-    """
-    Mutates `players` and `game_players` with data from `data` sm5 mode
-    """
-    team_ = team.value[0] # green = "g", red = "r", blue = "b"
-    for i in range(1, 8):
-        try:
-            player_name = data[f"{team_}name{i}"]
-            player_role = data[f"{team_}role{i}"]
-            player_score = data[f"{team_}score{i}"]
-            if player_name == "" or player_role == "" or player_score == "":
-                break
-        except KeyError:
-            break
-        
-        if player_name == "DEFAULT":
-            player = Player(-1, "", "", "DEFAULT", 25, 8.333, 25, 8.333, 0)
-        else:
-            player = await Player.from_name(player_name)
-
-        if not player: # player doens't exist
-            print(player_name)
-            raise ValueError("Invalid data!")
-        
-        player_id = player.player_id
-        game = SM5GamePlayer(player_id, 0, team, Role(player_role), int(player_score))
-        game_players.append(game)
-        player.game_player = game
-        players.append(player)
-
-async def get_data_from_form_laserball(players: list, game_players: list, data: dict, team: Team):
-    """
-    Mutates `players` and `game_players` with data from `data` laserball mode
-    """
-    team_ = team.value[0] # green = "g", red = "r", blue = "b"
-    for i in range(1, 8):
-        try:
-            player_name = data[f"{team_}name{i}"]
-            player_goals = data[f"{team_}goals{i}"]
-            player_assists = data[f"{team_}assists{i}"]
-            player_steals = data[f"{team_}steals{i}"]
-            player_clears = data[f"{team_}clears{i}"]
-            player_blocks = data[f"{team_}blocks{i}"]
-            if not player_name or not player_goals or not player_assists or not player_steals or not player_clears or not player_blocks:
-                break
-        except KeyError:
-            break
-        
-        player = await Player.from_name(player_name)
-
-        if not player: # player doens't exist
-            raise ValueError("Invalid data!")
-        
-        player_id = player.player_id
-        game = LaserballGamePlayer(player_id, 0, team, player_goals, player_assists, player_steals, player_clears, player_blocks)
-        game_players.append(game)
-        player.game_player = game
-        players.append(player)
 
 async def database_player(player: IPLPlayer) -> None:
     """

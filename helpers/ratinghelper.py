@@ -64,22 +64,23 @@ async def rate_sm5_game(game: SM5Game, team1_rating: List[Tuple[Rating, Rating]]
 
     if rank == [0, 1]:
         for i in range(len(team1_change)):
-            # this team won
+            # winning team
             team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu + 1
             team1_final.append(Rating(team1_new[i].mu + team1_change[i], team1_new[i].sigma))
             await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(current_rating_mu=team1_new[i].mu + team1_change[i], current_rating_sigma=team1_new[i].sigma)
         for i in range(len(team2_change)):
+            # losing team
             team2_change[i] *= team2_rating[i][1].mu/team2_rating[i][0].mu
             team2_final.append(Rating(team2_new[i].mu + team2_change[i], team2_new[i].sigma))
             await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(current_rating_mu=team2_new[i].mu + team2_change[i], current_rating_sigma=team2_new[i].sigma)
     else:
         for i in range(len(team1_change)):
+            # losing team
             team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][0].mu
             team1_final.append(Rating(team1_new[i].mu + team1_change[i], team1_new[i].sigma))
             await game.entity_ends.filter(entity__entity_id=team1_rating[i][2].entity_id).update(current_rating_mu=team1_new[i].mu + team1_change[i], current_rating_sigma=team1_new[i].sigma)
         for i in range(len(team2_change)):
-            # this team won
-            print(team2_rating[i][0].mu/team2_rating[i][1].mu + 1, team2_change[i], team2_rating[i][2].name, "t2")
+            # winning team
             team2_change[i] *= team2_rating[i][0].mu/team2_rating[i][1].mu + 1
             team2_final.append(Rating(team2_new[i].mu + team2_change[i], team2_new[i].sigma))
             await game.entity_ends.filter(entity__entity_id=team2_rating[i][2].entity_id).update(current_rating_mu=team2_new[i].mu + team2_change[i], current_rating_sigma=team2_new[i].sigma)
