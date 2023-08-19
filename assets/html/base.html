@@ -56,14 +56,15 @@
         {% for href, caption in navigation_bar %}
             <li class="nav-item"><a {% if href == request.path %}class="active"{% endif %} href="{{ href|e }}">{{ caption|e }}</a></li>
         {% endfor %}
+
+        {% if session.get("permissions") == Permission.ADMIN %}
+            <li class="nav-item"><a {% if request.path == "/admin" %}class="active"{% endif %} href="/admin">Admin</a></li>
+        {% endif %}
+
         {% if not session.get("codename") %}
             <li class="nav-item login-item"><a {% if request.path == "/login" %}class="active"{% endif %} href="/login">Login</a></li>
         {% else %}
             <li class="nav-item login-item"><a {% if request.path == "/logout" %}class="active"{% endif %} href="/logout">Logout</a></li>
-        {% endif %}
-
-        {% if session.get("permissions") == Permission.ADMIN %}
-            <li class="nav-item"><a {% if request.path == "/admin" %}class="active"{% endif %} href="/admin">Admin</a></li>
         {% endif %}
     </ul>
     <div id="content">
