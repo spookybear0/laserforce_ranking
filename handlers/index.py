@@ -12,7 +12,7 @@ from tortoise.expressions import F
 async def index(request: Request):
     total_players = await Player.all().count()
     total_games = await SM5Game.all().count()
-    total_games_played = await EntityEnds.all().count()
+    #total_games_played = await EntityEnds.all().count()
 
     sm5_red_wins = await SM5Game.filter(winner=Team.RED, ranked=True).count()
     sm5_green_wins = await SM5Game.filter(winner=Team.GREEN, ranked=True).count()
@@ -24,7 +24,7 @@ async def index(request: Request):
         "index.html",
         total_players=total_players,
         total_games=total_games,
-        total_games_played=total_games_played,
+        #total_games_played=total_games_played,
         sm5_red_wins=sm5_red_wins,
         sm5_green_wins=sm5_green_wins,
         laserball_red_wins=laserball_red_wins,

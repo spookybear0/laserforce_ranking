@@ -11,7 +11,7 @@ from mysql import MySQLPool
 from shared import app
 from tortoise import Tortoise
 from config import config
-
+from helpers import adminhelper
 
 async def main() -> None:
     router.add_all_routes(app)

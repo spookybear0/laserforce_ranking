@@ -356,6 +356,21 @@ async def parse_laserball_game(file_location: str):
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                     type=int(data[3]), score=int(data[4])))
                 
+    # calculate assists (when a player passes to a player who scores)
+    # so we need to find all the goals, and then find the pass that happened before it
+
+    for e in events:
+        if e.type == EventType.GOAL:
+            # find the pass that happened before this goal
+            events_reversed = events[::-1]
+            for e2 in events_reversed:
+                if e2.type == EventType.PASS and e2.time < e.time:
+                    # check if the pass was to the same player
+                    if e2.arguments[2] == e.arguments[0]:
+                        laserball_stats[e2.arguments[0]].assists += 1
+                        await laserball_stats[e2.arguments[0]].save()
+                        break
+                
     # get the winner (goals scored is the only factor)
 
     team1_score = 0
