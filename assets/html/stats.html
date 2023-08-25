@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Stats{% endblock %}
+
+{% block html_head %}
+
+<style>
+    .stats-header {
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+
+    td {
+        color: lightgray;
+    }
+
+    .role-leaderboards {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        gap: 1rem;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="content">
+    <h1 class="stats-header">General Stats</h1>
+    <div class="btns">
+        <div class="btn">
+            <h2>{{ total_players }}</h2>
+            <p>Players</p>
+        </div>
+        <div class="btn">
+            <h2>{{ total_games }}</h2>
+            <p>Games Logged</p>
+        </div>
+        <div class="btn">
+            <h2>{{ total_games_played }}</h2>
+            <p>Total Games Played</p>
+        </div>
+    </div>
+
+    <h1 class="stats-header">SM5 Stats</h1>
+    <div class="btns">
+        <div class="btn">
+            <canvas id="sm5_team_wins"></canvas>
+            <p>SM5 Team Wins</p>
+        </div>
+        <div class="btn">
+            <h2>{{ points_scored }}</h2>
+            <p>Points Scored</p>
+        </div>
+        <div class="btn">
+            <h2>{{ nukes_launched }}</h2>
+            <p>Nukes Launched</p>
+        </div>
+        <div class="btn">
+            <h2>{{ nukes_cancelled }}</h2>
+            <p>Nukes Cancelled</p>
+        </div>
+        <div class="btn">
+            <h2>{{ medic_hits }}</h2>
+            <p>Medic Hits</p>
+        </div>
+        <div class="btn">
+            <h2>{{ own_medic_hits }}</h2>
+            <p>Own Medic Hits</p>
+        </div>
+    </div>
+
+    <h1 class="stats-header">Laserball Stats</h1>
+    <div class="btns">
+        <div class="btn">
+            <canvas id="laserball_team_wins"></canvas>
+            <p>Laserball Team Wins</p>
+        </div>
+        <div class="btn">
+            <h2>{{ goals_scored }}</h2>
+            <p>Goals Scored</p>
+        </div>
+    </div>
+
+    <h1 class="stats-header">Leaderboards</h1>
+
+    <br><br><br>
+
+    <h2 class="stats-header">Top Players By Average Score</h2>
+
+    <br>
+
+    <div class="role-leaderboards">
+        {% for role_name, role in zip(["Commander", "Heavy", "Scout", "Ammo", "Medic"], [top_commanders, top_heavies, top_scouts, top_ammos, top_medics]) %}
+            <div>
+                <h2 class="stats-header">{{ role_name }}</h2>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Games</th>
+                    </tr>
+                    {% for player in role %}
+                        <tr>
+                            <td>{{ player[0] }}</td>
+                            <td>{{ player[1] }}</td>
+                            <td>{{ player[2] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    Chart.defaults.global.defaultFontColor = "#FFFFFF";
+
+    new Chart("sm5_team_wins", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Green"],
+            datasets: [{
+            backgroundColor: ["#b91d47","#00aba9"],
+            data: [{{ sm5_red_wins }}, {{ sm5_green_wins }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            }
+        }
+    });
+    new Chart("laserball_team_wins", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Blue"],
+            datasets: [{
+            backgroundColor: ["#b91d47","#0047AB"],
+            data: [{{ laserball_red_wins }}, {{ laserball_blue_wins }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            }
+        }
+    });
+</script>
+
+{% endblock %}
