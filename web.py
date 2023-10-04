@@ -17,7 +17,7 @@ async def main() -> None:
     router.add_all_routes(app)
     app.static("assets", "assets", name="assets")
 
-    #app.ctx.sql = await MySQLPool.connect_with_config()
+    app.ctx.sql = await MySQLPool.connect_with_config()
 
     await Tortoise.init(
         db_url=f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/{config['db_database']}",
