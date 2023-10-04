@@ -453,23 +453,3 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
         await team2_p.save()
 
     return True
-
-import elommr
-
-# async def update_sm5_ratings(game: SM5Game) -> bool:
-#     """
-#     Modified version of the other update_sm5_ratings function
-
-#     uses elommr instead of openskill
-#     """
-
-#     mmr = elommr.EloMMR()
-
-#     if not game.ranked:
-#         return False
-    
-#     # create elo objects for each player
-
-#     players = await game.entity_starts.filter(type="player")
-
-#     players_elo = {x.entity_id: elommr.Player() for x in players}
