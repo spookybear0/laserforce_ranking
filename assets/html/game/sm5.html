@@ -71,6 +71,7 @@
         max-width: 90%;
     }
 
+
     @media screen and (max-width: 991px) {
         .userlist {
             background: none;
@@ -164,7 +165,7 @@
         sortTable(document.getElementById("earth_table"), row)
 
         if ({{ earth_score }} > {{ fire_score }}) {
-            document.getElementById("teams").appendChild(document.getElementById("earth_team"));
+            document.getElementById("teams").appendChild(document.getElementById("fire_team"));
         }
     }
 

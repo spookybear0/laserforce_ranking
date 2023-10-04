@@ -104,9 +104,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # getting the winner
 
-    team1_score = 0
     team1 = None
-    team2_score = 0
     team2 = None
 
     index = 1
@@ -120,44 +118,14 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         else: # 2
             team2 = t
 
-        entities = await EntityStarts.filter(team=t, type="player").all()
-        for e in entities:
-            e_end = await EntityEnds.filter(entity__entity_id=e.entity_id).first()
-
-            if index == 1:
-                team1_score += e_end.score
-            elif index == 2: # 2
-                team2_score += e_end.score
-
         index += 1
-
-    if team1_score > team2_score:
-        winner_model = team1
-    elif team2_score > team1_score:
-        winner_model = team2
-    else:
-        winner_model = None
-
-    # may need to be adjusted for more team colors/names
-
-    red_colors = ["Solid Red", "Fire", "Red"]
-    green_colors = ["Solid Blue", "Ice", "Earth", "Blue", "Solid Green", "Green"]
-
-    if winner_model is None:
-        winner = Team.NONE
-    elif winner_model.color_name in red_colors:
-        winner = Team.RED
-    elif winner_model.color_name in green_colors:
-        winner = Team.GREEN
-    else:
-        raise Exception("Invalid team color") # or can't find correct team color
 
     # default values, will be changed later
 
     ranked = True
     ended_early = False
 
-    game = await SM5Game.create(winner=winner, winner_color=winner.value, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
+    game = await SM5Game.create(winner=Team.NONE, winner_color=Team.NONE.value, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
     
@@ -168,6 +136,27 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.entity_ends.add(*entity_ends)
     await game.sm5_stats.add(*sm5_stats)
 
+    await game.save()
+
+    # winner determination
+
+    winner = Team.NONE
+
+    print("red score: " + str(await game.get_red_score()))
+    print("green score: " + str(await game.get_green_score()))
+
+    if await game.get_red_score() > await game.get_green_score():
+        print("red won")
+        winner = Team.RED
+    elif await game.get_red_score() < await game.get_green_score():
+        print("green won")
+        winner = Team.GREEN
+    else: # tie or no winner or something crazy happened
+        print("tie")
+        winner = Team.NONE
+
+    game.winner = winner
+    game.winner_color = winner.value
     await game.save()
 
     # determine if the game should be ranked automatically
@@ -207,7 +196,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # or from the token (ipl_id which is the same as the entity_id)
 
     for e in entity_starts:
-        if e.type == "player":
+        # is a player and logged in
+        if e.type == "player" and not (e.entity_id.startswith("@") and e.name == e.battlesuit):
             # update ipl_id if it's empty
             if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).ipl_id == "":
                 player = await Player.filter(codename=e.name).first()
@@ -491,7 +481,13 @@ async def parse_laserball_game(file_location: str):
 
     # update player rankings
 
-    # TODO: implement laserball rankings
+    if ranked:
+        logger.info(f"Updating player ranking for game {game.id}")
+
+        if await ratinghelper.update_laserball_ratings(game):
+            logger.info(f"Updated player rankings for game {game.id}")
+        else:
+            logger.error(f"Failed to update player rankings for game {game.id}")
 
     logger.info(f"Finished parsing {file_location}")
 
