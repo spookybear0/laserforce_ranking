@@ -141,18 +141,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # winner determination
 
     winner = Team.NONE
-
-    print("red score: " + str(await game.get_red_score()))
-    print("green score: " + str(await game.get_green_score()))
-
     if await game.get_red_score() > await game.get_green_score():
-        print("red won")
         winner = Team.RED
     elif await game.get_red_score() < await game.get_green_score():
-        print("green won")
         winner = Team.GREEN
     else: # tie or no winner or something crazy happened
-        print("tie")
         winner = Team.NONE
 
     game.winner = winner
