@@ -59,7 +59,7 @@ async def matchmake_post(request: Request):
 
 @app.post("/win_chance")
 async def win_chance_post(request: Request):
-    data = dict(get_post(request))
+    data = request.form
 
     team1 = []
     team2 = []
@@ -87,8 +87,11 @@ async def win_chance_post(request: Request):
     
     # format match
 
-    team1 = ratinghelper.attrgetter(team1, lambda obj: getattr(obj, "codename"))
-    team2 = ratinghelper.attrgetter(team2, lambda obj: getattr(obj, "codename"))
+    for i in range(len(team1)):
+        team1[i] = team1[i].codename
+
+    for i in range(len(team2)):
+        team2[i] = team2[i].codename
 
     win_chance[0] = round(win_chance[0], 3)
     win_chance[1] = round(win_chance[1], 3)

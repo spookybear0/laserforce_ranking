@@ -21,6 +21,14 @@
         background-color: #252525;
     }
 
+    #sm5_game_table tbody tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    #laserball_game_table tbody tr:nth-child(even) {
+        background-color: #252525;
+    }
+
     th, td, tr {
         text-align: center;
         border: 1px solid lightgray;
@@ -39,6 +47,13 @@
         width: 50%;
     }
 
+    #mode_table {
+        width: 25rem;
+        margin-bottom: 2.5rem;
+        /*make table headers equal width*/
+        table-layout: fixed;
+    }
+
     @media screen and (max-width: 991px) {
         .table-div {
             width: 100%;
@@ -47,13 +62,17 @@
         p {
             zoom: 2.5;
         }
+
+        #mode_table {
+            height: 4rem;
+        }
     }
 </style>
 
 <script>
-    function sortTable(n) {
+    function sortTable(n, table_name) {
         var table, rows, switching, i, x, y, should_switch, dir, switchcount = 0;
-        table = document.getElementById("game_table");
+        table = document.getElementById(table_name);
         switching = true;
         dir = "asc";
         while (switching) {
@@ -113,9 +132,41 @@
         }
         }
     
-    window.onload = function() {
-        sortTable(0);
-        sortTable(0);
+    current_mode = "{{ mode }}"
+
+    function switch_mode(mode) {
+        if (mode == "sm5") {
+            document.getElementById("sm5_mode_header").style.backgroundColor = "#252525";
+            document.getElementById("laserball_mode_header").style.backgroundColor = "transparent";
+            document.getElementById("sm5_game_table").style.display = "table";
+            document.getElementById("laserball_game_table").style.display = "none";
+
+            document.getElementById("next_href").href = "/games?page={{ page+1 }}&mode=sm5";
+            document.getElementById("prev_href").href = "/games?page={{ page-1 }}&mode=sm5";
+
+            current_mode = "sm5";
+        }
+        else if (mode == "laserball") {
+            document.getElementById("sm5_mode_header").style.backgroundColor = "transparent";
+            document.getElementById("laserball_mode_header").style.backgroundColor = "#252525";
+            document.getElementById("sm5_game_table").style.display = "none";
+            document.getElementById("laserball_game_table").style.display = "table";
+
+            document.getElementById("next_href").href = "/games?page={{ page+1 }}&mode=laserball";
+            document.getElementById("prev_href").href = "/games?page={{ page-1 }}&mode=laserball";
+
+            current_mode = "laserball";
+        }
+    }
+    
+    document.onreadystatechange = function(e) {
+        if (document.readyState === 'complete') {
+            sortTable(0, "sm5_game_table");
+            sortTable(0, "sm5_game_table");
+            sortTable(0, "laserball_game_table");
+            sortTable(0, "laserball_game_table");
+            switch_mode(current_mode);
+        }
     }
 </script>
 
@@ -123,7 +174,14 @@
 
 {% block content %}
 <div class="table-div">
-    <table id="game_table">
+    <table id="mode_table">
+        <tr>
+            <th onclick="switch_mode('sm5')" id="sm5_mode_header">SM5</th>
+            <th onclick="switch_mode('laserball')" id="laserball_mode_header">Laserball</th>
+        </tr>
+    </table>
+
+    <table id="sm5_game_table">
         <tbody>
             <tr>
                 <th onclick="sortTable(0)">Date Played</th>
@@ -132,13 +190,9 @@
                 <th onclick="sortTable(3)">Ended Early</th>
                 <th onclick="sortTable(4)">Ranked</th>
             </tr>
-            {% for game in games %}
+            {% for game in sm5_games %}
                 <tr>
-                    {% if "Laserball" in game.mission_name %}
-                        <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    {% else %} <!--sm5-->
-                        <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    {% endif %}
+                    <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                     <td>{{ game.mission_name }}</td>
                     {% if game.winner.value == "blue" %}
                         <td style="color: #0096FF;">{{ game.winner.standardize() }}</td>
@@ -153,7 +207,33 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if page > 0 %}<a href="/games?page={{ page-1 }}"><p style="float: left;">Prev</p></a>{% endif %}
-    <a href="/games?page={{ page+1 }}"><p style="float: right;">Next</p></a>
+    <table id="laserball_game_table" style="display: none;">
+        <tbody>
+            <tr>
+                <th onclick="sortTable(0)">Date Played</th>
+                <th onclick="sortTable(1)">Mission</th>
+                <th onclick="sortTable(2)">Winner</th>
+                <th onclick="sortTable(3)">Ended Early</th>
+                <th onclick="sortTable(4)">Ranked</th>
+            </tr>
+            {% for game in laserball_games %}
+                <tr>
+                    <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                    <td>{{ game.mission_name }}</td>
+                    {% if game.winner.value == "blue" %}
+                        <td style="color: #0096FF;">{{ game.winner.standardize() }}</td>
+                    {% elif game.winner.value == "red" %}
+                        <td style="color: orangered;">{{ game.winner.standardize() }}</td>
+                    {% else %}
+                        <td style="color: greenyellow;">{{ game.winner.standardize() }}</td>
+                    {% endif %}
+                    <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
+                    <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page > 0 %}<a href="/games?page={{ page-1 }}" id="prev_href"><p style="float: left;">Prev</p></a>{% endif %}
+    <a href="/games?page={{ page+1 }}" id="next_href"><p style="float: right;">Next</p></a>
 </div>
 {% endblock %}

@@ -4,19 +4,25 @@
     </head>
     <body>
         Team 1
-        <br>
-        {{ team1 }}
+        <br><br>
+        {% for player in team1 %}
+            {{ player }}
+            <br>
+        {% endfor %}
         <br><br>
         Team 2
-        <br>
-        {{ team2 }}
+        <br><br>
+        {% for player in team2 %}
+            {{ player }}
+            <br>
+        {% endfor %}
         <br><br>
         Win Chance [team1, team2]
         <br>
-        {{ win_chance }}
+        [{{ (win_chance[0]*100)|round(2) }}%, {{ (win_chance[1]*100)|round(2) }}%]
         <br><br>
         Draw Chance
         <br>
-        {{ draw_chance }}
+        {{ (draw_chance*100)|round(2) }}%
     </body>
 </html>

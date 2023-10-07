@@ -37,7 +37,6 @@
         border: 1px solid lightgray;
         border-collapse: collapse;
         width: 100%;
-        table-layout: fixed;
     }
 
     th, td, tr {
@@ -68,6 +67,24 @@
         max-width: 90%;
     }
 
+    #score_chart {
+        max-width: 90%;
+    }
+
+    #win_chance, #draw_chance {
+        max-width: 30%;
+    }
+
+    @media screen and (max-width: 1200px) {
+        table tr td:nth-child(n+9) {
+            display: none;
+        }
+        
+        table tr th:nth-child(n+9) {
+            display: none;
+        }
+    }
+
     @media screen and (max-width: 991px) {
         .userlist {
             background: none;
@@ -87,11 +104,11 @@
             table-layout: auto;
         }
 
-        table tr td:nth-child(n+8) {
+        table tr td:nth-child(n+9) {
             display: none;
         }
         
-        table tr th:nth-child(n+8) {
+        table tr th:nth-child(n+9) {
             display: none;
         }
 
@@ -141,6 +158,14 @@
 
         #score_chart {
             max-width: 100%;
+        }
+
+        #win_chance, #draw_chance {
+            max-width: 100%;
+        }
+
+        .win_draw_chance {
+            flex-direction: column;
         }
     }
 </style>
@@ -216,7 +241,7 @@
                     <th><p>Started With Ball</p></th>
                     <th><p>Stolen</p></th>
                     <th><p>Blocked</p></th>
-                    <th><p>K/D Ratio</p></th>
+                    <th><p>K/D</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
                             {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
@@ -225,9 +250,6 @@
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
-                                {% endif %}
-                                {% if game.ranked %}
-                                    <td><p></p></td>
                                 {% endif %}
                                 <td><p>{{ laserball_stats.goals }}</p></td>
                                 <td><p>{{ laserball_stats.assists }}</p></td>
@@ -261,7 +283,7 @@
                     <th><p>Started With Ball</p></th>
                     <th><p>Stolen</p></th>
                     <th><p>Blocked</p></th>
-                    <th><p>K/D Ratio</p></th>
+                    <th><p>K/D</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
                             {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
@@ -270,9 +292,6 @@
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
-                                {% endif %}
-                                {% if game.ranked %}
-                                    <td><p></p></td>
                                 {% endif %}
                                 <td><p>{{ laserball_stats.goals }}</p></td>
                                 <td><p>{{ laserball_stats.assists }}</p></td>
@@ -292,7 +311,13 @@
         </div>
         <div id="stats">
             <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
+            <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
+                <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
+                <canvas class="inline-block" id="draw_chance" style="clear: both;"></canvas>
+            </div>
         </div>
+
+        <div style="clear: both;"></div>
 
         <h1 class="desktop_notif">For more detailed stats, please view the website on desktop.</h1>
     </div>
@@ -401,6 +426,50 @@
                         fontColor: "white"
                     }
                 }]
+            }
+        }
+    });
+
+    new Chart("win_chance", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Blue"],
+            datasets: [{
+                backgroundColor: ["#b91d47", "#0047AB"],
+                data: [{{ (win_chance[0]*100)|round(2) }}, {{ (win_chance[1]*100)|round(2) }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Predicted Win Chance",
+                fontColor: "white"
+            }
+        }
+    });
+
+    new Chart("draw_chance", {
+        type: "pie",
+        data: {
+            labels: ["Draw", "No Draw"],
+            datasets: [{
+                backgroundColor: ["#565656", "lightgray"],
+                data: [{{ (draw_chance*100)|round(2) }}, 100-{{ (draw_chance*100)|round(2) }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Predicted Draw Chance",
+                fontColor: "white"
             }
         }
     });

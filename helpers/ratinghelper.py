@@ -36,6 +36,14 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     """
     if not game.ranked:
         return False
+    
+    # need to update previous rating and for each entity end object
+
+    for entity_end in await game.entity_ends.filter(entity__type="player"):
+        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        entity_end.previous_rating_mu = player.sm5_mu
+        entity_end.previous_rating_sigma = player.sm5_sigma
+        await entity_end.save()
 
     # go through all events for each game
 
@@ -116,6 +124,14 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
         player.sm5_sigma += (rating.sigma - player.sm5_sigma) * 5
         await player.save()
 
+    # need to update current rating and for each entity end object
+
+    for entity_end in await game.entity_ends.filter(entity__type="player"):
+        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        entity_end.current_rating_mu = player.sm5_mu
+        entity_end.current_rating_sigma = player.sm5_sigma
+        await entity_end.save()
+
     return True
 
 
@@ -132,6 +148,14 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     if not game.ranked:
         return False
+    
+    # need to update current rating and for each entity end object
+
+    for entity_end in await game.entity_ends.filter(entity__type="player"):
+        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        entity_end.previous_rating_mu = player.laserball_mu
+        entity_end.previous_rating_sigma = player.laserball_sigma
+        await entity_end.save()
     
     # TODO: benefits for scoring
     
@@ -216,6 +240,14 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
         player.laserball_mu += (rating.mu - player.laserball_mu) * 5
         player.laserball_sigma += (rating.sigma - player.laserball_sigma) * 5
         await player.save()
+
+    # need to update current rating and for each entity end object
+
+    for entity_end in await game.entity_ends.filter(entity__type="player"):
+        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        entity_end.current_rating_mu = player.laserball_mu
+        entity_end.current_rating_sigma = player.laserball_sigma
+        await entity_end.save()
 
     return True
 

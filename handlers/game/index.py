@@ -22,6 +22,8 @@ async def game_index(request: Request, type: str, id: int):
             score_chart_labels=[t for t in arange(0, game.mission_duration//1000//60+0.5, 0.5)],
             score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, game.mission_duration+25000, 25000)],
             score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, game.mission_duration+25000, 25000)],
+            win_chance=await game.get_win_chance_at_time(),
+            draw_chance=await game.get_draw_chance_at_time(),
         )
     elif type == "lb":
         game = await LaserballGame.filter(id=id).first()
@@ -37,4 +39,6 @@ async def game_index(request: Request, type: str, id: int):
             score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, game.mission_duration+25000, 25000)],
             score_chart_data_blue=[await game.get_blue_score_at_time(t) for t in range(0, game.mission_duration+25000, 25000)],
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, game.mission_duration+25000, 25000)],
+            win_chance=await game.get_win_chance_at_time(),
+            draw_chance=await game.get_draw_chance_at_time(),
         )

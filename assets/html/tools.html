@@ -40,7 +40,10 @@
 <div class="left_div">
     <h2 style="text-align: center;">Matchmake</h2>
     <form class="modal-content animate" action="/matchmake" method="post" style="text-align: center;">
-        <input type="text" placeholder="sm5" name="mode"><br><br><br><br>
+        <select name="mode">
+            <option value="sm5">SM5</option>
+            <option value="laserball">Laserball</option>
+        </select><br><br><br>
         <div class="container">
             {% for i in range(16) %}
             <input type="text" placeholder="Player Codename" name="player{{ i }}"><br><br>
@@ -52,7 +55,10 @@
 <div class="right_div">
     <h2 style="text-align: center;">Win chance calculator</h2>
     <form class="modal-content animate" action="/win_chance" method="post" style="text-align: center;">
-        <input type="text" placeholder="sm5" name="mode"><br><br><br><br>
+        <select name="mode">
+            <option value="sm5">SM5</option>
+            <option value="laserball">Laserball</option>
+        </select><br><br><br>
         <div class="container">
             <p>Team 1</p>
             {% for i in range(8) %}

@@ -21,8 +21,6 @@
         padding: 1rem;
         margin-top: 2rem;
         margin-bottom: 2rem;
-        margin-left: 5em;
-        margin-right: 5em;
         border: 0;
         vertical-align: top;
 
@@ -31,13 +29,18 @@
         justify-content: space-around;
     }
 
+    #teams {
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     table {
         margin: auto;
         padding: 1rem;
         border: 1px solid lightgray;
         border-collapse: collapse;
         width: 100%;
-        table-layout: fixed;
     }
 
     th, td, tr {
@@ -71,6 +74,19 @@
         max-width: 90%;
     }
 
+    #win_chance, #draw_chance {
+        max-width: 30%;
+    }
+
+    @media screen and (max-width: 1200px) {
+        table tr td:nth-child(n+11) {
+            display: none;
+        }
+        
+        table tr th:nth-child(n+11) {
+            display: none;
+        }
+    }
 
     @media screen and (max-width: 991px) {
         .userlist {
@@ -130,6 +146,14 @@
         #score_chart {
             max-width: 100%;
         }
+
+        #win_chance, #draw_chance {
+            max-width: 100%;
+        }
+
+        .win_draw_chance {
+            flex-direction: column;
+        }
     }
 </style>
 
@@ -183,8 +207,6 @@
             <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}</h2></span>
             <span title="Replay"><h3><a href="/game/{{ game.id }}/replay">Replay</a></h3></span>
         </div>
-
-        <div style="clear: both;"></div>
 
         <div id="teams">
             <div id="fire_team" class="team">
@@ -279,7 +301,13 @@
         </div>
         <div id="stats">
             <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
+            <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
+                <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
+                <canvas class="inline-block" id="draw_chance" style="clear: both;"></canvas>
+            </div>
         </div>
+
+        <div style="clear: both;"></div>
 
         <h1 class="desktop_notif">For more detailed stats, please view the website on desktop.</h1>
     </div>
@@ -368,6 +396,50 @@
                         fontColor: "white"
                     }
                 }]
+            }
+        }
+    });
+
+    new Chart("win_chance", {
+        type: "pie",
+        data: {
+            labels: ["Red", "Green"],
+            datasets: [{
+                backgroundColor: ["#b91d47","#00aba9"],
+                data: [{{ (win_chance[0]*100)|round(2) }}, {{ (win_chance[1]*100)|round(2) }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Predicted Win Chance",
+                fontColor: "white"
+            }
+        }
+    });
+
+    new Chart("draw_chance", {
+        type: "pie",
+        data: {
+            labels: ["Draw", "No Draw"],
+            datasets: [{
+                backgroundColor: ["darkgray", "lightgray"],
+                data: [{{ (draw_chance*100)|round(2) }}, 100-{{ (draw_chance*100)|round(2) }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Predicted Draw Chance",
+                fontColor: "white"
             }
         }
     });
