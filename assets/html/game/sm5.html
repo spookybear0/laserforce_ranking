@@ -427,7 +427,7 @@
         data: {
             labels: ["Draw", "No Draw"],
             datasets: [{
-                backgroundColor: ["darkgray", "lightgray"],
+                backgroundColor: ["#565656", "lightgray"],
                 data: [{{ (draw_chance*100)|round(2) }}, 100-{{ (draw_chance*100)|round(2) }}]
             }]
         },
