@@ -79,6 +79,7 @@ class MedicDefaults:
     missiles = 0
 
 class EventType(IntEnum):
+    # basic and sm5 events
     MISSION_START = 100
     MISSION_END = 101
     SHOT_EMPTY = 200 # unused?
@@ -110,3 +111,14 @@ class EventType(IntEnum):
     PENALTY = 600
     ACHIEVEMENT = 900
     BASE_AWARDED = 2819 # (technically #0B03 in hex)
+
+    # laserball events
+
+    PASS = 1100
+    GOAL = 1101
+    STEAL = 1103
+    BLOCK = 1104
+    ROUND_START = 1105
+    ROUND_END = 1106
+    GETS_BALL = 1107 # at the start of the round
+    CLEAR = 1109
