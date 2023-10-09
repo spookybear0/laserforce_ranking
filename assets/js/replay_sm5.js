@@ -28,7 +28,7 @@ scout_defaults = {
     lives_resupply: 5,
     lives_max: 30,
     shots: 30,
-    shots_resupply: 5,
+    shots_resupply: 10,
     shots_max: 60,
     missiles: 0
 };
