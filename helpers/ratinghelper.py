@@ -251,30 +251,38 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     return True
 
-
 def matchmake(players, mode: GameType=GameType.SM5):
+    # use win chance to matchmake   
+
     mode = mode.value
+
+    # get rating object for mode
+
     # bruteforce sort
 
     team1 = players[:len(players)//2]
     team2 = players[len(players)//2:]
-    
+
     best1 = team1.copy()
     best2 = team2.copy()
-    
+
     # gets most fair teams
+
     for i in range(500):
         shuffle(players)
         team1 = players[:len(players)//2]
         team2 = players[len(players)//2:]
 
-        func = lambda x: getattr(x, f"{mode}_ordinal")
+        func = lambda x: getattr(x, f"{mode}_rating")
 
         # checks if teams are more fair then previous best
-        if abs(sum(map(func, team1)) - sum(map(func, team2)))\
-            < abs(sum(map(func, best1)) - sum(map(func, best2))):
+        # use win chance to matchmake
+        # see which is closer to 0.5
+
+        if abs(predict_win([list(map(func, team1)), list(map(func, team2))])[0] - 0.5)\
+            < abs(predict_win([list(map(func, best1)), list(map(func, best2))])[0] - 0.5):
             best1, best2 = team1, team2
-    
+
     return (best1, best2)
 
 def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
