@@ -2,7 +2,8 @@ from sanic import Request
 from shared import app
 from helpers import ratinghelper
 from utils import render_template, get_post
-from objects import GameType, Player
+from objects import GameType
+from db.models import Player
 from sanic.log import logger
 from helpers.statshelper import sentry_trace
 
@@ -15,7 +16,7 @@ async def tools(request: Request):
 async def matchmake_post(request: Request):
     logger.debug("Matchmaking")
 
-    data = get_post(request)
+    data = request.form
     print(data)
 
     players = []
@@ -26,12 +27,12 @@ async def matchmake_post(request: Request):
 
     for i in range(16):
         try:
-            codename = data[f"player{i}"]
+            codename = data[f"player{i}"][0]
         except KeyError:
             continue
         if codename == "":
             continue
-        p = await Player.from_name(codename)
+        p = await Player.filter(codename=codename).first()
         players.append(p)
 
     match = ratinghelper.matchmake(players, mode)
@@ -72,14 +73,14 @@ async def win_chance_post(request: Request):
         codename = data.get(f"1player{i}")
         if not codename:
             continue
-        p = await Player.from_name(codename)
+        p = await Player.filter(codename=codename).first()
         team1.append(p)
 
     for i in range(8):
         codename = data.get(f"2player{i}")
         if not codename:
             continue
-        p = await Player.from_name(codename)
+        p = await Player.filter(codename=codename).first()
         team2.append(p)
 
     win_chance = ratinghelper.get_win_chance(team1, team2)
