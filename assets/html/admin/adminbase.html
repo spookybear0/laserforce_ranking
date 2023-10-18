@@ -37,6 +37,11 @@
                 float: right;
             }
         }
+
+        #content {
+            margin-left: 300px;
+            padding-top: 30px;
+        }
     </style>
     
     {% block html_head %}{% endblock %}
@@ -46,6 +51,7 @@
         ("/", "Home"),
         ("/admin", "Dashboard"),
         ("/admin/players", "Manage Players"),
+        ("/admin/content", "Manage Content")
     ] -%}
     <ul class="sidebar">
         {% for href, caption in navigation_bar %}

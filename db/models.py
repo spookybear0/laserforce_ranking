@@ -323,6 +323,12 @@ class SM5Game(Model):
     
     async def get_entity_end_from_token(self, token: str):
         return await self.entity_ends.filter(entity_id=token).first()
+    
+    async def get_entity_start_from_name(self, name: str):
+        return await self.entity_starts.filter(name=name).first()
+    
+    async def get_entity_end_from_name(self, name: str):
+        return await self.entity_ends.filter(entity__name=name).first()
 
     # funcs for getting total score at a certain time for a team
     

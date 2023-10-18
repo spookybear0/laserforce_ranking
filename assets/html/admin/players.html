@@ -1,17 +1,70 @@
 {% extends "admin/adminbase.html" %}
-{% block title %}Players{% endblock %}
+{% block title %}Manage Players{% endblock %}
 
 
 {% block html_head %}
 <style>
+    p {
+        text-align: center;
+        padding-top: 0.5em;
+        font-size: 24;
+    }
 
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+
+    td {
+        color: lightgray;
+    }
+
+    th {
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<div>
+<h1 style="text-align: center;">Manage Players</h1>
 
+<div class="table-div">
+    <table id="player_table">
+        <tbody>
+            <tr>
+                <th onclick="sortTable(0)">Codename</th>
+                <th onclick="sortTable(1)">Player ID</th>
+                <th onclick="sortTable(2)">SM5 Rating</th>
+                <th onclick="sortTable(3)">Laserball Rating</th>
+            </tr>
+            {% for player in players %}
+                {% if not loop.index > 25 %}
+                    <tr>
+                        <td><a href="/admin/player/{{ player.codename }}">{{ player.codename }}</a></td>
+                        <td>{{ player.player_id }}</td>
+                        <td title="mu: {{player.sm5_mu|round(2)}}, sigma: {{player.sm5_sigma|round(2)}}">{{ player.sm5_ordinal|round(2) }}</td>
+                        <td>{{ player.laserball_ordinal|round(2) }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page > 0 %}<a href="/admin/players?page={{ page-1 }}"><p style="float: left;">Prev</p></a>{% endif %}
+    <a href="/admin/players?page={{ page+1 }}"><p style="float: right;">Next</p></a>
 </div>
 
 {% endblock %}
