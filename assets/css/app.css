@@ -352,6 +352,10 @@ body {
     background-color: #111;
 }
 
+.sidebar-item a:hover:not(.active) {
+    background-color: #111;
+}
+
 .active {
     background-color: #00A9FD;
 }
@@ -447,6 +451,34 @@ body {
     .nav-dropdown {
         display: none;
     }
+
+    .sidebar {
+        margin: 0;
+        padding: 0;
+        width: 200px;
+        background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+        position: fixed;
+        height: 100%;
+        overflow: auto;
+    }
+
+    .sidebar-item {
+        display: block;
+        color: white;
+        text-align: center;
+        height: 60px;
+        text-decoration: none;
+    }
+
+    .sidebar-item a {
+        display: block;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        height: 60px;
+        line-height: 30px;
+    }
+
 
     .btns {
         padding-top: 0px;
