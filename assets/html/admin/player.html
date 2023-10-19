@@ -5,11 +5,21 @@
 {% block html_head %}
 <style>
 
+h1, h3, h5 {
+    text-align: center;
+    padding: 0;
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    scale: 1.1;
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
 
-<h1 style="text-align: center;">Viewing: </h1>
+<h1>{{ player.codename }}</h1>
+<h3>{{ player.player_id }}</h3>
+<h5>{{ player.ipl_id }}</h5>
 
 {% endblock %}

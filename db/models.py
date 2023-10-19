@@ -291,7 +291,7 @@ class SM5Game(Model):
     start_time = fields.DatetimeField()
     mission_duration = fields.IntField() # in seconds
     log_time = fields.DatetimeField(auto_now_add=True)
-    # there is a field in the tdf called "penatly", no idea what it is
+    # there is a field in the tdf called "penalty", no idea what it is
     teams = fields.ManyToManyField("models.Teams")
     entity_starts = fields.ManyToManyField("models.EntityStarts")
     events = fields.ManyToManyField("models.Events")

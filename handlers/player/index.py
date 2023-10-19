@@ -9,6 +9,8 @@ from urllib.parse import unquote
 from typing import Union
 from db.models import Player, SM5Game, LaserballGame
 from helpers.statshelper import sentry_trace
+from statistics import NormalDist
+from numpy import arange
 
 sql = app.ctx.sql
 
@@ -42,6 +44,26 @@ async def player_get(request: Request, id: Union[int, str]):
 
     favorite_role = await player.get_favorite_role()
     favorite_battlesuit = await player.get_favorite_battlesuit()
+
+    # display representation of gaussian distribution
+
+    dist = [(x, NormalDist(player.sm5_mu, player.sm5_sigma).pdf(x)) for x in arange(0, 100)]
+
+    min_ = None
+    max_ = None
+
+    for x, pdf in dist:
+        if pdf > 0.00001:
+            min_ = x
+            break
+
+    for x, pdf in dist[::-1]:
+        print(x, pdf)
+        if pdf > 0.00001:
+            max_ = x
+            break
+
+    print(min_, max_)
     
     return await render_template(
         request, "player/player.html",
@@ -72,6 +94,9 @@ async def player_get(request: Request, id: Union[int, str]):
         # role score plot (sm5)
         role_plot_data_player=await player.get_median_role_score(),
         role_plot_data_world=await Player.get_median_role_score_world(),
+        # bull curve (sm5)
+        bell_curve_x=list(arange(min_-1, max_+2, 0.5)),
+        bell_curve_y=[NormalDist(player.sm5_mu, player.sm5_sigma).pdf(x) for x in arange(min_-1, max_+2, 0.5)]
     )
 
 @app.post("/player")
