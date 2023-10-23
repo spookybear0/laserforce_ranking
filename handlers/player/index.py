@@ -114,7 +114,7 @@ async def player_get(request: Request, id: Union[int, str]):
         blue_wins_laserball=await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL),
         # bell curve (sm5)
         bell_curve_x=list(arange(min_-1, max_+2, 0.5)),
-        bell_curve_y=[NormalDist(player.sm5_mu, player.sm5_sigma).pdf(x) for x in arange(min_-1, max_+2, 0.5)]
+        bell_curve_y=[NormalDist(player.sm5_mu, player.sm5_sigma).pdf(x) for x in arange(min_-1, max_+2, 0.5)],
         # role score plot (sm5)
         role_plot_data_player=[x for x in median_role_score if x != 0],
         role_plot_data_world=await Player.get_median_role_score_world(median_role_score),
