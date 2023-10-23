@@ -26,6 +26,27 @@ async def get_sm5_stat(game, entity_start):
 async def get_laserball_stat(game, entity_start):
     return await game.laserball_stats.filter(entity=entity_start).first()
 
+
+async def get_role_labels_from_medians(median_role_score):
+    labels = []
+    for i, role_score in enumerate(median_role_score):
+        if role_score == 0:
+            continue
+        else:
+            if i == 0:
+                labels.append("Commander")
+            elif i == 1:
+                labels.append("Heavy")
+            elif i == 2:
+                labels.append("Scout")
+            elif i == 3: 
+                labels.append("Ammo")
+            elif i == 4:
+                labels.append("Medic")
+
+    return labels
+                
+
 @app.get("/player/<id>")
 @sentry_trace
 async def player_get(request: Request, id: Union[int, str]):
@@ -91,12 +112,13 @@ async def player_get(request: Request, id: Union[int, str]):
         green_wins_sm5=await player.get_wins_as_team(Team.GREEN, GameType.SM5),
         red_wins_laserball=await player.get_wins_as_team(Team.RED, GameType.LASERBALL),
         blue_wins_laserball=await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL),
-        # role score plot (sm5)
-        role_plot_data_player=await player.get_median_role_score(),
-        role_plot_data_world=await Player.get_median_role_score_world(),
-        # bull curve (sm5)
+        # bell curve (sm5)
         bell_curve_x=list(arange(min_-1, max_+2, 0.5)),
         bell_curve_y=[NormalDist(player.sm5_mu, player.sm5_sigma).pdf(x) for x in arange(min_-1, max_+2, 0.5)]
+        # role score plot (sm5)
+        role_plot_data_player=[x for x in median_role_score if x != 0],
+        role_plot_data_world=await Player.get_median_role_score_world(median_role_score),
+        role_plot_labels=await get_role_labels_from_medians(median_role_score),
     )
 
 @app.post("/player")

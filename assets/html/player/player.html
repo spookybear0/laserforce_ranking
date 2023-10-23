@@ -407,7 +407,7 @@
     new Chart("avg_role_score", {
         type: "bar",
         data: {
-            labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+            labels: {{ role_plot_labels }},
             datasets: [
                 {
                     label: "Player's Median Score",

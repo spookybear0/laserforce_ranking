@@ -251,11 +251,13 @@ class Player(Model):
         return scores
     
     @staticmethod
-    async def get_median_role_score_world() -> List[float]:
+    async def get_median_role_score_world(median_role_score_player=None) -> List[float]:
         """
         SM5 only
 
         returns: roles median score in order of Role enum (Commander, Heavy, Scout, Ammo, Medic)
+
+        we don't want to get median score for roles that haven't been played by the player
         """
 
         scores = []
@@ -263,6 +265,11 @@ class Player(Model):
         for role in range(1, 6):
             entities = await EntityStarts.filter(role=role).values_list("id", flat=True)
             scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
+
+            if median_role_score_player is not None:
+                if median_role_score_player[role - 1] == 0:
+                    continue
+
             try:
                 scores.append(statistics.median(scores_role))
             except statistics.StatisticsError:
