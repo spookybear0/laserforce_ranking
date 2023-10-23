@@ -345,8 +345,6 @@
                 <div>
                     <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="475px" width="475px" class="right-side"></canvas>
                 </div>
-
-                <canvas class="inline-block" id="bell_curve" style="max-width: 500px; margin-top: 2rem;" height="475px" width="475px" class="right-side"></canvas>
             </div>
         </div>
     </div>
@@ -510,54 +508,6 @@
             }
         }
     });
-
-    // bell curve of mu and sigma of rank
-    new Chart("bell_curve", {
-        type: "line",
-        data: {
-            labels: {{ bell_curve_x }},
-            datasets: [
-                {
-                    label: "Rank",
-                    data: {{ bell_curve_y }},
-                    borderColor: "rgb(225, 129, 44)",
-                    backgroundColor: "rgba(225, 129, 44, 0.5)"
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: "Bell curve of mu and sigma of rank"
-                }
-            },
-            scales: {
-                yAxes: [{
-                    ticks:{
-                        min: 0,
-                    },
-                    stacked: false,
-                }],
-                xAxes: {
-                    gridLines: {
-                        display: false,
-                    },
-                    stacked: false
-                },
-            },
-            elements: {
-                point: {
-                    radius: 0
-                },
-                line: {
-                    tension: 0.5
-                }
-            }
-        }
-    }
-    );
 </script>
 
 {% endblock %}

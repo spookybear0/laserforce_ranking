@@ -20,7 +20,7 @@ async def get_median_role_score(player: Optional[Player]=None):
 
     for role in range(1, 6):
         if player:
-            score = median(await EntityEnds.filter(entity_id=player.ipl_id, entity__role=IntRole(role), entity__sm5games__ranked=True).values_list("score", flat=True))
+            score = median(await EntityEnds.filter(entity__entity_id=player.ipl_id, entity__role=IntRole(role), entity__sm5games__ranked=True).values_list("score", flat=True))
         else:
             score = median(await EntityEnds.filter(entity__role=IntRole(role), entity__sm5games__ranked=True).values_list("score", flat=True))
         if score:
