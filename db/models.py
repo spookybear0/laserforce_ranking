@@ -341,13 +341,13 @@ class SM5Game(Model):
     
     async def get_red_score_at_time(self, time: int): # time in seconds
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
-    
+
     async def get_green_score_at_time(self, time: int): # time in seconds
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Earth").values_list("delta")))
     
     # funcs for getting win chance and draw chance
 
-    async def get_win_chance_at_time(self) -> List[float]:
+    async def get_win_chance(self) -> List[float]:
         """
         Returns the win chance in the format [red, green]
         """
@@ -374,7 +374,7 @@ class SM5Game(Model):
 
         return openskill.predict_win([previous_elos_red, previous_elos_green])
     
-    async def get_draw_chance_at_time(self) -> float:
+    async def get_draw_chance(self) -> float:
         # get all the entity_ends for the red team
 
         entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")

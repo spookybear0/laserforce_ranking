@@ -31,10 +31,10 @@ async def game_index(request: Request, type: str, id: int):
             SM5Stats=SM5Stats, fire_score=await game.get_red_score(),
             earth_score=await game.get_green_score(),
             score_chart_labels=[t for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+25000, 25000)],
-            score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+25000, 25000)],
-            win_chance=await game.get_win_chance_at_time(),
-            draw_chance=await game.get_draw_chance_at_time(),
+            score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+30000, 30000)],
+            win_chance=await game.get_win_chance(),
+            draw_chance=await game.get_draw_chance(),
             players_matchmake=players_matchmake
         )
     elif type == "lb":
@@ -56,11 +56,11 @@ async def game_index(request: Request, type: str, id: int):
             fire_score=await game.get_red_score(),
             ice_score=await game.get_blue_score(),
             score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+25000, 25000)],
-            score_chart_data_blue=[await game.get_blue_score_at_time(t) for t in range(0, 900000+25000, 25000)],
-            score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+25000, 25000)],
-            win_chance=await game.get_win_chance_at_time(),
-            draw_chance=await game.get_draw_chance_at_time(),
+            score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_blue=[await game.get_blue_score_at_time(t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
+            win_chance=await game.get_win_chance(),
+            draw_chance=await game.get_draw_chance(),
             game_end_time_decimal=min(math.ceil((await game.scores.order_by("-time").first()).time/1000/60*2)/2, 15),
             players_matchmake=players_matchmake
         )
