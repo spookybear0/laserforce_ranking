@@ -1,18 +1,27 @@
 from sanic import Request
 from shared import app
 from utils import render_template
-from db.models import SM5Game, EntityEnds, SM5Stats, LaserballGame, LaserballStats
+from db.models import SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 from numpy import arange
 import math
+from typing import List
 
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
 async def game_index(request: Request, type: str, id: int):
 
     if type == "sm5":
-        game = await SM5Game.filter(id=id).first()
+        game: SM5Game = await SM5Game.filter(id=id).first()
+
+        players_matchmake = []
+        entity_starts: List[EntityStarts] = await game.entity_starts
+        for i, player in enumerate(entity_starts):
+            if player.type != "player":
+                continue
+
+            players_matchmake.append(player.name)
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
@@ -26,9 +35,18 @@ async def game_index(request: Request, type: str, id: int):
             score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+25000, 25000)],
             win_chance=await game.get_win_chance_at_time(),
             draw_chance=await game.get_draw_chance_at_time(),
+            players_matchmake=players_matchmake
         )
     elif type == "lb":
         game = await LaserballGame.filter(id=id).first()
+
+        players_matchmake = []
+        entity_starts: List[EntityStarts] = await game.entity_starts
+        for i, player in enumerate(entity_starts):
+            if player.type != "player":
+                continue
+
+            players_matchmake.append(player.name)
         
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
@@ -44,6 +62,7 @@ async def game_index(request: Request, type: str, id: int):
             win_chance=await game.get_win_chance_at_time(),
             draw_chance=await game.get_draw_chance_at_time(),
             game_end_time_decimal=min(math.ceil((await game.scores.order_by("-time").first()).time/1000/60*2)/2, 15),
+            players_matchmake=players_matchmake
         )
     else:
         raise exceptions.NotFound("Not found: Invalid game type")

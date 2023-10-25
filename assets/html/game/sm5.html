@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Laserball game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}{% endblock %}
+{% block title %}SM5 game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}{% endblock %}
 
 
 {% block html_head %}
@@ -155,6 +155,24 @@
             flex-direction: column;
         }
     }
+
+
+    .link-button {
+        background: none;
+        border: none;
+        color: #2fa4e7;
+        cursor: pointer;
+        font-size: 1em;
+        margin: 0;
+    }
+
+    .link-button h3 {
+        margin: 0;
+    }
+
+    .link-button:focus {
+        outline: none;
+    }
 </style>
 
 <script>
@@ -204,6 +222,15 @@
 <div style="text-align: center;">
     <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
         <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}</h2></span>
+        
+        <form method="post" action="/matchmake" class="inline">
+            {% for player in players_matchmake %}
+                <input type="hidden" name="player{{ loop.index }}" value="{{ player }}">
+            {% endfor %}
+            <button type="submit" class="link-button">
+                <span title="Matchmake"><h3><a>Matchmake with same players</a></h3></span>
+            </button>
+        </form>
         <span title="Replay"><h3><a href="/game/sm5/{{ game.id }}/replay">Replay</a></h3></span>
     </div>
     <div class="userlist" style="text-align: left;">
