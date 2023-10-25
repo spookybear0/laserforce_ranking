@@ -17,7 +17,6 @@ async def matchmake_post(request: Request):
     logger.debug("Matchmaking")
 
     data = request.form
-    print(data)
 
     players = []
 
@@ -34,6 +33,8 @@ async def matchmake_post(request: Request):
             continue
         p = await Player.filter(codename=codename).first()
         players.append(p)
+
+    print(players)
 
     match = ratinghelper.matchmake(players, mode)
 

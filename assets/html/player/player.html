@@ -466,7 +466,7 @@
     new Chart("avg_role_score_radar", {
         type: "radar",
         data: {
-            labels: ["Commander", "Heavy", "Scout", "Ammo", "Medic"],
+            labels: {{ role_plot_labels }},
             datasets: [
                 {
                     label: "Player's Median Score",
@@ -490,12 +490,15 @@
             },
             scale: {
                 gridLines: {
-                    color: "rgba(255, 255, 255, 0.75)"
+                    color: "rgba(255, 255, 255, 255)"
                 },
                 ticks: {
                     display: true, // Hides the labels in the middel (numbers)
                     backdropColor: "rgba(0, 0, 0, 0)", // Hide the lines
                     beginAtZero: true,
+                    min: 0,
+                    // put above graph
+                    z: 2
                 },
                 pointLabels: {
                     fontSize: 12
@@ -503,7 +506,7 @@
             },
             elements: {
                 point: {
-                    radius: 5
+                    radius: 5,
                 }
             }
         }
