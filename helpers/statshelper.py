@@ -1,6 +1,9 @@
 from typing import List, Tuple
 from sentry_sdk import Hub, start_transaction
 from db.models import SM5Game, EntityEnds, SM5Stats, IntRole
+from tortoise.expressions import F
+from tortoise.functions import Trim
+
 
 # stats helpers
 
@@ -116,6 +119,7 @@ async def get_own_medic_hits() -> int:
 
     return hits
 
+
 async def get_top_commanders(amount=5) -> List[Tuple[str, int]]:
     """
     Gets the top commanders by going through
@@ -125,8 +129,8 @@ async def get_top_commanders(amount=5) -> List[Tuple[str, int]]:
 
     data = {}
 
-    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.COMMANDER):
-        codename = (await entity_end.entity).name
+    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.COMMANDER).prefetch_related("entity"):
+        codename = entity_end.entity.name
         if data.get(codename):
             data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
         else:
@@ -155,8 +159,8 @@ async def get_top_heavies(amount=5) -> List[Tuple[str, int]]:
 
     data = {}
 
-    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.HEAVY):
-        codename = (await entity_end.entity).name
+    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.HEAVY).prefetch_related("entity"):
+        codename = entity_end.entity.name
         if data.get(codename):
             data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
         else:
@@ -184,8 +188,8 @@ async def get_top_scouts(amount=5) -> List[Tuple[str, int]]:
 
     data = {}
 
-    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.SCOUT):
-        codename = (await entity_end.entity).name
+    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.SCOUT).prefetch_related("entity"):
+        codename = entity_end.entity.name
         if data.get(codename):
             data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
         else:
@@ -213,8 +217,8 @@ async def get_top_ammos(amount=5) -> List[Tuple[str, int]]:
 
     data = {}
 
-    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.AMMO):
-        codename = (await entity_end.entity).name
+    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.AMMO).prefetch_related("entity"):
+        codename = entity_end.entity.name
         if data.get(codename):
             data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
         else:
@@ -242,8 +246,9 @@ async def get_top_medics(amount=5) -> List[Tuple[str, int]]:
 
     data = {}
 
-    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.MEDIC):
-        codename = (await entity_end.entity).name
+    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.MEDIC).prefetch_related("entity"):
+        codename = entity_end.entity.name
+        
         if data.get(codename):
             data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
         else:

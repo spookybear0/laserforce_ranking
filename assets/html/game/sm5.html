@@ -257,8 +257,8 @@
                     <th><p>Medic Hits</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
-                            {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
-                            {% set sm5_stats = SM5Stats.filter(entity=entity)[0] %}
+                            {% set entity_end = get_entity_end(entity) %}
+                            {% set sm5_stats = get_sm5stats(entity) %}
 
                             <tr>
                                 <td style="width: 30px"><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
@@ -306,8 +306,8 @@
                     <th><p>Medic Hits</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
-                            {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
-                            {% set sm5_stats = SM5Stats.filter(entity=entity)[0] %}
+                            {% set entity_end = get_entity_end(entity) %}
+                            {% set sm5_stats = get_sm5stats(entity) %}
                             <tr>
                                 <td><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>

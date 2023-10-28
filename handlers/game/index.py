@@ -8,15 +8,25 @@ from numpy import arange
 import math
 from typing import List
 
+
+async def get_entity_end(entity):
+    return await EntityEnds.filter(entity=entity).first()
+
+async def get_sm5stats(entity):
+    return await SM5Stats.filter(entity=entity).first()
+
+async def get_laserballstats(entity):
+    return await LaserballStats.filter(entity=entity).first()
+
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
 async def game_index(request: Request, type: str, id: int):
 
     if type == "sm5":
-        game: SM5Game = await SM5Game.filter(id=id).first()
+        game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
 
         players_matchmake = []
-        entity_starts: List[EntityStarts] = await game.entity_starts
+        entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
             if player.type != "player":
                 continue
@@ -27,8 +37,8 @@ async def game_index(request: Request, type: str, id: int):
             raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "game/sm5.html",
-            game=game, EntityEnds=EntityEnds,
-            SM5Stats=SM5Stats, fire_score=await game.get_red_score(),
+            game=game, get_entity_end=get_entity_end,
+            get_sm5stats=get_sm5stats, fire_score=await game.get_red_score(),
             earth_score=await game.get_green_score(),
             score_chart_labels=[t for t in arange(0, 900000//1000//60+0.5, 0.5)],
             score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
@@ -38,10 +48,10 @@ async def game_index(request: Request, type: str, id: int):
             players_matchmake=players_matchmake
         )
     elif type == "lb":
-        game = await LaserballGame.filter(id=id).first()
+        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
 
         players_matchmake = []
-        entity_starts: List[EntityStarts] = await game.entity_starts
+        entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
             if player.type != "player":
                 continue
@@ -52,7 +62,7 @@ async def game_index(request: Request, type: str, id: int):
             raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "game/laserball.html",
-            game=game, EntityEnds=EntityEnds, LaserballStats=LaserballStats,
+            game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
             fire_score=await game.get_red_score(),
             ice_score=await game.get_blue_score(),
             score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, 900000//1000//60+0.5, 0.5)],

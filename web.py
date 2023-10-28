@@ -11,7 +11,7 @@ from mysql import MySQLPool
 from shared import app
 from tortoise import Tortoise
 from config import config
-from helpers import adminhelper
+from helpers import cachehelper, adminhelper
 
 async def main() -> None:
     router.add_all_routes(app)
@@ -25,6 +25,8 @@ async def main() -> None:
     )
 
     #await adminhelper.repopulate_database()
+
+    cachehelper.use_cache()
 
     debug = False
     if "--debug" in sys.argv or "--dev" in sys.argv:

@@ -269,8 +269,8 @@
                     <th><p>K/D</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
-                            {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
-                            {% set laserball_stats = LaserballStats.filter(entity=entity)[0] %}
+                            {% set entity_end = get_entity_end(entity) %}
+                            {% set laserball_stats = get_laserballstats(entity) %}
                             <tr>
                                 {% if entity.entity_id.startswith("@") %}
                                     <td><p>{{ entity.name }}</p></td>
@@ -315,8 +315,8 @@
                     <th><p>K/D</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
-                            {% set entity_end = EntityEnds.filter(entity=entity)[0] %}
-                            {% set laserball_stats = LaserballStats.filter(entity=entity)[0] %}
+                            {% set entity_end = get_entity_end(entity) %}
+                            {% set laserball_stats = get_laserballstats(entity) %}
                             <tr>
                                 <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% if entity_end.current_rating_mu and game.ranked %}
