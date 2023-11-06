@@ -5,12 +5,6 @@ path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(path)
 sys.path.append(path)
 
-if sys.platform != "win32":
-    import asyncio
-    import uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    uvloop.install()
-
 from mysql import MySQLPool
 import jinja2
 from sanic import Sanic
