@@ -34,8 +34,6 @@ async def matchmake_post(request: Request):
         p = await Player.filter(codename=codename).first()
         players.append(p)
 
-    print(players)
-
     match = ratinghelper.matchmake(players, mode)
 
     team1 = match[0]
