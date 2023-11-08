@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Laserball game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}{% endblock %}
+{% block title %}Laserball game on {{ game.start_time.strftime("%A, %B %d at %I:%M %p")}}{% endblock %}
 
 
 {% block html_head %}
@@ -234,7 +234,7 @@
 
 <div style="text-align: center;">
     <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
-        <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.start_time.strftime("%A, %B %d at %H:%M") }}</h2></span>
+        <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.get_timestamp()}}</h2></span>
         <form method="post" action="/matchmake" class="inline">
             {% for player in players_matchmake %}
                 <input type="hidden" name="player{{ loop.index }}" value="{{ player }}">

@@ -7,6 +7,14 @@ from collections import Counter
 import openskill
 import statistics
 import bcrypt
+import pytz
+import sys
+
+def suffix(d):
+    return {1:"st",2:"nd",3:"rd"}.get(d%20, "th")
+
+def strftime_ordinal(format, t):
+    return t.strftime(format).replace("{S}", str(t.day) + suffix(t.day))
 
 class EventType(IntEnum):
     # basic and sm5 events
@@ -442,6 +450,20 @@ class SM5Game(Model):
         # get the win chance
 
         return openskill.predict_draw([previous_elos_red, previous_elos_green])
+    
+    def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
+        """
+        Returns the timestamp of the game in the specified time zone
+        """
+
+        # get zero pad modifier for os
+        if sys.platform == "win32":
+            zero_pad = "#"
+        else:
+            zero_pad = "-"
+
+        #return self.start_time.astimezone(pytz.timezone(time_zone)).strftime(f"%A, %B %{zero_pad}d at %I:%M %p")
+        return strftime_ordinal(f"%A, %B {'{S}'} at %{zero_pad}I:%M %p", self.start_time)
 
     async def to_dict(self):
         # convert the entire game to a dict
@@ -823,6 +845,20 @@ class LaserballGame(Model):
         # get the win chance
 
         return openskill.predict_draw([previous_elos_red, previous_elos_blue])
+    
+    def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
+        """
+        Returns the timestamp of the game in the specified time zone
+        """
+
+        # get zero pad modifier for os
+        if sys.platform == "win32":
+            zero_pad = "#"
+        else:
+            zero_pad = "-"
+
+        #return self.start_time.astimezone(pytz.timezone(time_zone)).strftime(f"%A, %B %{zero_pad}d at %I:%M %p")
+        return strftime_ordinal(f"%A, %B {'{S}'} at %{zero_pad}I:%M %p", self.start_time)
     
     async def to_dict(self):
         # convert the entire game to a dict

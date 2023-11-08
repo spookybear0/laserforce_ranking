@@ -39,22 +39,29 @@
         options: {
             responsive: true,
             scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "rgb(255, 255, 255)"
+                    }
+                }],
                 yAxes: [{
                     ticks:{
                         min: 0,
+                        fontColor: "rgb(255, 255, 255)"
                     }
                 }]
             },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: "rgb(255, 255, 255)"
-                    }
-                },
-                title: {
-                    display: true,
-                    text: "Median player score vs median world score"
+            legend: {
+                labels: {
+                    color: "rgb(255, 255, 255)",
+                    fontColor: "rgb(255, 255, 255)"
                 }
+            },
+            title: {
+                display: true,
+                text: "Median player score vs median world score",
+                color: "rgb(255, 255, 255)",
+                fontColor: "rgb(255, 255, 255)"
             }
         }
     });

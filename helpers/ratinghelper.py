@@ -268,7 +268,7 @@ def matchmake(players, mode: GameType=GameType.SM5):
 
     # gets most fair teams
 
-    for i in range(500):
+    for _ in range(500):
         shuffle(players)
         team1 = players[:len(players)//2]
         team2 = players[len(players)//2:]
