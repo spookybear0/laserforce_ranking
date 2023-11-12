@@ -1,7 +1,7 @@
 from tortoise import Tortoise
 from config import config
 from db.migrations import migrate_from_sql
-from helpers import tdfhelper, userhelper
+from helpers import tdfhelper, userhelper, ratinghelper
 from db.models import Player, Permission, SM5Game, EntityEnds, EntityStarts, Events
 from typing import List
 
@@ -15,7 +15,7 @@ async def repopulate_database() -> None:
     await Player.filter(codename="ëMîlÿ").update(ipl_id="#RFSjNZ")
     await Player.filter(codename="Survivor").update(permissions=Permission.ADMIN, password=userhelper.hash_password(config["root_password"]))
 
-    await Player.all().update(sm5_mu=25, sm5_sigma=25/3)
+    await Player.all().update(sm5_mu=ratinghelper.MU, sm5_sigma=ratinghelper.SIGMA, laserball_mu=ratinghelper.MU, laserball_sigma=ratinghelper.SIGMA)
 
     await tdfhelper.parse_all_tdfs()
 

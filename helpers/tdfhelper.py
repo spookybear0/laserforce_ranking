@@ -227,10 +227,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 entity_end.current_rating_mu = player.sm5_mu
                 entity_end.current_rating_sigma = player.sm5_sigma
             else: # "@", non member
-                entity_end.previous_rating_mu = 25
-                entity_end.previous_rating_sigma = 25/3
-                entity_end.current_rating_mu = 25
-                entity_end.current_rating_sigma = 25/3
+                entity_end.previous_rating_mu = ratinghelper.MU
+                entity_end.previous_rating_sigma = ratinghelper.SIGMA
+                entity_end.current_rating_mu = ratinghelper.MU
+                entity_end.current_rating_sigma = ratinghelper.SIGMA
 
             await entity_end.save()
 
@@ -512,10 +512,10 @@ async def parse_laserball_game(file_location: str):
                 entity_end.current_rating_mu = player.laserball_mu
                 entity_end.current_rating_sigma = player.laserball_sigma
             else: # "@", non member
-                entity_end.previous_rating_mu = 25
-                entity_end.previous_rating_sigma = 25/3
-                entity_end.current_rating_mu = 25
-                entity_end.current_rating_sigma = 25/3
+                entity_end.previous_rating_mu = ratinghelper.MU
+                entity_end.previous_rating_sigma = ratinghelper.SIGMA
+                entity_end.current_rating_mu = ratinghelper.MU
+                entity_end.current_rating_sigma = ratinghelper.SIGMA
 
             await entity_end.save()
 

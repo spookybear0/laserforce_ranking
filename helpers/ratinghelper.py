@@ -9,6 +9,12 @@ from db.models import SM5Game, Events, EntityStarts, EventType, Player, EntityEn
 from objects import GameType
 from helpers import userhelper
 
+
+# CONSTANTS
+
+MU = 25
+SIGMA = MU / 3
+
 model = PlackettLuce()
 
 def calculate_laserball_mvp_points(player: LaserballGamePlayer):
