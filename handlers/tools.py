@@ -6,6 +6,7 @@ from objects import GameType
 from db.models import Player
 from sanic.log import logger
 from helpers.statshelper import sentry_trace
+from openskill.models import PlackettLuceRating as Rating
 
 @app.get("/tools")
 async def tools(request: Request):
@@ -32,6 +33,15 @@ async def matchmake_post(request: Request):
         if codename == "":
             continue
         p = await Player.filter(codename=codename).first()
+        if p is None:
+            p = lambda: None # dummy object
+            p.codename = codename
+            p.sm5_rating_mu = 25
+            p.sm5_rating_sigma = 25 / 3
+            p.sm5_rating = Rating(p.sm5_rating_mu, p.sm5_rating_sigma)
+            p.laserball_rating_mu = 25
+            p.laserball_rating_sigma = 25 / 3
+            p.laserball_rating = Rating(p.laserball_rating_mu, p.laserball_rating_sigma)
         players.append(p)
 
     match = ratinghelper.matchmake(players, mode)
