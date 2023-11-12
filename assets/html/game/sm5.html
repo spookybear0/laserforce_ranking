@@ -74,7 +74,7 @@
         max-width: 90%;
     }
 
-    #win_chance, #draw_chance {
+    #win_chance {
         max-width: 30%;
     }
 
@@ -147,7 +147,7 @@
             max-width: 100%;
         }
 
-        #win_chance, #draw_chance {
+        #win_chance {
             max-width: 100%;
         }
 
@@ -334,7 +334,6 @@
             <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
             <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
                 <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
-                <canvas class="inline-block" id="draw_chance" style="clear: both;"></canvas>
             </div>
         </div>
 
@@ -448,28 +447,6 @@
             title: {
                 display: true,
                 text: "Predicted Win Chance",
-                fontColor: "white"
-            }
-        }
-    });
-
-    new Chart("draw_chance", {
-        type: "pie",
-        data: {
-            labels: ["Draw", "No Draw"],
-            datasets: [{
-                backgroundColor: ["#565656", "lightgray"],
-                data: [{{ (draw_chance*100)|round(2) }}, 100-{{ (draw_chance*100)|round(2) }}]
-            }]
-        },
-        options: {
-            legend: {
-                display: false,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Predicted Draw Chance",
                 fontColor: "white"
             }
         }
