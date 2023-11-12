@@ -63,6 +63,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
                 # check if game already exists
                 if game := await SM5Game.filter(start_time=start_time, arena=arena).first():
+                    logger.warn(f"Game {game.id} already exists, skipping")
                     return game
 
             case "2": # team info
@@ -214,8 +215,26 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             logger.info(f"Updated player rankings for game {game.id}")
         else:
             logger.error(f"Failed to update player rankings for game {game.id}")
+    else: # still need to add current_rating and previous_rating
+        for entity_end in await game.entity_ends.filter(entity__type="player"):
+            entity_id = (await entity_end.entity).entity_id
 
-    logger.info(f"Finished parsing {file_location}")
+            player = await Player.filter(ipl_id=entity_id).first()
+            
+            if entity_id.startswith("#"): # member
+                entity_end.previous_rating_mu = player.sm5_mu
+                entity_end.previous_rating_sigma = player.sm5_sigma
+                entity_end.current_rating_mu = player.sm5_mu
+                entity_end.current_rating_sigma = player.sm5_sigma
+            else: # "@", non member
+                entity_end.previous_rating_mu = 25
+                entity_end.previous_rating_sigma = 25/3
+                entity_end.current_rating_mu = 25
+                entity_end.current_rating_sigma = 25/3
+
+            await entity_end.save()
+
+    logger.info(f"Finished parsing {file_location} (game {game.id})")
 
 async def parse_laserball_game(file_location: str):
     file = open(file_location, "r", encoding="utf-16")
@@ -481,8 +500,26 @@ async def parse_laserball_game(file_location: str):
             logger.info(f"Updated player rankings for game {game.id}")
         else:
             logger.error(f"Failed to update player rankings for game {game.id}")
+    else: # still need to add current_rating and previous_rating
+        for entity_end in await game.entity_ends.filter(entity__type="player"):
+            entity_id = (await entity_end.entity).entity_id
 
-    logger.info(f"Finished parsing {file_location}")
+            player = await Player.filter(ipl_id=entity_id).first()
+            
+            if entity_id.startswith("#"): # member
+                entity_end.previous_rating_mu = player.laserball_mu
+                entity_end.previous_rating_sigma = player.laserball_sigma
+                entity_end.current_rating_mu = player.laserball_mu
+                entity_end.current_rating_sigma = player.laserball_sigma
+            else: # "@", non member
+                entity_end.previous_rating_mu = 25
+                entity_end.previous_rating_sigma = 25/3
+                entity_end.current_rating_mu = 25
+                entity_end.current_rating_sigma = 25/3
+
+            await entity_end.save()
+
+    logger.info(f"Finished parsing {file_location} (game {game.id})")
 
 async def parse_all_laserball_tdfs() -> None: # iterate through laserball_tdf folder
     directory = os.listdir("laserball_tdf")

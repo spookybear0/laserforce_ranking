@@ -1,6 +1,6 @@
 from objects import Team, LaserballGamePlayer
 from random import shuffle
-from openskill import Rating, rate, ordinal, predict_draw, predict_win
+from openskill.models import PlackettLuceRating as Rating, PlackettLuce
 import math
 from scipy.stats import norm
 from sanic.log import logger
@@ -8,8 +8,8 @@ from typing import List, Tuple
 from db.models import SM5Game, Events, EntityStarts, EventType, Player, EntityEnds, LaserballGame
 from objects import GameType
 from helpers import userhelper
-import time
-from tortoise.expressions import F
+
+model = PlackettLuce()
 
 def calculate_laserball_mvp_points(player: LaserballGamePlayer):
     mvp_points = 0
@@ -65,7 +65,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 target_player = await Player.filter(ipl_id=target.entity_id).first()
                 target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
 
-                out = rate([[shooter_elo], [target_elo]], ranks=[0, 1])
+                out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
                 shooter_player.sm5_mu = out[0][0].mu
                 shooter_player.sm5_sigma = out[0][0].sigma
@@ -84,7 +84,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 target_player = await Player.filter(ipl_id=target.entity_id).first()
                 target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
 
-                out = rate([[shooter_elo], [target_elo]], ranks=[0, 1])
+                out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
                 shooter_player.sm5_mu = out[0][0].mu
                 shooter_player.sm5_sigma = out[0][0].sigma
@@ -110,9 +110,9 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     team2_elo = list(map(lambda x: Rating(x.sm5_mu, x.sm5_sigma), team2))
 
     if game.winner == Team.RED:
-        team1_new, team2_new = rate([team1_elo, team2_elo], ranks=[0, 1])
+        team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[0, 1])
     else:
-        team1_new, team2_new = rate([team1_elo, team2_elo], ranks=[1, 0])
+        team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[1, 0])
 
     for player, rating in zip(team1, team1_new):
         player.sm5_mu += (rating.mu - player.sm5_mu) * 5
@@ -180,7 +180,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
                 blocked_player = await Player.filter(ipl_id=blocked.entity_id).first()
                 blocked_elo = Rating(blocked_player.laserball_mu, blocked_player.laserball_sigma)
 
-                out = rate([[blocker_elo], [blocked_elo]], ranks=[0, 1])
+                out = model.rate([[blocker_elo], [blocked_elo]], ranks=[0, 1])
 
                 blocker_player.laserball_mu = out[0][0].mu
                 blocker_player.laserball_sigma = out[0][0].sigma
@@ -199,7 +199,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
                 stolen_player = await Player.filter(ipl_id=stolen.entity_id).first()
                 stolen_elo = Rating(stolen_player.laserball_mu, stolen_player.laserball_sigma)
 
-                out = rate([[stealer_elo], [stolen_elo]], ranks=[0, 1])
+                out = model.rate([[stealer_elo], [stolen_elo]], ranks=[0, 1])
 
                 # steal has a bigger impact so we need to multiply the difference by 1.5
 
@@ -227,9 +227,9 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     team2_elo = list(map(lambda x: Rating(x.laserball_mu, x.laserball_sigma), team2))
 
     if game.winner == Team.RED:
-        team1_new, team2_new = rate([team1_elo, team2_elo], ranks=[0, 1])
+        team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[0, 1])
     else:
-        team1_new, team2_new = rate([team1_elo, team2_elo], ranks=[1, 0])
+        team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[1, 0])
 
     for player, rating in zip(team1, team1_new):
         player.laserball_mu += (rating.mu - player.laserball_mu) * 5
@@ -279,8 +279,8 @@ def matchmake(players, mode: GameType=GameType.SM5):
         # use win chance to matchmake
         # see which is closer to 0.5
 
-        if abs(predict_win([list(map(func, team1)), list(map(func, team2))])[0] - 0.5)\
-            < abs(predict_win([list(map(func, best1)), list(map(func, best2))])[0] - 0.5):
+        if abs(model.predict_win([list(map(func, team1)), list(map(func, team2))])[0] - 0.5)\
+            < abs(model.predict_win([list(map(func, best1)), list(map(func, best2))])[0] - 0.5):
             best1, best2 = team1, team2
 
     return (best1, best2)
@@ -298,7 +298,7 @@ def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
     
     # predict
-    return predict_win([team1, team2])
+    return model.predict_win([team1, team2])
 
 def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     """
@@ -313,4 +313,4 @@ def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
     
     # predict
-    return predict_draw([team1, team2])
+    return model.predict_draw([team1, team2])

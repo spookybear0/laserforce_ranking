@@ -1,5 +1,5 @@
 laserforce.py
-openskill==2.4.0
+openskill==5.1.0
 aiomysql
 async_cron
 bcrypt

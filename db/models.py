@@ -4,11 +4,13 @@ from tortoise.expressions import F, Q, Function
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
 from collections import Counter
-import openskill
+from openskill.models import PlackettLuceRating as Rating, PlackettLuce
 import statistics
 import bcrypt
 import pytz
 import sys
+
+model = PlackettLuce()
 
 def suffix(d):
     return {1:"st",2:"nd",3:"rd"}.get(d%20, "th")
@@ -130,11 +132,11 @@ class Player(Model):
     
     @property
     def sm5_rating(self):
-        return openskill.Rating(self.sm5_mu, self.sm5_sigma)
+        return Rating(self.sm5_mu, self.sm5_sigma)
 
     @property
     def laserball_rating(self):
-        return openskill.Rating(self.laserball_mu, self.laserball_sigma)
+        return Rating(self.laserball_mu, self.laserball_sigma)
     
     # account stuff
 
@@ -364,92 +366,48 @@ class SM5Game(Model):
 
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
+
+        print(self.ranked)
+
+        print([(entity_end.current_rating_mu, entity_end.id, (await entity_end.entity).name) for entity_end in entity_ends_red])
 
         # get the previous elo for each player
 
-        previous_elos_red = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
 
         # get all the entity_ends for the green team
 
-        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth")
+        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_green = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_green]
+        previous_elos_green = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_green]
 
         # get the win chance
 
-        return openskill.predict_win([previous_elos_red, previous_elos_green])
+        return model.predict_win([previous_elos_red, previous_elos_green])
     
     async def get_draw_chance(self) -> float:
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_red = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
 
         # get all the entity_ends for the green team
 
-        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth")
+        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_green = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_green]
+        previous_elos_green = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_green]
 
         # get the win chance
 
-        return openskill.predict_draw([previous_elos_red, previous_elos_green])
-
-    async def get_win_chance(self) -> List[float]:
-        """
-        Returns the win chance in the format [red, green]
-        """
-        # get the win chance for red team
-        # this is based on the previous_elo of the player's entity_end
-
-        # get all the entity_ends for the red team
-
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
-
-        # get the previous elo for each player
-
-        previous_elos_red = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
-
-        # get all the entity_ends for the green team
-
-        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth")
-
-        # get the previous elo for each player
-
-        previous_elos_green = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_green]
-
-        # get the win chance
-
-        return openskill.predict_win([previous_elos_red, previous_elos_green])
-    
-    async def get_draw_chance(self) -> float:
-        # get all the entity_ends for the red team
-
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
-
-        # get the previous elo for each player
-
-        previous_elos_red = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
-
-        # get all the entity_ends for the green team
-
-        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth")
-
-        # get the previous elo for each player
-
-        previous_elos_green = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_green]
-
-        # get the win chance
-
-        return openskill.predict_draw([previous_elos_red, previous_elos_green])
+        return model.predict_draw([previous_elos_red, previous_elos_green])
     
     def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
         """
@@ -642,7 +600,7 @@ class EntityEnds(Model):
         return final
     
     def __str__(self) -> str:
-        return f"<EntityEnd {self.entity_id} {self.score}>"
+        return f"<EntityEnd {self.entity_id} score={self.score}>"
     
     def __repr__(self) -> str:
         return str(self)
@@ -734,10 +692,10 @@ class LaserballGame(Model):
         return f"<LaserballGame ({self.tdf_name})>"
     
     async def get_red_score(self):
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire").values_list("score")))
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player").values_list("score")))
     
     async def get_blue_score(self):
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice").values_list("score")))
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player").values_list("score")))
     
     async def get_red_score_at_time(self, time):
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
@@ -759,44 +717,44 @@ class LaserballGame(Model):
 
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_red = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_blue = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_blue]
+        previous_elos_blue = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_blue]
 
         # get the win chance
 
-        return openskill.predict_win([previous_elos_red, previous_elos_blue])
+        return model.predict_win([previous_elos_red, previous_elos_blue])
     
     async def get_draw_chance_at_time(self) -> float:
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_red = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_blue = [openskill.Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_blue]
+        previous_elos_blue = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_blue]
 
         # get the win chance
 
-        return openskill.predict_draw([previous_elos_red, previous_elos_blue])
+        return model.predict_draw([previous_elos_red, previous_elos_blue])
 
     async def get_win_chance(self) -> List[float]:
         """
@@ -807,44 +765,44 @@ class LaserballGame(Model):
 
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_red = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_blue = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_blue]
+        previous_elos_blue = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_blue]
 
         # get the win chance
 
-        return openskill.predict_win([previous_elos_red, previous_elos_blue])
+        return model.predict_win([previous_elos_red, previous_elos_blue])
     
     async def get_draw_chance(self) -> float:
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_red = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
 
         # get the previous elo for each player
 
-        previous_elos_blue = [openskill.Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_blue]
+        previous_elos_blue = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_blue]
 
         # get the win chance
 
-        return openskill.predict_draw([previous_elos_red, previous_elos_blue])
+        return model.predict_draw([previous_elos_red, previous_elos_blue])
     
     def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
         """
