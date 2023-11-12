@@ -236,7 +236,6 @@ class Player(Model):
                 wins = await EntityStarts.filter(sm5games__mission_name__icontains="space marines", entity_id=self.ipl_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
             else: # laserball
                 wins = await EntityStarts.filter(laserballgames__mission_name__icontains="laserball", entity_id=self.ipl_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
-                print(wins)
         return wins
     
     # custom funcs for plotting
@@ -367,10 +366,6 @@ class SM5Game(Model):
         # get all the entity_ends for the red team
 
         entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
-
-        print(self.ranked)
-
-        print([(entity_end.current_rating_mu, entity_end.id, (await entity_end.entity).name) for entity_end in entity_ends_red])
 
         # get the previous elo for each player
 
