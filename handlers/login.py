@@ -28,4 +28,5 @@ async def login_post(request: Request):
     request.ctx.session["player_id"] = player.player_id
     request.ctx.session["permissions"] = player.permissions
 
-    return response.redirect("/")
+    # redirect to previous page
+    return response.redirect(request.ctx.session.get("previous_page", "/"))

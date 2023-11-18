@@ -417,6 +417,13 @@ class SM5Game(Model):
 
         #return self.start_time.astimezone(pytz.timezone(time_zone)).strftime(f"%A, %B %{zero_pad}d at %I:%M %p")
         return strftime_ordinal(f"%A, %B {'{S}'} at %{zero_pad}I:%M %p", self.start_time)
+    
+    async def get_battlesuits(self) -> List[str]: # only the non-member players
+        """
+        Returns a list of entity_starts of battlesuits used in the game
+        """
+
+        return await self.entity_starts.filter(type="player", entity_id__startswith="@")
 
     async def to_dict(self):
         # convert the entire game to a dict

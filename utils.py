@@ -26,6 +26,7 @@ async def render_template(r, template, *args, **kwargs):
 def admin_only(f):
     async def wrapper(request: Request, *args, **kwargs):
         if not request.ctx.session.get("permissions", 0) == Permission.ADMIN:
+            request.ctx.session["previous_page"] = request.path
             return response.redirect("/login")
         return await f(request, *args, **kwargs)
     return wrapper

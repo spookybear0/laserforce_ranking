@@ -338,6 +338,27 @@ canvas {
     padding: 10px;
 }
 
+.button {
+    background-color: #0096FF;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    width: 8em;
+    height: 4em;
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+    cursor: pointer;
+    font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+}
+
+div {
+    font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+}
+
 .inline-block {
     display: inline-block;
     position: relative;

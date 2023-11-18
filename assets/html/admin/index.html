@@ -3,13 +3,42 @@
 
 
 {% block html_head %}
-<style>
+<script>
+    function getCookie() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === ("csrftoken=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
-</style>
+
+
+    function recalculate_ratings() {
+        alert("Recalculating ratings in background...");
+        fetch("/admin/recalculate_ratings", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
+</script>
 {% endblock %}
 
 {% block content %}
 
 <h1 style="text-align: center;">Dashboard</h1>
+
+<button onclick="recalculate_ratings()" class="button">Recalculate ratings</button>
 
 {% endblock %}

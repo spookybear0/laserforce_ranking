@@ -320,3 +320,75 @@ def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     
     # predict
     return model.predict_draw([team1, team2])
+
+async def recalculate_ratings():
+    """
+    Recalculates all ratings
+    """
+
+    # reset all ratings
+
+    await Player.all().update(sm5_mu=MU, sm5_sigma=SIGMA, laserball_mu=MU, laserball_sigma=SIGMA)
+
+    # get all games and recalculate ratings
+
+    sm5_games = await SM5Game.all().order_by("start_time").all()
+
+
+    for game in sm5_games:
+        if game.ranked:
+            logger.info(f"Updating player ranking for game {game.id}")
+
+            if await update_sm5_ratings(game):
+                logger.info(f"Updated player rankings for game {game.id}")
+            else:
+                logger.error(f"Failed to update player rankings for game {game.id}")
+        else: # still need to add current_rating and previous_rating
+            for entity_end in await game.entity_ends.filter(entity__type="player"):
+                entity_id = (await entity_end.entity).entity_id
+
+                player = await Player.filter(ipl_id=entity_id).first()
+                
+                if entity_id.startswith("#"): # member
+                    entity_end.previous_rating_mu = player.laserball_mu
+                    entity_end.previous_rating_sigma = player.laserball_sigma
+                    entity_end.current_rating_mu = player.laserball_mu
+                    entity_end.current_rating_sigma = player.laserball_sigma
+                else: # "@", non member
+                    entity_end.previous_rating_mu = MU
+                    entity_end.previous_rating_sigma = SIGMA
+                    entity_end.current_rating_mu = MU
+                    entity_end.current_rating_sigma = SIGMA
+
+                await entity_end.save()
+
+    lb_games = await LaserballGame.all().order_by("start_time").all()
+
+    for game in lb_games:
+        if game.ranked:
+            logger.info(f"Updating player ranking for game {game.id}")
+
+            if await update_laserball_ratings(game):
+                logger.info(f"Updated player rankings for game {game.id}")
+            else:
+                logger.error(f"Failed to update player rankings for game {game.id}")
+        else:
+            for entity_end in await game.entity_ends.filter(entity__type="player"):
+                entity_id = (await entity_end.entity).entity_id
+
+                player = await Player.filter(ipl_id=entity_id).first()
+                
+                if entity_id.startswith("#"): # member
+                    entity_end.previous_rating_mu = player.laserball_mu
+                    entity_end.previous_rating_sigma = player.laserball_sigma
+                    entity_end.current_rating_mu = player.laserball_mu
+                    entity_end.current_rating_sigma = player.laserball_sigma
+                else: # "@", non member
+                    entity_end.previous_rating_mu = MU
+                    entity_end.previous_rating_sigma = SIGMA
+                    entity_end.current_rating_mu = MU
+                    entity_end.current_rating_sigma = SIGMA
+
+                await entity_end.save()
+    
+    logger.info("Finished recalculating ratings")

@@ -1,11 +1,8 @@
 from sanic import Request
 from shared import app
 from utils import render_template
-from helpers import statshelper, userhelper
-from objects import GameType, Team
+from helpers import userhelper
 from helpers.statshelper import sentry_trace
-from db.models import SM5Game, Player, EntityEnds, LaserballGame
-from tortoise.expressions import F
 
 @app.get("/")
 @sentry_trace

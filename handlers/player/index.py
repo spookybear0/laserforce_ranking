@@ -59,6 +59,9 @@ async def player_get(request: Request, id: Union[int, str]):
             player = await Player.filter(codename=id).first() # could be codename
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
+        
+    if not player:
+        raise exceptions.NotFound("Not found: Invalid ID or codename")
     
     recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
     recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
