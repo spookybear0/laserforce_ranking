@@ -12,12 +12,6 @@ from sanic_jinja2 import SanicJinja2
 from sanic_session import Session, InMemorySessionInterface
 from config import config
 from sanic_cors import CORS
-import signal
-
-def handle_sigterm(*args):
-    pass # systemd keeps trying to kill us, but we don't want to die
-
-signal.signal(signal.SIGTERM, handle_sigterm)
 
 # we need to set up our app before we import anything else
 
