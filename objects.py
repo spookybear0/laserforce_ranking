@@ -11,8 +11,9 @@ def in_ipynb():
 
 # not in juptyer notebook
 if not in_ipynb():
-    sql = app.ctx.sql
     from shared import app
+    sql = app.ctx.sql
+
 
 ALL_ROLES = ("scout", "heavy", "commander", "medic", "ammo")
 
