@@ -2,11 +2,17 @@ from enum import Enum
 from typing import List
 from laserforce import Player as IPLPlayer
 from dataclasses import dataclass
-from shared import app
 import datetime
 import openskill
+import sys
 
-sql = app.ctx.sql
+def in_ipynb():
+    return "ipykernel" in sys.modules
+
+# not in juptyer notebook
+if not in_ipynb():
+    sql = app.ctx.sql
+    from shared import app
 
 ALL_ROLES = ("scout", "heavy", "commander", "medic", "ammo")
 

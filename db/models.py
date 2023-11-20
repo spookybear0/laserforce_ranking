@@ -1,13 +1,12 @@
 from typing import List, Optional
 from tortoise import Model, fields, functions
-from tortoise.expressions import F, Q, Function
+from tortoise.expressions import F
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
 from collections import Counter
 from openskill.models import PlackettLuceRating as Rating, PlackettLuce
 import statistics
 import bcrypt
-import pytz
 import sys
 
 model = PlackettLuce()

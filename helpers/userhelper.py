@@ -2,7 +2,13 @@ from objects import Team, Role, GameType, SM5GamePlayer, LaserballGamePlayer
 from objects import Player as LegacyPlayer
 from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
-from shared import app
+import sys
+
+def in_ipynb():
+    return "ipykernel" in sys.modules
+
+if not in_ipynb():
+    from shared import app
 from db.models import EntityStarts, SM5Game, EntityEnds, Player, IntRole
 from statistics import median
 import bcrypt
@@ -51,8 +57,8 @@ def check_password(password: str, hashed: str) -> bool:
         return False
 
 ### BELOW IS DEPRECATED ###
-
-sql = app.ctx.sql
+if not in_ipynb():
+    sql = app.ctx.sql
 
 async def get_players(amount: int = 100, start: int = 0) -> List[Player]:
     """
