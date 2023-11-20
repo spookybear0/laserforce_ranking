@@ -6,7 +6,7 @@ from tortoise.expressions import F
 
 @app.get("/admin/players")
 @admin_only
-async def admin_players(request: Request):
+async def admin_players(request: Request) -> str:
     page = int(request.args.get("page", 0))
     return await render_template(request,
         "admin/players.html",

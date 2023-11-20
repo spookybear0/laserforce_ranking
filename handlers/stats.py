@@ -9,7 +9,7 @@ from tortoise.expressions import F
 
 @app.get("/stats")
 @sentry_trace
-async def stats(request: Request):
+async def stats(request: Request) -> str:
     total_players = await Player.all().count()
     total_games = await SM5Game.all().count()
     total_games_played = await EntityEnds.all().count()

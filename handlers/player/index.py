@@ -49,7 +49,7 @@ async def get_role_labels_from_medians(median_role_score):
 
 @app.get("/player/<id>")
 @sentry_trace
-async def player_get(request: Request, id: Union[int, str]):
+async def player_get(request: Request, id: Union[int, str]) -> str:
     id = unquote(id)
 
     player = await Player.get_or_none(player_id=id)
@@ -104,7 +104,7 @@ async def player_get(request: Request, id: Union[int, str]):
     )
 
 @app.post("/player")
-async def player_post(request: Request):
+async def player_post(request: Request) -> str:
     data = get_post(request)
     user = data["userid"]
     return response.redirect(f"/player/{user}")

@@ -4,5 +4,5 @@ from sanic import Request
 from shared import app
 
 @app.exception(NotFound)
-async def index(request: Request, exception: Exception):
+async def index(request: Request, exception: Exception) -> str:
     return await render_template(request, "errors/404.html")

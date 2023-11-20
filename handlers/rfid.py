@@ -4,11 +4,11 @@ from utils import render_template, get_post
 from helpers import rfidhelper
 
 @app.get("/rfid")
-async def rfid(request: Request):
+async def rfid(request: Request) -> str:
     return await render_template(request, "rfid.html")
 
 @app.post("/rfid")
-async def rfid_post(request: Request):
+async def rfid_post(request: Request) -> str:
     print(request.form)
     data = get_post(request)
 

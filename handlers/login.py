@@ -4,11 +4,11 @@ from utils import render_template
 from db.models import Player
 
 @app.get("/login")
-async def login(request: Request):
+async def login(request: Request) -> str:
     return await render_template(request, "login.html")
 
 @app.post("/login")
-async def login_post(request: Request):
+async def login_post(request: Request) -> str:
     codename = request.form.get("codename")
     password = request.form.get("password")
 

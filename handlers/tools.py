@@ -9,12 +9,12 @@ from helpers.statshelper import sentry_trace
 from openskill.models import PlackettLuceRating as Rating
 
 @app.get("/tools")
-async def tools(request: Request):
+async def tools(request: Request) -> str:
     return await render_template(request, "tools.html")
 
 @app.post("/matchmake")
 @sentry_trace
-async def matchmake_post(request: Request):
+async def matchmake_post(request: Request) -> str:
     logger.debug("Matchmaking")
 
     data = request.form
@@ -68,7 +68,7 @@ async def matchmake_post(request: Request):
     return await render_template(request, "matchmake_results.html", team1=match[0], team2=match[1], win_chance=win_chance, draw_chance=draw_chance)
 
 @app.post("/win_chance")
-async def win_chance_post(request: Request):
+async def win_chance_post(request: Request) -> str:
     data = request.form
 
     team1 = []

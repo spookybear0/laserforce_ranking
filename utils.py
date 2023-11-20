@@ -11,7 +11,7 @@ def get_post(request: Request):
         data[key] = data[key]
     return data
 
-async def render_template(r, template, *args, **kwargs):
+async def render_template(r, template, *args, **kwargs) -> str:
     additional_kwargs = {
         "session": r.ctx.session,
         "config": r.app.ctx.config,

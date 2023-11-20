@@ -16,7 +16,7 @@ async def get_laserballstats(entity):
 
 @app.get("/admin/game/<mode>/<id>")
 @admin_only
-async def admin_game(request: Request, mode: str, id: Union[int, str]):
+async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
 
@@ -61,7 +61,7 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]):
     
 @app.post("/admin/game/<mode>/<id>/rank")
 @admin_only
-async def admin_game_rank(request: Request, mode: str, id: Union[int, str]):
+async def admin_game_rank(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
     elif mode == "lb":
@@ -76,7 +76,7 @@ async def admin_game_rank(request: Request, mode: str, id: Union[int, str]):
 
 @app.post("/admin/game/<mode>/<id>/unrank")
 @admin_only
-async def admin_game_unrank(request: Request, mode: str, id: Union[int, str]):
+async def admin_game_unrank(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
     elif mode == "lb":
@@ -91,7 +91,7 @@ async def admin_game_unrank(request: Request, mode: str, id: Union[int, str]):
 
 @app.post("/admin/game/<mode>/<id>/log_in_player")
 @admin_only
-async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, str]):
+async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
     elif mode == "lb":

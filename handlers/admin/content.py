@@ -5,7 +5,7 @@ from db.models import SM5Game, LaserballGame
 
 @app.get("/admin/content")
 @admin_only
-async def admin_content(request: Request):
+async def admin_content(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
 

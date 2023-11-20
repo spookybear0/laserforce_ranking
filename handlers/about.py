@@ -3,5 +3,5 @@ from shared import app
 from utils import render_template
 
 @app.get("/about")
-async def about(request: Request):
+async def about(request: Request) -> str:
     return await render_template(request, "about.html")

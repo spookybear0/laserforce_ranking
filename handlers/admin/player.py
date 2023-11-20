@@ -6,7 +6,7 @@ from db.models import Player
 
 @app.get("/admin/player/<id>")
 @admin_only
-async def admin_player(request: Request, id: Union[int, str]):
+async def admin_player(request: Request, id: Union[int, str]) -> str:
     if type(id) == str:
         # codename
         player = await Player.filter(codename=id).first()

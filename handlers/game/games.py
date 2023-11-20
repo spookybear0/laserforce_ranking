@@ -7,7 +7,7 @@ from helpers.statshelper import sentry_trace
 
 @app.get("/games")
 @sentry_trace
-async def index(request: Request):
+async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
 
