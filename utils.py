@@ -1,7 +1,6 @@
 from sanic import Request, response
 from db.models import Permission
 from shared import app
-import sys
 
 def get_post(request: Request):
     """

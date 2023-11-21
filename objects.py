@@ -18,7 +18,6 @@ if not in_ipynb():
 ALL_ROLES = ("scout", "heavy", "commander", "medic", "ammo")
 
 class Team(Enum):
-    NONE = "none" # used for draws
     RED = "red"
     GREEN = "green"
     BLUE = "blue"
@@ -36,7 +35,10 @@ class Role(Enum):
 class GameType(Enum):
     SM5 = "sm5"
     LASERBALL = "laserball"
-    
+
+# DEPRECATED
+# all of these are deprecated
+
 @dataclass
 class Player:
     id: int

@@ -85,6 +85,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
             case "4": # event
+                # okay but why is this a thing
                 if data[2] == "0B03": # base awarded
                     data[2] = 2819 # keeping my system in integers
                 events.append(await Events.create(time=int(data[1]), type=EventType(int(data[2])), arguments=json.dumps(data[3:])))
@@ -126,7 +127,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     ranked = True
     ended_early = False
 
-    game = await SM5Game.create(winner=Team.NONE, winner_color=Team.NONE.value, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
+    game = await SM5Game.create(winner=None, winner_color="none", tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
     
@@ -141,16 +142,16 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # winner determination
 
-    winner = Team.NONE
+    winner = None
     if await game.get_red_score() > await game.get_green_score():
         winner = Team.RED
     elif await game.get_red_score() < await game.get_green_score():
         winner = Team.GREEN
     else: # tie or no winner or something crazy happened
-        winner = Team.NONE
+        winner = None
 
     game.winner = winner
-    game.winner_color = winner.value
+    game.winner_color = winner.value if winner else "none"
     await game.save()
 
     # determine if the game should be ranked automatically
@@ -162,13 +163,6 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
         ranked = False
-
-    # also check if there are any non members in the game
-
-    for e in entity_starts:
-        if e.type == "player" and e.entity_id.startswith("@") and e.name == e.battlesuit:
-            ranked = False
-            break
 
     # check if game was ended early (but not by elimination)
 
@@ -415,7 +409,7 @@ async def parse_laserball_game(file_location: str):
     blue_colors = ["Solid Blue", "Ice", "Earth", "Blue", "Solid Green", "Green"]
 
     if winner_model is None:
-        winner = Team.NONE # tie (draw)
+        winner = None # tie (draw)
     elif winner_model.color_name in red_colors:
         winner = Team.RED
     elif winner_model.color_name in blue_colors:
@@ -428,7 +422,7 @@ async def parse_laserball_game(file_location: str):
     ranked = True
     ended_early = False
 
-    game = await LaserballGame.create(winner=winner, winner_color=winner.value, tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
+    game = await LaserballGame.create(winner=winner, winner_color=winner.value if winner else "none", tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
     
@@ -454,13 +448,6 @@ async def parse_laserball_game(file_location: str):
 
     if team1_len < 1 or team2_len < 1:
         ranked = False
-
-    # also check if there are any non members in the game
-
-    for e in entity_starts:
-        if e.type == "player" and e.entity_id.startswith("@") and e.name == e.battlesuit:
-            ranked = False
-            break
 
     # check if game was ended early (but not by elimination)
 
