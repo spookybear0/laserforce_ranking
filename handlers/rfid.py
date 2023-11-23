@@ -1,7 +1,7 @@
 from sanic import Request, exceptions, HTTPResponse
 from shared import app
 from utils import render_template, get_post
-from helpers import rfidhelper
+from helpers import userhelper
 
 @app.get("/rfid")
 async def rfid(request: Request) -> str:
@@ -9,21 +9,19 @@ async def rfid(request: Request) -> str:
 
 @app.post("/rfid")
 async def rfid_post(request: Request) -> str:
-    print(request.form)
-    data = get_post(request)
+    data = request.form
 
-    # data.get() wont work for some reason so we have to do this
     hex = None
     if "hex" in data:
-        hex = data["hex"]
+        hex = data["hex"][0]
 
     decimal = None
     if "decimal" in data:
-        decimal = data["decimal"]
+        decimal = data["decimal"][0]
 
     if hex:
-        return HTTPResponse(str(rfidhelper.to_decimal(hex)))
+        return HTTPResponse(str(userhelper.to_decimal(hex)))
     elif decimal:
-        return HTTPResponse(str(rfidhelper.to_hex(decimal)))
+        return HTTPResponse(str(userhelper.to_hex(decimal)))
 
     raise exceptions.BadRequest("Form data must be filled out.")

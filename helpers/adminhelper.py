@@ -1,14 +1,11 @@
 from tortoise import Tortoise
 from config import config
-from db.migrations import migrate_from_sql
 from helpers import tdfhelper, userhelper, ratinghelper
 from db.models import Player, Permission, SM5Game, EntityEnds, EntityStarts, Events
 from typing import List
 
 async def repopulate_database() -> None:
     await Tortoise.generate_schemas()
-
-    await migrate_from_sql(False)
 
     # some fixes
 
@@ -18,18 +15,6 @@ async def repopulate_database() -> None:
     await Player.all().update(sm5_mu=ratinghelper.MU, sm5_sigma=ratinghelper.SIGMA, laserball_mu=ratinghelper.MU, laserball_sigma=ratinghelper.SIGMA)
 
     await tdfhelper.parse_all_tdfs()
-
-async def reload_database() -> None:
-    """
-    CAUTION
-
-    this function will delete the entire database and create it again
-
-    could potentially lose all data, back up beforehand
-    """
-    
-    # TODO: implement this with an automatic backup
-    pass
 
 async def manually_login_player_sm5(game: SM5Game, prev_codename: str, player: Player) -> bool:
     """

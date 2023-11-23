@@ -1,7 +1,6 @@
 from helpers.userhelper import get_median_role_score
 from objects import GameType, Team
 from utils import render_template, get_post
-from helpers import gamehelper
 from shared import app
 from sanic import Request, HTTPResponse, response, exceptions
 from shared import app
@@ -9,8 +8,6 @@ from urllib.parse import unquote
 from typing import Union
 from db.models import Player, SM5Game, LaserballGame
 from helpers.statshelper import sentry_trace
-from statistics import NormalDist
-from numpy import arange
 
 sql = app.ctx.sql
 

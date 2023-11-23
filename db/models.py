@@ -108,8 +108,8 @@ class Permission(IntEnum):
 
 class Player(Model):
     id = fields.IntField(pk=True)
-    player_id = fields.CharField(50)
-    codename = fields.CharField(50)
+    player_id = fields.CharField(20)
+    codename = fields.CharField(255)
     ipl_id = fields.CharField(50, default="")
     sm5_mu = fields.FloatField(default=25)
     sm5_sigma = fields.FloatField(default=8.333)
@@ -118,7 +118,7 @@ class Player(Model):
     timestamp = fields.DatetimeField(auto_now=True)
 
     # account stuff
-    password = fields.CharField(100, null=True) # hashed password
+    password = fields.CharField(255, null=True) # hashed password
     permissions = fields.IntEnumField(Permission, default=Permission.USER)
     
     @property

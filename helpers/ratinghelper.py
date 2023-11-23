@@ -46,7 +46,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     # need to update previous rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        if str(entity_end.entity_id).startswith("#"):
+        if str((await entity_end.entity).entity_id).startswith("#"):
             player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
             entity_end.previous_rating_mu = player.sm5_mu
             entity_end.previous_rating_sigma = player.sm5_sigma
@@ -64,9 +64,6 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     ).order_by("time").all() # only get the events that we need
 
     for event in events:
-        #if "@" in event.arguments[0] or "@" in event.arguments[2]:
-        #    continue
-
         match event.type:
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
                 shooter = await userhelper.player_from_token(game, event.arguments[0])
@@ -118,6 +115,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 target_player.sm5_mu = out[1][0].mu
                 target_player.sm5_sigma = out[1][0].sigma
 
+                # update if they're a member
                 if str(shooter.entity_id).startswith("#"):
                     await shooter_player.save()
                 if str(target.entity_id).startswith("#"):
@@ -163,7 +161,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        if str(entity_end.entity_id).startswith("#"):
+        if str((await entity_end.entity).entity_id).startswith("#"):
             player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
             entity_end.current_rating_mu = player.sm5_mu
             entity_end.current_rating_sigma = player.sm5_sigma
@@ -193,7 +191,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        if str(entity_end.entity_id).startswith("#"):
+        if str((await entity_end.entity).entity_id):
             player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
             entity_end.previous_rating_mu = player.laserball_mu
             entity_end.previous_rating_sigma = player.laserball_sigma
@@ -212,8 +210,6 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     ).order_by("time").all() # only get the events that we need
 
     for event in events:
-        #if "@" in event.arguments[0] or "@" in event.arguments[2]:
-        #    continue
 
         match event.type:
             # laserball events
@@ -316,7 +312,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        if str(entity_end.entity_id).startswith("#"):
+        if str((await entity_end.entity).entity_id):
             player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
             entity_end.current_rating_mu = player.laserball_mu
             entity_end.current_rating_sigma = player.laserball_sigma
@@ -345,7 +341,7 @@ def matchmake(players, mode: GameType=GameType.SM5):
 
     # gets most fair teams
 
-    for _ in range(500):
+    for _ in range(1000):
         shuffle(players)
         team1 = players[:len(players)//2]
         team2 = players[len(players)//2:]
@@ -420,7 +416,7 @@ async def recalculate_ratings():
 
                 player = await Player.filter(ipl_id=entity_id).first()
                 
-                if entity_id.startswith("#"): # member
+                if str(entity_id).startswith("#"): # member
                     entity_end.previous_rating_mu = player.laserball_mu
                     entity_end.previous_rating_sigma = player.laserball_sigma
                     entity_end.current_rating_mu = player.laserball_mu
