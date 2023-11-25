@@ -67,6 +67,21 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     favorite_battlesuit = await player.get_favorite_battlesuit()
 
     median_role_score = await get_median_role_score(player)
+
+
+    red_teams_sm5 = await player.times_played_as_team(Team.RED, GameType.SM5)
+    green_teams_sm5 = await player.times_played_as_team(Team.GREEN, GameType.SM5)
+    red_teams_laserball = await player.times_played_as_team(Team.RED, GameType.LASERBALL)
+    blue_teams_laserball = await player.times_played_as_team(Team.BLUE, GameType.LASERBALL)
+
+    red_wins_sm5 = await player.get_wins_as_team(Team.RED, GameType.SM5)
+    green_wins_sm5 = await player.get_wins_as_team(Team.GREEN, GameType.SM5)
+    red_wins_laserball = await player.get_wins_as_team(Team.RED, GameType.LASERBALL)
+    blue_wins_laserball = await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL)
+
+    sm5_win_percent = (red_wins_sm5+green_wins_sm5)/(red_teams_sm5+green_teams_sm5) if (red_teams_sm5+green_teams_sm5) != 0 else 0
+    laserball_win_percent = (red_wins_laserball+blue_wins_laserball)/(red_teams_laserball+blue_teams_laserball) if (red_teams_laserball+blue_teams_laserball) != 0 else 0
+    win_percent = (red_wins_sm5+green_wins_sm5+red_wins_laserball+blue_wins_laserball)/(red_teams_sm5+green_teams_sm5+red_teams_laserball+blue_teams_laserball) if (red_teams_sm5+green_teams_sm5+red_teams_laserball+blue_teams_laserball) != 0 else 0
     
     return await render_template(
         request, "player/player.html",
@@ -81,19 +96,19 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         favorite_role=favorite_role,
         favorite_battlesuit=favorite_battlesuit,
         # team rate pies (sm5/laserball)
-        red_teams_sm5=await player.times_played_as_team(Team.RED, GameType.SM5),
-        green_teams_sm5=await player.times_played_as_team(Team.GREEN, GameType.SM5),
-        red_teams_laserball=await player.times_played_as_team(Team.RED, GameType.LASERBALL),
-        blue_teams_laserball=await player.times_played_as_team(Team.BLUE, GameType.LASERBALL),
+        red_teams_sm5=red_teams_sm5,
+        green_teams_sm5=green_teams_sm5,
+        red_teams_laserball=red_teams_laserball,
+        blue_teams_laserball=blue_teams_laserball,
         # win percents (sm5, laserball, all)
-        sm5_win_percent=await player.get_win_percent(GameType.SM5),
-        laserball_win_percent=await player.get_win_percent(GameType.LASERBALL),
-        win_percent=await player.get_win_percent(),
+        sm5_win_percent=sm5_win_percent,
+        laserball_win_percent=laserball_win_percent,
+        win_percent=win_percent,
         # games won as team (sm5, laserball)
-        red_wins_sm5=await player.get_wins_as_team(Team.RED, GameType.SM5),
-        green_wins_sm5=await player.get_wins_as_team(Team.GREEN, GameType.SM5),
-        red_wins_laserball=await player.get_wins_as_team(Team.RED, GameType.LASERBALL),
-        blue_wins_laserball=await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL),
+        red_wins_sm5=red_wins_sm5,
+        green_wins_sm5=green_wins_sm5,
+        red_wins_laserball=red_wins_laserball,
+        blue_wins_laserball=blue_wins_laserball,
         # role score plot (sm5)
         role_plot_data_player=[x for x in median_role_score if x != 0],
         role_plot_data_world=await Player.get_median_role_score_world(median_role_score),

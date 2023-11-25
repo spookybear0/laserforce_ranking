@@ -1,7 +1,7 @@
 from tortoise import Tortoise
 from config import config
 from helpers import tdfhelper, userhelper, ratinghelper
-from db.models import Player, Permission, SM5Game, EntityEnds, EntityStarts, Events
+from db.models import Player, Permission, SM5Game, EntityStarts, Events
 from typing import List
 
 async def repopulate_database() -> None:

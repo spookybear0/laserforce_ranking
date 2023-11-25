@@ -83,10 +83,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
                 shooter_player.sm5_mu = out[0][0].mu
-                shooter_player.sm5_sigma = out[0][0].sigma
+                shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
                 target_player.sm5_mu = out[1][0].mu
-                target_player.sm5_sigma = out[1][0].sigma
+                target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
                 if str(shooter.entity_id).startswith("#"):
                     await shooter_player.save()
@@ -110,10 +110,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
                 shooter_player.sm5_mu = out[0][0].mu
-                shooter_player.sm5_sigma = out[0][0].sigma
+                shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
                 target_player.sm5_mu = out[1][0].mu
-                target_player.sm5_sigma = out[1][0].sigma
+                target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
                 # update if they're a member
                 if str(shooter.entity_id).startswith("#"):
@@ -148,14 +148,14 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
 
     for player, rating in zip(team1, team1_new):
         if type(player) == Player: # only update if player is a Player object (a member)
-            player.sm5_mu += (rating.mu - player.sm5_mu) * 5
-            player.sm5_sigma += (rating.sigma - player.sm5_sigma) * 5
+            player.sm5_mu = rating.mu
+            player.sm5_sigma = rating.sigma
             await player.save()
     
     for player, rating in zip(team2, team2_new):
         if type(player) == Player: # only update if player is a Player object (a member)
-            player.sm5_mu += (rating.mu - player.sm5_mu) * 5
-            player.sm5_sigma += (rating.sigma - player.sm5_sigma) * 5
+            player.sm5_mu = rating.mu
+            player.sm5_sigma = rating.sigma
             await player.save()
 
     # need to update current rating and for each entity end object
@@ -299,14 +299,14 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     for player, rating in zip(team1, team1_new):
         if type(player) == Player: # only update if player is a Player object (a member)
-            player.laserball_mu += (rating.mu - player.laserball_mu) * 5
-            player.laserball_sigma += (rating.sigma - player.laserball_sigma) * 5
+            player.laserball_mu = rating.mu
+            player.laserball_sigma = rating.sigma
             await player.save()
     
     for player, rating in zip(team2, team2_new):
         if type(player) == Player: # only update if player is a Player object (a member)
-            player.laserball_mu += (rating.mu - player.laserball_mu) * 5
-            player.laserball_sigma += (rating.sigma - player.laserball_sigma) * 5
+            player.laserball_mu = rating.mu
+            player.laserball_sigma = rating.sigma
             await player.save()
 
     # need to update current rating and for each entity end object
