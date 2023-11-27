@@ -11,6 +11,7 @@ default_config = {
     "db_database": "laserforce",
     "sentry_dsn": "",
     "sentry_environment": "production",
+    "redis": "redis://localhost",
 }
 
 config_options = list(default_config.keys())

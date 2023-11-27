@@ -14,3 +14,4 @@ sanic_jinja2
 requests
 aiohttp
 websockets==10.0
+aioredis

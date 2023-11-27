@@ -9,16 +9,19 @@ from mysql import MySQLPool
 import jinja2
 from sanic import Sanic
 from sanic_jinja2 import SanicJinja2
-from sanic_session import Session, InMemorySessionInterface
+from sanic_session import Session, AIORedisSessionInterface
 from config import config
 from sanic_cors import CORS
+import aioredis
 
 # we need to set up our app before we import anything else
 
 app = Sanic("laserforce_rankings")
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-Session(app, interface=InMemorySessionInterface())
+session = Session()
+app.ctx.redis = aioredis.from_url(config["redis"], decode_responses=True)
+session.init_app(app, interface=AIORedisSessionInterface(app.ctx.redis))
 
 app.ctx.jinja = SanicJinja2(
     app,
