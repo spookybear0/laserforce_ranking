@@ -8,6 +8,22 @@ from sanic.log import logger
 from helpers.statshelper import sentry_trace
 from openskill.models import PlackettLuceRating as Rating
 
+class FakePlayer:
+    def __init__(self, codename: str) -> None:
+        self.codename = codename
+        self.sm5_rating = Rating(25, 25/3)
+        self.laserball_rating = Rating(25, 25/3)
+        self.sm5_rating_mu = 25
+        self.sm5_rating_sigma = 25/3
+        self.laserball_rating_mu = 25
+        self.laserball_rating_sigma = 25/3
+
+    def __str__(self) -> str:
+        return f"{self.codename} (non member)"
+    
+    def __repr__(self) -> str:
+        return f"{self.codename} (non member)"
+
 @app.get("/tools")
 async def tools(request: Request) -> str:
     return await render_template(request, "tools.html")
@@ -32,22 +48,40 @@ async def matchmake_post(request: Request) -> str:
             continue
         if codename == "":
             continue
-        p = await Player.filter(codename=codename).first()
+
+        if codename == "DUMMY":
+            p = None
+        else:
+            p = await Player.filter(codename=codename).first()
+        
         if p is None:
-            p = lambda: None # dummy object
-            p.codename = codename
-            p.sm5_rating_mu = 25
-            p.sm5_rating_sigma = 25 / 3
-            p.sm5_rating = Rating(p.sm5_rating_mu, p.sm5_rating_sigma)
-            p.laserball_rating_mu = 25
-            p.laserball_rating_sigma = 25 / 3
-            p.laserball_rating = Rating(p.laserball_rating_mu, p.laserball_rating_sigma)
+            p = FakePlayer(codename)
+            print(p)
         players.append(p)
 
     match = ratinghelper.matchmake(players, mode)
 
     team1 = match[0]
     team2 = match[1]
+
+    print(team1, team2)
+
+    team1_ratings = []
+    team2_ratings = []
+
+    for player in team1:
+        p = await Player.filter(codename=player.codename).first()
+        if p:
+            team1_ratings.append(p.sm5_rating.ordinal())
+        else:
+            team1_ratings.append(0)
+    
+    for player in team2:
+        p = await Player.filter(codename=player.codename).first()
+        if p:
+            team2_ratings.append(p.sm5_rating.ordinal())
+        else:
+            team2_ratings.append(0)
 
     win_chance = ratinghelper.get_win_chance(*match)
     
@@ -64,7 +98,16 @@ async def matchmake_post(request: Request) -> str:
     win_chance[0] = round(win_chance[0], 2)
     win_chance[1] = round(win_chance[1], 2)
 
-    return await render_template(request, "matchmake_results.html", team1=match[0], team2=match[1], win_chance=win_chance)
+    return await render_template(
+        request,
+        "matchmake_results.html",
+        team1=team1,
+        team2=team2,
+        team1_ratings=team1_ratings,
+        team2_ratings=team2_ratings,
+        win_chance=win_chance,
+        zip=zip,
+    )
 
 @app.post("/win_chance")
 async def win_chance_post(request: Request) -> str:

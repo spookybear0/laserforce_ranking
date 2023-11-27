@@ -17,17 +17,6 @@ SIGMA = MU / 3
 
 model = PlackettLuce()
 
-def calculate_laserball_mvp_points(player: LaserballGamePlayer):
-    mvp_points = 0
-
-    mvp_points += player.goals   * 1
-    mvp_points += player.assists * 0.75
-    mvp_points += player.steals  * 0.5
-    mvp_points += player.clears  * 0.25 # clear implies a steal so the total gained is 0.75
-    mvp_points += player.blocks  * 0.3
-
-    return mvp_points
-
 # sm5 elo helper functions
 
 async def update_sm5_ratings(game: SM5Game) -> bool:
@@ -45,7 +34,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     
     # need to update previous rating and for each entity end object
 
-    for entity_end in await game.entity_ends.filter(entity__type="player"):
+    for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
         player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
         entity_end.previous_rating_mu = player.sm5_mu
         entity_end.previous_rating_sigma = player.sm5_sigma
@@ -224,9 +213,9 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     for player in await game.entity_starts.filter(type="player"):
         if (await player.team).color_name == "Fire":
-            team1.append(Rating(MU, SIGMA))
+            team1.append(await Player.filter(ipl_id=player.entity_id).first())
         else:
-            team2.append(Rating(MU, SIGMA))
+            team2.append(await Player.filter(ipl_id=player.entity_id).first())
 
 
     team1_elo = list(map(lambda x: Rating(x.laserball_mu, x.laserball_sigma), team1))
@@ -344,7 +333,7 @@ async def recalculate_ratings():
             else:
                 logger.error(f"Failed to update player rankings for game {game.id}")
         else: # still need to add current_rating and previous_rating
-            for entity_end in await game.entity_ends.filter(entity__type="player"):
+            for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
                 entity_id = (await entity_end.entity).entity_id
 
                 player = await Player.filter(ipl_id=entity_id).first()
@@ -372,16 +361,10 @@ async def recalculate_ratings():
 
                 player = await Player.filter(ipl_id=entity_id).first()
                 
-                if entity_id.startswith("#"): # member
-                    entity_end.previous_rating_mu = player.laserball_mu
-                    entity_end.previous_rating_sigma = player.laserball_sigma
-                    entity_end.current_rating_mu = player.laserball_mu
-                    entity_end.current_rating_sigma = player.laserball_sigma
-                else: # "@", non member
-                    entity_end.previous_rating_mu = MU
-                    entity_end.previous_rating_sigma = SIGMA
-                    entity_end.current_rating_mu = MU
-                    entity_end.current_rating_sigma = SIGMA
+                entity_end.previous_rating_mu = player.laserball_mu
+                entity_end.previous_rating_sigma = player.laserball_sigma
+                entity_end.current_rating_mu = player.laserball_mu
+                entity_end.current_rating_sigma = player.laserball_sigma
 
                 await entity_end.save()
     

@@ -255,6 +255,7 @@
                     <th><p>Shot Team</p></th>
                     <th><p>Missiled Team</p></th>
                     <th><p>Medic Hits</p></th>
+                    <th><p>MVP Points</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
                             {% set entity_end = get_entity_end(entity) %}
@@ -278,8 +279,9 @@
                                 <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
                                 <td><p>{{ sm5_stats.times_missiled }}</p></td>
                                 <td><p>{{ sm5_stats.shot_team }}</p></td>
-                                <td><p>{{ sm5_stats.missiled_team}}</p></td>
-                                <td><p>{{ sm5_stats.medic_hits}}</p></td>
+                                <td><p>{{ sm5_stats.missiled_team }}</p></td>
+                                <td><p>{{ sm5_stats.medic_hits }}</p></td>
+                                <td><p>{{ sm5_stats.mvp_points()|round(2) }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -304,6 +306,7 @@
                     <th><p>Shot Team</p></th>
                     <th><p>Missiled Team</p></th>
                     <th><p>Medic Hits</p></th>
+                    <th><p>MVP Points</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
                             {% set entity_end = get_entity_end(entity) %}
@@ -326,8 +329,9 @@
                                 <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
                                 <td><p>{{ sm5_stats.times_missiled }}</p></td>
                                 <td><p>{{ sm5_stats.shot_team }}</p></td>
-                                <td><p>{{ sm5_stats.missiled_team}}</p></td>
-                                <td><p>{{ sm5_stats.medic_hits}}</p></td>
+                                <td><p>{{ sm5_stats.missiled_team }}</p></td>
+                                <td><p>{{ sm5_stats.medic_hits }}</p></td>
+                                <td><p>{{ sm5_stats.mvp_points()|round(2) }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}

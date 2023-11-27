@@ -265,6 +265,7 @@
                     <th><p>Blocks</p></th>
                     <th><p>Stolen</p></th>
                     <th><p>Blocked</p></th>
+                    <th><p>MVP Points</p></th>
                     <th><p>K/D</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
@@ -287,6 +288,7 @@
                                 <td><p>{{ laserball_stats.blocks }}</p></td>
                                 <td><p>{{ laserball_stats.times_stolen }}</p></td>
                                 <td><p>{{ laserball_stats.times_blocked }}</p></td>
+                                <td><p>{{ laserball_stats.mvp_points|round(2) }}</p></td>
                                 <td><p>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
                             </tr>
                         {% endif %}
@@ -309,6 +311,7 @@
                     <th><p>Blocks</p></th>
                     <th><p>Stolen</p></th>
                     <th><p>Blocked</p></th>
+                    <th><p>MVP Points</p></th>
                     <th><p>K/D</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
@@ -331,6 +334,7 @@
                                 <td><p>{{ laserball_stats.blocks }}</p></td>
                                 <td><p>{{ laserball_stats.times_stolen }}</p></td>
                                 <td><p>{{ laserball_stats.times_blocked }}</p></td>
+                                <td><p>{{ laserball_stats.mvp_points()|round(2) }}</p></td>
                                 <td><p>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
                             </tr>
                         {% endif %}

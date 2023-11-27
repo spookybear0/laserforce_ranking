@@ -102,28 +102,28 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
     
-    battlesuit = request.args.get("battlesuit")
-    codename = request.args.get("codename")
+    battlesuit = request.json.get("battlesuit")
+    codename = request.json.get("codename")
 
-    player = await Player.filter(name=codename).first()
+    player = await Player.filter(codename=codename).first()
     
-    entity_start = await game.entity_starts.filter(name=battlesuit, battlesuit=battlesuit).first()
+    entity_start = await game.entity_starts.filter(name=battlesuit).first()
 
     old_entity_id = entity_start.entity_id
 
     entity_start.name = codename
     entity_start.entity_id = player.ipl_id
 
-    await entity_start.save()
+    await entity_start.save()  
 
     # go through all events and change @number to #entity_id
 
     async for event in game.events:
-        data = event.data
-        for info in data:
+        arguments = event.arguments
+        for info in arguments:
             if info == old_entity_id:
-                data[data.index(info)] = player.ipl_id
-        event.data = data
+                arguments[arguments.index(info)] = player.ipl_id
+        event.arguments = arguments
         await event.save()
 
     # update the tdf file
@@ -133,14 +133,14 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
     if mode == "sm5":
         tdf = "sm5_tdf/" + tdf
     elif mode == "lb":
-        tdf = "lb_tdf/" + tdf
+        tdf = "laserball_tdf/" + tdf
 
     # simple find and replace
 
     with open(tdf, "r") as f:
         contents = f.read()
 
-        contents = contents.replace(old_entity_id, codename)
+        contents = contents.replace(old_entity_id, player.ipl_id)
 
     with open(tdf, "w") as f:
         f.write(contents)

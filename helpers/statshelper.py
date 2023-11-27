@@ -267,7 +267,30 @@ async def get_top_medics(amount=5) -> List[Tuple[str, int]]:
 
     return medics[:amount]
 
+# get ranking accuracy
 
+async def get_ranking_accuracy() -> float:
+    """
+    Ranks how accurate the ranking system is
+    at predicting the winner of a game
+
+    returns a float between 0 and 1
+    """
+
+    correct = 0
+    total = 0
+
+    for game in await SM5Game.filter(ranked=True).all():
+        red_chance, green_chance = await game.get_win_chance()
+        red_score, green_score = await game.get_red_score(), await game.get_green_score()
+
+        if red_chance >= green_chance and red_score > green_score:
+            correct += 1
+        elif green_chance >= red_chance and green_score > red_score:
+            correct += 1
+        total += 1
+
+    return correct / total if total != 0 else 0
 
 # performance helpers
 

@@ -7,6 +7,7 @@ from collections import Counter
 from openskill.models import PlackettLuceRating as Rating, PlackettLuce
 import statistics
 import bcrypt
+import math
 import sys
 
 model = PlackettLuce()
@@ -494,15 +495,12 @@ class EntityStarts(Model):
         # get the player object from the entity
         return await Player.get(ipl_id=self.entity_id)
     
-    # UNTESTED
     async def get_entity_end(self) -> "EntityEnds":
-        return await self.game.entity_ends.filter(entity_id=self.entity_id).first()
+        return await EntityEnds.filter(entity__id=self.id).first()
     
-    # UNTESTED
     async def get_sm5_stats(self) -> "SM5Stats":
-        return await self.game.sm5_stats.filter(entity_id=self.entity_id).first()
+        return await SM5Stats.filter(entity__id=self.id).first()
     
-    # UNTESTED
     async def get_score(self) -> int:
         return (await self.get_entity_end()).score
 
@@ -580,13 +578,11 @@ class EntityEnds(Model):
         # get the player object from the entity
         return await Player.get(ipl_id=self.entity_id)
     
-    # UNTESTED
     async def get_entity_start(self) -> EntityStarts:
-        return await self.game.entity_starts.filter(entity_id=self.entity_id).first()
+        return await self.entity
     
-    # UNTESTED
     async def get_sm5_stats(self) -> "SM5Stats":
-        return await self.game.sm5_stats.filter(entity_id=self.entity_id).first()
+        return SM5Stats.filter(entity__id=self.id).first()
 
     async def to_dict(self):
         final = {}
@@ -631,6 +627,118 @@ class SM5Stats(Model):
     shot_team = fields.IntField()
     missiled_opponent = fields.IntField()
     missiled_team = fields.IntField()
+
+    async def mvp_points(self) -> float:
+        """
+        mvp points according to lfstats.com
+
+        CAUTION: not completely accurate due to elimation points not being implemented
+        """
+
+        score = await (await self.entity).get_score()
+
+        total_points = 0
+
+        # accuracy: .1 point for every 1% of accuracy, rounded up
+
+        accuracy = self.shots_hit / self.shots_fired
+        total_points += math.ceil(accuracy * 10)
+
+        # medic hits: 1 point for every medic hit, -1 for your own medic hits
+
+        total_points += self.medic_hits - self.own_medic_hits
+
+        # elims: minimum 1 point if your team eliminates the other team, increased by 1/60 for each of second of game time remaining above 1 minute.
+
+        # TODO: implement this
+
+        # cancel opponent nukes: 3 points for every opponent nuke canceled
+
+        total_points += self.nuke_cancels * 3
+
+        # cancel own nukes: -3 points for every own nuke canceled
+
+        total_points -= self.own_nuke_cancels * 3
+
+        # get missiled: -1 point for every time you get missiled
+
+        total_points -= self.times_missiled
+
+        # get eliminated: -1 point for getting elimated (doesn't apply to medics)
+
+        if self.lives_left <= 0 and (await self.entity).role != IntRole.MEDIC:
+            total_points -= 1
+
+        # commander specific points:
+
+        if (await self.entity).role == IntRole.COMMANDER:
+            # missile opponent: 1 point for every missile on an opponent
+
+            total_points += self.missiled_opponent
+
+            # nukes: 1 point for every nuke detonated
+
+            total_points += self.nukes_detonated
+
+            # nukes canceled: -1 point for every nuke that you activated that was canceled
+
+            total_points -= self.own_nuke_cancels
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 10000
+
+            if score > 10000:
+                total_points += (score - 10000) / 1000
+
+        # heavy specific points:
+        elif (await self.entity).role == IntRole.HEAVY:
+            # missiles: 2 points for every missile hit
+
+            total_points += self.missiled_opponent * 2
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 7000
+
+            if score > 7000:
+                total_points += (score - 7000) / 1000
+
+        # scout specific points:
+        elif (await self.entity).role == IntRole.SCOUT:
+            # hits vs 3 hit (commander/heavy): .2 points for every hit vs 3 hit
+
+            total_points += self.shot_3_hits * .2
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 6000
+
+            if score > 6000:
+                total_points += (score - 6000) / 1000
+
+        # ammo specific points:
+        elif (await self.entity).role == IntRole.AMMO:
+            # ammo boosts: 3 point for every ammo boost
+
+            total_points += self.ammo_boosts * 3
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 5000
+
+            if score > 3000:
+                total_points += (score - 3000) / 1000
+            
+        # medic specific points:
+        elif (await self.entity).role == IntRole.MEDIC:
+            # life boosts: 3 points for every life boost
+
+            total_points += self.life_boosts * 3
+
+            # survival bonus: 2 points for being alive at the end of the game
+
+            if self.lives_left > 0:
+                total_points += 2
+
+            # score bonus: 2 points (fractionally) for every 1000 points of score over 2000
+
+            if score > 2000:
+                total_points += ((score - 2000) / 1000) * 2
+
+        return total_points
 
     async def to_dict(self):
         final = {}
@@ -856,6 +964,17 @@ class LaserballStats(Model):
     times_stolen = fields.IntField()
     times_blocked = fields.IntField()
     passes_received = fields.IntField()
+
+    async def mvp_points(self) -> float:
+        mvp_points = 0
+
+        mvp_points += self.goals   * 1
+        mvp_points += self.assists * 0.75
+        mvp_points += self.steals  * 0.5
+        mvp_points += self.clears  * 0.25 # clear implies a steal so the total gained is 0.75
+        mvp_points += self.blocks  * 0.3
+
+        return mvp_points
 
     async def to_dict(self):
         final = {}

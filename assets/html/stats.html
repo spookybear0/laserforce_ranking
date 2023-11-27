@@ -59,8 +59,16 @@
             <p>Games Logged</p>
         </div>
         <div class="btn">
+            <h2>{{ ranked_games }}</h2>
+            <p>Ranked Games</p>
+        </div>
+        <div class="btn">
             <h2>{{ total_games_played }}</h2>
             <p>Total Games Played</p>
+        </div>
+        <div class="btn">
+            <h2>{{ (ranking_accuracy*100)|round(2) }}%</h2>
+            <p>Ranking Accuracy</p>
         </div>
     </div>
 

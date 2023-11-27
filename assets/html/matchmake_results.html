@@ -15,15 +15,15 @@
     <div class="win_chances">
         Team 1
         <br><br>
-        {% for player in team1 %}
-            <p class="indent">{{ player }}</p>
+        {% for player, player_rating in zip(team1, team1_ratings) %}
+            <p class="indent">{{ player }} - {{ player_rating|round(2) }}</p>
             <br>
         {% endfor %}
         <br><br><br>
         Team 2
         <br><br>
-        {% for player in team2 %}
-            <p class="indent">{{ player }}</p>
+        {% for player, player_rating in zip(team2, team2_ratings) %}
+            <p class="indent">{{ player }} - {{ player_rating|round(2) }}</p>
             <br>
         {% endfor %}
         <br><br>

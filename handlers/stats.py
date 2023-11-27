@@ -11,8 +11,10 @@ from tortoise.expressions import F
 @sentry_trace
 async def stats(request: Request) -> str:
     total_players = await Player.all().count()
-    total_games = await SM5Game.all().count()
+    total_games = await SM5Game.all().count() + await LaserballGame.all().count()
+    ranked_games = await SM5Game.filter(ranked=True).count() + await LaserballGame.filter(ranked=True).count()
     total_games_played = await EntityEnds.all().count()
+    ranking_accuracy = await statshelper.get_ranking_accuracy()
 
     sm5_red_wins = await SM5Game.filter(winner=Team.RED, ranked=True).count()
     sm5_green_wins = await SM5Game.filter(winner=Team.GREEN, ranked=True).count()
@@ -40,7 +42,9 @@ async def stats(request: Request) -> str:
 
         total_players=total_players,
         total_games=total_games,
+        ranked_games=ranked_games,
         total_games_played=total_games_played,
+        ranking_accuracy=ranking_accuracy,
 
         # sm5 stats
         
