@@ -56,15 +56,12 @@ async def matchmake_post(request: Request) -> str:
         
         if p is None:
             p = FakePlayer(codename)
-            print(p)
         players.append(p)
 
     match = ratinghelper.matchmake(players, mode)
 
     team1 = match[0]
     team2 = match[1]
-
-    print(team1, team2)
 
     team1_ratings = []
     team2_ratings = []

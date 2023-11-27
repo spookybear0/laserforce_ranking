@@ -424,6 +424,26 @@ class SM5Game(Model):
         """
 
         return await self.entity_starts.filter(type="player", entity_id__startswith="@")
+    
+    async def get_previous_game_id(self) -> Optional[int]:
+        """
+        Returns the game id of the previous game
+        """
+        
+        id_ = await SM5Game.filter(start_time__lt=self.start_time).order_by("-start_time").values_list("id", flat=True)
+        if not id_:
+            return None
+        return id_[0]
+
+    async def get_next_game_id(self) -> Optional[int]:
+        """
+        Returns the game id of the next game
+        """
+
+        id_ = await SM5Game.filter(start_time__gt=self.start_time).order_by("start_time").values_list("id", flat=True)
+        if not id_:
+            return None
+        return id_[0]
 
     async def to_dict(self):
         # convert the entire game to a dict

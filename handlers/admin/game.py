@@ -38,6 +38,8 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
             get_sm5stats=get_sm5stats, fire_score=await game.get_red_score(),
             earth_score=await game.get_green_score(),
             battlesuits=await game.get_battlesuits(),
+            previous_game_id=await game.get_previous_game_id(),
+            next_game_id=await game.get_next_game_id(),
         )
     elif mode == "lb":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
