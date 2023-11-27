@@ -303,6 +303,22 @@
 
         return false;
     }
+
+    function delete_() {
+        fetch("/admin/game/sm5/{{ game.id }}/delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status == "ok") {
+                window.location.href = "/admin/game/sm5";
+            }
+        })
+    }
 </script>
 
 {% endblock %}
@@ -412,6 +428,7 @@
                 {% endif %}
 
                 <button onclick="log_in_player_popup()" class="button">Log in player</button>
+                <button onclick="delete_()" class="button">Delete</button>
             </div>
         </div>
 

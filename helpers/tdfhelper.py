@@ -164,6 +164,13 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
         ranked = False
 
+    # check if there are any non-member players
+
+    for e in entity_starts:
+        if e.type == "player" and e.entity_id.startswith("@") and e.name == e.battlesuit:
+            ranked = False
+            break
+
     # check if game was ended early (but not by elimination)
 
     # if it didn't end naturally
@@ -448,6 +455,13 @@ async def parse_laserball_game(file_location: str):
 
     if team1_len < 1 or team2_len < 1:
         ranked = False
+        
+    # check if there are any non-member players
+
+    for e in entity_starts:
+        if e.type == "player" and e.entity_id.startswith("@") and e.name == e.battlesuit:
+            ranked = False
+            break
 
     # check if game was ended early (but not by elimination)
 
@@ -493,16 +507,10 @@ async def parse_laserball_game(file_location: str):
 
             player = await Player.filter(ipl_id=entity_id).first()
             
-            if entity_id.startswith("#"): # member
-                entity_end.previous_rating_mu = player.laserball_mu
-                entity_end.previous_rating_sigma = player.laserball_sigma
-                entity_end.current_rating_mu = player.laserball_mu
-                entity_end.current_rating_sigma = player.laserball_sigma
-            else: # "@", non member
-                entity_end.previous_rating_mu = ratinghelper.MU
-                entity_end.previous_rating_sigma = ratinghelper.SIGMA
-                entity_end.current_rating_mu = ratinghelper.MU
-                entity_end.current_rating_sigma = ratinghelper.SIGMA
+            entity_end.previous_rating_mu = player.laserball_mu
+            entity_end.previous_rating_sigma = player.laserball_sigma
+            entity_end.current_rating_mu = player.laserball_mu
+            entity_end.current_rating_sigma = player.laserball_sigma
 
             await entity_end.save()
 

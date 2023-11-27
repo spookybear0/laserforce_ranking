@@ -4,6 +4,7 @@ from utils import render_template, admin_only
 from typing import Union, List
 from db.models import Player, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions, response
+import os
 
 async def get_entity_end(entity):
     return await EntityEnds.filter(entity=entity).first()
@@ -20,6 +21,9 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
 
+        if not game:
+            raise exceptions.NotFound("Not found: Invalid game ID")
+
         players_matchmake = []
         entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
@@ -28,8 +32,6 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
 
             players_matchmake.append(player.name)
 
-        if not game:
-            raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "admin/game/sm5.html",
             game=game, get_entity_end=get_entity_end,
@@ -40,6 +42,9 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
     elif mode == "lb":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
 
+        if not game:
+            raise exceptions.NotFound("Not found: Invalid game ID")
+
         players_matchmake = []
         entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
@@ -48,8 +53,6 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
 
             players_matchmake.append(player.name)
         
-        if not game:
-            raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "admin/game/laserball.html",
             game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
@@ -141,5 +144,21 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
 
     with open(tdf, "w") as f:
         f.write(contents)
+
+    return response.json({"status": "ok"})
+
+@app.post("/admin/game/<mode>/<id>/delete")
+@admin_only
+async def admin_game_delete(request: Request, mode: str, id: Union[int, str]) -> str:
+    if mode == "sm5":
+        game = await SM5Game.filter(id=id).first()
+        os.remove("sm5_tdf/" + game.tdf_name)
+    elif mode == "lb":
+        game = await LaserballGame.filter(id=id).first()
+        os.remove("laserball_tdf/" + game.tdf_name)
+    else:
+        raise exceptions.NotFound("Not found: Invalid game type")
+    
+    await game.delete()
 
     return response.json({"status": "ok"})

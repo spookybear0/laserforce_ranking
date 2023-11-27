@@ -25,6 +25,9 @@ async def game_index(request: Request, type: str, id: int) -> str:
     if type == "sm5":
         game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
 
+        if not game:
+            raise exceptions.NotFound("Not found: Invalid game ID")
+
         players_matchmake = []
         entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
@@ -33,8 +36,6 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
             players_matchmake.append(player.name)
 
-        if not game:
-            raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "game/sm5.html",
             game=game, get_entity_end=get_entity_end,
@@ -50,6 +51,9 @@ async def game_index(request: Request, type: str, id: int) -> str:
     elif type == "lb":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
 
+        if not game:
+            raise exceptions.NotFound("Not found: Invalid game ID")
+
         players_matchmake = []
         entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
@@ -58,8 +62,6 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
             players_matchmake.append(player.name)
         
-        if not game:
-            raise exceptions.NotFound("Not found: Invalid game ID")
         return await render_template(
             request, "game/laserball.html",
             game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
