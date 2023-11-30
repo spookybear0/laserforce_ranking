@@ -222,16 +222,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
             player = await Player.filter(ipl_id=entity_id).first()
             
-            if entity_id.startswith("#"): # member
-                entity_end.previous_rating_mu = player.sm5_mu
-                entity_end.previous_rating_sigma = player.sm5_sigma
-                entity_end.current_rating_mu = player.sm5_mu
-                entity_end.current_rating_sigma = player.sm5_sigma
-            else: # "@", non member
-                entity_end.previous_rating_mu = ratinghelper.MU
-                entity_end.previous_rating_sigma = ratinghelper.SIGMA
-                entity_end.current_rating_mu = ratinghelper.MU
-                entity_end.current_rating_sigma = ratinghelper.SIGMA
+            entity_end.previous_rating_mu = player.sm5_mu
+            entity_end.previous_rating_sigma = player.sm5_sigma
+            entity_end.current_rating_mu = player.sm5_mu
+            entity_end.current_rating_sigma = player.sm5_sigma
 
             await entity_end.save()
 

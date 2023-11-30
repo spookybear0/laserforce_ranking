@@ -15,6 +15,11 @@ from helpers import userhelper
 MU = 25
 SIGMA = MU / 3
 
+# for calculating win chance when there is no data for a player
+# we assume that they aren't very skilled and have a high variance
+ASSUMED_SKILL_MU = 15
+ASSUMED_SKILL_SIGMA = 20
+
 model = PlackettLuce()
 
 # sm5 elo helper functions

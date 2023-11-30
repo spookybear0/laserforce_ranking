@@ -360,6 +360,8 @@ class SM5Game(Model):
         """
         Returns the win chance in the format [red, green]
         """
+        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
 
@@ -369,7 +371,14 @@ class SM5Game(Model):
 
         # get the previous elo for each player
 
-        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = []
+
+        for entity_end in entity_ends_red:
+            if (await entity_end.entity).entity_id.startswith("@"):
+                # non-member player
+                previous_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+            else:
+                previous_elos_red.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # get all the entity_ends for the green team
 
@@ -377,32 +386,17 @@ class SM5Game(Model):
 
         # get the previous elo for each player
 
-        previous_elos_green = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_green]
+        previous_elos_green = []
+        for entity_end in entity_ends_green:
+            if (await entity_end.entity).entity_id.startswith("@"):
+                # non-member player
+                previous_elos_green.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+            else:
+                previous_elos_green.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # get the win chance
 
         return model.predict_win([previous_elos_red, previous_elos_green])
-    
-    async def get_draw_chance(self) -> float:
-        # get all the entity_ends for the red team
-
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
-
-        # get the previous elo for each player
-
-        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
-
-        # get all the entity_ends for the green team
-
-        entity_ends_green = await self.entity_ends.filter(entity__team__color_name="Earth", entity__type="player")
-
-        # get the previous elo for each player
-
-        previous_elos_green = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_green]
-
-        # get the win chance
-
-        return model.predict_draw([previous_elos_red, previous_elos_green])
     
     def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
         """
@@ -841,6 +835,9 @@ class LaserballGame(Model):
         """
         Returns the win chance in the format [red, green]
         """
+
+        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
 
@@ -850,7 +847,14 @@ class LaserballGame(Model):
 
         # get the previous elo for each player
 
-        previous_elos_red = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = []
+
+        for entity_end in entity_ends_red:
+            if (await entity_end.entity).entity_id.startswith("@"):
+                # non-member player
+                previous_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+            else:
+                previous_elos_red.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # get all the entity_ends for the green team
 
@@ -858,37 +862,24 @@ class LaserballGame(Model):
 
         # get the previous elo for each player
 
-        previous_elos_blue = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_blue]
+        previous_elos_blue = []
+
+        for entity_end in entity_ends_blue:
+            if (await entity_end.entity).entity_id.startswith("@"):
+                previous_elos_blue.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+            else:
+                previous_elos_blue.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # get the win chance
 
         return model.predict_win([previous_elos_red, previous_elos_blue])
-    
-    async def get_draw_chance_at_time(self) -> float:
-        # get all the entity_ends for the red team
-
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
-
-        # get the previous elo for each player
-
-        previous_elos_red = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_red]
-
-        # get all the entity_ends for the green team
-
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
-
-        # get the previous elo for each player
-
-        previous_elos_blue = [Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma) for entity_end in entity_ends_blue]
-
-        # get the win chance
-
-        return model.predict_draw([previous_elos_red, previous_elos_blue])
 
     async def get_win_chance(self) -> List[float]:
         """
         Returns the win chance in the format [red, green]
         """
+        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
 
@@ -898,7 +889,14 @@ class LaserballGame(Model):
 
         # get the previous elo for each player
 
-        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
+        previous_elos_red = []
+
+        for entity_end in entity_ends_red:
+            if (await entity_end.entity).entity_id.startswith("@"):
+                # non-member player
+                previous_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+            else:
+                previous_elos_red.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # get all the entity_ends for the green team
 
@@ -906,32 +904,17 @@ class LaserballGame(Model):
 
         # get the previous elo for each player
 
-        previous_elos_blue = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_blue]
+        previous_elos_blue = []
+
+        for entity_end in entity_ends_blue:
+            if (await entity_end.entity).entity_id.startswith("@"):
+                previous_elos_blue.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+            else:
+                previous_elos_blue.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # get the win chance
 
         return model.predict_win([previous_elos_red, previous_elos_blue])
-    
-    async def get_draw_chance(self) -> float:
-        # get all the entity_ends for the red team
-
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
-
-        # get the previous elo for each player
-
-        previous_elos_red = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_red]
-
-        # get all the entity_ends for the green team
-
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
-
-        # get the previous elo for each player
-
-        previous_elos_blue = [Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma) for entity_end in entity_ends_blue]
-
-        # get the win chance
-
-        return model.predict_draw([previous_elos_red, previous_elos_blue])
     
     def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
         """

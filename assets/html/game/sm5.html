@@ -282,7 +282,7 @@
                                 <td><p>{{ sm5_stats.shot_team }}</p></td>
                                 <td><p>{{ sm5_stats.missiled_team }}</p></td>
                                 <td><p>{{ sm5_stats.medic_hits }}</p></td>
-                                <td><p>{{ sm5_stats.mvp_points()|round(2) }}</p></td>
+                                <td><p>{{ "%.2f" % (sm5_stats.mvp_points()|round(2)) }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -332,7 +332,7 @@
                                 <td><p>{{ sm5_stats.shot_team }}</p></td>
                                 <td><p>{{ sm5_stats.missiled_team }}</p></td>
                                 <td><p>{{ sm5_stats.medic_hits }}</p></td>
-                                <td><p>{{ sm5_stats.mvp_points()|round(2) }}</p></td>
+                                <td><p>{{ "%.2f" % (sm5_stats.mvp_points()|round(2)) }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}

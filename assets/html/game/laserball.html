@@ -288,7 +288,7 @@
                                 <td><p>{{ laserball_stats.blocks }}</p></td>
                                 <td><p>{{ laserball_stats.times_stolen }}</p></td>
                                 <td><p>{{ laserball_stats.times_blocked }}</p></td>
-                                <td><p>{{ laserball_stats.mvp_points|round(2) }}</p></td>
+                                <td><p>{{ "%.2f" % (laserball_stats.mvp_points|round(2)) }}</p></td>
                                 <td><p>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
                             </tr>
                         {% endif %}
@@ -334,7 +334,7 @@
                                 <td><p>{{ laserball_stats.blocks }}</p></td>
                                 <td><p>{{ laserball_stats.times_stolen }}</p></td>
                                 <td><p>{{ laserball_stats.times_blocked }}</p></td>
-                                <td><p>{{ laserball_stats.mvp_points()|round(2) }}</p></td>
+                                <td><p>{{ "%.2f" % (laserball_stats.mvp_points()|round(2)) }}</p></td>
                                 <td><p>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
                             </tr>
                         {% endif %}

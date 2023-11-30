@@ -284,7 +284,14 @@ async def get_ranking_accuracy() -> float:
         red_chance, green_chance = await game.get_win_chance()
         red_score, green_score = await game.get_red_score(), await game.get_green_score()
 
-        if red_chance >= green_chance and red_score > green_score:
+        # see if scores are close enough
+        if int(red_chance) == int(green_chance) and abs(red_score - green_score) <= 1000:
+            # if so, add 2 to correct
+            # it means we did a phoenomenal job at predicting the winner
+            # technically this means our rating could be higher than 100%
+            # but let's treat it like extra credit :)
+            correct += 2
+        elif red_chance >= green_chance and red_score > green_score:
             correct += 1
         elif green_chance >= red_chance and green_score > red_score:
             correct += 1
