@@ -4,7 +4,10 @@ from tortoise.expressions import F
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
 from collections import Counter
-from openskill.models import PlackettLuceRating as Rating, PlackettLuce
+try:
+    from openskill.models import PlackettLuceRating as Rating, PlackettLuce
+except ImportError:
+    from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating, PlackettLuce
 import statistics
 import bcrypt
 import math
