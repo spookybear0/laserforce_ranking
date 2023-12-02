@@ -144,6 +144,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         role_plot_data_player=[x for x in median_role_score if x != 0],
         role_plot_data_world=await Player.get_median_role_score_world(median_role_score),
         role_plot_labels=await get_role_labels_from_medians(median_role_score),
+        # total number of roles that aren't 0
+        role_plot_total_roles=len([x for x in median_role_score if x != 0]),
         # stat chart
         # sm5
         times_played_sm5=times_played_sm5,

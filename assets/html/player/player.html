@@ -223,6 +223,7 @@
             <div style="clear: both; padding-top: 2rem;"></div>
 
             <div class="recent_games">
+                {% if recent_games_sm5 %}
                 <h2 style="text-align: center;">Recent SM5 Games</h2>
                 <table>
                     <tr>
@@ -252,7 +253,7 @@
                             <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
-                            <td title="mu: {{ '%.2f' % (entity_end.current_rating_mu|round(2)) }}, sigma: {{ '%.2f' % (entity_end.current_rating_sigma|round(2)) }}" style="font-weight: 500; color: white;">{{ '%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                <td title="mu: {{ '%.2f' % (entity_end.current_rating_mu|round(2)) }}, sigma: {{ '%.2f' % (entity_end.current_rating_sigma|round(2)) }}" style="font-weight: 500; color: white;">{{ '%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                             {% else %}
                                 <td></td>
                             {% endif %}
@@ -274,7 +275,8 @@
                     {% endfor %}
                 </table>
             </div>
-
+            {% endif %}
+            {% if recent_games_laserball %}
             <div class="recent_games">
                 <h2 style="text-align: center;">Recent Laserball Games</h2>
                 <table>
@@ -310,9 +312,9 @@
                             <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
-                            <td title="mu: {{ '%.2f' % (entity_end.current_rating_mu|round(2)) }}, sigma: {{ '%.2f' % (entity_end.current_rating_sigma|round(2)) }}">{{ '%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                <td title="mu: {{ '%.2f' % (entity_end.current_rating_mu|round(2)) }}, sigma: {{ '%.2f' % (entity_end.current_rating_sigma|round(2)) }}" style="font-weight: 500; color: white;">{{ '%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                             {% else %}
-                            <td></td>
+                                <td></td>
                             {% endif %}
                             <td>{{ laserball_stats.goals }}</td>
                             <td>{{ laserball_stats.assists }}</td>
@@ -332,6 +334,7 @@
                     {% endfor %}
                 </table>
             </div>
+            {% endif %}
 
             <h2 style="text-align: center;">Statistics</h2>
 
@@ -344,7 +347,11 @@
                             <p>SM5 Teams</p>
                         </div>
                         <div class="btn">
+                            {% if laserball_win_percent %}
                             <canvas id="laserball_teams" style="max-width:600px;"></canvas>
+                            {% else %}
+                            <canvas id="laserball_teams" style="max-width:600px; opacity: 0;"></canvas>
+                            {% endif %}
                             <p style="font-size: 14px;">Win Percent: {{ '%.2f' % ((laserball_win_percent*100)|round(2)) }}%</p>
                             <p>Laserball Teams</p>
                         </div>
@@ -353,8 +360,13 @@
                     <canvas class="inline-block" id="avg_role_score" style="max-width: 500px; clear: both; margin-top: 2rem;" height="200px" class="left-side"></canvas>
                 </div>
 
+                
                 <div>
+                    {% if role_plot_total_roles > 2 %}
                     <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="475px" width="475px" class="right-side"></canvas>
+                    {% else %}
+                    <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem; opacity: 0;" height="475px" width="475px" class="right-side"></canvas>
+                    {% endif %}
                 </div>
             </div>
 
@@ -376,7 +388,7 @@
                                 <td>{{ times_played_sm5 }}</td>
                                 <td>{{ favorite_role_sm5 }}</td>
                                 <td>{{ favorite_battlesuit_sm5 }}</td>
-                                <td>{{ '%.2f' % ((shots_hit_sm5/shots_fired_sm5)*100)|round(2) }}%</td>
+                                <td>{{ '%.2f' % (((shots_hit_sm5/shots_fired_sm5)*100)|round(2) if shots_fired_sm5 != 0 else 0) }}%</td>
                                 <td>{{ sean_hits_sm5 }}</td>
                             </tr>
                             <tr>
@@ -384,7 +396,7 @@
                                 <td>{{ times_played_laserball }}</td>
                                 <td>N/A</td>
                                 <td>{{ favorite_battlesuit_laserball }}</td>
-                                <td>{{ '%.2f' % ((shots_hit_laserball/shots_fired_laserball)*100)|round(2) }}%</td>
+                                <td>{{ '%.2f' % ((shots_hit_laserball/shots_fired_laserball)*100)|round(2) if shots_fired_laserball != 0 else 0 }}%</td>
                                 <td>{{ sean_hits_laserball }}</td>
                             </tr>
                             <tr>
@@ -392,7 +404,7 @@
                                 <td>{{ times_played }}</td>
                                 <td>{{ favorite_role_sm5 }}</td>
                                 <td>{{ favorite_battlesuit }}</td>
-                                <td>{{ '%.2f' % ((shots_hit/shots_fired)*100)|round(2) }}%</td>
+                                <td>{{ '%.2f' % ((shots_hit/shots_fired)*100)|round(2) if shots_fired != 0 else 0 }}%</td>
                                 <td>{{ sean_hits }}</td>
                             </tr>
                         </table>
