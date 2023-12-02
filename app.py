@@ -17,6 +17,7 @@ async def main():
     app.static("assets", "assets", name="assets")
 
     app.ctx.sql = await MySQLPool.connect_with_config()
+    app.config.USE_UVLOOP = False
     server: AsyncioServer = await app.create_server(host="localhost", port=8000, return_asyncio_server=True)
 
     await server.startup()
