@@ -4,6 +4,7 @@ from utils import render_template, admin_only
 from typing import Union, List
 from db.models import Player, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions, response
+from helpers import ratinghelper
 import os
 
 async def get_entity_end(entity):
@@ -76,6 +77,8 @@ async def admin_game_rank(request: Request, mode: str, id: Union[int, str]) -> s
     
     game.ranked = True
     await game.save()
+
+    await ratinghelper.update_sm5_ratings(game)
 
     return response.json({"status": "ok"})
 
