@@ -141,8 +141,12 @@
             document.getElementById("sm5_game_table").style.display = "table";
             document.getElementById("laserball_game_table").style.display = "none";
 
-            document.getElementById("next_href").href = "/games?page={{ page+1 }}&mode=sm5";
-            document.getElementById("prev_href").href = "/games?page={{ page-1 }}&mode=sm5";
+            if (document.getElementById("next_href")) {
+                document.getElementById("next_href").href = "/games?page={{ page+1 }}&mode=sm5";
+            }
+            if (document.getElementById("prev_href")) {
+                document.getElementById("prev_href").href = "/games?page={{ page-1 }}&mode=sm5";
+            }
 
             current_mode = "sm5";
         }
@@ -152,8 +156,12 @@
             document.getElementById("sm5_game_table").style.display = "none";
             document.getElementById("laserball_game_table").style.display = "table";
 
-            document.getElementById("next_href").href = "/games?page={{ page+1 }}&mode=laserball";
-            document.getElementById("prev_href").href = "/games?page={{ page-1 }}&mode=laserball";
+            if (document.getElementById("next_href")) {
+                document.getElementById("next_href").href = "/games?page={{ page+1 }}&mode=laserball";
+            }
+            if (document.getElementById("prev_href")) {
+                document.getElementById("prev_href").href = "/games?page={{ page-1 }}&mode=laserball";
+            }
 
             current_mode = "laserball";
         }
