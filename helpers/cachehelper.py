@@ -1,5 +1,6 @@
 from tortoise.queryset import QuerySet
 from typing import Dict, Any, Tuple
+from sanic.log import logger
 import asyncio
 
 refresh_time = 60 * 30 # 30 minutes
@@ -11,6 +12,7 @@ def __await__(self: QuerySet):
     self._make_query()
 
     if self.query in queryset_cache:
+        logger.debug(f"Using cached queryset for {self.query}")
         result = queryset_cache[self.query][0]
         async def _wrapper():
             return result
@@ -19,11 +21,13 @@ def __await__(self: QuerySet):
 
         return result
     else:
+        logger.debug(f"Queryset not cached for {self.query}")
         result = original_await(self)
         
         result_value = (yield from result)
 
         if "LIMIT 1" not in self.query:
+            logger.debug(f"Adding queryset to cache for {self.query}")
             queryset_cache[self.query] = (result_value, self)
 
             # schedule a refresh after 'refresh_time' seconds

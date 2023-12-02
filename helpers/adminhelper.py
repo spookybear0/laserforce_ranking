@@ -3,6 +3,7 @@ from config import config
 from helpers import tdfhelper, userhelper, ratinghelper
 from db.models import Player, Permission, SM5Game, EntityStarts, Events
 from typing import List
+from sanic.log import logger
 
 async def repopulate_database() -> None:
     await Tortoise.generate_schemas()
@@ -16,7 +17,7 @@ async def repopulate_database() -> None:
 
     await tdfhelper.parse_all_tdfs()
 
-async def manually_login_player_sm5(game: SM5Game, prev_codename: str, player: Player) -> bool:
+async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: str) -> bool:
     """
     Manually log in a player
 
@@ -26,44 +27,53 @@ async def manually_login_player_sm5(game: SM5Game, prev_codename: str, player: P
     If we know their codename we can log in for them
     """
 
-    # TODO: build interface on front end
+    logger.debug(f"Logging in player {battlesuit} as {codename}")
+
+    player = await Player.filter(codename=codename).first()
     
-    if player.codename == prev_codename:
-        return False
-    
-    entity: EntityStarts = await game.get_entity_start_from_name(prev_codename)
+    entity_start = await game.entity_starts.filter(name=battlesuit).first()
 
-    if entity is None:
-        return False
-    
-    eid = entity.entity_id
+    old_entity_id = entity_start.entity_id
 
-    # get the tdf for the game
+    entity_start.name = codename
+    entity_start.entity_id = player.ipl_id
 
-    tdf_filename = game.tdf_name
+    logger.debug(f"Changing entity ID from {old_entity_id} to {player.ipl_id}")
 
-    f = open(f"sm5_tdf/{tdf_filename}", "r") # test this
+    await entity_start.save()
 
-    data = f.read()
+    logger.debug("Changing events entity_id")
 
-    f.close()
+    # go through all events and change @number to #entity_id
 
-    newdata = data.replace(eid, player.ipl_id)
-
-    f = open(f"sm5_tdf/{tdf_filename}", "w")
-    f.write(newdata)
-    f.close()
-
-    # update the database
-
-    await game.entity_starts.filter(entity_id=eid).update(entity_id=player.ipl_id)
-    await game.entity_ends.filter(entity__entity_id=eid).update(entity__entity_id=player.ipl_id)
-
-    # look at arguments and replace old pack with new one
-    events: List[Events] = await game.events.filter(args__contains=eid).all()
-
-    for event in events:
-        event.arguments[event.arguments.index(eid)] = player.ipl_id
+    async for event in game.events:
+        arguments = event.arguments
+        for info in arguments:
+            if info == old_entity_id:
+                arguments[arguments.index(info)] = player.ipl_id
+        event.arguments = arguments
         await event.save()
 
-    return True
+    logger.debug("Changing data on the tdf file")
+
+    # update the tdf file
+
+    tdf = game.tdf_name
+
+    if mode == "sm5":
+        tdf = "sm5_tdf/" + tdf
+    elif mode == "lb":
+        tdf = "laserball_tdf/" + tdf
+
+    # simple find and replace
+
+    with open(tdf, "r", encoding="utf-16") as f:
+        contents = f.read()
+
+        contents = contents.replace(old_entity_id, player.ipl_id)
+        contents = contents.replace(battlesuit, codename)
+
+    with open(tdf, "w", encoding="utf-16") as f:
+        f.write(contents)
+
+    logger.debug("Wrote to file successfully")

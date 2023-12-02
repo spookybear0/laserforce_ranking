@@ -4,7 +4,7 @@ from utils import render_template, admin_only
 from typing import Union, List
 from db.models import Player, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions, response
-from helpers import ratinghelper
+from helpers import ratinghelper, adminhelper
 from sanic.log import logger
 import os
 
@@ -113,56 +113,7 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
     battlesuit = request.json.get("battlesuit")
     codename = request.json.get("codename")
 
-    logger.debug(f"Logging in player {battlesuit} as {codename}")
-
-    player = await Player.filter(codename=codename).first()
-    
-    entity_start = await game.entity_starts.filter(name=battlesuit).first()
-
-    old_entity_id = entity_start.entity_id
-
-    entity_start.name = codename
-    entity_start.entity_id = player.ipl_id
-
-    logger.debug(f"Changing entity ID from {old_entity_id} to {player.ipl_id}")
-
-    await entity_start.save()
-
-    logger.debug("Changing events entity_id")
-
-    # go through all events and change @number to #entity_id
-
-    async for event in game.events:
-        arguments = event.arguments
-        for info in arguments:
-            if info == old_entity_id:
-                arguments[arguments.index(info)] = player.ipl_id
-        event.arguments = arguments
-        await event.save()
-
-    logger.debug("Changing data on the tdf file")
-
-    # update the tdf file
-
-    tdf = game.tdf_name
-
-    if mode == "sm5":
-        tdf = "sm5_tdf/" + tdf
-    elif mode == "lb":
-        tdf = "laserball_tdf/" + tdf
-
-    # simple find and replace
-
-    with open(tdf, "r", encoding="utf-16") as f:
-        contents = f.read()
-
-        contents = contents.replace(old_entity_id, player.ipl_id)
-        contents = contents.replace(battlesuit, codename)
-
-    with open(tdf, "w", encoding="utf-16") as f:
-        f.write(contents)
-
-    logger.debug("Wrote to file successfully")
+    await adminhelper.manually_login_player_sm5(game, battlesuit, codename)
 
     return response.json({"status": "ok"})
 
