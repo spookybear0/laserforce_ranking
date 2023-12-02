@@ -117,7 +117,15 @@
         float: right;
     }
 
+    .btn {
+        height: 9rem;
+    }
+
     @media screen and (max-width: 991px) {
+        .btn {
+            height: 9em;
+        }
+
         h1 {
             text-align: center;
         }
@@ -214,9 +222,6 @@
 
             <div style="clear: both; padding-top: 2rem;"></div>
 
-            <h3 class="right_align">Favorite role: {{ favorite_role }}</h3>
-            <h3 class="right_align">Favorite battlesuit: {{ favorite_battlesuit }}</h3>
-
             <div class="recent_games">
                 <h2 style="text-align: center;">Recent SM5 Games</h2>
                 <table>
@@ -247,7 +252,7 @@
                             <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
-                            <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}" style="font-weight: 500; color: white;">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                            <td title="mu: {{ '%.2f' % (entity_end.current_rating_mu|round(2)) }}, sigma: {{ '%.2f' % (entity_end.current_rating_sigma|round(2)) }}" style="font-weight: 500; color: white;">{{ '%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                             {% else %}
                                 <td></td>
                             {% endif %}
@@ -256,8 +261,8 @@
                             <td>{{ sm5_stats.lives_left }}</td>
                             <td>{{ sm5_stats.shots_left }}</td>
                             <td style="color: {{ 'orangered' if entity_start.team.color_name == 'Fire' else 'greenyellow' }}">{{ entity_start.team.color_name }}</td>
-                            <td>{{ sm5_stats.shots_fired and ((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2) }}%</td>
-                            <td>{{ sm5_stats.times_zapped and (sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2) }}</td>
+                            <td>{{ sm5_stats.shots_fired and '%.2f' % ((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2) }}%</td>
+                            <td>{{ sm5_stats.times_zapped and '%.2f' % (sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2) }}</td>
                             <td>{{ sm5_stats.missiled_opponent }}</td>
                             <td>{{ sm5_stats.times_missiled }}</td>
                             <td>{{ sm5_stats.shot_team }}</td>
@@ -304,7 +309,7 @@
                             <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
-                            <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                            <td title="mu: {{ '%.2f' % (entity_end.current_rating_mu|round(2)) }}, sigma: {{ '%.2f' % (entity_end.current_rating_sigma|round(2)) }}">{{ '%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                             {% else %}
                             <td></td>
                             {% endif %}
@@ -318,7 +323,7 @@
                             <td>{{ laserball_stats.started_with_ball }}</td>
                             <td>{{ laserball_stats.times_stolen }}</td>
                             <td>{{ laserball_stats.times_blocked }}</td>
-                            <td>{{ (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</td>
+                            <td>{{ '%.2f' % ((laserball_stats.blocks/laserball_stats.times_blocked) | round(2)) }}</td>
                             <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                             <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                         </tr>
@@ -326,16 +331,20 @@
                 </table>
             </div>
 
+            <h2 style="text-align: center;">Statistics</h2>
+
             <div class="stats">
                 <div>
                     <div class="btns">
                         <div class="btn">
                             <canvas id="sm5_teams" style="max-width:600px;"></canvas>
-                            <p title="Win Percent: {{ (sm5_win_percent*100)|round(2) }}%">SM5 Teams</p>
+                            <p style="font-size: 14px;">Win Percent: {{ '%.2f' % ((sm5_win_percent*100)|round(2)) }}%</p>
+                            <p>SM5 Teams</p>
                         </div>
                         <div class="btn">
                             <canvas id="laserball_teams" style="max-width:600px;"></canvas>
-                            <p title="Win Percent: {{ (laserball_win_percent*100)|round(2) }}%">Laserball Teams</p>
+                            <p style="font-size: 14px;">Win Percent: {{ '%.2f' % ((laserball_win_percent*100)|round(2)) }}%</p>
+                            <p>Laserball Teams</p>
                         </div>
                     </div>
                     
@@ -344,6 +353,48 @@
 
                 <div>
                     <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="475px" width="475px" class="right-side"></canvas>
+                </div>
+            </div>
+
+            <div style="clear: both; padding-top: 2rem;"></div>
+
+            <div style="margin: auto; text-align: center;">
+                <div class="stats">
+                    <div>
+                        <table>
+                            <th>
+                                <td title="Only logged games">Times Played</td>
+                                <td>Favorite Role</td>
+                                <td>Favorite Battlesuit</td>
+                                <td>Accuracy</td>
+                                <td>Sean Hits</td>
+                            </th>
+                            <tr>
+                                <td>SM5</td>
+                                <td>{{ times_played_sm5 }}</td>
+                                <td>{{ favorite_role_sm5 }}</td>
+                                <td>{{ favorite_battlesuit_sm5 }}</td>
+                                <td>{{ '%.2f' % ((shots_hit_sm5/shots_fired_sm5)*100)|round(2) }}%</td>
+                                <td>{{ sean_hits_sm5 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Laserball</td>
+                                <td>{{ times_played_laserball }}</td>
+                                <td></td>
+                                <td>{{ favorite_battlesuit_laserball }}</td>
+                                <td>{{ '%.2f' % ((shots_hit_laserball/shots_fired_laserball)*100)|round(2) }}%</td>
+                                <td>{{ sean_hits_laserball }}</td>
+                            </tr>
+                            <tr>
+                                <td>Overall</td>
+                                <td>{{ times_played }}</td>
+                                <td>{{ favorite_role_sm5 }}</td>
+                                <td>{{ favorite_battlesuit }}</td>
+                                <td>{{ '%.2f' % ((shots_hit/shots_fired)*100)|round(2) }}%</td>
+                                <td>{{ sean_hits }}</td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -363,10 +414,12 @@
                     backgroundColor: ["#b91d47", "#00aba9"],
                     data: [{{ red_teams_sm5 }}, {{ green_teams_sm5 }}]
                 },
+                {% if red_wins_sm5 > 0 and green_wins_sm5 > 0 %}
                 {
                     backgroundColor: ["#000000", "#000000", "#b91d47", "#00aba9"],
                     data: [0, 0, {{ red_wins_sm5 }}, {{ green_wins_sm5}}]
                 }
+                {% endif %}
             ]
         },
 
@@ -388,10 +441,12 @@
                     backgroundColor: ["#b91d47", "#0047AB"],
                     data: [{{ red_teams_laserball }}, {{ blue_teams_laserball }}]
                 },
+                {% if red_wins_laserball > 0 and red_wins_laserball > 0 %}
                 {
                     backgroundColor: ["#000000", "#000000", "#b91d47", "#0047AB"],
                     data: [0, 0, {{ red_wins_laserball }}, {{ blue_wins_laserball }}]
                 }
+                {% endif %}
             ]
         },
         options: {

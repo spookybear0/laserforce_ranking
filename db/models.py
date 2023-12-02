@@ -159,15 +159,24 @@ class Player(Model):
             return None
         return role.role
     
-    async def get_favorite_battlesuit(self) -> Optional[str]:
+    async def get_favorite_battlesuit(self, game_type: Optional[GameType]=None) -> Optional[str]:
         """
-        SM5 only
+        Argument "game_type" can be None, "sm5", or "laserball"
+        None means all game types are counted
         """
 
         # battlesuit is an entitystarts attribute which is a string
         # we need to count each time a battlesuit is used and return the most used one
 
-        battlesuits = await EntityStarts.filter(entity_id=self.ipl_id).values_list("battlesuit", flat=True)
+        if game_type is None:
+            battlesuits = await EntityStarts.filter(entity_id=self.ipl_id).values_list("battlesuit", flat=True)
+        elif game_type == GameType.SM5:
+            battlesuits = await EntityStarts.filter(entity_id=self.ipl_id, sm5games__mission_name__icontains="space marines").values_list("battlesuit", flat=True)
+        elif game_type == GameType.LASERBALL:
+            battlesuits = await EntityStarts.filter(entity_id=self.ipl_id, laserballgames__mission_name__icontains="laserball").values_list("battlesuit", flat=True)
+        else:
+            # raise exception
+            raise ValueError("Invalid game_type")
 
         if not battlesuits:
             return None
@@ -175,6 +184,71 @@ class Player(Model):
         # find most common battlesuit
         data = Counter(battlesuits)
         return data.most_common(1)[0][0]
+    
+    async def get_sean_hits(self, game_type: Optional[GameType]=None) -> int:
+        """
+        AIDAN REQUESTED THIS
+
+        Argument "game_type" can be None, "sm5", or "laserball"
+        None means all game types are counted
+
+        returns: number of times the player hit sean (Commander)
+        """
+
+        sean_entity_id = "#w7Wt8y"
+
+        arg_query = \
+f'''[
+    "{self.ipl_id}",
+    " zaps ",
+    "{sean_entity_id}"
+]'''
+        
+        print(arg_query)
+
+        print(await Events.all().limit(20).values_list("arguments", flat=True))
+        print([self.ipl_id, " zaps ", sean_entity_id])
+        print(f'["{self.ipl_id}", " zaps ", "{sean_entity_id}"]')
+
+        if game_type is None:
+            return await Events.filter(arguments=arg_query).count()
+        elif game_type == GameType.SM5:
+            return await Events.filter(sm5games__mission_name__icontains="space marines", arguments=arg_query).count()
+        elif game_type == GameType.LASERBALL:
+            return await Events.filter(laserballgames__mission_name__icontains="laserball", arguments=arg_query).count()
+        else:
+            # raise exception
+            raise ValueError("Invalid game_type")
+    
+    async def get_shots_fired(self, game_type: Optional[GameType]=None) -> int:
+        """
+        Argument "game_type" can be None, "sm5", or "laserball"
+        None means all game types are counted
+
+        returns: number of shots fired by the player
+        """
+
+        if game_type is None:
+            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True) + await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True))
+        elif game_type == GameType.SM5:
+            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True))
+        elif game_type == GameType.LASERBALL:
+            return sum(await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True))
+        
+    async def get_shots_hit(self, game_type: Optional[GameType]=None) -> int:
+        """
+        Argument "game_type" can be None, "sm5", or "laserball"
+        None means all game types are counted
+
+        returns: number of shots hit by the player
+        """
+
+        if game_type is None:
+            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True) + await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True))
+        elif game_type == GameType.SM5:
+            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True))
+        elif game_type == GameType.LASERBALL:
+            return sum(await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True))
     
     async def times_played_as_team(self, team: Team, game_type: GameType=None) -> int:
         """
@@ -658,7 +732,7 @@ class SM5Stats(Model):
 
         # accuracy: .1 point for every 1% of accuracy, rounded up
 
-        accuracy = self.shots_hit / self.shots_fired
+        accuracy = (self.shots_hit / self.shots_fired) if self.shots_fired != 0 else 0
         total_points += math.ceil(accuracy * 10)
 
         # medic hits: 1 point for every medic hit, -1 for your own medic hits
@@ -966,6 +1040,8 @@ class LaserballStats(Model):
     steals = fields.IntField()
     clears = fields.IntField()
     blocks = fields.IntField()
+    shots_fired = fields.IntField()
+    shots_hit = fields.IntField()
     started_with_ball = fields.IntField()
     times_stolen = fields.IntField()
     times_blocked = fields.IntField()
@@ -992,6 +1068,7 @@ class LaserballStats(Model):
         final["steals"] = self.steals
         final["clears"] = self.clears
         final["blocks"] = self.blocks
+        final["shots_fired"] = self.shots_fired
         final["started_with_ball"] = self.started_with_ball
         final["times_stolen"] = self.times_stolen
         final["times_blocked"] = self.times_blocked

@@ -4,6 +4,7 @@ import asyncio
 import router
 from shared import app
 from sanic.server.async_server import AsyncioServer
+from mysql import MySQLPool
 import threading
 import webview
 

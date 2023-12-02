@@ -40,6 +40,17 @@ from tortoise import Tortoise
 from config import config
 from helpers import cachehelper, adminhelper
 
+TORTOISE_ORM = {
+    "connections": { "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce" },
+    "apps": {
+        "models": {
+            "models": ["db.models", "aerich.models"],
+            "default_connection": "default"
+        }
+    }
+}
+
+
 @app.signal("server.init.before")
 async def setup_app(app, loop) -> None:
     """
@@ -48,8 +59,7 @@ async def setup_app(app, loop) -> None:
     app.ctx.sql = await MySQLPool.connect_with_config()
 
     await Tortoise.init(
-        db_url=f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce",
-        modules={"models": ["db.models"]}
+        config=TORTOISE_ORM
     )
 
     # use cache on production server
@@ -62,13 +72,12 @@ async def main() -> None:
     app.ctx.sql = await MySQLPool.connect_with_config()
 
     await Tortoise.init(
-        db_url=f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce",
-        modules={"models": ["db.models"]}
+        config=TORTOISE_ORM
     )
 
     #await adminhelper.repopulate_database()
 
-    cachehelper.use_cache()
+    # no cache on dev server
 
     server = await app.create_server(host="localhost", port=8000, debug=True, return_asyncio_server=True)
 

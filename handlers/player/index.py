@@ -63,9 +63,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
     recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
 
-    favorite_role = await player.get_favorite_role()
-    favorite_battlesuit = await player.get_favorite_battlesuit()
-
     median_role_score = await get_median_role_score(player)
 
 
@@ -83,6 +80,26 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     laserball_win_percent = (red_wins_laserball+blue_wins_laserball)/(red_teams_laserball+blue_teams_laserball) if (red_teams_laserball+blue_teams_laserball) != 0 else 0
     win_percent = (red_wins_sm5+green_wins_sm5+red_wins_laserball+blue_wins_laserball)/(red_teams_sm5+green_teams_sm5+red_teams_laserball+blue_teams_laserball) if (red_teams_sm5+green_teams_sm5+red_teams_laserball+blue_teams_laserball) != 0 else 0
     
+    times_played_sm5 = red_teams_sm5+green_teams_sm5
+    favorite_role_sm5 = await player.get_favorite_role()
+    favorite_battlesuit_sm5 = await player.get_favorite_battlesuit(GameType.SM5)
+    sean_hits_sm5 = await player.get_sean_hits(GameType.SM5)
+    sm5_shots_hit = await player.get_shots_hit(GameType.SM5)
+    sm5_shots_fired = await player.get_shots_fired(GameType.SM5)
+
+    # no roles in laserball
+    times_played_laserball = red_teams_laserball+blue_teams_laserball
+    favorite_battlesuit_laserball = await player.get_favorite_battlesuit(GameType.LASERBALL)
+    sean_hits_laserball = await player.get_sean_hits(GameType.LASERBALL)
+    laserball_shots_hit = await player.get_shots_hit(GameType.LASERBALL)
+    laserball_shots_fired = await player.get_shots_fired(GameType.LASERBALL)
+
+    times_played = times_played_sm5+times_played_laserball
+    favorite_battlesuit = await player.get_favorite_battlesuit()
+    sean_hits = sean_hits_sm5+sean_hits_laserball
+    shots_hit = sm5_shots_hit+laserball_shots_hit
+    shots_fired = sm5_shots_fired+laserball_shots_fired
+
     return await render_template(
         request, "player/player.html",
         # general player info
@@ -93,8 +110,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         get_entity_end=get_entity_end,
         get_sm5_stat=get_sm5_stat,
         get_laserball_stat=get_laserball_stat,
-        favorite_role=favorite_role,
-        favorite_battlesuit=favorite_battlesuit,
         # team rate pies (sm5/laserball)
         red_teams_sm5=red_teams_sm5,
         green_teams_sm5=green_teams_sm5,
@@ -113,6 +128,26 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         role_plot_data_player=[x for x in median_role_score if x != 0],
         role_plot_data_world=await Player.get_median_role_score_world(median_role_score),
         role_plot_labels=await get_role_labels_from_medians(median_role_score),
+        # stat chart
+        # sm5
+        times_played_sm5=times_played_sm5,
+        favorite_role_sm5=favorite_role_sm5,
+        favorite_battlesuit_sm5=favorite_battlesuit_sm5,
+        sean_hits_sm5=sean_hits_sm5,
+        shots_hit_sm5=sm5_shots_hit,
+        shots_fired_sm5=sm5_shots_fired,
+        # laserball
+        times_played_laserball=times_played_laserball,
+        favorite_battlesuit_laserball=favorite_battlesuit_laserball,
+        sean_hits_laserball=sean_hits_laserball,
+        shots_hit_laserball=laserball_shots_hit,
+        shots_fired_laserball=laserball_shots_fired,
+        # overall
+        times_played=times_played,
+        favorite_battlesuit=favorite_battlesuit,
+        sean_hits=sean_hits,
+        shots_hit=shots_hit,
+        shots_fired=shots_fired,
     )
 
 @app.post("/player")

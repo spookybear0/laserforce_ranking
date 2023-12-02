@@ -192,7 +192,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     for e in entity_starts:
         # is a player and logged in
-        if e.type == "player" and not (e.entity_id.startswith("@") and e.name == e.battlesuit):
+        if e.entity_id.startswith("@") and e.name == e.battlesuit:
+            continue
+
+        if e.type == "player":
             # update ipl_id if it's empty
             if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).ipl_id == "":
                 player = await Player.filter(codename=e.name).first()
@@ -219,6 +222,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     else: # still need to add current_rating and previous_rating
         for entity_end in await game.entity_ends.filter(entity__type="player"):
             entity_id = (await entity_end.entity).entity_id
+            if entity_id.startswith("@"):
+                continue
 
             player = await Player.filter(ipl_id=entity_id).first()
             
@@ -323,9 +328,14 @@ async def parse_laserball_game(file_location: str):
                     await laserball_stats[args[0]].save()
                 elif event_type == EventType.GOAL:
                     laserball_stats[args[0]].goals += 1
+                    laserball_stats[args[0]].shots_fired += 1
+                    laserball_stats[args[0]].shots_hit += 1
                     await laserball_stats[args[0]].save()
                 elif event_type == EventType.STEAL:
                     laserball_stats[args[0]].steals += 1
+                    laserball_stats[args[0]].blocks += 1
+                    laserball_stats[args[0]].shots_fired += 1
+                    laserball_stats[args[0]].shots_hit += 1
                     laserball_stats[args[2]].times_stolen += 1
                     await laserball_stats[args[0]].save()
                     await laserball_stats[args[2]].save()
@@ -334,16 +344,23 @@ async def parse_laserball_game(file_location: str):
                     await laserball_stats[args[0]].save()
                 elif event_type == EventType.BLOCK:
                     laserball_stats[args[0]].blocks += 1
+                    laserball_stats[args[0]].shots_fired += 1
+                    laserball_stats[args[0]].shots_hit += 1
                     laserball_stats[args[2]].times_blocked += 1
                     await laserball_stats[args[0]].save()
                     await laserball_stats[args[2]].save()
                 elif event_type == EventType.PASS:
                     laserball_stats[args[0]].passes += 1
+                    laserball_stats[args[0]].shots_fired += 1
+                    laserball_stats[args[0]].shots_hit += 1
                     laserball_stats[args[2]].passes_received += 1
                     await laserball_stats[args[0]].save()
                     await laserball_stats[args[2]].save()
                 elif event_type == EventType.ROUND_END:
                     number_of_rounds += 1
+                elif event_type == EventType.MISS:
+                    laserball_stats[args[0]].shots_fired += 1
+                    await laserball_stats[args[0]].save()
 
                 events.append(await Events.create(time=int(data[1]), type=event_type, arguments=json.dumps(data[3:])))
             case "5": # score
@@ -471,6 +488,9 @@ async def parse_laserball_game(file_location: str):
     await game.save()
 
     for e in entity_starts:
+        if e.entity_id.startswith("@") and e.name == e.battlesuit:
+            continue
+
         if e.type == "player":
             # update ipl_id if it's empty
             if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).ipl_id == "":
