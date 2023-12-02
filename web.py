@@ -17,6 +17,7 @@ import aioredis
 # we need to set up our app before we import anything else
 
 app = Sanic("laserforce_rankings")
+app.config.USE_UVLOOP = False
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()
@@ -57,7 +58,6 @@ async def setup_app(app, loop) -> None:
     Start the server in a production environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
-    app.config.USE_UVLOOP = False
 
     await Tortoise.init(
         config=TORTOISE_ORM
@@ -71,7 +71,6 @@ async def main() -> None:
     Start the server in a development/nonprod environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
-    app.config.USE_UVLOOP = False
 
     await Tortoise.init(
         config=TORTOISE_ORM
