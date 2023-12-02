@@ -275,8 +275,8 @@
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
-                                <td><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
-                                <td><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
+                                <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
+                                <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
                                 <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
                                 <td><p>{{ sm5_stats.times_missiled }}</p></td>
                                 <td><p>{{ sm5_stats.shot_team }}</p></td>
@@ -325,8 +325,8 @@
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
-                                <td><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
-                                <td><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
+                                <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
+                                <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
                                 <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
                                 <td><p>{{ sm5_stats.times_missiled }}</p></td>
                                 <td><p>{{ sm5_stats.shot_team }}</p></td>
