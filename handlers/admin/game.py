@@ -139,12 +139,13 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
 
     # simple find and replace
 
-    with open(tdf, "r") as f:
+    with open(tdf, "r", encoding="utf-16") as f:
         contents = f.read()
 
         contents = contents.replace(old_entity_id, player.ipl_id)
+        contents = contents.replace(battlesuit, codename)
 
-    with open(tdf, "w") as f:
+    with open(tdf, "w", encoding="utf-16") as f:
         f.write(contents)
 
     return response.json({"status": "ok"})

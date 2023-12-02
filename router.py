@@ -13,6 +13,7 @@ def import_from_dir(name, path):
     return mod
 
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
+routes = []
 
 def add_all_routes(app: Sanic):
     def import_dir(directory):
@@ -22,5 +23,6 @@ def add_all_routes(app: Sanic):
                 import_dir(directory + f + "/")
             elif os.path.isfile(directory + f) and f not in ["__init__.py"]:
                 logger.info(f"Importing {directory}{f}")
-                import_from_dir(f.rstrip(".py"), directory + f)
+                mod = import_from_dir(f.rstrip(".py"), directory + f)
+                routes.append(mod)
     import_dir(path + "handlers/")

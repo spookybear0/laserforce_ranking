@@ -1,6 +1,6 @@
 from typing import List, Optional
 from tortoise import Model, fields, functions
-from tortoise.expressions import F
+from tortoise.expressions import F, Q
 from objects import Team, Role, GameType
 from enum import Enum, IntEnum
 from collections import Counter
@@ -197,25 +197,30 @@ class Player(Model):
 
         sean_entity_id = "#w7Wt8y"
 
-        arg_query = \
-f'''[
-    "{self.ipl_id}",
-    " zaps ",
-    "{sean_entity_id}"
-]'''
-        
-        print(arg_query)
-
-        print(await Events.all().limit(20).values_list("arguments", flat=True))
-        print([self.ipl_id, " zaps ", sean_entity_id])
-        print(f'["{self.ipl_id}", " zaps ", "{sean_entity_id}"]')
-
         if game_type is None:
-            return await Events.filter(arguments=arg_query).count()
+            return await Events.filter(
+                arguments__filter={"0": self.ipl_id}
+            ).filter(
+                Q(arguments__filter={"1": " zaps "}) | Q(arguments__filter={"1": " blocks "}) | Q(arguments__filter={"1": " steals from "})
+            ).filter(
+                arguments__filter={"2": sean_entity_id}
+            ).count()
         elif game_type == GameType.SM5:
-            return await Events.filter(sm5games__mission_name__icontains="space marines", arguments=arg_query).count()
+            return await Events.filter(
+                sm5games__mission_name__icontains="space marines", arguments__filter={"0": self.ipl_id}
+            ).filter(
+                arguments__filter={"1": " zaps "}
+            ).filter(
+                arguments__filter={"2": sean_entity_id}
+            ).count()
         elif game_type == GameType.LASERBALL:
-            return await Events.filter(laserballgames__mission_name__icontains="laserball", arguments=arg_query).count()
+            return await Events.filter(
+            laserballgames__mission_name__icontains="laserball", arguments__filter={"0": self.ipl_id}
+            ).filter(
+                Q(arguments__filter={"1": " blocks "}) | Q(arguments__filter={"1": " steals from "})
+            ).filter(
+                arguments__filter={"2": sean_entity_id}
+            ).count()
         else:
             # raise exception
             raise ValueError("Invalid game_type")
