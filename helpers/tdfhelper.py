@@ -55,11 +55,14 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 file_version = data[1]
                 program_version = data[2]
                 arena = data[3]
+                logger.debug(f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
             case "1": # game info
                 mission_type = int(data[1])
                 mission_name = data[2]
                 start_time = data[3]
                 mission_duration = int(data[4])
+
+                logger.debug(f"Game Info: mission type: {mission_type}, mission name: {mission_name}, start time: {start_time}, mission duration: {mission_duration}")
 
                 # check if game already exists
                 if game := await SM5Game.filter(start_time=start_time, arena=arena).first():
@@ -68,6 +71,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
             case "2": # team info
                 teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))
+                logger.debug(f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
             case "3": # entity start
                 team = None
 
@@ -89,12 +93,15 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 if data[2] == "0B03": # base awarded
                     data[2] = 2819 # keeping my system in integers
                 events.append(await Events.create(time=int(data[1]), type=EventType(int(data[2])), arguments=json.dumps(data[3:])))
+                logger.debug(f"Event: time: {data[1]}, type: {EventType(int(data[2]))}, arguments: {data[3:]}")
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                     delta=int(data[4]), new=int(data[5])))
+                logger.debug(f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
             case "6": # entity end
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                     type=int(data[3]), score=int(data[4])))
+                logger.debug(f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
             case "7": # sm5 stats
                 sm5_stats.append(await SM5Stats.create(entity=token_to_entity[data[1]],
                     shots_hit=int(data[2]), shots_fired=int(data[3]), times_zapped=int(data[4]), times_missiled=int(data[5]),
@@ -103,6 +110,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     life_boosts=int(data[14]), ammo_boosts=int(data[15]), lives_left=int(data[16]), shots_left=int(data[17]),
                     penalties=int(data[18]), shot_3_hits=int(data[19]), own_nuke_cancels=int(data[20]), shot_opponent=int(data[21]),
                     shot_team=int(data[22]), missiled_opponent=int(data[23]), missiled_team=int(data[24])))
+            
+                logger.debug(f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
 
     # getting the winner
 
@@ -140,6 +149,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     await game.save()
 
+    logger.debug("Inital game save complete")
+
     # winner determination
 
     winner = None
@@ -153,6 +164,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     game.winner = winner
     game.winner_color = winner.value if winner else "none"
     await game.save()
+
+    logger.debug(f"Winner: {game.winner_color}")
 
     # determine if the game should be ranked automatically
 
@@ -177,6 +190,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     if not await game.events.filter(type=EventType.MISSION_END).exists():
         ranked = False
         ended_early = True
+
+    logger.debug(f"Ranked={ranked}, Ended Early={ended_early}")
 
     game.ranked = ranked
     game.ended_early = ended_early
@@ -274,18 +289,23 @@ async def parse_laserball_game(file_location: str):
                 file_version = data[1]
                 program_version = data[2]
                 arena = data[3]
+                logger.debug(f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
             case "1": # game info
                 mission_type = int(data[1])
                 mission_name = data[2]
                 start_time = data[3]
                 mission_duration = int(data[4])
 
+                logger.debug(f"Game Info: mission type: {mission_type}, mission name: {mission_name}, start time: {start_time}, mission duration: {mission_duration}")
+
                 # check if game already exists
                 if game := await LaserballGame.filter(start_time=start_time, arena=arena).first():
+                    logger.warn(f"Game {game.id} already exists, skipping")
                     return game
 
             case "2": # team info
                 teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))
+                logger.debug(f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
             case "3": # entity start
                 team = None
 
@@ -317,6 +337,8 @@ async def parse_laserball_game(file_location: str):
                         times_blocked=0,
                         passes_received=0
                     )
+
+                logger.debug(f"Entity Start: time: {data[1]}, entity id: {data[2]}, type: {data[3]}, name: {data[4]}, team: {data[5]}, level: {data[6]}, role: {data[7]}, battlesuit: {data[8]}")
             case "4": # event
                 # handle special laserball events
 
@@ -363,15 +385,21 @@ async def parse_laserball_game(file_location: str):
                     await laserball_stats[args[0]].save()
 
                 events.append(await Events.create(time=int(data[1]), type=event_type, arguments=json.dumps(data[3:])))
+
+                logger.debug(f"Event: time: {data[1]}, type: {event_type}, arguments: {data[3:]}")
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                     delta=int(data[4]), new=int(data[5])))
+                logger.debug(f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
             case "6": # entity end
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                     type=int(data[3]), score=int(data[4])))
+                logger.debug(f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
                 
     # calculate assists (when a player passes to a player who scores)
     # so we need to find all the goals, and then find the pass that happened before it
+
+    logger.debug("Calculating assists")
 
     for e in events:
         if e.type == EventType.GOAL:
@@ -435,6 +463,8 @@ async def parse_laserball_game(file_location: str):
     else:
         raise Exception("Invalid team color") # or can't find correct team color
     
+    logger.debug(f"Winner: {winner}")
+    
     # default values, will be changed later
 
     ranked = True
@@ -452,6 +482,8 @@ async def parse_laserball_game(file_location: str):
     await game.laserball_stats.add(*laserball_stats.values())
 
     await game.save()
+
+    logger.debug("Inital game save complete")
 
     # determine if the game should be ranked automatically
 
@@ -485,7 +517,11 @@ async def parse_laserball_game(file_location: str):
     game.ranked = ranked
     game.ended_early = ended_early
 
+    logger.debug(f"Ranked={ranked}, Ended Early={ended_early}")
+
     await game.save()
+
+    logger.info("Resyncing player table")
 
     for e in entity_starts:
         if e.entity_id.startswith("@") and e.name == e.battlesuit:

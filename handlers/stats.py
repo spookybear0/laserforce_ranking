@@ -6,15 +6,22 @@ from objects import GameType, Team
 from helpers.statshelper import sentry_trace
 from db.models import SM5Game, Player, EntityEnds, LaserballGame
 from tortoise.expressions import F
+from sanic.log import logger
 
 @app.get("/stats")
 @sentry_trace
 async def stats(request: Request) -> str:
+    logger.info("Loading stats page")
+
+    logger.debug("Loading general stats")
+
     total_players = await Player.all().count()
     total_games = await SM5Game.all().count() + await LaserballGame.all().count()
     ranked_games = await SM5Game.filter(ranked=True).count() + await LaserballGame.filter(ranked=True).count()
     total_games_played = await EntityEnds.all().count()
     ranking_accuracy = await statshelper.get_ranking_accuracy()
+
+    logger.debug("Loading SM5 stats")
 
     sm5_red_wins = await SM5Game.filter(winner=Team.RED, ranked=True).count()
     sm5_green_wins = await SM5Game.filter(winner=Team.GREEN, ranked=True).count()
@@ -24,15 +31,21 @@ async def stats(request: Request) -> str:
     medic_hits = await statshelper.get_medic_hits()
     own_medic_hits = await statshelper.get_own_medic_hits()
 
+    logger.debug("Loading SM5 role stats")
+
     top_commanders = await statshelper.get_top_commanders()
     top_heavies = await statshelper.get_top_heavies()
     top_scouts = await statshelper.get_top_scouts()
     top_ammos = await statshelper.get_top_ammos()
     top_medics = await statshelper.get_top_medics()
 
+    logger.debug("Loading laserball stats")
+
     laserball_red_wins = await LaserballGame.filter(winner=Team.RED, ranked=True).count()
     laserball_blue_wins = await LaserballGame.filter(winner=Team.BLUE, ranked=True).count()
     goals_scored = await statshelper.get_goals_scored()
+
+    logger.debug("Rendering stats page")
 
     return await render_template(request,
         "stats.html",

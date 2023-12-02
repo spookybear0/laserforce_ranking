@@ -11,7 +11,7 @@ from helpers.statshelper import sentry_trace
 @app.get("/api/game/<type:str>/<id:int>")
 @sentry_trace
 async def api_game(request: Request, type: str, id: int) -> str:
-    logger.info(f"Game {id} requested")
+    logger.info(f"Game {id} requested from api")
 
     if type == "sm5":
         game = await SM5Game.filter(id=id).first()

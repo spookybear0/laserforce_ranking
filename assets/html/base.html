@@ -3,6 +3,7 @@
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://js.sentry-cdn.com/562e9ab020654bedbc2a3db770dc07c2.min.js" crossorigin="anonymous"></script>
     <title>Laserforce Ranking - {% block title %}{% endblock %}</title>
 
     <meta name="title" content="Laserforce Ranking - {{ self.title() }}">
@@ -28,6 +29,23 @@
                     nav_items[i].style.display = "block";
                 }
             }
+        }
+
+        // sentry
+        window.sentryOnLoad = function () {
+            Sentry.init({
+                dsn: "https://562e9ab020654bedbc2a3db770dc07c2@o4505293249708032.ingest.sentry.io/4505293252395008",
+
+                release: "my-project-name@2.3.12",
+                integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()],
+
+                tracesSampleRate: 1.0,
+
+                tracePropagationTargets: ["localhost"],
+
+                replaysSessionSampleRate: 0.1,
+                replaysOnErrorSampleRate: 1.0,
+            });
         }
     </script>
 

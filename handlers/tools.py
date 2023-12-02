@@ -31,7 +31,7 @@ async def tools(request: Request) -> str:
 @app.post("/matchmake")
 @sentry_trace
 async def matchmake_post(request: Request) -> str:
-    logger.debug("Matchmaking")
+    logger.info("Matchmaking players")
 
     data = request.form
 
@@ -58,6 +58,10 @@ async def matchmake_post(request: Request) -> str:
             p = FakePlayer(codename)
         players.append(p)
 
+        logger.debug(f"Added dummy player Rating(25, 8.333) for {codename}")
+
+    logger.debug(f"Players: {players}")
+
     match = ratinghelper.matchmake(players, mode)
 
     team1 = match[0]
@@ -65,6 +69,9 @@ async def matchmake_post(request: Request) -> str:
 
     team1_ratings = []
     team2_ratings = []
+
+    logger.debug(f"Team 1: {team1}")
+    logger.debug(f"Team 2: {team2}")
 
     for player in team1:
         p = await Player.filter(codename=player.codename).first()
@@ -95,6 +102,8 @@ async def matchmake_post(request: Request) -> str:
     win_chance[0] = round(win_chance[0], 2)
     win_chance[1] = round(win_chance[1], 2)
 
+    logger.info(f"Match created with win chance: {win_chance}")
+
     return await render_template(
         request,
         "matchmake_results.html",
@@ -108,6 +117,8 @@ async def matchmake_post(request: Request) -> str:
 
 @app.post("/win_chance")
 async def win_chance_post(request: Request) -> str:
+    logger.info("Calculating win chance")
+
     data = request.form
 
     team1 = []
@@ -131,6 +142,9 @@ async def win_chance_post(request: Request) -> str:
         p = await Player.filter(codename=codename).first()
         team2.append(p)
 
+    logger.debug(f"Team 1: {team1}")
+    logger.debug(f"Team 2: {team2}")
+
     win_chance = ratinghelper.get_win_chance(team1, team2)
     
     # format match
@@ -141,7 +155,9 @@ async def win_chance_post(request: Request) -> str:
     for i in range(len(team2)):
         team2[i] = team2[i].codename
 
-    win_chance[0] = round(win_chance[0], 3)
-    win_chance[1] = round(win_chance[1], 3)
+    win_chance[0] = round(win_chance[0], 2)
+    win_chance[1] = round(win_chance[1], 2)
+
+    logger.info(f"Win chance calculated: {win_chance}")
 
     return await render_template(request, "win_calculator_results.html", team1=team1, team2=team2, win_chance=win_chance)

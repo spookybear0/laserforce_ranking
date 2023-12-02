@@ -8,6 +8,7 @@ from urllib.parse import unquote
 from typing import Union
 from db.models import Player, SM5Game, LaserballGame
 from helpers.statshelper import sentry_trace
+from sanic.log import logger
 
 sql = app.ctx.sql
 
@@ -60,16 +61,23 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     if not player:
         raise exceptions.NotFound("Not found: Invalid ID or codename")
     
+    logger.info(f"Loading player page for {player}")
+
+    logger.debug("Loading recent games")
+    
     recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
     recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
 
     median_role_score = await get_median_role_score(player)
 
+    logger.debug("Loading team rate pies")
 
     red_teams_sm5 = await player.times_played_as_team(Team.RED, GameType.SM5)
     green_teams_sm5 = await player.times_played_as_team(Team.GREEN, GameType.SM5)
     red_teams_laserball = await player.times_played_as_team(Team.RED, GameType.LASERBALL)
     blue_teams_laserball = await player.times_played_as_team(Team.BLUE, GameType.LASERBALL)
+
+    logger.debug("Loading win percents")
 
     red_wins_sm5 = await player.get_wins_as_team(Team.RED, GameType.SM5)
     green_wins_sm5 = await player.get_wins_as_team(Team.GREEN, GameType.SM5)
@@ -80,12 +88,16 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     laserball_win_percent = (red_wins_laserball+blue_wins_laserball)/(red_teams_laserball+blue_teams_laserball) if (red_teams_laserball+blue_teams_laserball) != 0 else 0
     win_percent = (red_wins_sm5+green_wins_sm5+red_wins_laserball+blue_wins_laserball)/(red_teams_sm5+green_teams_sm5+red_teams_laserball+blue_teams_laserball) if (red_teams_sm5+green_teams_sm5+red_teams_laserball+blue_teams_laserball) != 0 else 0
     
+    logger.debug("Loading stat chart")
+
     times_played_sm5 = red_teams_sm5+green_teams_sm5
     favorite_role_sm5 = await player.get_favorite_role()
     favorite_battlesuit_sm5 = await player.get_favorite_battlesuit(GameType.SM5)
     sean_hits_sm5 = await player.get_sean_hits(GameType.SM5)
     sm5_shots_hit = await player.get_shots_hit(GameType.SM5)
     sm5_shots_fired = await player.get_shots_fired(GameType.SM5)
+
+    logger.debug("Loading laserball stat chart")
 
     # no roles in laserball
     times_played_laserball = red_teams_laserball+blue_teams_laserball
@@ -94,11 +106,15 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     laserball_shots_hit = await player.get_shots_hit(GameType.LASERBALL)
     laserball_shots_fired = await player.get_shots_fired(GameType.LASERBALL)
 
+    logger.debug("Loading overall stat chart")
+
     times_played = times_played_sm5+times_played_laserball
     favorite_battlesuit = await player.get_favorite_battlesuit()
     sean_hits = sean_hits_sm5+sean_hits_laserball
     shots_hit = sm5_shots_hit+laserball_shots_hit
     shots_fired = sm5_shots_fired+laserball_shots_fired
+
+    logger.debug("Rendering player page")
 
     return await render_template(
         request, "player/player.html",

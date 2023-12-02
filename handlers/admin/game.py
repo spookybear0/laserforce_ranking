@@ -5,6 +5,7 @@ from typing import Union, List
 from db.models import Player, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions, response
 from helpers import ratinghelper
+from sanic.log import logger
 import os
 
 async def get_entity_end(entity):
@@ -107,8 +108,12 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
     
+    logger.debug("Logging in player")
+    
     battlesuit = request.json.get("battlesuit")
     codename = request.json.get("codename")
+
+    logger.debug(f"Logging in player {battlesuit} as {codename}")
 
     player = await Player.filter(codename=codename).first()
     
@@ -119,7 +124,11 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
     entity_start.name = codename
     entity_start.entity_id = player.ipl_id
 
-    await entity_start.save()  
+    logger.debug(f"Changing entity ID from {old_entity_id} to {player.ipl_id}")
+
+    await entity_start.save()
+
+    logger.debug("Changing events entity_id")
 
     # go through all events and change @number to #entity_id
 
@@ -130,6 +139,8 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
                 arguments[arguments.index(info)] = player.ipl_id
         event.arguments = arguments
         await event.save()
+
+    logger.debug("Changing data on the tdf file")
 
     # update the tdf file
 
@@ -150,6 +161,8 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
 
     with open(tdf, "w", encoding="utf-16") as f:
         f.write(contents)
+
+    logger.debug("Wrote to file successfully")
 
     return response.json({"status": "ok"})
 
