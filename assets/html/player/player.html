@@ -213,11 +213,11 @@
                 <span title="Codename"><h1 style="font-size: 50px;">{{ player.codename }}</h1></span>
 
                 <span title="Player ID"><h3>{{ player.player_id }}</h3></span>
-                <span title="IPL ID"><h5>{{ player.ipl_id }}</h5></span>
+                <span title="IPL ID"><h5>{{ player.entity_id }}</h5></span>
             </div>
 
             <div class="ipl-div">
-                <a href="http://www.iplaylaserforce.com/mission-stats/?t={{ player.ipl_id[1:] }}" target="_blank" rel="noopener noreferrer"><h3 style="color: #2fa4e7;">View on IPL</h3></a>
+                <a href="http://www.iplaylaserforce.com/mission-stats/?t={{ player.entity_id[1:] }}" target="_blank" rel="noopener noreferrer"><h3 style="color: #2fa4e7;">View on IPL</h3></a>
             </div>
 
             <div style="clear: both; padding-top: 2rem;"></div>

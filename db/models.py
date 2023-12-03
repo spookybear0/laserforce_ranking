@@ -114,7 +114,7 @@ class Player(Model):
     id = fields.IntField(pk=True)
     player_id = fields.CharField(20)
     codename = fields.CharField(255)
-    ipl_id = fields.CharField(50, default="")
+    entity_id = fields.CharField(50, default="")
     sm5_mu = fields.FloatField(default=25)
     sm5_sigma = fields.FloatField(default=8.333)
     laserball_mu = fields.FloatField(default=25)
@@ -154,7 +154,7 @@ class Player(Model):
         """
 
         # get the most played role
-        role = await EntityStarts.filter(entity_id=self.ipl_id).annotate(count=functions.Count("role")).order_by("-count").first()
+        role = await EntityStarts.filter(entity_id=self.entity_id).annotate(count=functions.Count("role")).order_by("-count").first()
         if role is None:
             return None
         return role.role
@@ -169,11 +169,11 @@ class Player(Model):
         # we need to count each time a battlesuit is used and return the most used one
 
         if game_type is None:
-            battlesuits = await EntityStarts.filter(entity_id=self.ipl_id).values_list("battlesuit", flat=True)
+            battlesuits = await EntityStarts.filter(entity_id=self.entity_id).values_list("battlesuit", flat=True)
         elif game_type == GameType.SM5:
-            battlesuits = await EntityStarts.filter(entity_id=self.ipl_id, sm5games__mission_name__icontains="space marines").values_list("battlesuit", flat=True)
+            battlesuits = await EntityStarts.filter(entity_id=self.entity_id, sm5games__mission_name__icontains="space marines").values_list("battlesuit", flat=True)
         elif game_type == GameType.LASERBALL:
-            battlesuits = await EntityStarts.filter(entity_id=self.ipl_id, laserballgames__mission_name__icontains="laserball").values_list("battlesuit", flat=True)
+            battlesuits = await EntityStarts.filter(entity_id=self.entity_id, laserballgames__mission_name__icontains="laserball").values_list("battlesuit", flat=True)
         else:
             # raise exception
             raise ValueError("Invalid game_type")
@@ -199,7 +199,7 @@ class Player(Model):
 
         if game_type is None:
             return await Events.filter(
-                arguments__filter={"0": self.ipl_id}
+                arguments__filter={"0": self.entity_id}
             ).filter(
                 Q(arguments__filter={"1": " zaps "}) | Q(arguments__filter={"1": " blocks "}) | Q(arguments__filter={"1": " steals from "})
             ).filter(
@@ -207,7 +207,7 @@ class Player(Model):
             ).count()
         elif game_type == GameType.SM5:
             return await Events.filter(
-                sm5games__mission_name__icontains="space marines", arguments__filter={"0": self.ipl_id}
+                sm5games__mission_name__icontains="space marines", arguments__filter={"0": self.entity_id}
             ).filter(
                 arguments__filter={"1": " zaps "}
             ).filter(
@@ -215,7 +215,7 @@ class Player(Model):
             ).count()
         elif game_type == GameType.LASERBALL:
             return await Events.filter(
-            laserballgames__mission_name__icontains="laserball", arguments__filter={"0": self.ipl_id}
+            laserballgames__mission_name__icontains="laserball", arguments__filter={"0": self.entity_id}
             ).filter(
                 Q(arguments__filter={"1": " blocks "}) | Q(arguments__filter={"1": " steals from "})
             ).filter(
@@ -234,11 +234,11 @@ class Player(Model):
         """
 
         if game_type is None:
-            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True) + await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True))
+            return sum(await SM5Stats.filter(entity__entity_id=self.entity_id).values_list("shots_fired", flat=True) + await LaserballStats.filter(entity__entity_id=self.entity_id).values_list("shots_fired", flat=True))
         elif game_type == GameType.SM5:
-            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True))
+            return sum(await SM5Stats.filter(entity__entity_id=self.entity_id).values_list("shots_fired", flat=True))
         elif game_type == GameType.LASERBALL:
-            return sum(await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_fired", flat=True))
+            return sum(await LaserballStats.filter(entity__entity_id=self.entity_id).values_list("shots_fired", flat=True))
         
     async def get_shots_hit(self, game_type: Optional[GameType]=None) -> int:
         """
@@ -249,11 +249,11 @@ class Player(Model):
         """
 
         if game_type is None:
-            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True) + await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True))
+            return sum(await SM5Stats.filter(entity__entity_id=self.entity_id).values_list("shots_hit", flat=True) + await LaserballStats.filter(entity__entity_id=self.entity_id).values_list("shots_hit", flat=True))
         elif game_type == GameType.SM5:
-            return sum(await SM5Stats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True))
+            return sum(await SM5Stats.filter(entity__entity_id=self.entity_id).values_list("shots_hit", flat=True))
         elif game_type == GameType.LASERBALL:
-            return sum(await LaserballStats.filter(entity__entity_id=self.ipl_id).values_list("shots_hit", flat=True))
+            return sum(await LaserballStats.filter(entity__entity_id=self.entity_id).values_list("shots_hit", flat=True))
     
     async def times_played_as_team(self, team: Team, game_type: GameType=None) -> int:
         """
@@ -268,16 +268,16 @@ class Player(Model):
             team_color = "Earth"
             
         if game_type is None:
-            return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color).count()
+            return await EntityStarts.filter(entity_id=self.entity_id, team__color_name=team_color).count()
         else:
             if game_type == GameType.SM5:
-                return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color, sm5games__mission_name__icontains="space marines").count()
+                return await EntityStarts.filter(entity_id=self.entity_id, team__color_name=team_color, sm5games__mission_name__icontains="space marines").count()
             elif game_type == GameType.LASERBALL:
-                return await EntityStarts.filter(entity_id=self.ipl_id, team__color_name=team_color, laserballgames__mission_name__icontains="laserball").count()
+                return await EntityStarts.filter(entity_id=self.entity_id, team__color_name=team_color, laserballgames__mission_name__icontains="laserball").count()
             
         
     async def times_played_as_role(self, role: Role) -> int:
-        return await EntityStarts.filter(entity_id=self.ipl_id, role=IntRole.from_role(role)).count()
+        return await EntityStarts.filter(entity_id=self.entity_id, role=IntRole.from_role(role)).count()
     
     async def get_win_percent(self, game_type: GameType=None) -> float:
         """
@@ -287,12 +287,12 @@ class Player(Model):
         if game_type is None:
             #return None
 
-            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").count()
-            losses = await EntityStarts.filter(entity_id=self.ipl_id).exclude(team=F("winner"), sm5games__winner__not_isnull="").count()
+            wins = await EntityStarts.filter(entity_id=self.entity_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").count()
+            losses = await EntityStarts.filter(entity_id=self.entity_id).exclude(team=F("winner"), sm5games__winner__not_isnull="").count()
         else:
             game_type_filter_name = "space marines" if game_type == GameType.SM5 else "laserball"
-            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__mission_name__icontains=game_type_filter_name).count()
-            losses = await EntityStarts.filter(entity_id=self.ipl_id, sm5games__mission_name__icontains=game_type_filter_name).exclude(team=F("winner")).count()
+            wins = await EntityStarts.filter(entity_id=self.entity_id, team__real_color_name=F("winner_color"), sm5games__mission_name__icontains=game_type_filter_name).count()
+            losses = await EntityStarts.filter(entity_id=self.entity_id, sm5games__mission_name__icontains=game_type_filter_name).exclude(team=F("winner")).count()
     
         if wins + losses == 0:
             return 0
@@ -312,12 +312,12 @@ class Player(Model):
             team_color = "Earth"
             
         if game_type is None:
-            wins = await EntityStarts.filter(entity_id=self.ipl_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").filter(team__color_name=team_color).count()
+            wins = await EntityStarts.filter(entity_id=self.entity_id, team__real_color_name=F("winner_color"), sm5games__winner__not_isnull="").filter(team__color_name=team_color).count()
         else:
             if game_type == game_type.SM5:
-                wins = await EntityStarts.filter(sm5games__mission_name__icontains="space marines", entity_id=self.ipl_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
+                wins = await EntityStarts.filter(sm5games__mission_name__icontains="space marines", entity_id=self.entity_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
             else: # laserball
-                wins = await EntityStarts.filter(laserballgames__mission_name__icontains="laserball", entity_id=self.ipl_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
+                wins = await EntityStarts.filter(laserballgames__mission_name__icontains="laserball", entity_id=self.entity_id, team__real_color_name=F("winner_color")).filter(team__color_name=team_color).count()
         return wins
     
     # custom funcs for plotting
@@ -332,7 +332,7 @@ class Player(Model):
         scores = []
 
         for role in range(1, 6):
-            entities = await EntityStarts.filter(role=role, entity_id=self.ipl_id).values_list("id", flat=True)
+            entities = await EntityStarts.filter(role=role, entity_id=self.entity_id).values_list("id", flat=True)
             scores_role = await EntityEnds.filter(entity__id__in=entities).values_list("score", flat=True)
             try:
                 scores.append(statistics.median(scores_role))
@@ -589,7 +589,7 @@ class EntityStarts(Model):
     
     async def get_player(self) -> Player:
         # get the player object from the entity
-        return await Player.get(ipl_id=self.entity_id)
+        return await Player.get(entity_id=self.entity_id)
     
     async def get_entity_end(self) -> "EntityEnds":
         return await EntityEnds.filter(entity__id=self.id).first()
@@ -672,7 +672,7 @@ class EntityEnds(Model):
 
     async def get_player(self) -> Player:
         # get the player object from the entity
-        return await Player.get(ipl_id=self.entity_id)
+        return await Player.get(entity_id=self.entity_id)
     
     async def get_entity_start(self) -> EntityStarts:
         return await self.entity

@@ -10,7 +10,7 @@ async def repopulate_database() -> None:
 
     # some fixes
 
-    await Player.filter(codename="ëMîlÿ").update(ipl_id="#RFSjNZ")
+    await Player.filter(codename="ëMîlÿ").update(entity_id="#RFSjNZ")
     await Player.filter(codename="Survivor").update(permissions=Permission.ADMIN, password=userhelper.hash_password(config["root_password"]))
 
     await Player.all().update(sm5_mu=ratinghelper.MU, sm5_sigma=ratinghelper.SIGMA, laserball_mu=ratinghelper.MU, laserball_sigma=ratinghelper.SIGMA)
@@ -36,9 +36,9 @@ async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: st
     old_entity_id = entity_start.entity_id
 
     entity_start.name = codename
-    entity_start.entity_id = player.ipl_id
+    entity_start.entity_id = player.entity_id
 
-    logger.debug(f"Changing entity ID from {old_entity_id} to {player.ipl_id}")
+    logger.debug(f"Changing entity ID from {old_entity_id} to {player.entity_id}")
 
     await entity_start.save()
 
@@ -50,7 +50,7 @@ async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: st
         arguments = event.arguments
         for info in arguments:
             if info == old_entity_id:
-                arguments[arguments.index(info)] = player.ipl_id
+                arguments[arguments.index(info)] = player.entity_id
         event.arguments = arguments
         await event.save()
 
@@ -70,7 +70,7 @@ async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: st
     with open(tdf, "r", encoding="utf-16") as f:
         contents = f.read()
 
-        contents = contents.replace(old_entity_id, player.ipl_id)
+        contents = contents.replace(old_entity_id, player.entity_id)
         contents = contents.replace(battlesuit, codename)
 
     with open(tdf, "w", encoding="utf-16") as f:

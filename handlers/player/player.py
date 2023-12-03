@@ -13,7 +13,7 @@ from sanic.log import logger
 sql = app.ctx.sql
 
 async def get_entity_start(game, player):
-    return await game.entity_starts.filter(entity_id=player.ipl_id).first()
+    return await game.entity_starts.filter(entity_id=player.entity_id).first()
 
 async def get_entity_end(game, entity_start):
     return await game.entity_ends.filter(entity=entity_start.id).first()
@@ -65,8 +65,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     logger.debug("Loading recent games")
     
-    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
-    recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.ipl_id).order_by("-start_time").limit(5)
+    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5)
+    recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5)
 
     median_role_score = await get_median_role_score(player)
 

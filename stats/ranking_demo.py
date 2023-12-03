@@ -205,13 +205,13 @@ async def main():
             best_player_rating = openskill.ordinal((players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma))
 
             if (await player.team).color_name == "Fire":
-                players_t1.append(await Player.get(ipl_id=player.entity_id))
+                players_t1.append(await Player.get(entity_id=player.entity_id))
                 players_rating_t1.append((
                     openskill.Rating(players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma),
                     openskill.Rating(players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma)
                 ))
             else:
-                players_t2.append(await Player.get(ipl_id=player.entity_id))
+                players_t2.append(await Player.get(entity_id=player.entity_id))
                 players_rating_t2.append((
                     openskill.Rating(players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma),
                     openskill.Rating(players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma)

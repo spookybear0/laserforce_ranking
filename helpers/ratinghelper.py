@@ -40,7 +40,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     # need to update previous rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
-        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        player = await Player.filter(entity_id=(await entity_end.entity).entity_id).first()
         entity_end.previous_rating_mu = player.sm5_mu
         entity_end.previous_rating_sigma = player.sm5_sigma
         await entity_end.save()
@@ -58,11 +58,11 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
         match event.type:
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
                 shooter = await userhelper.player_from_token(game, event.arguments[0])
-                shooter_player = await Player.filter(ipl_id=shooter.entity_id).first()
+                shooter_player = await Player.filter(entity_id=shooter.entity_id).first()
                 shooter_elo = Rating(shooter_player.sm5_mu, shooter_player.sm5_sigma)
 
                 target = await userhelper.player_from_token(game, event.arguments[2])
-                target_player = await Player.filter(ipl_id=target.entity_id).first()
+                target_player = await Player.filter(entity_id=target.entity_id).first()
                 target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
@@ -77,10 +77,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
 
             case EventType.MISSILE_DAMAGE_OPPONENT | EventType.MISSILE_DOWN_OPPONENT:
                 shooter = await userhelper.player_from_token(game, event.arguments[0])
-                shooter_player = await Player.filter(ipl_id=shooter.entity_id).first()
+                shooter_player = await Player.filter(entity_id=shooter.entity_id).first()
                 shooter_elo = Rating(shooter_player.sm5_mu, shooter_player.sm5_sigma)
                 target = await userhelper.player_from_token(game, event.arguments[2])
-                target_player = await Player.filter(ipl_id=target.entity_id).first()
+                target_player = await Player.filter(entity_id=target.entity_id).first()
                 target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
 
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
@@ -101,9 +101,9 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
 
     for player in await game.entity_starts.filter(type="player"):
         if (await player.team).color_name == "Fire":
-            team1.append(await Player.filter(ipl_id=player.entity_id).first())
+            team1.append(await Player.filter(entity_id=player.entity_id).first())
         else:
-            team2.append(await Player.filter(ipl_id=player.entity_id).first())
+            team2.append(await Player.filter(entity_id=player.entity_id).first())
 
     team1_elo = list(map(lambda x: Rating(x.sm5_mu, x.sm5_sigma), team1))
     team2_elo = list(map(lambda x: Rating(x.sm5_mu, x.sm5_sigma), team2))
@@ -126,7 +126,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        player = await Player.filter(entity_id=(await entity_end.entity).entity_id).first()
         entity_end.current_rating_mu = player.sm5_mu
         entity_end.current_rating_sigma = player.sm5_sigma
         await entity_end.save()
@@ -151,7 +151,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        player = await Player.filter(entity_id=(await entity_end.entity).entity_id).first()
         entity_end.previous_rating_mu = player.laserball_mu
         entity_end.previous_rating_sigma = player.laserball_sigma
         await entity_end.save()
@@ -171,11 +171,11 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
             # laserball events
             case EventType.BLOCK:
                 blocker = await userhelper.player_from_token(game, event.arguments[0])
-                blocker_player = await Player.filter(ipl_id=blocker.entity_id).first()
+                blocker_player = await Player.filter(entity_id=blocker.entity_id).first()
                 blocker_elo = Rating(blocker_player.laserball_mu, blocker_player.laserball_sigma)
 
                 blocked = await userhelper.player_from_token(game, event.arguments[2])
-                blocked_player = await Player.filter(ipl_id=blocked.entity_id).first()
+                blocked_player = await Player.filter(entity_id=blocked.entity_id).first()
                 blocked_elo = Rating(blocked_player.laserball_mu, blocked_player.laserball_sigma)
 
                 out = model.rate([[blocker_elo], [blocked_elo]], ranks=[0, 1])
@@ -190,11 +190,11 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
                 await blocked_player.save()
             case EventType.STEAL:
                 stealer = await userhelper.player_from_token(game, event.arguments[0])
-                stealer_player = await Player.filter(ipl_id=stealer.entity_id).first()
+                stealer_player = await Player.filter(entity_id=stealer.entity_id).first()
                 stealer_elo = Rating(stealer_player.laserball_mu, stealer_player.laserball_sigma)
 
                 stolen = await userhelper.player_from_token(game, event.arguments[2])
-                stolen_player = await Player.filter(ipl_id=stolen.entity_id).first()
+                stolen_player = await Player.filter(entity_id=stolen.entity_id).first()
                 stolen_elo = Rating(stolen_player.laserball_mu, stolen_player.laserball_sigma)
 
                 out = model.rate([[stealer_elo], [stolen_elo]], ranks=[0, 1])
@@ -218,9 +218,9 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     for player in await game.entity_starts.filter(type="player"):
         if (await player.team).color_name == "Fire":
-            team1.append(await Player.filter(ipl_id=player.entity_id).first())
+            team1.append(await Player.filter(entity_id=player.entity_id).first())
         else:
-            team2.append(await Player.filter(ipl_id=player.entity_id).first())
+            team2.append(await Player.filter(entity_id=player.entity_id).first())
 
 
     team1_elo = list(map(lambda x: Rating(x.laserball_mu, x.laserball_sigma), team1))
@@ -244,7 +244,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        player = await Player.filter(ipl_id=(await entity_end.entity).entity_id).first()
+        player = await Player.filter(entity_id=(await entity_end.entity).entity_id).first()
         entity_end.current_rating_mu = player.laserball_mu
         entity_end.current_rating_sigma = player.laserball_sigma
         await entity_end.save()
@@ -341,7 +341,7 @@ async def recalculate_ratings():
             for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
                 entity_id = (await entity_end.entity).entity_id
 
-                player = await Player.filter(ipl_id=entity_id).first()
+                player = await Player.filter(entity_id=entity_id).first()
                 
                 entity_end.previous_rating_mu = player.laserball_mu
                 entity_end.previous_rating_sigma = player.laserball_sigma
@@ -364,7 +364,7 @@ async def recalculate_ratings():
             for entity_end in await game.entity_ends.filter(entity__type="player"):
                 entity_id = (await entity_end.entity).entity_id
 
-                player = await Player.filter(ipl_id=entity_id).first()
+                player = await Player.filter(entity_id=entity_id).first()
                 
                 entity_end.previous_rating_mu = player.laserball_mu
                 entity_end.previous_rating_sigma = player.laserball_sigma
