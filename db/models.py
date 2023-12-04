@@ -501,6 +501,13 @@ class SM5Game(Model):
 
         return await self.entity_starts.filter(type="player", entity_id__startswith="@")
     
+    async def get_players(self) -> List[str]: # all players
+        """
+        Returns a list of entity_starts of players in the game
+        """
+
+        return await self.entity_starts.filter(type="player")
+    
     async def get_previous_game_id(self) -> Optional[int]:
         """
         Returns the game id of the previous game

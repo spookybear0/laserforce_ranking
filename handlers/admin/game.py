@@ -40,6 +40,7 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
             get_sm5stats=get_sm5stats, fire_score=await game.get_red_score(),
             earth_score=await game.get_green_score(),
             battlesuits=await game.get_battlesuits(),
+            players=await game.get_players(),
             previous_game_id=await game.get_previous_game_id(),
             next_game_id=await game.get_next_game_id(),
         )
@@ -113,7 +114,7 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
     battlesuit = request.json.get("battlesuit")
     codename = request.json.get("codename")
 
-    await adminhelper.manually_login_player_sm5(game, battlesuit, codename)
+    await adminhelper.manually_login_player_sm5(game, battlesuit, codename, mode)
 
     return response.json({"status": "ok"})
 
@@ -130,5 +131,23 @@ async def admin_game_delete(request: Request, mode: str, id: Union[int, str]) ->
         raise exceptions.NotFound("Not found: Invalid game type")
     
     await game.delete()
+
+    return response.json({"status": "ok"})
+
+@app.post("/admin/game/<mode>/<id>/delete_player")
+@admin_only
+async def admin_game_delete_player(request: Request, mode: str, id: Union[int, str]) -> str:
+    if mode == "sm5":
+        game = await SM5Game.filter(id=id).first()
+    elif mode == "lb":
+        game = await LaserballGame.filter(id=id).first()
+    else:
+        raise exceptions.NotFound("Not found: Invalid game type")
+    
+    logger.debug("Deleting player from game")
+    
+    codename = request.json.get("codename")
+
+    await adminhelper.delete_player_from_game(game, codename, mode)
 
     return response.json({"status": "ok"})

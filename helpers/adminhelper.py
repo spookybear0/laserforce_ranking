@@ -1,8 +1,8 @@
 from tortoise import Tortoise
 from config import config
 from helpers import tdfhelper, userhelper, ratinghelper
-from db.models import Player, Permission, SM5Game, EntityStarts, Events
-from typing import List
+from db.models import Player, Permission, SM5Game, EntityStarts, Events, LaserballGame, SM5Stats
+from typing import List, Union
 from sanic.log import logger
 
 async def repopulate_database() -> None:
@@ -17,7 +17,7 @@ async def repopulate_database() -> None:
 
     await tdfhelper.parse_all_tdfs()
 
-async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: str) -> bool:
+async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battlesuit: str, codename: str, mode: str) -> None:
     """
     Manually log in a player
 
@@ -64,6 +64,8 @@ async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: st
         tdf = "sm5_tdf/" + tdf
     elif mode == "lb":
         tdf = "laserball_tdf/" + tdf
+    else:
+        raise ValueError("Invalid mode")
 
     # simple find and replace
 
@@ -72,6 +74,80 @@ async def manually_login_player_sm5(game: SM5Game, battlesuit: str, codename: st
 
         contents = contents.replace(old_entity_id, player.entity_id)
         contents = contents.replace(battlesuit, codename)
+
+    with open(tdf, "w", encoding="utf-16") as f:
+        f.write(contents)
+
+    logger.debug("Wrote to file successfully")
+
+async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename: str, mode: str) -> None:
+    """
+    Delete a player from a game
+
+    Usually for when a player exits the arena and
+    the game creates a new entity for them
+    after they walk through the door
+    """
+
+    logger.debug(f"Deleting player {codename}")
+    entity_start = await game.entity_starts.filter(name=codename).first()
+
+    logger.debug(f"Deleting entity start {entity_start.name}")
+
+    await entity_start.delete()
+
+    logger.debug("Deleting entity end")
+
+    await (await entity_start.get_entity_end()).delete()
+
+    logger.debug("Deleting events")
+
+    # go through all events and delete them
+
+    async for event in game.events:
+        arguments = event.arguments
+        for info in arguments:
+            if entity_start.entity_id in info:
+                await event.delete()
+
+    if mode == "sm5":
+        # delete sm5stats
+
+        logger.debug("Deleting sm5stats")
+
+        id_ = (await SM5Stats.filter(entity__entity_id=entity_start.entity_id).first()).id
+        await SM5Stats.filter(id=id_).delete()
+    elif mode == "lb":
+        # delete laserballstats
+
+        logger.debug("Deleting laserballstats")
+
+        id_ = (await LaserballGame.filter(entity__entity_id=entity_start.entity_id).first()).id
+        await LaserballGame.filter(id=id_).delete()
+    else:
+        raise ValueError("Invalid mode")
+        
+
+    logger.debug("Deleting data on the tdf file")
+
+    # update the tdf file
+
+    tdf = game.tdf_name
+
+    if mode == "sm5":
+        tdf = "sm5_tdf/" + tdf
+    elif mode == "lb":
+        tdf = "laserball_tdf/" + tdf
+    else:
+        raise ValueError("Invalid mode")
+
+    # simple find and replace
+
+    with open(tdf, "r", encoding="utf-16") as f:
+        contents = f.read()
+
+        contents = contents.replace(entity_start.entity_id, "")
+        contents = contents.replace(codename, "")
 
     with open(tdf, "w", encoding="utf-16") as f:
         f.write(contents)
