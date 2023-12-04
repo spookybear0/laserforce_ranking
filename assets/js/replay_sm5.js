@@ -173,7 +173,7 @@ function setupGame(replay_data) {
 
         row.innerHTML = 
         `
-        <td><img src="/assets/roles/${defaults["name"]}_white.png" alt="role image" width="30" height="30"></td>
+        <td><img src="/assets/roles/${defaults["name"]}.png" alt="role image" width="30" height="30"></td>
         <td><p class="player_codename">${player["name"]}</p></td>
         <td><p class="player_score">0</p></td>
         <td><p class="player_lives">${defaults["lives"]}</p></td>

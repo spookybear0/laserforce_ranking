@@ -359,7 +359,7 @@
                             {% set sm5_stats = get_sm5stats(entity) %}
 
                             <tr>
-                                <td style="width: 30px"><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
+                                <td style="width: 30px"><p><img src="/assets/roles/{{entity.role|string|lower}}.png" alt="role image" width="30" height="30"></p></td>
                                 {% if entity.entity_id.startswith("@") %}
                                     <td><p>{{ entity.name }}</p></td>
                                 {% else %}
@@ -397,7 +397,7 @@
                             {% set entity_end = get_entity_end(entity) %}
                             {% set sm5_stats = get_sm5stats(entity) %}
                             <tr>
-                                <td><p><img src="/assets/roles/{{entity.role|string|lower}}_white.png" alt="role image" width="30" height="30"></p></td>
+                                <td><p><img src="/assets/roles/{{entity.role|string|lower}}.png" alt="role image" width="30" height="30"></p></td>
                                 {% if entity.entity_id.startswith("@") %}
                                     <td><p>{{ entity.name }}</p></td>
                                 {% else %}
