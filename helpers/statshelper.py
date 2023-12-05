@@ -7,6 +7,9 @@ from tortoise.functions import Trim, Sum
 
 # stats helpers
 
+
+# average score at time, not sure if this a good statistic
+
 async def get_average_red_score_at_time_sm5(time: int) -> int:
     """
     Gets the average red score at a given time
@@ -35,7 +38,7 @@ async def get_average_green_score_at_time_sm5(time: int) -> int:
 
     return sum(scores) // len(scores)
 
-
+# totals
 
 async def get_points_scored() -> int:
     """
@@ -104,7 +107,7 @@ async def get_own_medic_hits() -> int:
 
     return hits
 
-# laserball
+# laserball totals
 
 async def get_goals_scored() -> int:
     """
@@ -167,6 +170,8 @@ async def get_blocks() -> int:
     return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("blocks")).values_list("sum", flat=True))
 
 # top roles
+# could be improved by accounting for the amount of games played
+# could be combined into one function
 
 async def get_top_commanders(amount=5) -> List[Tuple[str, int]]:
     """

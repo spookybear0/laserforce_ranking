@@ -398,20 +398,30 @@ async def parse_laserball_game(file_location: str):
                 
     # calculate assists (when a player passes to a player who scores)
     # so we need to find all the goals, and then find the pass that happened before it
+    # this probably isn't 100% accurate but it's the best we can do
 
     logger.debug("Calculating assists")
+
+    events_reversed = events[::-1]
 
     for e in events:
         if e.type == EventType.GOAL:
             # find the pass that happened before this goal
-            events_reversed = events[::-1]
-            for e2 in events_reversed:
-                if e2.type == EventType.PASS and e2.time < e.time:
+            for e2 in events_reversed: # iterate backwards
+                if e2.type == EventType.ROUND_START and e2.time < e.time:
+                    break
+                elif e2.type == EventType.PASS and e2.time < e.time:
                     # check if the pass was to the same player
                     if e2.arguments[2] == e.arguments[0]:
                         laserball_stats[e2.arguments[0]].assists += 1
                         await laserball_stats[e2.arguments[0]].save()
                         break
+                    else:
+                        # wasn't the most recent pass so it's not an assist
+                        break
+                elif e2.type == EventType.STEAL and e2.time < e.time:
+                    # if a steal happened before a valid pass, it can't be an assist
+                    break
                 
     # get the winner (goals scored is the only factor)
 
