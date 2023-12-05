@@ -1,8 +1,8 @@
 from typing import List, Tuple
 from sentry_sdk import Hub, start_transaction
-from db.models import SM5Game, EntityEnds, SM5Stats, IntRole
+from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats
 from tortoise.expressions import F
-from tortoise.functions import Trim
+from tortoise.functions import Trim, Sum
 
 
 # stats helpers
@@ -51,21 +51,6 @@ async def get_points_scored() -> int:
         points += entity.score
 
     return points
-
-async def get_goals_scored() -> int:
-    """
-    Gets the total goals scored by going through
-    all games and adding up the total goals scored
-
-    (Laserball)
-    """
-
-    goals = 0
-
-    for entity in await EntityEnds.filter(laserballgames__ranked=True, laserballgames__mission_name__icontains="laserball").all():
-        goals += entity.score
-
-    return goals
 
 async def get_nukes_launched() -> int:
     """
@@ -119,6 +104,69 @@ async def get_own_medic_hits() -> int:
 
     return hits
 
+# laserball
+
+async def get_goals_scored() -> int:
+    """
+    Gets the total goals scored by going through
+    all games and adding up the total goals scored
+
+    (Laserball)
+    """
+
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("goals")).values_list("sum", flat=True))
+
+async def get_assists() -> int:
+    """
+    Gets the total assists by going through
+    all games and adding up the total assists
+
+    (Laserball)
+    """
+
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("assists")).values_list("sum", flat=True))
+
+async def get_passes() -> int:
+    """
+    Gets the total passes by going through
+    all games and adding up the total passes
+
+    (Laserball)
+    """
+
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("passes")).values_list("sum", flat=True))
+
+async def get_steals() -> int:
+    """
+    Gets the total steals by going through
+    all games and adding up the total steals
+
+    (Laserball)
+    """
+
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("steals")).values_list("sum", flat=True))
+
+async def get_clears() -> int:
+    """
+    Gets the total clears by going through
+    all games and adding up the total clears
+
+    (Laserball)
+    """
+
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("clears")).values_list("sum", flat=True))
+
+async def get_blocks() -> int:
+    """
+    Gets the total blocks by going through
+    all games and adding up the total blocks
+
+    (Laserball)
+    """
+
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("blocks")).values_list("sum", flat=True))
+
+# top roles
 
 async def get_top_commanders(amount=5) -> List[Tuple[str, int]]:
     """
@@ -281,11 +329,11 @@ async def get_ranking_accuracy() -> float:
     total = 0
 
     for game in await SM5Game.filter(ranked=True).all():
-        red_chance, green_chance = await game.get_win_chance()
+        red_chance, green_chance = await game.get_win_chance_before_game()
         red_score, green_score = await game.get_red_score(), await game.get_green_score()
 
         # see if scores are close enough
-        if int(red_chance) == int(green_chance) and abs(red_score - green_score) <= 1000:
+        if int(red_chance) == int(green_chance) and abs(red_score - green_score) <= 3000:
             # if so, add 2 to correct
             # it means we did a phoenomenal job at predicting the winner
             # technically this means our rating could be higher than 100%

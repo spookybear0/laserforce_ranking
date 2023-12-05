@@ -128,6 +128,26 @@ Divided by the total number of games
             <h2>{{ goals_scored }}</h2>
             <p>Goals Scored</p>
         </div>
+        <div class="btn">
+            <h2>{{ assists }}</h2>
+            <p>Assists</p>
+        </div>
+        <div class="btn">
+            <h2>{{ passes }}</h2>
+            <p>Passes</p>
+        </div>
+        <div class="btn">
+            <h2>{{ steals }}</h2>
+            <p>Steals</p>
+        </div>
+        <div class="btn">
+            <h2>{{ clears }}</h2>
+            <p>Clears</p>
+        </div>
+        <div class="btn">
+            <h2>{{ blocks }}</h2>
+            <p>Blocks</p>
+        </div>
     </div>
 
     <h1 class="stats-header">Leaderboards</h1>
@@ -167,7 +187,7 @@ Divided by the total number of games
     new Chart("sm5_team_wins", {
         type: "pie",
         data: {
-            labels: ["Red", "Green"],
+            labels: ["Fire", "Earth"],
             datasets: [{
             backgroundColor: ["#b91d47","#00aba9"],
             data: [{{ sm5_red_wins }}, {{ sm5_green_wins }}]
@@ -183,7 +203,7 @@ Divided by the total number of games
     new Chart("laserball_team_wins", {
         type: "pie",
         data: {
-            labels: ["Red", "Blue"],
+            labels: ["Fire", "Ice"],
             datasets: [{
             backgroundColor: ["#b91d47","#0047AB"],
             data: [{{ laserball_red_wins }}, {{ laserball_blue_wins }}]

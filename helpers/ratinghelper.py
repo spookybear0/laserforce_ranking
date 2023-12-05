@@ -66,10 +66,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
-                shooter_player.sm5_mu = out[0][0].mu
+                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * 0.1
                 shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
-                target_player.sm5_mu = out[1][0].mu
+                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * 0.1
                 target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
                 await shooter_player.save()
@@ -85,10 +85,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
 
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
-                shooter_player.sm5_mu = out[0][0].mu
+                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * 0.15
                 shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
-                target_player.sm5_mu = out[1][0].mu
+                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * 0.15
                 target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
                 await shooter_player.save()
@@ -361,7 +361,7 @@ async def recalculate_ratings():
             else:
                 logger.error(f"Failed to update player rankings for game {game.id}")
         else:
-            for entity_end in await game.entity_ends.filter(entity__type="player"):
+            for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
                 entity_id = (await entity_end.entity).entity_id
 
                 player = await Player.filter(entity_id=entity_id).first()

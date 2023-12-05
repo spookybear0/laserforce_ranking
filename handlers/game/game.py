@@ -45,6 +45,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+30000, 30000)],
             win_chance=await game.get_win_chance(),
+            win_chance_before_game=await game.get_win_chance_before_game(),
             players_matchmake=players_matchmake
         )
     elif type == "lb":
@@ -70,7 +71,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_blue=[await game.get_blue_score_at_time(t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
-            win_chance=await game.get_win_chance(),
+            win_chance_after_game=await game.get_win_chance_after_game(),
             game_end_time_decimal=min(math.ceil((await game.scores.order_by("-time").first()).time/1000/60*2)/2, 15),
             players_matchmake=players_matchmake
         )

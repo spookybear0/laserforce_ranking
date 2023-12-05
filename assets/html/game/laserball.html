@@ -470,10 +470,10 @@
     new Chart("win_chance", {
         type: "pie",
         data: {
-            labels: ["Red", "Blue"],
+            labels: ["Fire", "Ice"],
             datasets: [{
                 backgroundColor: ["#b91d47", "#0047AB"],
-                data: [{{ (win_chance[0]*100)|round(2) }}, {{ (win_chance[1]*100)|round(2) }}]
+                data: [{{ (win_chance_after_game[0]*100)|round(2) }}, {{ (win_chance_after_game[1]*100)|round(2) }}]
             }]
         },
         options: {

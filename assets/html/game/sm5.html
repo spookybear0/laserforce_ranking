@@ -74,7 +74,7 @@
         max-width: 90%;
     }
 
-    #win_chance {
+    #win_chance_before_game, #win_chance {
         max-width: 30%;
     }
 
@@ -147,7 +147,7 @@
             max-width: 100%;
         }
 
-        #win_chance {
+        #win_chance_before_game, #win_chance {
             max-width: 100%;
         }
 
@@ -320,7 +320,7 @@
                                     <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
                                 {% endif %}
                                 {% if entity_end.current_rating_mu and game.ranked %}
-                                <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                    <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
                                 <td><p>{{ entity_end.score }}</p></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
@@ -342,6 +342,7 @@
         <div id="stats">
             <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
             <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
+                <canvas class="inline-block" id="win_chance_before_game" style="clear: both;"></canvas>
                 <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
             </div>
         </div>
@@ -439,10 +440,32 @@
         }
     });
 
+    new Chart("win_chance_before_game", {
+        type: "pie",
+        data: {
+            labels: ["Fire", "Earth"],
+            datasets: [{
+                backgroundColor: ["#b91d47","#00aba9"],
+                data: [{{ (win_chance_before_game[0]*100)|round(2) }}, {{ (win_chance_before_game[1]*100)|round(2) }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Predicted Win Chance",
+                fontColor: "white"
+            }
+        }
+    });
+
     new Chart("win_chance", {
         type: "pie",
         data: {
-            labels: ["Red", "Green"],
+            labels: ["Fire", "Earth"],
             datasets: [{
                 backgroundColor: ["#b91d47","#00aba9"],
                 data: [{{ (win_chance[0]*100)|round(2) }}, {{ (win_chance[1]*100)|round(2) }}]
@@ -455,7 +478,7 @@
             },
             title: {
                 display: true,
-                text: "Predicted Win Chance",
+                text: "Actual Win Chance",
                 fontColor: "white"
             }
         }

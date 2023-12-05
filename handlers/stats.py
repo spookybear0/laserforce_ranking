@@ -44,6 +44,11 @@ async def stats(request: Request) -> str:
     laserball_red_wins = await LaserballGame.filter(winner=Team.RED, ranked=True).count()
     laserball_blue_wins = await LaserballGame.filter(winner=Team.BLUE, ranked=True).count()
     goals_scored = await statshelper.get_goals_scored()
+    assists = await statshelper.get_assists()
+    passes = await statshelper.get_passes()
+    steals = await statshelper.get_steals()
+    clears = await statshelper.get_clears()
+    blocks = await statshelper.get_blocks()
 
     logger.debug("Rendering stats page")
 
@@ -82,4 +87,9 @@ async def stats(request: Request) -> str:
         laserball_red_wins=laserball_red_wins,
         laserball_blue_wins=laserball_blue_wins,
         goals_scored=goals_scored,
+        assists=assists,
+        passes=passes,
+        steals=steals,
+        clears=clears,
+        blocks=blocks
     )
