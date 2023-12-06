@@ -6,6 +6,7 @@ from scipy.stats import norm
 from sanic.log import logger
 from typing import List, Tuple
 from db.models import SM5Game, Events, EntityStarts, EventType, Player, EntityEnds, LaserballGame
+from openskill.models.weng_lin.common import _unwind, phi_major, phi_major_inverse, phi_minor
 from objects import GameType
 from helpers import userhelper
 
@@ -13,14 +14,17 @@ from helpers import userhelper
 # CONSTANTS
 
 MU = 25
-SIGMA = MU / 3
+SIGMA = 25 / 3
+BETA = 25 / 6
+KAPPA = 0.0001
+TAU = 25 / 300
 
 # for calculating win chance when there is no data for a player
 # we assume that they aren't very skilled and have a high variance
 ASSUMED_SKILL_MU = 15
 ASSUMED_SKILL_SIGMA = 20
 
-model = PlackettLuce()
+model = LasertagModel()
 
 # sm5 elo helper functions
 
@@ -180,11 +184,11 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
                 out = model.rate([[blocker_elo], [blocked_elo]], ranks=[0, 1])
 
-                blocker_player.laserball_mu = out[0][0].mu
-                blocker_player.laserball_sigma = out[0][0].sigma
+                blocker_player.laserball_mu = out[0][0].mu * 0.1
+                blocker_player.laserball_sigma = out[0][0].sigma * 0.1
 
-                blocked_player.laserball_mu = out[1][0].mu
-                blocked_player.laserball_sigma = out[1][0].sigma
+                blocked_player.laserball_mu = out[1][0].mu * 0.1
+                blocked_player.laserball_sigma = out[1][0].sigma * 0.1
 
                 await blocker_player.save()
                 await blocked_player.save()
@@ -199,13 +203,13 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
                 out = model.rate([[stealer_elo], [stolen_elo]], ranks=[0, 1])
 
-                # steal has a bigger impact so we need to multiply the difference by 1.5
+                # steal has a bigger impact
 
-                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 1.5
-                stealer_player.laserball_sigma += (out[0][0].sigma - stealer_player.laserball_sigma) * 1.5
+                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.2
+                stealer_player.laserball_sigma += (out[0][0].sigma - stealer_player.laserball_sigma) * 0.1
 
-                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 1.5
-                stolen_player.laserball_sigma += (out[1][0].sigma - stolen_player.laserball_sigma) * 1.5
+                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.2
+                stolen_player.laserball_sigma += (out[1][0].sigma - stolen_player.laserball_sigma) * 0.1
 
 
                 await stealer_player.save()
