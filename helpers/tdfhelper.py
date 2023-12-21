@@ -335,7 +335,9 @@ async def parse_laserball_game(file_location: str):
                         started_with_ball=0,
                         times_stolen=0,
                         times_blocked=0,
-                        passes_received=0
+                        passes_received=0,
+                        shots_fired=0,
+                        shots_hit=0
                     )
 
                 logger.debug(f"Entity Start: time: {data[1]}, entity id: {data[2]}, type: {data[3]}, name: {data[4]}, team: {data[5]}, level: {data[6]}, role: {data[7]}, battlesuit: {data[8]}")

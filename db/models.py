@@ -41,7 +41,7 @@ class EventType(IntEnum):
     MISSILE_MISS = 304
     MISSILE_DAMAGE_OPPONENT = 305 # unused? theres no way for a missile to not down/destroy
     MISSILE_DOWN_OPPONENT = 306
-    MISSILE_DAMAGE_TEAM = 307 # unused? ditto
+    MISSILE_DAMAGE_TEAM = 307 # unused?
     MISSILE_DOWN_TEAM = 308
     ACTIVATE_RAPID_FIRE = 400
     DEACTIVATE_RAPID_FIRE = 401 # unused?
