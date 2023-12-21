@@ -66,7 +66,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
                 # check if game already exists
                 if game := await SM5Game.filter(start_time=start_time, arena=arena).first():
-                    logger.warn(f"Game {game.id} already exists, skipping")
+                    logger.warning(f"Game {game.id} already exists, skipping")
                     return game
 
             case "2": # team info
@@ -300,7 +300,7 @@ async def parse_laserball_game(file_location: str):
 
                 # check if game already exists
                 if game := await LaserballGame.filter(start_time=start_time, arena=arena).first():
-                    logger.warn(f"Game {game.id} already exists, skipping")
+                    logger.warning(f"Game {game.id} already exists, skipping")
                     return game
 
             case "2": # team info
@@ -569,10 +569,16 @@ async def parse_laserball_game(file_location: str):
 
             player = await Player.filter(entity_id=entity_id).first()
             
-            entity_end.previous_rating_mu = player.laserball_mu
-            entity_end.previous_rating_sigma = player.laserball_sigma
-            entity_end.current_rating_mu = player.laserball_mu
-            entity_end.current_rating_sigma = player.laserball_sigma
+            try:
+                entity_end.previous_rating_mu = player.laserball_mu
+                entity_end.previous_rating_sigma = player.laserball_sigma
+                entity_end.current_rating_mu = player.laserball_mu
+                entity_end.current_rating_sigma = player.laserball_sigma
+            except AttributeError:
+                entity_end.previous_rating_mu = 25
+                entity_end.previous_rating_sigma = 25/3
+                entity_end.current_rating_mu = 25
+                entity_end.current_rating_sigma = 25/3
 
             await entity_end.save()
 

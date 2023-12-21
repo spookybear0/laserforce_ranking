@@ -24,7 +24,7 @@ TAU = 25 / 300
 ASSUMED_SKILL_MU = 15
 ASSUMED_SKILL_SIGMA = 20
 
-model = LasertagModel()
+model = PlackettLuce()
 
 # sm5 elo helper functions
 
