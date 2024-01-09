@@ -21,50 +21,52 @@ def suffix(d):
 def strftime_ordinal(format, t):
     return t.strftime(format).replace("{S}", str(t.day) + suffix(t.day))
 
-class EventType(IntEnum):
+class EventType(Enum):
     # basic and sm5 events
-    MISSION_START = 100
-    MISSION_END = 101
-    SHOT_EMPTY = 200 # unused?
-    MISS = 201
-    MISS_BASE = 202
-    HIT_BASE = 203
-    DESTROY_BASE = 204
-    DAMAGED_OPPONENT = 205
-    DOWNED_OPPONENT = 206
-    DAMANGED_TEAM = 207 # unused?
-    DOWNED_TEAM = 208 # unused?
-    LOCKING = 300 # (aka missile start)
-    MISSILE_BASE_MISS = 301
-    MISSILE_BASE_DAMAGE = 302
-    MISISLE_BASE_DESTROY = 303
-    MISSILE_MISS = 304
-    MISSILE_DAMAGE_OPPONENT = 305 # unused? theres no way for a missile to not down/destroy
-    MISSILE_DOWN_OPPONENT = 306
-    MISSILE_DAMAGE_TEAM = 307 # unused?
-    MISSILE_DOWN_TEAM = 308
-    ACTIVATE_RAPID_FIRE = 400
-    DEACTIVATE_RAPID_FIRE = 401 # unused?
-    ACTIVATE_NUKE = 404
-    DETONATE_NUKE = 405
-    RESUPPLY_AMMO = 500
-    RESUPPLY_LIVES = 502
-    AMMO_BOOST = 510
-    LIFE_BOOST = 512
-    PENALTY = 600
-    ACHIEVEMENT = 900
-    BASE_AWARDED = 2819 # (technically #0B03 in hex)
+    MISSION_START = "0100"
+    MISSION_END = "0101"
+    SHOT_EMPTY = "0200" # unused?
+    MISS = "0201"
+    MISS_BASE = "0202"
+    HIT_BASE = "0203"
+    DESTROY_BASE = "0204"
+    DAMAGED_OPPONENT = "0205"
+    DOWNED_OPPONENT = "0206"
+    DAMANGED_TEAM = "0207" # unused?
+    DOWNED_TEAM = "0208" # unused?
+    LOCKING = "0300" # (aka missile start)
+    MISSILE_BASE_MISS = "0301"
+    MISSILE_BASE_DAMAGE = "0302"
+    MISISLE_BASE_DESTROY = "0303"
+    MISSILE_MISS = "0304"
+    MISSILE_DAMAGE_OPPONENT = "0305" # unused? theres no way for a missile to not down/destroy
+    MISSILE_DOWN_OPPONENT = "0306"
+    MISSILE_DAMAGE_TEAM = "0307" # unused?
+    MISSILE_DOWN_TEAM = "0308"
+    ACTIVATE_RAPID_FIRE = "0400"
+    DEACTIVATE_RAPID_FIRE = "0401" # unused?
+    ACTIVATE_NUKE = "0404"
+    DETONATE_NUKE = "0405"
+    RESUPPLY_AMMO = "0500"
+    RESUPPLY_LIVES = "0502"
+    AMMO_BOOST = "0510"
+    LIFE_BOOST = "0512"
+    PENALTY = "0600"
+    ACHIEVEMENT = "0900"
+    REWARD = "0902"
+    BASE_AWARDED = "0B03" # (technically #0B03 in hex)
 
     # laserball events
 
-    PASS = 1100
-    GOAL = 1101
-    STEAL = 1103
-    BLOCK = 1104
-    ROUND_START = 1105
-    ROUND_END = 1106
-    GETS_BALL = 1107 # at the start of the round
-    CLEAR = 1109
+    PASS = "1100"
+    GOAL = "1101"
+    STEAL = "1103"
+    BLOCK = "1104"
+    ROUND_START = "1105"
+    ROUND_END = "1106"
+    GETS_BALL = "1107" # at the start of the round
+    CLEAR = "1109"
+    FAIL_CLEAR = "110A"
     
 
 class IntRole(IntEnum):
@@ -105,6 +107,12 @@ class IntRole(IntEnum):
             5: Role.MEDIC
         }.get(self.value)
     
+
+class PlayerStateType(IntEnum):
+    ACTIVE = 0
+    UNKNOWN = 1 # unused?
+    RESETTABLE = 2 # used but not sure what it is
+    DOWN = 3
 
 class Permission(IntEnum):
     USER = 0
@@ -393,6 +401,7 @@ class SM5Game(Model):
     teams = fields.ManyToManyField("models.Teams")
     entity_starts = fields.ManyToManyField("models.EntityStarts")
     events = fields.ManyToManyField("models.Events")
+    player_states = fields.ManyToManyField("models.PlayerStates")
     scores = fields.ManyToManyField("models.Scores")
     entity_ends = fields.ManyToManyField("models.EntityEnds")
     sm5_stats = fields.ManyToManyField("models.SM5Stats")
@@ -713,7 +722,7 @@ class EntityStarts(Model):
 
 class Events(Model):
     time = fields.IntField() # time in milliseconds
-    type = fields.IntEnumField(EventType)
+    type = fields.CharEnumField(EventType)
     # variable number of fields depending on type of event
     # can be token or string for announcement
     # now make the field
@@ -724,8 +733,22 @@ class Events(Model):
         final = {}
 
         final["time"] = self.time
-        final["type"] = int(self.type)
+        final["type"] = self.type
         final["arguments"] = self.arguments
+
+        return final
+    
+class PlayerStates(Model):
+    time = fields.IntField() # time in milliseconds
+    entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
+    state = fields.IntEnumField(PlayerStateType)
+
+    async def to_dict(self):
+        final = {}
+
+        final["time"] = self.time
+        final["entity"] = (await self.entity).entity_id
+        final["state"] = self.state
 
         return final
 
@@ -979,6 +1002,7 @@ class LaserballGame(Model):
     teams = fields.ManyToManyField("models.Teams")
     entity_starts = fields.ManyToManyField("models.EntityStarts")
     events = fields.ManyToManyField("models.Events")
+    player_states = fields.ManyToManyField("models.PlayerStates")
     scores = fields.ManyToManyField("models.Scores")
     entity_ends = fields.ManyToManyField("models.EntityEnds")
     laserball_stats = fields.ManyToManyField("models.LaserballStats")

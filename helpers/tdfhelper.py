@@ -1,4 +1,4 @@
-from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, EntityEnds, Scores, IntRole, SM5Stats, LaserballGame, LaserballStats
+from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, EntityEnds, Scores, IntRole, SM5Stats, LaserballGame, LaserballStats, PlayerStates, PlayerStateType
 from typing import List, Dict
 from datetime import datetime
 from objects import Team
@@ -37,6 +37,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     scores: Scores = []
     entity_ends: List[EntityEnds] = []
     sm5_stats: List[SM5Stats] = []
+    player_states: List[PlayerStates] = []
 
     token_to_entity = {}
 
@@ -89,11 +90,9 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
             case "4": # event
-                # okay but why is this a thing
-                if data[2] == "0B03": # base awarded
-                    data[2] = 2819 # keeping my system in integers
-                events.append(await Events.create(time=int(data[1]), type=EventType(int(data[2])), arguments=json.dumps(data[3:])))
-                logger.debug(f"Event: time: {data[1]}, type: {EventType(int(data[2]))}, arguments: {data[3:]}")
+                # okay but why is event type a string
+                events.append(await Events.create(time=int(data[1]), type=EventType(data[2]), arguments=json.dumps(data[3:])))
+                logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                     delta=int(data[4]), new=int(data[5])))
@@ -112,6 +111,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     shot_team=int(data[22]), missiled_opponent=int(data[23]), missiled_team=int(data[24])))
             
                 logger.debug(f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
+            case "9": # player state
+                print(data)
+                player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]], state=PlayerStateType(int(data[3]))))
+                logger.debug(f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
+                
 
     # getting the winner
 
@@ -143,6 +147,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)
     await game.events.add(*events)
+    await game.player_states.add(*player_states)
     await game.scores.add(*scores)
     await game.entity_ends.add(*entity_ends)
     await game.sm5_stats.add(*sm5_stats)
@@ -266,6 +271,7 @@ async def parse_laserball_game(file_location: str):
     teams: Teams = []
     entity_starts: EntityStarts = []
     events: Events = []
+    player_states: PlayerStates = []
     scores: Scores = []
     entity_ends: EntityEnds = []
 
@@ -344,7 +350,7 @@ async def parse_laserball_game(file_location: str):
             case "4": # event
                 # handle special laserball events
 
-                event_type = EventType(int(data[2]))
+                event_type = EventType(data[2])
                 args = data[3:]
 
                 if event_type == EventType.GETS_BALL:
@@ -397,6 +403,9 @@ async def parse_laserball_game(file_location: str):
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                     type=int(data[3]), score=int(data[4])))
                 logger.debug(f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
+            case "9": # player state
+                player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]], state=PlayerStateType(int(data[3]))))
+                logger.debug(f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
                 
     # calculate assists (when a player passes to a player who scores)
     # so we need to find all the goals, and then find the pass that happened before it
@@ -489,6 +498,7 @@ async def parse_laserball_game(file_location: str):
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)
     await game.events.add(*events)
+    await game.player_states.add(*player_states)
     await game.scores.add(*scores)
     await game.entity_ends.add(*entity_ends)
     await game.laserball_stats.add(*laserball_stats.values())

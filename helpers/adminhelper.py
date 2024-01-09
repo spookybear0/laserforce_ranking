@@ -4,9 +4,19 @@ from helpers import tdfhelper, userhelper, ratinghelper
 from db.models import Player, Permission, SM5Game, EntityStarts, Events, LaserballGame, SM5Stats
 from typing import List, Union
 from sanic.log import logger
+from shared import app
 
 async def repopulate_database() -> None:
     await Tortoise.generate_schemas()
+
+    sql = app.ctx.sql
+
+    # get all old player_id's
+
+    ids = await sql.fetchall("SELECT codename, player_id FROM players")
+
+    for codename, player_id in ids:
+        await Player.filter(codename=codename).update(player_id=player_id)
 
     # some fixes
 
