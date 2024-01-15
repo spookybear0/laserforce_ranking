@@ -290,7 +290,7 @@
     }
 
     function log_in_player() {
-        let battlesuit = document.getElementById("player_dropdown").value;
+        let battlesuit = document.getElementById("player_dropdown_login").value;
         let codename = document.getElementById("log_in_players_popup").getElementsByTagName("input")[0].value;
 
         fetch("/admin/game/sm5/{{ game.id }}/log_in_player", {
@@ -315,7 +315,9 @@
     }
 
     function delete_player() {
-        let player = document.getElementById("player_dropdown").value;
+        let player = document.getElementById("player_dropdown_delete").value;
+
+        console.log(player);
 
         fetch("/admin/game/sm5/{{ game.id }}/delete_player", {
             method: "POST",
@@ -324,7 +326,7 @@
                 "X-CSRFToken": getCookie("csrftoken")
             },
             body: JSON.stringify({
-                codename: player
+                player_info: player
             })
         })
         .then(response => response.json())
@@ -380,6 +382,8 @@
                     <th><p>Shots</p></th>
                     <th><p>Accuracy</p></th>
                     <th><p>K/D</p></th>
+                    <th><p>ES ID</p></th>
+                    <th><p>EE ID</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 0 %}
                             {% set entity_end = get_entity_end(entity) %}
@@ -400,6 +404,8 @@
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
                                 <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
                                 <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
+                                <td><p>{{ entity.id }}</p></td>
+                                <td><p>{{ entity_end.id }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -419,6 +425,8 @@
                     <th><p>Shots</p></th>
                     <th><p>Accuracy</p></th>
                     <th><p>K/D</p></th>
+                    <th><p>ES ID</p></th>
+                    <th><p>EE ID</p></th>
                     {% for entity in game.entity_starts %}
                         {% if entity.type == "player" and entity.team.index == 1 %}
                             {% set entity_end = get_entity_end(entity) %}
@@ -438,6 +446,8 @@
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
                                 <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
                                 <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
+                                <td><p>{{ entity.id }}</p></td>
+                                <td><p>{{ entity_end.id }}</p></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -475,7 +485,7 @@
                     <div>
                         <form onsubmit="return log_in_player()">
                             <!--dropdown for player-->
-                            <select id="player_dropdown">
+                            <select id="player_dropdown_login">
                                 {% for battlesuit in battlesuits %}
                                     <option value="{{ battlesuit.name }}">{{ battlesuit.name }}</option>
                                 {% endfor %}
@@ -492,9 +502,9 @@
                     <div>
                         <form onsubmit="return delete_player()">
                             <!--dropdown for player-->
-                            <select id="player_dropdown">
+                            <select id="player_dropdown_delete">
                                 {% for player in players %}
-                                    <option value="{{ player.name }}">{{ player.name }}</option>
+                                    <option value="{{ player.name }}|{{ player.id }}">{{ player.name }} ({{ get_entity_end(player).score }})</option>
                                 {% endfor %}
                             </select>
                             <input type="submit" value="Delete">

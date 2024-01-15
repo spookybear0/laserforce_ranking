@@ -90,7 +90,7 @@ async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battles
 
     logger.debug("Wrote to file successfully")
 
-async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename: str, mode: str) -> None:
+async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename: str, id: int, mode: str) -> None:
     """
     Delete a player from a game
 
@@ -99,16 +99,22 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
     after they walk through the door
     """
 
-    logger.debug(f"Deleting player {codename}")
-    entity_start = await game.entity_starts.filter(name=codename).first()
+    try:
+        logger.debug(f"Deleting player {codename}")
+        entity_start = await game.entity_starts.filter(name=codename, id=id).first()
 
-    logger.debug(f"Deleting entity start {entity_start.name}")
+        logger.debug(f"Deleting entity start {entity_start.name}")
 
-    await entity_start.delete()
+        await entity_start.delete()
+    except Exception:
+        logger.warning("Failed to delete entity start, continuing")
 
-    logger.debug("Deleting entity end")
+    try:
+        logger.debug("Deleting entity end")
 
-    await (await entity_start.get_entity_end()).delete()
+        await (await entity_start.get_entity_end()).delete()
+    except Exception:
+        logger.warning("Failed to delete entity end, continuing")
 
     logger.debug("Deleting events")
 

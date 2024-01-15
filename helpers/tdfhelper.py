@@ -67,8 +67,13 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
                 # check if game already exists
                 if game := await SM5Game.filter(start_time=start_time, arena=arena).first():
-                    logger.warning(f"Game {game.id} already exists, skipping")
-                    return game
+                    
+                    # triple check it because since the timestamp gets rounded, it's possible for
+                    # games to start at nearly the same time
+
+                    if file_location == "sm5_tdf/" + game.tdf_name:
+                        logger.warning(f"Game {game.id} already exists, skipping")
+                        return game
 
             case "2": # team info
                 teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))

@@ -146,8 +146,11 @@ async def admin_game_delete_player(request: Request, mode: str, id: Union[int, s
     
     logger.debug("Deleting player from game")
     
-    codename = request.json.get("codename")
+    info = request.json.get("player_info")
 
-    await adminhelper.delete_player_from_game(game, codename, mode)
+    codename = info.split("|")[0]
+    id = info.split("|")[1]
+
+    await adminhelper.delete_player_from_game(game, codename, id, mode)
 
     return response.json({"status": "ok"})
