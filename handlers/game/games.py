@@ -11,6 +11,11 @@ async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
 
+    # handle negative page numbers
+
+    if page < 0:
+        page = 0
+
     # get both sm5 and laserball games
 
     sm5_games = await SM5Game.all().order_by("-start_time").limit(10).offset(10 * page)

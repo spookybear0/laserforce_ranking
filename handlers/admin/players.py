@@ -8,6 +8,12 @@ from tortoise.expressions import F
 @admin_only
 async def admin_players(request: Request) -> str:
     page = int(request.args.get("page", 0))
+
+    # handle negative page numbers
+
+    if page < 0:
+        page = 0
+
     return await render_template(request,
         "admin/players.html",
         players=await Player.filter(sm5_mu__not=25).limit(25).offset(25 * page)

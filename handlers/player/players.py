@@ -9,6 +9,12 @@ from helpers.statshelper import sentry_trace
 @sentry_trace
 async def index(request: Request):
     page = int(request.args.get("page", 0))
+
+    # handle negative page numbers
+
+    if page < 0:
+        page = 0
+
     return await render_template(request,
                                 "player/players.html",
                                 players=await Player.filter(sm5_mu__not=25).limit(25).offset(25 * page)
