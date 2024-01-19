@@ -733,7 +733,7 @@ class Events(Model):
         final = {}
 
         final["time"] = self.time
-        final["type"] = self.type
+        final["type"] = self.type.value
         final["arguments"] = self.arguments
 
         return final
