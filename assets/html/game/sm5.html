@@ -93,6 +93,7 @@
             background: none;
             width: 100%;
             height: 100%;
+            margin: 0;
         }
 
         h2, h3 {
@@ -232,7 +233,7 @@
                 <span title="Matchmake"><h3><a>Rematchmake</a></h3></span>
             </button>
         </form>
-        <span title="Admin Page"><h3><a href="/admin/game/sm5/{{ game.id }}/">Admin Page</a></h3></span>
+        {% if is_admin %}<span title="Admin Page"><h3><a href="/admin/game/sm5/{{ game.id }}/">Admin Page</a></h3></span>{% endif %}
         <span title="Replay"><h3><a href="/game/sm5/{{ game.id }}/replay">Replay</a></h3></span>
     </div>
     <div class="userlist" style="text-align: left;">
@@ -244,7 +245,7 @@
                     <th class="role"><p>Role</p></th>
                     <th><p>Codename</p></th>
                     {% if game.ranked %}
-                        <th><p>Current Rating</p></th>
+                        <th title="Current rating after game has been played"><p>Rating</p></th>
                     {% endif %}
                     <th><p>Score</p></th>
                     <th><p>Lives</p></th>
@@ -272,7 +273,7 @@
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
-                                <td><p>{{ entity_end.score }}</p></td>
+                                <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
                                 <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
@@ -295,7 +296,7 @@
                     <th class="role"><p>Role</p></th>
                     <th><p>Codename</p></th>
                     {% if game.ranked %}
-                        <th><p>Current Rating</p></th>
+                        <th title="Current rating after game has been played"><p>Rating</p></th>
                     {% endif %}
                     <th><p>Score</p></th>
                     <th><p>Lives</p></th>
@@ -322,7 +323,7 @@
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
-                                <td><p>{{ entity_end.score }}</p></td>
+                                <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
                                 <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>

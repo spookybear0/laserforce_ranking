@@ -151,7 +151,13 @@ class Player(Model):
     
     # account stuff
 
+    async def set_password(self, password: str) -> None:
+        from helpers import userhelper
+        self.password = userhelper.hash_password(password)
+        await self.save()
+
     def check_password(self, password: str) -> bool:
+        print(password, self.password)
         return bcrypt.checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
     
     # stats
@@ -755,9 +761,9 @@ class PlayerStates(Model):
 class Scores(Model):
     time = fields.IntField() # time in milliseconds
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
-    old = fields.IntField()
-    delta = fields.IntField()
-    new = fields.IntField()
+    old = fields.IntField() # old score
+    delta = fields.IntField() # change in score
+    new = fields.IntField() # new score
 
     async def to_dict(self):
         final = {}

@@ -1,6 +1,6 @@
 from sanic import Request
 from shared import app
-from utils import render_template
+from utils import render_template, is_admin
 from db.models import SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
@@ -46,7 +46,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+30000, 30000)],
             win_chance=await game.get_win_chance(),
             win_chance_before_game=await game.get_win_chance_before_game(),
-            players_matchmake=players_matchmake
+            players_matchmake=players_matchmake,
+            is_admin=is_admin(request)
         )
     elif type == "lb":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
@@ -73,7 +74,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
             win_chance_after_game=await game.get_win_chance_after_game(),
             game_end_time_decimal=min(math.ceil((await game.scores.order_by("-time").first()).time/1000/60*2)/2, 15),
-            players_matchmake=players_matchmake
+            players_matchmake=players_matchmake,
+            is_admin=is_admin(request)
         )
     else:
         raise exceptions.NotFound("Not found: Invalid game type")

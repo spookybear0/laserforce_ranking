@@ -30,3 +30,6 @@ def admin_only(f):
             return response.redirect("/login")
         return await f(request, *args, **kwargs)
     return wrapper
+
+def is_admin(request: Request) -> bool:
+    return request.ctx.session.get("permissions", 0) == Permission.ADMIN
