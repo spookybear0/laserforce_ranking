@@ -65,6 +65,7 @@ class EventType(Enum):
     ROUND_START = "1105"
     ROUND_END = "1106"
     GETS_BALL = "1107" # at the start of the round
+    TIME_VIOLATION = "1108"
     CLEAR = "1109"
     FAIL_CLEAR = "110A"
     
