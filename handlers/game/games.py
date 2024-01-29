@@ -10,6 +10,23 @@ from helpers.statshelper import sentry_trace
 async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
+    sort = int(request.args.get("sort", "0"))
+    sort_direction = request.args.get("sort_dir", "desc")
+
+    # sorting
+
+    order_by = "start_time"
+
+    if sort == 0:
+        order_by = "start_time"
+    elif sort == 1: # winner team
+        order_by = "winner_color"
+    elif sort == 2: # ended early
+        order_by = "ended_early"
+    elif sort == 3: # ranked
+        order_by = "ranked"
+
+    order_by = "-" + order_by if sort_direction == "desc" else order_by
 
     # handle negative page numbers
 
@@ -18,13 +35,8 @@ async def index(request: Request) -> str:
 
     # get both sm5 and laserball games
 
-    sm5_games = await SM5Game.all().order_by("-start_time").limit(10).offset(10 * page)
-    laserball_games = await LaserballGame.all().order_by("-start_time").limit(10).offset(10 * page)
-
-    # sort by date
-
-    sm5_games = sorted(sm5_games, key=lambda x: x.start_time, reverse=True)
-    laserball_games = sorted(laserball_games, key=lambda x: x.start_time, reverse=True)
+    sm5_games = await SM5Game.all().order_by(order_by).limit(10).offset(10 * page)
+    laserball_games = await LaserballGame.all().order_by(order_by).limit(10).offset(10 * page)
 
     return await render_template(
         request,
@@ -33,4 +45,6 @@ async def index(request: Request) -> str:
         laserball_games=laserball_games,
         page=page,
         mode=mode,
+        sort=sort,
+        sort_dir=sort_direction
     )

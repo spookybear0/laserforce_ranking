@@ -21,9 +21,6 @@ async def get_laserballstats(entity):
 @app.get("/game/<type:str>/<id:int>/scorecard/<entity_end_id:int>")
 @sentry_trace
 async def scorecard(request: Request, type: str, id: int, entity_end_id: int) -> str:
-
-    pass
-
     if type == "sm5":
         game = await SM5Game.filter(id=id).first()
 

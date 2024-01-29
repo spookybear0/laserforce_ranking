@@ -9,14 +9,34 @@ from helpers.statshelper import sentry_trace
 @sentry_trace
 async def index(request: Request):
     page = int(request.args.get("page", 0))
+    sort = int(request.args.get("sort", "0"))
+    sort_direction = request.args.get("sort_dir", "desc")
 
     # handle negative page numbers
 
     if page < 0:
         page = 0
 
+    order_by = "sm5_ord"
+
+    if sort == 0:
+        order_by = "codename"
+    elif sort == 1:
+        order_by = "player_id"
+    elif sort == 2:
+        order_by = "sm5_ord"
+    elif sort == 3:
+        order_by = "laserball_ord"
+
+    order_by = "-" + order_by if sort_direction == "desc" else order_by
+
     return await render_template(request,
                                 "player/players.html",
                                 players=await Player.filter(sm5_mu__not=25).limit(25).offset(25 * page)
-                                    .annotate(ordinal=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-ordinal"),
-                                page=page)
+                                    .annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma"),
+                                              laserball_ord=F("laserball_mu") - 3 * F("laserball_sigma")
+                                            ).order_by(order_by),
+                                page=page,
+                                sort=sort,
+                                sort_dir=sort_direction
+                                )

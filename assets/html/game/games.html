@@ -70,67 +70,28 @@
 </style>
 
 <script>
+    sort = {{sort}};
+    sort_dir = "{{sort_dir}}";
+
     function sortTable(n) {
-        var table, rows, switching, i, x, y, should_switch, dir, switchcount = 0;
-        table = document.getElementById("sm5_game_table");
-        switching = true;
-        dir = "asc";
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-            for (i = 1; i < (rows.length - 1); i++) {
-                should_switch = false;
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-                console.log(x.textContent, y.textContent, x.textContent > y.textContent);
+        // change url params and refresh page
 
-                if (!isNaN(x.textContent)) {
-                    var inner_x = Number(x.textContent);
-                }
-                // dates
-                else if (x.textContent.includes("/")) {
-                    var inner_x = new Date(x.textContent);
-                }
-                else {
-                    var inner_x = x.textContent.toLowerCase();
-                }
-
-                if (!isNaN(y.textContent)) {
-                    var inner_y = Number(y.textContent);
-                }
-                // dates
-                else if (y.textContent.includes("/")) {
-                    var inner_y = new Date(y.textContent);
-                }
-                else {
-                    var inner_y = y.textContent.toLowerCase();
-                }
-
-                if (dir == "asc") {
-                    if (inner_x > inner_y) {
-                        should_switch = true;
-                        break;
-                    }
-                }
-                else if (dir == "desc") {
-                    if (inner_x < inner_y) {
-                        should_switch = true;
-                        break;
-                    }
-                }
-            }
-            if (should_switch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                switchcount ++;
-            } else {
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
+        if (n == sort) {
+            sort_dir = sort_dir == "asc" ? "desc" : "asc";
         }
+        else {
+            sort_dir = "desc";
         }
+
+        sort = n;
+
+        var url = new URL(window.location.href);
+        var params = new URLSearchParams(url.search.slice(1));
+        params.set("sort", n);
+        params.set("sort_dir", sort_dir);
+        window.history.replaceState({}, '', `${location.pathname}?${params}`);
+        location.reload();
+    }
     
     current_mode = "{{ mode }}"
 
@@ -169,10 +130,10 @@
     
     document.onreadystatechange = function(e) {
         if (document.readyState === 'complete') {
-            sortTable(0, "sm5_game_table");
-            sortTable(0, "sm5_game_table");
-            sortTable(0, "laserball_game_table");
-            sortTable(0, "laserball_game_table");
+            //sortTable(0, "sm5_game_table");
+            //sortTable(0, "sm5_game_table");
+            //sortTable(0, "laserball_game_table");
+            //sortTable(0, "laserball_game_table");
             switch_mode(current_mode);
         }
     }
@@ -193,15 +154,13 @@
         <tbody>
             <tr>
                 <th onclick="sortTable(0)">Date Played</th>
-                <th onclick="sortTable(1)">Mission</th>
-                <th onclick="sortTable(2)">Winner</th>
-                <th onclick="sortTable(3)">Ended Early</th>
-                <th onclick="sortTable(4)">Ranked</th>
+                <th onclick="sortTable(1)">Winner</th>
+                <th onclick="sortTable(2)">Ended Early</th>
+                <th onclick="sortTable(3)">Ranked</th>
             </tr>
             {% for game in sm5_games %}
                 <tr>
                     <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    <td>{{ game.mission_name }}</td>
                     {% if not game.winner %}
                         <td style="color: grey;">None</td>
                     {% elif game.winner.value == "blue" %}
@@ -221,15 +180,13 @@
         <tbody>
             <tr>
                 <th onclick="sortTable(0)">Date Played</th>
-                <th onclick="sortTable(1)">Mission</th>
-                <th onclick="sortTable(2)">Winner</th>
-                <th onclick="sortTable(3)">Ended Early</th>
-                <th onclick="sortTable(4)">Ranked</th>
+                <th onclick="sortTable(1)">Winner</th>
+                <th onclick="sortTable(2)">Ended Early</th>
+                <th onclick="sortTable(3)">Ranked</th>
             </tr>
             {% for game in laserball_games %}
                 <tr>
                     <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    <td>{{ game.mission_name }}</td>
                     {% if not game.winner %}
                         <td style="color: grey;">None</td>
                     {% elif game.winner.value == "blue" %}

@@ -37,59 +37,28 @@
 </style>
 
 <script>
+    sort = {{sort}};
+    sort_dir = "{{sort_dir}}";
+
     function sortTable(n) {
-        var table, rows, switching, i, x, y, should_switch, dir, switchcount = 0;
-        table = document.getElementById("player_table");
-        switching = true;
-        dir = "asc";
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-            for (i = 1; i < (rows.length - 1); i++) {
-                should_switch = false;
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-                console.log(Number(x.innerHTML), Number(y.innerHTML), Number(x.innerHTML) > Number(y.innerHTML));
+        // change url params and refresh page
 
-                if (!isNaN(x.innerHTML)) {
-                    var inner_x = Number(x.innerHTML);
-                }
-                else {
-                    var inner_x = x.innerHTML.toLowerCase();
-                }
-
-                if (!isNaN(y.innerHTML)) {
-                    var inner_y = Number(y.innerHTML);
-                }
-                else {
-                    var inner_y = y.innerHTML.toLowerCase();
-                }
-
-                if (dir == "asc") {
-                    if (inner_x > inner_y) {
-                        should_switch = true;
-                        break;
-                    }
-                }
-                else if (dir == "desc") {
-                    if (inner_x < inner_y) {
-                        should_switch = true;
-                        break;
-                    }
-                }
-            }
-            if (should_switch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                switchcount ++;
-            } else {
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
+        if (n == sort) {
+            sort_dir = sort_dir == "asc" ? "desc" : "asc";
         }
+        else {
+            sort_dir = "desc";
         }
+
+        sort = n;
+
+        var url = new URL(window.location.href);
+        var params = new URLSearchParams(url.search.slice(1));
+        params.set("sort", n);
+        params.set("sort_dir", sort_dir);
+        window.history.replaceState({}, '', `${location.pathname}?${params}`);
+        location.reload();
+    }
 </script>
 
 {% endblock %}
