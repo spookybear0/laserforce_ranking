@@ -89,10 +89,11 @@
         var params = new URLSearchParams(url.search.slice(1));
         params.set("sort", n);
         params.set("sort_dir", sort_dir);
+        params.set("mode", current_mode);
         window.history.replaceState({}, '', `${location.pathname}?${params}`);
         location.reload();
     }
-    
+
     current_mode = "{{ mode }}"
 
     function switch_mode(mode) {
