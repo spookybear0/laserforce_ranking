@@ -9,7 +9,7 @@ from helpers.statshelper import sentry_trace
 @sentry_trace
 async def index(request: Request):
     page = int(request.args.get("page", 0))
-    sort = int(request.args.get("sort", "0"))
+    sort = int(request.args.get("sort", "2"))
     sort_direction = request.args.get("sort_dir", "desc")
 
     # handle negative page numbers
