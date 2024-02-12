@@ -123,15 +123,15 @@ async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, s
 async def admin_game_delete(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
+        await game.delete()
         os.remove("sm5_tdf/" + game.tdf_name)
     elif mode == "lb":
         game = await LaserballGame.filter(id=id).first()
+        await game.delete()
         os.remove("laserball_tdf/" + game.tdf_name)
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
     
-    await game.delete()
-
     return response.json({"status": "ok"})
 
 @app.post("/admin/game/<mode>/<id>/delete_player")

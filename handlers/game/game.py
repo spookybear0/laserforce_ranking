@@ -21,7 +21,6 @@ async def get_laserballstats(entity):
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
 async def game_index(request: Request, type: str, id: int) -> str:
-
     if type == "sm5":
         game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
 

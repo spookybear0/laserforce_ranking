@@ -536,6 +536,15 @@ class SM5Game(Model):
             else:
                 previous_elos_green.append(Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma))
 
+        # double check if elo is None or not
+                
+        for i, elo in enumerate(previous_elos_red + previous_elos_green):
+            if elo is None or elo.mu is None or elo.sigma is None:
+                if i < len(previous_elos_red):
+                    previous_elos_red[i] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+                else:
+                    previous_elos_green[i - len(previous_elos_red)] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+
         # get the win chance
 
         return model.predict_win([previous_elos_red, previous_elos_green])
@@ -577,6 +586,15 @@ class SM5Game(Model):
                 current_elos_green.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
             else:
                 current_elos_green.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
+
+        # double check if elo is None or not
+                
+        for i, elo in enumerate(current_elos_red + current_elos_green):
+            if elo is None or elo.mu is None or elo.sigma is None:
+                if i < len(current_elos_red):
+                    current_elos_red[i] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+                else:
+                    current_elos_green[i - len(current_elos_red)] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
 
         # get the win chance
 
