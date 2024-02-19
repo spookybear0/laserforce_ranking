@@ -32,6 +32,28 @@
         });
     }
 
+    function recalculate_sm5_ratings() {
+        alert("Recalculating sm5 ratings in background...");
+        fetch("/admin/recalculate_sm5_ratings", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
+    function recalculate_laserball_ratings() {
+        alert("Recalculating laserball ratings in background...");
+        fetch("/admin/recalculate_lb_ratings", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
 </script>
 {% endblock %}
 
@@ -39,6 +61,8 @@
 
 <h1 style="text-align: center;">Dashboard</h1>
 
-<button onclick="recalculate_ratings()" class="button">Recalculate ratings</button>
+<button onclick="recalculate_ratings()" class="button">Recalculate Ratings</button>
+<button onclick="recalculate_sm5_ratings()" class="button">Recalculate SM5 Ratings</button>
+<button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
 
 {% endblock %}

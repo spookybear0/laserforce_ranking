@@ -184,11 +184,11 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
                 out = model.rate([[blocker_elo], [blocked_elo]], ranks=[0, 1])
 
-                blocker_player.laserball_mu = out[0][0].mu * 0.1
-                blocker_player.laserball_sigma = out[0][0].sigma * 0.1
+                blocker_player.laserball_mu += (out[0][0].mu - blocker_player.laserball_mu) * 0.1
+                blocker_player.laserball_sigma += (out[0][0].sigma - blocker_player.laserball_sigma) * 0.1
 
-                blocked_player.laserball_mu = out[1][0].mu * 0.1
-                blocked_player.laserball_sigma = out[1][0].sigma * 0.1
+                blocked_player.laserball_mu += (out[1][0].mu - blocked_player.laserball_mu) * 0.1
+                blocked_player.laserball_sigma += (out[1][0].sigma - blocked_player.laserball_sigma) * 0.1
 
                 await blocker_player.save()
                 await blocked_player.save()
@@ -205,12 +205,11 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
                 # steal has a bigger impact
 
-                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.2
+                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.25
                 stealer_player.laserball_sigma += (out[0][0].sigma - stealer_player.laserball_sigma) * 0.1
 
-                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.2
+                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.25
                 stolen_player.laserball_sigma += (out[1][0].sigma - stolen_player.laserball_sigma) * 0.1
-
 
                 await stealer_player.save()
                 await stolen_player.save()
@@ -319,14 +318,14 @@ def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     # predict
     return model.predict_draw([team1, team2])
 
-async def recalculate_ratings():
+async def recalculate_sm5_ratings():
     """
-    Recalculates all ratings
+    Recalculates sm5 ratings
     """
 
-    # reset all ratings
+    # reset sm5 ratings
 
-    await Player.all().update(sm5_mu=MU, sm5_sigma=SIGMA, laserball_mu=MU, laserball_sigma=SIGMA)
+    await Player.all().update(sm5_mu=MU, sm5_sigma=SIGMA)
 
     # get all games and recalculate ratings
 
@@ -354,6 +353,15 @@ async def recalculate_ratings():
 
                 await entity_end.save()
 
+async def recalculate_laserball_ratings():
+    """
+    Recalculates laserball ratings
+    """
+
+    # reset laserball ratings
+
+    await Player.all().update(laserball_mu=MU, laserball_sigma=SIGMA)
+
     lb_games = await LaserballGame.all().order_by("start_time").all()
 
     for game in lb_games:
@@ -376,5 +384,15 @@ async def recalculate_ratings():
                 entity_end.current_rating_sigma = player.laserball_sigma
 
                 await entity_end.save()
+
+async def recalculate_ratings():
+    """
+    Recalculates all ratings
+    """
+
+    logger.info("Recalculating sm5 ratings")
+    await recalculate_sm5_ratings()
+    logger.info("Recalculating laserball ratings")
+    await recalculate_laserball_ratings()
     
     logger.info("Finished recalculating ratings")
