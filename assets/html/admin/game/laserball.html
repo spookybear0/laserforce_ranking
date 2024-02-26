@@ -248,7 +248,7 @@
     }
 
     function rank() {
-        fetch("/admin/game/laserball/{{ game.id }}/rank", {
+        fetch("/admin/game/lb/{{ game.id }}/rank", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -264,7 +264,7 @@
     }
 
     function unrank() {
-        fetch("/admin/game/laserball/{{ game.id }}/unrank", {
+        fetch("/admin/game/lb/{{ game.id }}/unrank", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -293,7 +293,7 @@
         let battlesuit = document.getElementById("player_dropdown_login").value;
         let codename = document.getElementById("log_in_players_popup").getElementsByTagName("input")[0].value;
 
-        fetch("/admin/game/laserball/{{ game.id }}/log_in_player", {
+        fetch("/admin/game/lb/{{ game.id }}/log_in_player", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -319,7 +319,7 @@
 
         console.log(player);
 
-        fetch("/admin/game/laserball/{{ game.id }}/delete_player", {
+        fetch("/admin/game/lb/{{ game.id }}/delete_player", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -340,7 +340,7 @@
     }
 
     function delete_() {
-        fetch("/admin/game/laserball/{{ game.id }}/delete", {
+        fetch("/admin/game/lb/{{ game.id }}/delete", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -350,7 +350,7 @@
         .then(response => response.json())
         .then(result => {
             if (result.status == "ok") {
-                window.location.href = "/admin/game/laserball";
+                window.location.href = "/admin/game/lb";
             }
         })
     }
@@ -364,7 +364,7 @@
     <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
         <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.get_timestamp()}}</h2></span>
         
-        <span title="Link to game"><h3><a href="/game/laserball/{{ game.id }}">Link to game</a></h3></span>
+        <span title="Link to game"><h3><a href="/game/lb/{{ game.id }}">Link to game</a></h3></span>
     </div>
     <div class="userlist" style="text-align: left; margin-bottom: 1.5rem;">
         <div id="teams">
@@ -515,8 +515,8 @@
     </div>
 </div>
 <div style="width: 70%; margin: auto;">
-    {% if game.id > 0 and previous_game_id %}<a class="page_buttons" href="/admin/game/laserball/{{ previous_game_id }}"><p style="float: left;">Prev</p></a>{% endif %}
-    {% if next_game_id %}<a class="page_buttons" href="/admin/game/laserball/{{ next_game_id }}"><p style="float: right;">Next</p></a>{% endif %}
+    {% if game.id > 0 and previous_game_id %}<a class="page_buttons" href="/admin/game/lb/{{ previous_game_id }}"><p style="float: left;">Prev</p></a>{% endif %}
+    {% if next_game_id %}<a class="page_buttons" href="/admin/game/lb/{{ next_game_id }}"><p style="float: right;">Next</p></a>{% endif %}
 </div>
 </body>
 

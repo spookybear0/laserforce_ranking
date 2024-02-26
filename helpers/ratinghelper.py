@@ -172,26 +172,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
         if "@" in event.arguments[0] or "@" in event.arguments[2]:
             continue
         match event.type:
-            # laserball events
-            case EventType.BLOCK:
-                blocker = await userhelper.player_from_token(game, event.arguments[0])
-                blocker_player = await Player.filter(entity_id=blocker.entity_id).first()
-                blocker_elo = Rating(blocker_player.laserball_mu, blocker_player.laserball_sigma)
-
-                blocked = await userhelper.player_from_token(game, event.arguments[2])
-                blocked_player = await Player.filter(entity_id=blocked.entity_id).first()
-                blocked_elo = Rating(blocked_player.laserball_mu, blocked_player.laserball_sigma)
-
-                out = model.rate([[blocker_elo], [blocked_elo]], ranks=[0, 1])
-
-                blocker_player.laserball_mu += (out[0][0].mu - blocker_player.laserball_mu) * 0.1
-                blocker_player.laserball_sigma += (out[0][0].sigma - blocker_player.laserball_sigma) * 0.1
-
-                blocked_player.laserball_mu += (out[1][0].mu - blocked_player.laserball_mu) * 0.1
-                blocked_player.laserball_sigma += (out[1][0].sigma - blocked_player.laserball_sigma) * 0.1
-
-                await blocker_player.save()
-                await blocked_player.save()
+            # laserball events (add goals and assists later)
             case EventType.STEAL:
                 stealer = await userhelper.player_from_token(game, event.arguments[0])
                 stealer_player = await Player.filter(entity_id=stealer.entity_id).first()
@@ -205,10 +186,10 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
                 # steal has a bigger impact
 
-                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.25
+                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.1
                 stealer_player.laserball_sigma += (out[0][0].sigma - stealer_player.laserball_sigma) * 0.1
 
-                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.25
+                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.1
                 stolen_player.laserball_sigma += (out[1][0].sigma - stolen_player.laserball_sigma) * 0.1
 
                 await stealer_player.save()
