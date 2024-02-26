@@ -60,6 +60,7 @@ class EventType(Enum):
 
     PASS = "1100"
     GOAL = "1101"
+    ASSIST = "1102" # THIS IS NOT A REAL EVENT TYPE (as far as im aware, im generating it myself)
     STEAL = "1103"
     BLOCK = "1104"
     ROUND_START = "1105"

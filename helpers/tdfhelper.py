@@ -431,6 +431,14 @@ async def parse_laserball_game(file_location: str):
                     if e2.arguments[2] == e.arguments[0]:
                         laserball_stats[e2.arguments[0]].assists += 1
                         await laserball_stats[e2.arguments[0]].save()
+                        # add event after the goal event
+                        events.append(
+                            await Events.create(
+                                time=e.time+1,
+                                type=EventType.ASSIST,
+                                arguments=json.dumps([e2.arguments[0], "assists", e.arguments[0]])
+                            )
+                        )
                         break
                     else:
                         # wasn't the most recent pass so it's not an assist

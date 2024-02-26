@@ -165,14 +165,15 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     # go through all events for each game
 
     events: List[Events] = await game.events.filter(type__in=
-        [EventType.STEAL, EventType.BLOCK]
+        [EventType.STEAL, EventType.GOAL, EventType.ASSIST, EventType.CLEAR]
     ).order_by("time").all() # only get the events that we need
 
     for event in events:
-        if "@" in event.arguments[0] or "@" in event.arguments[2]:
+        if "@" in event.arguments[0] or (len(event.arguments) > 3) and "@" in event.arguments[2]:
             continue
         match event.type:
-            # laserball events (add goals and assists later)
+            # laserball events (steals, goals, assists, clears)
+            # NOTE: assist event was not implemented until 2/26/24 (the tdf does not include a ASSIST event, so i have to make it myself)
             case EventType.STEAL:
                 stealer = await userhelper.player_from_token(game, event.arguments[0])
                 stealer_player = await Player.filter(entity_id=stealer.entity_id).first()
@@ -184,16 +185,52 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
                 out = model.rate([[stealer_elo], [stolen_elo]], ranks=[0, 1])
 
-                # steal has a bigger impact
+                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.2
+                stealer_player.laserball_sigma += (out[0][0].sigma - stealer_player.laserball_sigma) * 0.2
 
-                stealer_player.laserball_mu += (out[0][0].mu - stealer_player.laserball_mu) * 0.1
-                stealer_player.laserball_sigma += (out[0][0].sigma - stealer_player.laserball_sigma) * 0.1
-
-                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.1
-                stolen_player.laserball_sigma += (out[1][0].sigma - stolen_player.laserball_sigma) * 0.1
+                stolen_player.laserball_mu += (out[1][0].mu - stolen_player.laserball_mu) * 0.2
+                stolen_player.laserball_sigma += (out[1][0].sigma - stolen_player.laserball_sigma) * 0.2
 
                 await stealer_player.save()
                 await stolen_player.save()
+            case EventType.GOAL:
+                scorer = await userhelper.player_from_token(game, event.arguments[0])
+                scorer_player = await Player.filter(entity_id=scorer.entity_id).first()
+                scorer_elo = Rating(scorer_player.laserball_mu, scorer_player.laserball_sigma)
+
+                out = model.rate([[scorer_elo], [scorer_elo]], ranks=[0, 1])
+
+                print((out[0][0].mu - scorer_player.laserball_mu), (out[0][0].sigma - scorer_player.laserball_sigma))
+
+                scorer_player.laserball_mu += (out[0][0].mu - scorer_player.laserball_mu) * 1.5
+                scorer_player.laserball_sigma += (out[0][0].sigma - scorer_player.laserball_sigma) * 1.5
+
+                await scorer_player.save()
+            case EventType.ASSIST:
+                assister = await userhelper.player_from_token(game, event.arguments[0])
+                assister_player = await Player.filter(entity_id=assister.entity_id).first()
+                assister_elo = Rating(assister_player.laserball_mu, assister_player.laserball_sigma)
+
+                scorer = await userhelper.player_from_token(game, event.arguments[2])
+                scorer_player = await Player.filter(entity_id=scorer.entity_id).first()
+                scorer_elo = Rating(scorer_player.laserball_mu, scorer_player.laserball_sigma)
+
+                out = model.rate([[assister_elo], [scorer_elo]], ranks=[0, 1])
+
+                assister_player.laserball_mu += (out[0][0].mu - assister_player.laserball_mu) * 0.75
+                assister_player.laserball_sigma += (out[0][0].sigma - assister_player.laserball_sigma) * 0.75
+            case EventType.CLEAR:
+                clearer = await userhelper.player_from_token(game, event.arguments[0])
+                clearer_player = await Player.filter(entity_id=clearer.entity_id).first()
+                clearer_elo = Rating(clearer_player.laserball_mu, clearer_player.laserball_sigma)
+
+                out = model.rate([[clearer_elo], [clearer_elo]], ranks=[0, 1])
+
+                clearer_player.laserball_mu += (out[0][0].mu - clearer_player.laserball_mu) * 0.75
+                clearer_player.laserball_sigma += (out[0][0].sigma - clearer_player.laserball_sigma) * 0.75
+
+                await clearer_player.save()
+
     
     # rate game
 
