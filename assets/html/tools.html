@@ -189,6 +189,35 @@
                 document.getElementById("team2-div").querySelector("h2").innerHTML = "Team 2: " + team2WinChance + "%";
                 document.getElementById("team3-div").querySelector("h2").innerHTML = "Team 3: " + team3WinChance + "%";
                 document.getElementById("team4-div").querySelector("h2").innerHTML = "Team 4: " + team4WinChance + "%";
+
+                // make sure ratings are up to date with the mode
+
+                let mode_index;
+
+                if (currentMode == "sm5") {
+                    mode_index = 0;
+                }
+                else {
+                    mode_index = 1;
+                }
+
+                let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
+                let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
+                let team3Table = document.getElementById("team3-div").querySelector("table").querySelector("tbody");
+                let team4Table = document.getElementById("team4-div").querySelector("table").querySelector("tbody");
+
+                for (let i = 1; i < team1Table.children.length; i++) {
+                    team1Table.children[i].children[1].innerHTML = Math.round(all_players[team1Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                }
+                for (let i = 1; i < team2Table.children.length; i++) {
+                    team2Table.children[i].children[1].innerHTML = Math.round(all_players[team2Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                }
+                for (let i = 1; i < team3Table.children.length; i++) {
+                    team3Table.children[i].children[1].innerHTML = Math.round(all_players[team3Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                }
+                for (let i = 1; i < team4Table.children.length; i++) {
+                    team4Table.children[i].children[1].innerHTML = Math.round(all_players[team4Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                }
             }
         }
         xhr.send(params);
@@ -256,6 +285,19 @@
             }
         }
         xhr.send(params);
+    }
+
+    function switchMode() {
+        modeBtn = document.getElementById("modeBtn");
+        if (currentMode == "sm5") {
+            currentMode = "lb";
+            modeBtn.innerHTML = "<h3>Switch Mode to SM5</h3>";
+        }
+        else {
+            currentMode = "sm5";
+            modeBtn.innerHTML = "<h3>Switch Mode to Laserball</h3>";
+        }
+        updateWinChances();
     }
 
     window.onload = sortPlayers;
@@ -383,6 +425,7 @@
                 <button onclick="addTeam()" class="btn"><h3>Add Team</h3></button>
                 <button onclick="removeTeam()" class="btn"><h3>Remove Team</h3></button>
                 <button onclick="matchmakePlayers()" class="btn"><h3>Matchmake Players</h3></button>
+                <button onclick="switchMode()" class="btn" id="modeBtn"><h3>Switch Mode to Laserball</h3></button>
             </div>
         </div>
         <div>
