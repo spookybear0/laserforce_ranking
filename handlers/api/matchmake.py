@@ -1,0 +1,65 @@
+
+
+from sanic import Request
+from shared import app
+from db.models import GameType, Player
+from sanic import response
+from sanic.log import logger
+from helpers import ratinghelper
+from helpers.statshelper import sentry_trace
+
+@app.get("/api/<type_:str>/matchmake")
+@sentry_trace
+async def api_matchmake(request: Request, type_: str) -> str:
+    # 2-4 teams (team1, team2, ...)
+
+    logger.info(f"Matchmaking requested for {type_}")
+
+    mode = GameType("laserball" if type_ == "lb" else "sm5")
+
+    # get the teams
+
+    team1 = request.args.get("team1").strip('][').replace('"', "").split(', ')
+    team2 = request.args.get("team2").strip('][').replace('"', "").split(', ')
+    team3 = request.args.get("team3").strip('][').replace('"', "").split(', ')
+    team4 = request.args.get("team4").strip('][').replace('"', "").split(', ')
+    num_teams = int(request.args.get("num_teams", 2))
+
+    if not team1 or team1[0] == "":
+        team1 = []
+    if not team2 or team2[0] == "":
+        team2 = []
+    if not team3 or team3[0] == "":
+        team3 = []
+    if not team4 or team4[0] == "":
+        team4 = []
+
+    # get ratings from codenames
+        
+    team1_players = []
+    team2_players = []
+    team3_players = []
+    team4_players = []
+
+    for codename in team1:
+        team1_players.append(await Player.filter(codename=codename).first())
+    for codename in team2:
+        team2_players.append(await Player.filter(codename=codename).first())
+    for codename in team3:
+        team3_players.append(await Player.filter(codename=codename).first())
+    for codename in team4:
+        team4_players.append(await Player.filter(codename=codename).first())
+
+    # calculate win chances
+        
+    matchmade_teams = ratinghelper.matchmake_teams(team1_players + team2_players + team3_players + team4_players, num_teams, mode)
+
+    if not team3:
+        matchmade_teams.append([])
+    if not team4:
+        matchmade_teams.append([])
+
+    for i, team in enumerate(matchmade_teams):
+        matchmade_teams[i] = [player.codename for player in team]
+
+    return response.json(matchmade_teams)

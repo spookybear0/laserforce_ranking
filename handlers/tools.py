@@ -26,7 +26,12 @@ class FakePlayer:
 
 @app.get("/tools")
 async def tools(request: Request) -> str:
-    return await render_template(request, "tools.html")
+    players = await Player.filter(sm5_mu__not=25, laserball_mu__not=25)
+
+    # all_players = {codename: (sm5_rating, lb_rating)
+    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
+
+    return await render_template(request, "tools.html", players=players, all_players=all_players)
 
 @app.post("/matchmake")
 @sentry_trace

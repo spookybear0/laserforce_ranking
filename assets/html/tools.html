@@ -3,30 +3,369 @@
 
 {% block html_head %}
 
-<style>
-    .left_div {
-        float: left;
-        padding-left: 25%;
+<script>
+    currentMode = "sm5"; // sm5 or lb
+    numTeams = 2;
+    all_players = {{ all_players|tojson }};
+
+    function addTeam() {
+        if (numTeams < 4) {
+            numTeams++;
+            document.getElementById("team" + numTeams + "-div").style.display = "block";
+
+            if (numTeams > 2) {
+                document.getElementById("team1-div").style.height = "45%";
+                document.getElementById("team2-div").style.height = "45%";
+                document.getElementById("team3-div").style.height = "45%";
+                document.getElementById("team4-div").style.height = "45%";
+            }
+        }
     }
 
-    .right_div {
-        float: right;
-        padding-right: 25%;
+    function removeTeam() {
+        if (numTeams > 2) {
+            document.getElementById("team" + numTeams + "-div").style.display = "none";
+            numTeams--;
+
+            if (numTeams < 3) {
+                document.getElementById("team1-div").style.height = "100%";
+                document.getElementById("team2-div").style.height = "100%";
+            }
+        }
+    }
+
+    // letters are used to sort the table descending
+    function sortTable(table) {
+        let rows, switching, i, x, y, shouldSwitch;
+        switching = true;
+
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[0];
+                y = rows[i + 1].getElementsByTagName("TD")[0];
+
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    }
+
+    function dragEnd(event) {
+        // find the team div that the player was dropped into (which team div is the closest to the mouse position)
+        let droppedDiv = document.elementFromPoint(event.clientX, event.clientY);
+        let teamTable;
+
+        if (event.target.tagName == undefined || event.target.tagName == "TH" || event.target.tagName == "TD") {
+            return;
+        }
+
+        if (droppedDiv.classList.contains("team-div") || droppedDiv.classList.contains("players-div")) {
+            teamTable = droppedDiv.querySelector("table").querySelector("tbody");
+        }
+        else if (droppedDiv.tagName == "TR") {
+            teamTable = droppedDiv.parentElement;
+        }
+        else if (droppedDiv.tagName == "TD" || droppedDiv.tagName == "TH") {
+            teamTable = droppedDiv.parentElement.parentElement;
+        }
+        else if (droppedDiv.tagName == "TABLE") {
+            teamTable = droppedDiv;
+        }
+        else {
+            return;
+        }
+
+        droppedDiv = teamTable.parentElement.parentElement;
+
+        // if the team div is not the same as the one the player was dragged from, add the player to the team div
+        if (droppedDiv.querySelector("table").querySelector("tbody") != event.target.parentElement) {
+            teamTable.innerHTML += '<tr draggable="true" ondragend="dragEnd(event)">' + event.target.innerHTML + "</tr>";
+            event.target.remove();
+        }
+
+        sortTable(teamTable);
+        updateWinChances();
+
+        event.preventDefault();
+    }
+
+    // before the page is loaded, sort the players table
+    function sortPlayers() {
+        sortTable(document.getElementById("players-div").querySelector("table").querySelector("tbody"));
+    }
+
+    function formatTeamLists() {
+        let team1 = "["
+        let team2 = "["
+        let team3 = "["
+        let team4 = "["
+
+        let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
+        let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
+        let team3Table = document.getElementById("team3-div").querySelector("table").querySelector("tbody");
+        let team4Table = document.getElementById("team4-div").querySelector("table").querySelector("tbody");
+
+        for (let i = 1; i < team1Table.children.length; i++) {
+            if (i != 1) {
+                team1 += ', ';
+            }
+            team1 += '"' + team1Table.children[i].children[0].innerHTML + '"';
+        }
+        for (let i = 1; i < team2Table.children.length; i++) {
+            if (i != 1) {
+                team2 += ', ';
+            }
+            team2 += '"' + team2Table.children[i].children[0].innerHTML + '"';
+        }
+        for (let i = 1; i < team3Table.children.length; i++) {
+            if (i != 1) {
+                team3 += ', ';
+            }
+            team3 += '"' + team3Table.children[i].children[0].innerHTML + '"';
+        }
+        for (let i = 1; i < team4Table.children.length; i++) {
+            if (i != 1) {
+                team4 += ', ';
+            }
+            team4 += '"' + team4Table.children[i].children[0].innerHTML + '"';
+        }
+
+        team1 += "]";
+        team2 += "]";
+        team3 += "]";
+        team4 += "]";
+
+        return [team1, team2, team3, team4];
+    }
+
+    function updateWinChances() {
+        // get each team's player's codenames then use api to get their win chances
+
+
+        teams = formatTeamLists();
+        team1 = teams[0];
+        team2 = teams[1];
+        team3 = teams[2];
+        team4 = teams[3];
+
+        if (team1 == "[]" || team2 == "[]") {
+            return;
+        }
+
+        if (numTeams > 2) {
+            if (team3 == "[]" || team4 == "[]") {
+                return;
+            }
+        }
+
+
+        let xhr = new XMLHttpRequest();
+        let url = "/api/" + currentMode + "/win_chances";
+        let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4;
+        xhr.open("GET", url + "?" + params, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                let winChances = JSON.parse(xhr.responseText);
+                
+                // round
+                let team1WinChance = Math.round(winChances[0] * 100 * 100) / 100;
+                let team2WinChance = Math.round(winChances[1] * 100 * 100) / 100;
+                let team3WinChance = Math.round(winChances[2] * 100 * 100) / 100;
+                let team4WinChance = Math.round(winChances[3] * 100 * 100) / 100;
+
+                document.getElementById("team1-div").querySelector("h2").innerHTML = "Team 1: " + team1WinChance + "%";
+                document.getElementById("team2-div").querySelector("h2").innerHTML = "Team 2: " + team2WinChance + "%";
+                document.getElementById("team3-div").querySelector("h2").innerHTML = "Team 3: " + team3WinChance + "%";
+                document.getElementById("team4-div").querySelector("h2").innerHTML = "Team 4: " + team4WinChance + "%";
+            }
+        }
+        xhr.send(params);
+
+    }
+
+    function matchmakePlayers() {
+        teams = formatTeamLists();
+        team1 = teams[0];
+        team2 = teams[1];
+        team3 = teams[2];
+        team4 = teams[3];
+
+        console.log(team1);
+
+        // check for empty teams
+
+        if (team1 == "[]" && team2 == "[]" && team3 == "[]" && team4 == "[]") {
+            return;
+        }
+
+        console.log(111);
+
+        let xhr = new XMLHttpRequest();
+        let url = "/api/" + currentMode + "/matchmake";
+        let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4 + "&num_teams=" + numTeams;
+        xhr.open("GET", url + "?" + params, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                let matchmadeTeams = JSON.parse(xhr.responseText);
+                let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
+                let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
+                let team3Table = document.getElementById("team3-div").querySelector("table").querySelector("tbody");
+                let team4Table = document.getElementById("team4-div").querySelector("table").querySelector("tbody");
+
+                team1Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+                team2Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+                team3Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+                team4Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+
+                let mode_index;
+
+                if (currentMode == "sm5") {
+                    mode_index = 0;
+                }
+                else {
+                    mode_index = 1;
+                }
+
+                for (let i = 0; i < matchmadeTeams[0].length; i++) {
+                    team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + matchmadeTeams[0][i] + "</td><td>" + Math.round(all_players[matchmadeTeams[0][i]][mode_index] * 100) / 100 + "</td></tr>";
+                }
+                for (let i = 0; i < matchmadeTeams[1].length; i++) {
+                    team2Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + matchmadeTeams[1][i] + "</td><td>" + Math.round(all_players[matchmadeTeams[1][i]][mode_index] * 100) / 100 + "</td></tr>";
+                }
+                for (let i = 0; i < matchmadeTeams[2].length; i++) {
+                    team3Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + matchmadeTeams[2][i] + "</td><td>" + Math.round(all_players[matchmadeTeams[2][i]][mode_index] * 100) / 100 + "</td></tr>";
+                }
+                for (let i = 0; i < matchmadeTeams[3].length; i++) {
+                    team4Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + matchmadeTeams[3][i] + "</td><td>" + Math.round(all_players[matchmadeTeams[3][i]][mode_index] * 100) / 100 + "</td></tr>";
+                }
+
+                updateWinChances();
+            }
+        }
+        xhr.send(params);
+    }
+
+    window.onload = sortPlayers;
+</script>
+
+<style>
+    .btn {
+        width: 10rem;
+        height: 5rem;
+        cursor: pointer;
+    }
+
+    .players-div {
+        background-color: #1A1A1A;
+        width: 20rem;
+        height: 80%;
+        padding: 10px;
+        border-radius: 10px;
+        overflow: auto;
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+  
+    ::-webkit-scrollbar-track {
+        background: #1A1A1A;
+        border-radius: 10px;
+    }
+  
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .teams-div {
+        width: 50rem;
+        height: 90%;
+        padding: 10px;
+        border-radius: 10px;
+        flex-direction: row;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .team-div {
+        background-color: #1A1A1A;
+        padding: 10px;
+        border-radius: 10px;
+        width: 40%;
+        height: 100%;
+    }
+
+    .controls-div {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+        height: calc(100vh - 48px);
+    }
+
+    h2 {
+        color: lightgray;
+        text-align: center;
+        margin-top: 0;
+    }
+
+    #team3-div, #team4-div {
+        display: none;
+    }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+        border-radius: 10px;
+        padding: 5px;
+    }
+
+    td {
+        color: lightgray;
     }
 
     @media screen and (max-width: 991px) {
-        .left_div {
-            float: none;
-            margin: auto;
-            padding-left: 0;
-        }
-
-        .right_div {
-            float: none;
-            margin: auto;
-            padding-right: 0;
-        }
-        
         #content {
             width: 100%;
             zoom: 2.5;
@@ -37,39 +376,83 @@
 {% endblock %}
 
 {% block content %}
-<div class="left_div">
-    <h2 style="text-align: center;">Matchmake</h2>
-    <form class="modal-content animate" action="/matchmake" method="post" style="text-align: center;">
-        <select name="mode">
-            <option value="sm5">SM5</option>
-            <option value="laserball">Laserball</option>
-        </select><br><br><br>
-        <div class="container">
-            {% for i in range(16) %}
-            <input type="text" placeholder="Player Codename" name="player{{ i }}"><br><br>
-            {% endfor %}
-            <button type="submit">Submit</button>
+<div>
+    <div class="container">
+        <div>
+            <div class="controls-div">
+                <button onclick="addTeam()" class="btn"><h3>Add Team</h3></button>
+                <button onclick="removeTeam()" class="btn"><h3>Remove Team</h3></button>
+                <button onclick="matchmakePlayers()" class="btn"><h3>Matchmake Players</h3></button>
+            </div>
         </div>
-    </form>
-</div>
-<div class="right_div">
-    <h2 style="text-align: center;">Win chance calculator</h2>
-    <form class="modal-content animate" action="/win_chance" method="post" style="text-align: center;">
-        <select name="mode">
-            <option value="sm5">SM5</option>
-            <option value="laserball">Laserball</option>
-        </select><br><br><br>
-        <div class="container">
-            <p>Team 1</p>
-            {% for i in range(8) %}
-            <input type="text" placeholder="Player Codename" name="1player{{ i }}"><br><br>
-            {% endfor %}
-            <p>Team 2</p>
-            {% for i in range(8) %}
-            <input type="text" placeholder="Player Codename" name="2player{{ i }}"><br><br>
-            {% endfor %}
-            <button type="submit">Submit</button>
+        <div>
+            <div class="players-div" id="players-div">
+                <h2>Players</h2>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Player</th>
+                            <th>Rating</th>
+                        </tr>
+                        {% for player in players %}
+                        <tr draggable="true" ondragend="dragEnd(event)">
+                            <td>{{ player.codename }}</td>
+                            <td>{{ player.sm5_ordinal|round(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </form>
+        <div>
+            <div class="teams-div">
+                <div class="team-div" id="team1-div">
+                    <h2>Team 1</h2>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Player</th>
+                                <th>Rating</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="team-div" id="team2-div">
+                    <h2>Team 2</h2>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Player</th>
+                                <th>Rating</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="team-div" id="team3-div">
+                    <h2>Team 3</h2>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Player</th>
+                                <th>Rating</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="team-div" id="team4-div">
+                    <h2>Team 4</h2>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Player</th>
+                                <th>Rating</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

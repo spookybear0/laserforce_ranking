@@ -306,6 +306,37 @@ def matchmake(players, mode: GameType=GameType.SM5):
 
     return (best1, best2)
 
+def matchmake_teams(players, num_teams: int, mode: GameType=GameType.SM5):
+    """
+    Matchmakes 2-4 teams
+    """
+
+    mode = mode.value
+
+    # get rating object for mode
+
+    # bruteforce sort
+
+    best_teams = [players[i::num_teams] for i in range(num_teams)]
+
+    # gets most fair teams
+
+    for _ in range(1000):
+        shuffle(players)
+        teams = [players[i::num_teams] for i in range(num_teams)]
+
+        func = lambda x: getattr(x, f"{mode}_rating")
+
+        # checks if teams are more fair then previous best
+        # use win chance to matchmake
+        # see which is closer to 0.5
+
+        if abs(model.predict_win([list(map(func, team)) for team in teams])[0] - 0.5)\
+            < abs(model.predict_win([list(map(func, team)) for team in best_teams])[0] - 0.5):
+            best_teams = teams
+
+    return best_teams
+
 def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     """
     Gets win chance for two teams
@@ -320,6 +351,29 @@ def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     
     # predict
     return model.predict_win([team1, team2])
+
+def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType=GameType.SM5):
+    """
+    Gets win chances for 2-4 teams
+    """
+
+    logger.debug(f"Getting win chances for {team1} vs {team2} vs {team3} vs {team4}")
+
+    mode = mode.value
+    # get rating object for mode
+    team1 = list(map(lambda x: getattr(x, f"{mode}_rating"), team1))
+    team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
+    team3 = list(map(lambda x: getattr(x, f"{mode}_rating"), team3))
+    team4 = list(map(lambda x: getattr(x, f"{mode}_rating"), team4))
+
+    print(team1, team2, team3, team4)
+
+    if not team3:
+        return model.predict_win([team1, team2])
+    elif not team4:
+        return model.predict_win([team1, team2, team3])
+    return model.predict_win([team1, team2, team3, team4])
+
 
 def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     """
