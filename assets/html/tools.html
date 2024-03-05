@@ -152,6 +152,20 @@
     function updateWinChances() {
         // get each team's player's codenames then use api to get their win chances
 
+        let mode_index;
+
+        if (currentMode == "sm5") {
+            mode_index = 0;
+        }
+        else {
+            mode_index = 1;
+        }
+
+        let playersTable = document.getElementById("players-div").querySelector("table").querySelector("tbody");
+
+        for (let i = 1; i < playersTable.children.length; i++) {
+            playersTable.children[i].children[1].innerHTML = Math.round(all_players[playersTable.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+        }
 
         teams = formatTeamLists();
         team1 = teams[0];
@@ -168,7 +182,6 @@
                 return;
             }
         }
-
 
         let xhr = new XMLHttpRequest();
         let url = "/api/" + currentMode + "/win_chances";
@@ -191,15 +204,6 @@
                 document.getElementById("team4-div").querySelector("h2").innerHTML = "Team 4: " + team4WinChance + "%";
 
                 // make sure ratings are up to date with the mode
-
-                let mode_index;
-
-                if (currentMode == "sm5") {
-                    mode_index = 0;
-                }
-                else {
-                    mode_index = 1;
-                }
 
                 let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
                 let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
