@@ -173,7 +173,7 @@ function setupGame(replay_data) {
 
         row.innerHTML = 
         `
-        <td><img src="/assets/roles/${defaults["name"]}.png" alt="role image" width="30" height="30"></td>
+        <td><img src="/assets/sm5/roles/${defaults["name"]}.png" alt="role image" width="30" height="30"></td>
         <td><p class="player_codename">${player["name"]}</p></td>
         <td><p class="player_score">0</p></td>
         <td><p class="player_lives">${defaults["lives"]}</p></td>
@@ -522,7 +522,7 @@ function onLoad() {
 
     // get the replay data from api using a get request
 
-    fetch("/api/game/sm5/" + game_id)
+    fetch("/api/game_json/sm5/" + game_id)
         .then(response => response.json())
         .then(data => {
             replay_data = data;

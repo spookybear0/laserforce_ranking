@@ -255,7 +255,7 @@
                             {% else %}
                                 <td></td>
                             {% endif %}
-                            <td style="width: 30px;"><img src="/assets/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30" height="30"></td>
+                            <td style="width: 30px;"><img src="/assets/sm5/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30" height="30"></td>
                             <td>{{ entity_end.score }}</td>
                             <td>{{ sm5_stats.lives_left }}</td>
                             <td>{{ sm5_stats.shots_left }}</td>
@@ -355,7 +355,7 @@
                     {% if role_plot_total_roles > 2 %}
                     <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem;" height="475px" width="475px" class="right-side"></canvas>
                     {% else %}
-                    <canvas class="inline-block" id="avg_role_score_radar" style="max-width: 500px; margin-top: 2rem; opacity: 0;" height="475px" width="475px" class="right-side"></canvas>
+                    <p style="color: white; max-width: 500px; margin-top: 2rem; text-align: center; font-size: 1.5rem;">Not enough data to display radar chart</p>
                     {% endif %}
                 </div>
             </div>

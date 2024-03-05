@@ -11,6 +11,30 @@ from helpers.statshelper import sentry_trace
 @app.get("/api/game/<type:str>/<id:int>")
 @sentry_trace
 async def api_game(request: Request, type: str, id: int) -> str:
+    """
+    Returns a tdf file for the game
+    """
+    logger.info(f"Game {id} requested from api")
+
+    if type == "sm5":
+        game = await SM5Game.filter(id=id).first()
+    elif type == "lb":
+        game = await LaserballGame.filter(id=id).first()
+    else:
+        raise exceptions.BadRequest("Invalid game type!", status_code=400)
+
+    if game is None:
+        raise exceptions.NotFound("Game not found!", status_code=404)
+    
+    # return the tdf file
+    return await response.file(f"sm5_tdf/{game.tdf_name}", filename=game.tdf_name)
+
+@app.get("/api/game_json/<type:str>/<id:int>")
+@sentry_trace
+async def api_game_json(request: Request, type: str, id: int) -> str:
+    """
+    This is meant for the web frontend only to request a game from the api
+    """
     logger.info(f"Game {id} requested from api")
 
     if type == "sm5":

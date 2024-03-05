@@ -304,7 +304,7 @@ function onLoad() {
 
     // get the replay data from api using a get request
 
-    fetch("/api/game/lb/" + game_id)
+    fetch("/api/game_json/lb/" + game_id)
         .then(response => response.json())
         .then(data => {
             replay_data = data;

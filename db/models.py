@@ -714,6 +714,7 @@ class EntityStarts(Model):
     level = fields.IntField() # for sm5 this is always 0
     role = fields.IntEnumField(IntRole) # 0 for targets, no idea what it is for laserball
     battlesuit = fields.CharField(50) # for targets its the target name
+    member_id = fields.CharField(50, null=True) # only for newer games (or ones with the option to include member_id)
     
     async def get_player(self) -> Player:
         # get the player object from the entity
@@ -740,11 +741,12 @@ class EntityStarts(Model):
         final["level"] = self.level
         final["role"] = int(self.role)
         final["battlesuit"] = self.battlesuit
+        final["member_id"] = self.member_id
 
         return final
     
     def __str__(self):
-        return f"<EntityStarts id={self.id} entity_id={self.entity_id} type={self.type} name={self.name} team={self.team} level={self.level} role={self.role} battlesuit={self.battlesuit}>"
+        return f"<EntityStarts id={self.id} entity_id={self.entity_id} type={self.type} name={self.name} team={self.team} level={self.level} role={self.role} battlesuit={self.battlesuit} member_id={self.member_id}>"
 
 class Events(Model):
     time = fields.IntField() # time in milliseconds
