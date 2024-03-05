@@ -17,7 +17,7 @@ MU = 25
 SIGMA = 25 / 3
 BETA = 25 / 6
 KAPPA = 0.0001
-TAU = 25 / 300
+TAU = 25 / 200 # default: 25/300
 
 # for calculating win chance when there is no data for a player
 # we assume that they aren't very skilled and have a high variance
