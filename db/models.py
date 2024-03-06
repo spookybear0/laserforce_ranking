@@ -72,7 +72,7 @@ class EventType(Enum):
     
 
 class IntRole(IntEnum):
-    BASE = 0 # or no role
+    OTHER = 0 # or no role
     COMMANDER = 1
     HEAVY = 2
     SCOUT = 3
@@ -81,7 +81,7 @@ class IntRole(IntEnum):
 
     def __str__(self) -> str:
         names = {
-            0: "Base",
+            0: "Other",
             1: "Commander",
             2: "Heavy",
             3: "Scout",
@@ -159,7 +159,6 @@ class Player(Model):
         await self.save()
 
     def check_password(self, password: str) -> bool:
-        print(password, self.password)
         return bcrypt.checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
     
     # stats
@@ -170,7 +169,7 @@ class Player(Model):
         """
 
         # get the most played role
-        role = await EntityStarts.filter(entity_id=self.entity_id).annotate(count=functions.Count("role")).order_by("-count").first()
+        role = await EntityStarts.filter(entity_id=self.entity_id, sm5games__mission_name__icontains="space marines").annotate(count=functions.Count("role")).order_by("-count").first()
         if role is None:
             return None
         return role.role
