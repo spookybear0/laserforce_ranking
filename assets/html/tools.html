@@ -5,6 +5,9 @@
 
 <script src="assets/js/libraries/DragDropTouch.js"></script>
 <script>
+    mobile = false;
+    currentlyDragging = undefined;
+
     currentMode = "sm5"; // sm5 or lb
     numTeams = 2;
     all_players = {{ all_players|tojson }};
@@ -62,12 +65,23 @@
         }
     }
 
-    function dragEnd(event) {
+    function dragEnd(event, target_=undefined) {
         // find the team div that the player was dropped into (which team div is the closest to the mouse position)
         let droppedDiv = document.elementFromPoint(event.clientX, event.clientY);
         let teamTable;
 
-        if (event.target.tagName == undefined || event.target.tagName == "TH" || event.target.tagName == "TD") {
+        if (target_ != undefined) {
+            target = target_;
+        }
+        else {
+            target = event.target;
+        }
+
+        if (target.tagName == "TD") {
+            target = target.parentElement;
+        }
+
+        if (target.tagName == undefined || target.tagName == "TH" || target.tagName == "TD") {
             return;
         }
 
@@ -94,15 +108,40 @@
         droppedDiv = teamTable.parentElement.parentElement;
 
         // if the team div is not the same as the one the player was dragged from, add the player to the team div
-        if (droppedDiv.querySelector("table").querySelector("tbody") != event.target.parentElement) {
-            teamTable.innerHTML += '<tr draggable="true" ondragend="dragEnd(event)">' + event.target.innerHTML + "</tr>";
-            event.target.remove();
+        if (droppedDiv.querySelector("table").querySelector("tbody") != target.parentElement) {
+            teamTable.innerHTML += '<tr draggable="true" ondragend="dragEnd(event)">' + target.innerHTML + "</tr>";
+            target.remove();
         }
 
         sortTable(teamTable);
         updateWinChances();
 
         event.preventDefault();
+    }
+
+    // if on mobile, allow clicking to select, then clicking again to drop
+    function onClick(event) {
+        if (mobile) {
+            if (currentlyDragging == undefined && (event.target.tagName == "TD" || event.target.tagName == "TR")) {
+                currentlyDragging = event.target;
+
+                // add selected class
+
+                if (currentlyDragging.tagName == "TD") {
+                    currentlyDragging = currentlyDragging.parentElement;
+                    if (currentlyDragging.tagName == "TH") {
+                        return;
+                    }
+                }
+
+                currentlyDragging.classList.add("selected");
+            }
+            else if (currentlyDragging != undefined) {
+                dragEnd(event, currentlyDragging);
+                currentlyDragging.classList.remove("selected");
+                currentlyDragging = undefined;
+            }
+        }
     }
 
     // before the page is loaded, sort the players table
@@ -305,7 +344,28 @@
         updateWinChances();
     }
 
-    window.onload = sortPlayers;
+    window.onload = function() {
+        sortPlayers();
+
+        // check if the user is on a mobile device (@media screen and (max-width: 991px) {)
+
+        if (window.innerWidth <= 991) {
+            mobile = true;
+        }
+    }
+
+    window.onresize = function() {
+        if (window.innerWidth <= 991) {
+            mobile = true;
+        }
+        else {
+            mobile = false;
+        }
+    }
+
+    // onclick is used for mobile devices (anywhere)
+
+    document.onclick = onClick;
 </script>
 
 <style>
@@ -376,6 +436,10 @@
         align-items: center;
         width: 100%;
         height: calc(100vh - 48px);
+    }
+
+    .selected {
+        border: 2px solid #079CFF;
     }
 
     h2 {
