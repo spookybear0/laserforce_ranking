@@ -3,6 +3,7 @@
 
 {% block html_head %}
 
+<script src="assets/js/libraries/DragDropTouch.js"></script>
 <script>
     currentMode = "sm5"; // sm5 or lb
     numTeams = 2;
@@ -67,6 +68,10 @@
         let teamTable;
 
         if (event.target.tagName == undefined || event.target.tagName == "TH" || event.target.tagName == "TD") {
+            return;
+        }
+
+        if (!droppedDiv) {
             return;
         }
 
@@ -235,15 +240,11 @@
         team3 = teams[2];
         team4 = teams[3];
 
-        console.log(team1);
-
         // check for empty teams
 
         if (team1 == "[]" && team2 == "[]" && team3 == "[]" && team4 == "[]") {
             return;
         }
-
-        console.log(111);
 
         let xhr = new XMLHttpRequest();
         let url = "/api/" + currentMode + "/matchmake";
@@ -414,7 +415,43 @@
     @media screen and (max-width: 991px) {
         #content {
             width: 100%;
-            zoom: 2.5;
+            zoom: 2;
+        }
+
+        .container {
+            flex-direction: column;
+            height: auto;
+            margin: auto;
+        }
+
+        .teams-div {
+            width: 100%;
+            height: auto;
+        }
+
+        .team-div {
+            width: 90%;
+            margin-top: 1rem;
+        }
+
+        .players-div {
+            width: 90%;
+            height: 50%;
+            margin-top: 1rem;
+        }
+
+        .sub-container {
+            /*center items */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 80%;
+            height: 6rem;
+            font-size: 1rem;
         }
     }
 </style>
@@ -424,7 +461,7 @@
 {% block content %}
 <div>
     <div class="container">
-        <div>
+        <div class="sub-container">
             <div class="controls-div">
                 <button onclick="addTeam()" class="btn"><h3>Add Team</h3></button>
                 <button onclick="removeTeam()" class="btn"><h3>Remove Team</h3></button>
@@ -432,7 +469,7 @@
                 <button onclick="switchMode()" class="btn" id="modeBtn"><h3>Switch Mode to Laserball</h3></button>
             </div>
         </div>
-        <div>
+        <div class="sub-container">
             <div class="players-div" id="players-div">
                 <h2>Players</h2>
                 <table>
@@ -451,7 +488,7 @@
                 </table>
             </div>
         </div>
-        <div>
+        <div class="sub-container">
             <div class="teams-div">
                 <div class="team-div" id="team1-div">
                     <h2>Team 1</h2>
