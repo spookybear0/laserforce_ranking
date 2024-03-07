@@ -32,7 +32,7 @@ async def index(request: Request):
 
     return await render_template(request,
                                 "player/players.html",
-                                players=await Player.filter(sm5_mu__not=25).limit(25).offset(25 * page)
+                                players=await Player.filter().limit(25).offset(25 * page)
                                     .annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma"),
                                               laserball_ord=F("laserball_mu") - 3 * F("laserball_sigma")
                                             ).order_by(order_by),

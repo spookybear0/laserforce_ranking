@@ -1,7 +1,7 @@
 from sanic import Request
 from shared import app
 from utils import render_template, is_admin
-from db.models import SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
+from db.models import SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats, Team
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 from numpy import arange
@@ -27,13 +27,17 @@ async def game_index(request: Request, type: str, id: int) -> str:
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake = []
+        players_matchmake_team1 = []
+        players_matchmake_team2 = []
         entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
             if player.type != "player":
                 continue
 
-            players_matchmake.append(player.name)
+            if (await player.team).enum == Team.RED:
+                players_matchmake_team1.append(player.name)
+            elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
+                players_matchmake_team2.append(player.name)
 
         return await render_template(
             request, "game/sm5.html",
@@ -45,7 +49,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+30000, 30000)],
             win_chance=await game.get_win_chance(),
             win_chance_before_game=await game.get_win_chance_before_game(),
-            players_matchmake=players_matchmake,
+            players_matchmake_team1=players_matchmake_team1,
+            players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
         )
     elif type == "lb":
@@ -54,13 +59,17 @@ async def game_index(request: Request, type: str, id: int) -> str:
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake = []
+        players_matchmake_team1 = []
+        players_matchmake_team2 = []
         entity_starts: List[EntityStarts] = game.entity_starts
         for i, player in enumerate(entity_starts):
             if player.type != "player":
                 continue
 
-            players_matchmake.append(player.name)
+            if (await player.team).enum == Team.RED:
+                players_matchmake_team1.append(player.name)
+            elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
+                players_matchmake_team2.append(player.name)
         
         return await render_template(
             request, "game/laserball.html",
@@ -73,7 +82,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
             win_chance_before_game=await game.get_win_chance_before_game(),
             win_chance_after_game=await game.get_win_chance_after_game(),
-            players_matchmake=players_matchmake,
+            players_matchmake_team1=players_matchmake_team1,
+            players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
         )
     else:

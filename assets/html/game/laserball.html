@@ -235,9 +235,13 @@
 <div style="text-align: center;">
     <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
         <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.get_timestamp()}}</h2></span>
-        <form method="post" action="/matchmake" class="inline">
-            {% for player in players_matchmake %}
-                <input type="hidden" name="player{{ loop.index }}" value="{{ player }}">
+        <form method="post" action="/tools" class="inline">
+            <input type="hidden" name="mode" value="laserball">
+            {% for player in players_matchmake_team1 %}
+                <input type="hidden" name="1player{{ loop.index }}" value="{{ player }}">
+            {% endfor %}
+            {% for player in players_matchmake_team2 %}
+                <input type="hidden" name="2player{{ loop.index }}" value="{{ player }}">
             {% endfor %}
             <button type="submit" class="link-button">
                 <span title="Matchmake"><h3><a>Rematchmake</a></h3></span>

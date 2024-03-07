@@ -7,7 +7,11 @@
     mobile = false;
     currentlyDragging = undefined;
 
-    currentMode = "sm5"; // sm5 or lb
+    // vars from args
+    team1 = {{ team1|tojson }};
+    team2 = {{ team2|tojson }};
+
+    currentMode = "{{ mode }}"; // sm5 or lb
     numTeams = 2;
     all_players = {{ all_players|tojson }};
 
@@ -356,7 +360,36 @@
         updateWinChances();
     }
 
+    // url args from game page when hitting rematchmake
+    function interpretUrlArgs() {
+        if (team1 || team2) {
+            let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
+            let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
+
+            team1Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+            team2Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+
+            let mode_index;
+
+            if (currentMode == "sm5") {
+                mode_index = 0;
+            }
+            else {
+                mode_index = 1;
+            }
+
+            for (let i = 0; i < team1.length; i++) {
+                team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + team1[i] + "</td><td>" + Math.round(all_players[team1[i]][mode_index] * 100) / 100 + "</td></tr>";
+            }
+            for (let i = 0; i < team2.length; i++) {
+                team2Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + team2[i] + "</td><td>" + Math.round(all_players[team2[i]][mode_index] * 100) / 100 + "</td></tr>";
+            }
+        }
+    }
+
     window.onload = function() {
+        interpretUrlArgs();
+
         sortPlayers();
         updateWinChances();
 
