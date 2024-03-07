@@ -3,9 +3,9 @@ from shared import app
 from utils import render_template, admin_only
 from db.models import SM5Game, LaserballGame
 
-@app.get("/admin/content")
+@app.get("/admin/games")
 @admin_only
-async def admin_content(request: Request) -> str:
+async def admin_games(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
 
@@ -25,7 +25,7 @@ async def admin_content(request: Request) -> str:
     laserball_games = sorted(laserball_games, key=lambda x: x.start_time, reverse=True)
 
     return await render_template(request,
-        "admin/content.html",
+        "admin/games.html",
         sm5_games=sm5_games,
         laserball_games=laserball_games,
         page=page,

@@ -32,16 +32,28 @@
     </script>
 
     <style>
+        /* desktop */
         @media screen and (min-width: 991px) {
             .login-item {
                 float: right;
             }
+
+            #content {
+                margin-left: 300px;
+                padding-top: 30px;
+            }
+        }
+        /* mobile */
+        @media screen and (max-width: 991px) {
+            #content {
+                padding-top: 30px;
+                margin: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
         }
 
-        #content {
-            margin-left: 300px;
-            padding-top: 30px;
-        }
     </style>
     
     {% block html_head %}{% endblock %}
@@ -51,20 +63,25 @@
         ("/", "Home"),
         ("/admin", "Dashboard"),
         ("/admin/players", "Manage Players"),
-        ("/admin/content", "Manage Content")
+        ("/admin/games", "Manage Games")
     ] -%}
     <ul class="sidebar">
+        <div class="nav-dropdown">
+            <i class="fa-solid fa-bars fa-lg" onclick="toggleNav()"></i>
+        </div>
         {% for href, caption in navigation_bar %}
             <li class="sidebar-item"><a {% if href == request.path %}class="active"{% endif %} href="{{ href|e }}">{{ caption|e }}</a></li>
         {% endfor %}
     </ul>
     <div id="content">
-        {% block content %}{% endblock %}
+        <div>
+            {% block content %}{% endblock %}
+        </div>
     </div>
   
     <div id="footer">
         {% block footer %}
-            
+                
         {% endblock %}
     </div>
 </body>

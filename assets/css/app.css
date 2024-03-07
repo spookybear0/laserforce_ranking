@@ -546,6 +546,37 @@ dropdown menu
         font-size: 2rem;
     }
 
+    .sidebar {
+        height: initial;
+        width: 100%;
+        position: initial;
+    }
+
+    .sidebar-item {
+        display: none;
+    }
+
+    .sidebar-item a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 2vh 20px;
+        text-decoration: none;
+    }
+
+    .sidebar-item a:hover:not(.active) {
+        background-color: #111;
+    }
+
+    .sidebar {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.76) 100%);
+        font-size: 2rem;
+    }
+
     .login-bar {
         list-style-type: none;
         margin: 0;
@@ -603,7 +634,6 @@ dropdown menu
     .userlist {
         background: rgba(0, 0, 0, 0);
         padding: 0;
-        margin-left: 1rem;
     }
 }
 

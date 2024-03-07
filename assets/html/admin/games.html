@@ -1,5 +1,5 @@
 {% extends "admin/adminbase.html" %}
-{% block title %}Manage Content{% endblock %}
+{% block title %}Manage Games{% endblock %}
 
 
 {% block html_head %}
@@ -142,8 +142,8 @@
             document.getElementById("sm5_game_table").style.display = "table";
             document.getElementById("laserball_game_table").style.display = "none";
 
-            document.getElementById("next_href").href = "/admin/content?page={{ page+1 }}&mode=sm5";
-            document.getElementById("prev_href").href = "/admin/content?page={{ page-1 }}&mode=sm5";
+            document.getElementById("next_href").href = "/admin/games?page={{ page+1 }}&mode=sm5";
+            document.getElementById("prev_href").href = "/admin/games?page={{ page-1 }}&mode=sm5";
 
             current_mode = "sm5";
         }
@@ -153,8 +153,8 @@
             document.getElementById("sm5_game_table").style.display = "none";
             document.getElementById("laserball_game_table").style.display = "table";
 
-            document.getElementById("next_href").href = "/admin/content?page={{ page+1 }}&mode=laserball";
-            document.getElementById("prev_href").href = "/admin/content?page={{ page-1 }}&mode=laserball";
+            document.getElementById("next_href").href = "/admin/games?page={{ page+1 }}&mode=laserball";
+            document.getElementById("prev_href").href = "/admin/games?page={{ page-1 }}&mode=laserball";
 
             current_mode = "laserball";
         }
@@ -239,8 +239,8 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if page > 0 %}<a href="/admin/content?page={{ page-1 }}" id="prev_href"><p style="float: left;">Prev</p></a>{% endif %}
-    <a href="/admin/content?page={{ page+1 }}" id="next_href"><p style="float: right;">Next</p></a>
+    {% if page > 0 %}<a href="/admin/games?page={{ page-1 }}" id="prev_href"><p style="float: left;">Prev</p></a>{% endif %}
+    <a href="/admin/games?page={{ page+1 }}" id="next_href"><p style="float: right;">Next</p></a>
 </div>
 
 {% endblock %}

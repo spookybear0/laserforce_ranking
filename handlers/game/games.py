@@ -5,6 +5,8 @@ from db.models import SM5Game, LaserballGame
 from tortoise.expressions import F
 from helpers.statshelper import sentry_trace
 
+GAMES_PER_PAGE = 15
+
 @app.get("/games")
 @sentry_trace
 async def index(request: Request) -> str:
@@ -35,8 +37,8 @@ async def index(request: Request) -> str:
 
     # get both sm5 and laserball games
 
-    sm5_games = await SM5Game.all().order_by(order_by).limit(10).offset(10 * page)
-    laserball_games = await LaserballGame.all().order_by(order_by).limit(10).offset(10 * page)
+    sm5_games = await SM5Game.all().order_by(order_by).limit(GAMES_PER_PAGE).offset(GAMES_PER_PAGE * page)
+    laserball_games = await LaserballGame.all().order_by(order_by).limit(GAMES_PER_PAGE).offset(GAMES_PER_PAGE * page)
 
     return await render_template(
         request,
