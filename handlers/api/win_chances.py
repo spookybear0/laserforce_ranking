@@ -40,14 +40,30 @@ async def api_win_chances(request: Request, type_: str) -> str:
     team3_players = []
     team4_players = []
 
+    def add_unrated_player(team) -> bool:
+        if codename == "Unrated Player":
+            # dummy class to represent unrated player
+            class _: pass
+            p = _()
+            p.codename = "Unrated Player"
+            p.sm5_rating = ratinghelper.Rating(25, 8.333)
+            p.laserball_rating = ratinghelper.Rating(25, 8.333)
+            team.append(p)
+            return True
+        return False
+
     for codename in team1:
-        team1_players.append(await Player.filter(codename=codename).first())
+        if not add_unrated_player(team1_players):
+            team1_players.append(await Player.filter(codename=codename).first())
     for codename in team2:
-        team2_players.append(await Player.filter(codename=codename).first())
+        if not add_unrated_player(team2_players):
+            team2_players.append(await Player.filter(codename=codename).first())
     for codename in team3:
-        team3_players.append(await Player.filter(codename=codename).first())
+        if not add_unrated_player(team3_players):
+            team3_players.append(await Player.filter(codename=codename).first())
     for codename in team4:
-        team4_players.append(await Player.filter(codename=codename).first())
+        if not add_unrated_player(team4_players):
+            team4_players.append(await Player.filter(codename=codename).first())
 
     # calculate win chances
         

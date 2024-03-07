@@ -330,6 +330,19 @@
         xhr.send(params);
     }
 
+    function addUnratedPlayer() {
+        let codename = "Unrated Player";
+        let rating = 0;
+
+        let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
+        team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + codename + "</td><td>" + rating + "</td></tr>";
+
+        all_players[codename] = [0, 0];
+
+        sortPlayers();
+        updateWinChances();
+    }
+
     function switchMode() {
         modeBtn = document.getElementById("modeBtn");
         if (currentMode == "sm5") {
@@ -530,6 +543,7 @@
                 <button onclick="addTeam()" class="btn"><h3>Add Team</h3></button>
                 <button onclick="removeTeam()" class="btn"><h3>Remove Team</h3></button>
                 <button onclick="matchmakePlayers()" class="btn"><h3>Matchmake Players</h3></button>
+                <button onclick="addUnratedPlayer()" class="btn"><h3>Add Unrated Player</h3></button>
                 <button onclick="switchMode()" class="btn" id="modeBtn"><h3>Switch Mode to Laserball</h3></button>
             </div>
         </div>
