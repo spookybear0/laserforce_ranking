@@ -113,6 +113,63 @@
     .link-button:focus {
         outline: none;
     }
+
+    .player-name-header {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .fire-team-header, .earth-team-header {
+        font-size: 20px;
+        float: none;
+        margin-bottom: 16px;
+    }
+
+    .fire-team-header {
+        color: orangered;
+    }
+
+    .earth-team-header {
+        color: greenyellow;
+    }
+
+    .scorecard-main-stats {
+        width: 45%;
+        float: left;
+    }
+
+    .scorecard-player-stats {
+        width: 45%;
+        float: left;
+    }
+
+    @media screen and (max-width: 991px) {
+        .scorecard-main-stats {
+            width: 95%;
+        }
+
+        .scorecard-player-stats {
+            width: 95%;
+        }
+    }
+
+    .scorecard-team-stats {
+        float: none;
+        margin-bottom: 16px;
+    }
+
+    table.scorecard-main-stats-table {
+        border: 0px;
+        width: 90%;
+    }
+
+    table.scorecard-player-stats-table {
+        border: 0px;
+        width: 90%;
+    }
 </style>
 
 {% endblock %}
@@ -123,18 +180,65 @@
 <div style="text-align: center;">
     <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
         <span title="Game Date"><h2 style="font-size: 25px;">Scorecard for {{entity_start.name}} on {{ game.get_timestamp()}}</h2></span>
-        
+
         <span title="Admin Page"><h3><a href="/game/sm5/{{ game.id }}/">Game</a></h3></span>
     </div>
-    <div class="userlist" style="text-align: left;">
-        <h2 style="text-align: center">Not Implemented</h2>
+    <div class="scorecard-stats">
+        <div class="scorecard-main-stats">
+            <div class="player-name-header">
+                <img src="/assets/sm5/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30"
+                     height="30">
+                &nbsp;{{entity_start.name}}
+
+            </div>
+            <table class="scorecard-main-stats-table">
+                {% for stat in main_stats %}
+                <tr>
+                    <td class="scorecard-main-key">{{ stat.key }}</td>
+                    <td class="scorecard-main-value">{{ stat.value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="scorecard-player-stats">
+        {% for team in teams %}
+        <div class="scorecard-team-stats">
+            <div class="{{ team.class_name }}-team-header">{{ team.name }} ({{ team.score }})</div>
+            <table class="scorecard-player-stats-table">
+                <tr>
+                    <th>Player</th>
+                    <th>Role</th>
+                    <th>Score</th>
+                    <th>You zapped</th>
+                    <th>Zapped you</th>
+                    <th>You missiled</th>
+                    <th>Missiled you</th>
+                </tr>
+                {% for player in team.players %}
+                <tr>
+                    <td class="scorecard-player-stat">
+                        <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a></td>
+                    <td class="scorecard-player-stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
+                                                           alt="role image" width="30"
+                                                           height="30"></td>
+                    <td class="scorecard-player-stat">{{ player.score }}</td>
+                    <td class="scorecard-player-stat">{{ player.you_zapped }}</td>
+                    <td class="scorecard-player-stat">{{ player.zapped_you }}</td>
+                    <td class="scorecard-player-stat">{{ player.you_missiled }}</td>
+                    <td class="scorecard-player-stat">{{ player.missiled_you }}</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+        </div>
+        {% endfor %}
     </div>
 </div>
 
 
 <script>
 </script>
-
-</body>
 
 {% endblock %}
