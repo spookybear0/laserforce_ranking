@@ -158,7 +158,10 @@ class Player(Model):
         self.password = userhelper.hash_password(password)
         await self.save()
 
-    def check_password(self, password: str) -> bool:
+    def check_password(self, password: Optional[str]) -> bool:
+        if self.password is None or password is None:
+            return False
+
         return bcrypt.checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
     
     # stats
