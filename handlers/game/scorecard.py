@@ -3,7 +3,7 @@ from sanic import Request
 from shared import app
 from typing import List
 from utils import render_template
-from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats
+from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats, LaserballGame
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 
@@ -41,6 +41,17 @@ async def _count_zaps(game: SM5Game, zapping_entity_id: str, zapped_entity_id: s
         arguments__filter={"0": zapping_entity_id}
     ).filter(
         arguments__filter={"1": " zaps "}
+    ).filter(
+        arguments__filter={"2": zapped_entity_id}
+    ).count())
+
+
+async def _count_blocks(game: SM5Game, zapping_entity_id: str, zapped_entity_id: str) -> int:
+    """Returns the number of times one entity blocked another."""
+    return await (game.events.filter(
+        arguments__filter={"0": zapping_entity_id}
+    ).filter(
+        arguments__filter={"1": " blocks "}
     ).filter(
         arguments__filter={"2": zapped_entity_id}
     ).count())
@@ -140,3 +151,85 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             main_stats=main_stats,
             teams=teams,
         )
+
+    if type == "lb":
+        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
+
+        if not game:
+            raise exceptions.NotFound("Game not found")
+
+        entity_end = await EntityEnds.filter(id=entity_end_id).first()
+
+        if not entity_end:
+            raise exceptions.NotFound("Scorecard not found")
+
+        entity_start = await entity_end.entity
+        stats = await LaserballStats.filter(entity_id=entity_start.id).first()
+
+        accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
+
+        main_stats = (
+                _stat("Score", stats.score()) +
+                _stat("Shots fired", stats.shots_fired) +
+                _stat_str("Accuracy", "%.2f%%" % (accuracy * 100)) +
+                _stat("Goals", stats.goals) +
+                _stat("Assists", stats.assists) +
+                _stat("Passes", stats.passes) +
+                _stat("Steals", stats.steals) +
+                _stat("Clears", stats.clears) +
+                _stat("Blocks", stats.blocks)
+        )
+
+        entity_starts: List[EntityStarts] = game.entity_starts
+        player_entities = [
+            player for player in list(entity_starts) if player.type == "player"
+        ]
+
+        player_stats = {
+            player.id: await LaserballStats.filter(entity_id=player.id).first() for player in player_entities
+        }
+
+        all_players = ([
+            {
+                "name": player.name,
+                "team": (await player.team).index,
+                "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
+                "score": player_stats[player.id].score(),
+                "you_blocked": await _count_blocks(game, entity_start.entity_id, player.entity_id),
+                "blocked_you": await _count_blocks(game, player.entity_id, entity_start.entity_id),
+                "blocks": player_stats[player.id].blocks,
+                "goals": player_stats[player.id].goals,
+                "passes": player_stats[player.id].passes,
+                "clears": player_stats[player.id].clears,
+                "steals": player_stats[player.id].steals,
+                "assists": player_stats[player.id].assists,
+            } for player in player_entities
+        ])
+        all_players.sort(key=lambda x: x["score"], reverse=True)
+
+        teams = [
+            {
+                "name": "Ice Team",
+                "class_name": "ice",
+                "score": await game.get_blue_score(),
+                "players": _players_in_team(all_players, 1)
+            },
+            {
+                "name": "Fire Team",
+                "class_name": "fire",
+                "score": await game.get_red_score(),
+                "players": _players_in_team(all_players, 0)
+            },
+        ]
+
+        return await render_template(
+            request,
+            "game/scorecard_laserball.html",
+            game=game,
+            entity_start=entity_start,
+            entity_end=entity_end,
+            main_stats=main_stats,
+            teams=teams,
+        )
+
+

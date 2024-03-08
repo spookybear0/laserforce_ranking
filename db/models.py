@@ -1257,6 +1257,14 @@ class LaserballStats(Model):
 
         return mvp_points
 
+    def score(self) -> int:
+        """The score, as used in Laserforce player stats.
+
+        The formula: Score = (Goals + Assists) * 10000 + Steals * 100 + Blocks
+        See also: https://www.iplaylaserforce.com/games/laserball/.
+        """
+        return (self.goals + self.assists) * 10000 + self.steals * 100 + self.blocks
+
     async def to_dict(self):
         final = {}
 
