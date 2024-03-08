@@ -1245,7 +1245,8 @@ class LaserballStats(Model):
     times_blocked = fields.IntField()
     passes_received = fields.IntField()
 
-    async def mvp_points(self) -> float:
+    @property
+    def mvp_points(self) -> float:
         mvp_points = 0
 
         mvp_points += self.goals   * 1
