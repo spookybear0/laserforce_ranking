@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Laserball game on {{ game.start_time.strftime("%A, %B %d at %I:%M %p") }}{% endblock %}
+
+
+{% block html_head %}
+
+<style>
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+    }
+
+    td {
+        color: lightgray;
+        padding: 2px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    body {
+        height: 130vh;
+    }
+
+    .role {
+        width: 50px;
+    }
+
+    .desktop_notif {
+        text-align: center;
+        display: none;
+    }
+
+    #score_chart {
+        max-width: 90%;
+    }
+
+    #win_chance_before_game, #win_chance {
+        max-width: 30%;
+    }
+
+    @media screen and (max-width: 1200px) {
+        table tr td:nth-child(n+11) {
+            display: none;
+        }
+
+        table tr th:nth-child(n+11) {
+            display: none;
+        }
+    }
+
+    @media screen and (max-width: 991px) {
+        .userlist {
+            background: none;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        h2, h3 {
+            zoom: 1.5;
+        }
+
+        table {
+            table-layout: auto;
+        }
+
+        table tr td:nth-child(n+6) {
+            display: none;
+        }
+
+        table tr th:nth-child(n+6) {
+            display: none;
+        }
+
+        .desktop_notif {
+            display: block;
+        }
+
+        #content {
+            height: 100%;
+        }
+
+        body {
+            height: 85%;
+        }
+    }
+
+
+    .link-button {
+        background: none;
+        border: none;
+        color: #2fa4e7;
+        cursor: pointer;
+        font-size: 1em;
+        margin: 0;
+        font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+    }
+
+    .link-button h3 {
+        margin: 0;
+    }
+
+    .link-button:focus {
+        outline: none;
+    }
+
+    .player-name-header {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .fire-team-header, .ice-team-header {
+        font-size: 20px;
+        float: none;
+        margin-bottom: 16px;
+    }
+
+    .fire-team-header {
+        color: orangered;
+    }
+
+    .ice-team-header {
+        color: #0096FF;
+    }
+
+    .scorecard-main-stats {
+        width: 45%;
+        float: left;
+    }
+
+    .scorecard-player-stats {
+        width: 45%;
+        float: left;
+    }
+
+    @media screen and (max-width: 991px) {
+        .scorecard-main-stats {
+            width: 95%;
+        }
+
+        .scorecard-player-stats {
+            width: 95%;
+        }
+    }
+
+    .scorecard-team-stats {
+        float: none;
+        margin-bottom: 16px;
+    }
+
+    table.scorecard-main-stats-table {
+        border: 0px;
+        width: 90%;
+    }
+
+    table.scorecard-player-stats-table {
+        border: 0px;
+        width: 90%;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div style="text-align: center;">
+    <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
+        <span title="Game Date"><h2 style="font-size: 25px;">Scorecard for {{entity_start.name}} on {{ game.get_timestamp()}}</h2></span>
+
+        <span title="Admin Page"><h3><a href="/game/sm5/{{ game.id }}/">Game</a></h3></span>
+    </div>
+    <div class="scorecard-stats">
+        <div class="scorecard-main-stats">
+            <div class="player-name-header">
+                &nbsp;{{entity_start.name}}
+
+            </div>
+            <table class="scorecard-main-stats-table">
+                {% for stat in main_stats %}
+                <tr>
+                    <td class="scorecard-main-key">{{ stat.key }}</td>
+                    <td class="scorecard-main-value">{{ stat.value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="scorecard-player-stats">
+        {% for team in teams %}
+        <div class="scorecard-team-stats">
+            <div class="{{ team.class_name }}-team-header">{{ team.name }} ({{ team.score }})</div>
+            <table class="scorecard-player-stats-table">
+                <tr>
+                    <th>Player</th>
+                    <th>Score</th>
+                    <th>You blocked</th>
+                    <th>Blocked you</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Passes</th>
+                    <th>Steals</th>
+                    <th>Clears</th>
+                    <th>Blocks</th>
+                </tr>
+                {% for player in team.players %}
+                <tr>
+                    <td class="scorecard-player-stat">
+                        <a href="/game/lb/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a></td>
+                    <td class="scorecard-player-stat">{{ player.score }}</td>
+                    <td class="scorecard-player-stat">{{ player.you_blocked }}</td>
+                    <td class="scorecard-player-stat">{{ player.blocked_you }}</td>
+                    <td class="scorecard-player-stat">{{ player.goals }}</td>
+                    <td class="scorecard-player-stat">{{ player.assists }}</td>
+                    <td class="scorecard-player-stat">{{ player.passes }}</td>
+                    <td class="scorecard-player-stat">{{ player.steals }}</td>
+                    <td class="scorecard-player-stat">{{ player.clears }}</td>
+                    <td class="scorecard-player-stat">{{ player.blocks }}</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<script>
+</script>
+
+{% endblock %}
