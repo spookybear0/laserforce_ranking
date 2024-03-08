@@ -1257,6 +1257,7 @@ class LaserballStats(Model):
 
         return mvp_points
 
+    @property
     def score(self) -> int:
         """The score, as used in Laserforce player stats.
 
