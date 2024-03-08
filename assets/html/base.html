@@ -44,14 +44,16 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
         // sentry
         window.sentryOnLoad = function () {
             Sentry.init({
-                dsn: "https://562e9ab020654bedbc2a3db770dc07c2@o4505293249708032.ingest.sentry.io/4505293252395008",
+                dsn: {{ config["sentry_dsn"]|tojson }},
 
-                release: "my-project-name@2.3.12",
+                environment: {{ config["sentry_environment"]|tojson }},
+
+                release: "laserforce-ranking@1.0.0",
                 integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()],
 
                 tracesSampleRate: 1.0,
 
-                tracePropagationTargets: ["localhost"],
+                tracePropagationTargets: ["sentry-trace"],
 
                 replaysSessionSampleRate: 0.1,
                 replaysOnErrorSampleRate: 1.0,

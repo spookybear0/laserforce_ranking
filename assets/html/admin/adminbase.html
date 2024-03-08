@@ -29,6 +29,25 @@
                 }
             }
         }
+
+        // sentry
+        window.sentryOnLoad = function () {
+            Sentry.init({
+                dsn: {{ config["sentry_dsn"]|tojson }},
+
+                environment: {{ config["sentry_environment"]|tojson }},
+
+                release: "laserforce-ranking@1.0.0",
+                integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()],
+
+                tracesSampleRate: 1.0,
+
+                tracePropagationTargets: ["sentry-trace"],
+
+                replaysSessionSampleRate: 0.1,
+                replaysOnErrorSampleRate: 1.0,
+            });
+        }
     </script>
 
     <style>
