@@ -98,18 +98,57 @@ var ROUND_END = 1106;
 var GETS_BALL = 1107;
 var CLEAR = 1108;
 
+replay_data = undefined;
+
+current_sound_playing = undefined;
+
 started = false;
+restarted = false;
 play = false;
 start_time = 0;
 
 function playPause() {
+    if (replay_data == undefined) {
+        return;
+    }
+
     if (play) {
         play = false;
         playButton.innerHTML = "Play";
     } else {
+        restarted = false;
+        if (!started) {
+            // starting the game for the first time
+            
+            // choose a random sfx 0-3
+
+            sfx = Math.floor(Math.random() * 4);
+
+            audio = new Audio(`/assets/sm5/audio/Start.${sfx}.wav`);
+            current_sound_playing = audio;
+            audio.play();
+
+            audio.addEventListener("loadeddata", () => {
+                // wait for the sfx to finish
+                setTimeout(function() {
+                    if (current_sound_playing != audio || restarted) {
+                        return;
+                    }
+                    play = true;
+                    restarted = false;
+                    playButton.innerHTML = "Pause";
+                    started = true;
+                    start_time = new Date().getTime();
+                    playEvents(replay_data);
+                }, audio.duration*1000);
+            });
+            return;
+        }
+
         play = true;
         playButton.innerHTML = "Pause";
         started = true;
+        restarted = false;
         start_time = new Date().getTime();
         playEvents(replay_data);
     }
@@ -500,7 +539,17 @@ function startReplay(replay_data) {
 function restartReplay() {
     console.log("Restarting replay");
 
+    if (replay_data == undefined) {
+        return;
+    }
+
+    if (current_sound_playing != undefined) {
+        current_sound_playing.pause();
+    }
+
     play = false;
+    started = false;
+    restarted = true;
     playButton.innerHTML = "Play";
     eventBox.innerHTML = "";
     fireTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";

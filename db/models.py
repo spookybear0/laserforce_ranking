@@ -113,7 +113,7 @@ class IntRole(IntEnum):
 class PlayerStateType(IntEnum):
     ACTIVE = 0
     UNKNOWN = 1 # unused?
-    RESETTABLE = 2 # used but not sure what it is
+    RESETTABLE = 2
     DOWN = 3
 
 class Permission(IntEnum):

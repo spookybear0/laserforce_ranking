@@ -43,16 +43,23 @@ var ROUND_END = 1106;
 var GETS_BALL = 1107;
 var CLEAR = 1108;
 
+replay_data = undefined;
+
 started = false;
 play = false;
+restarted = false;
 start_time = 0;
 
 function playPause() {
+    if (replay_data == undefined) {
+        return;
+    }
     if (play) {
         play = false;
         playButton.innerHTML = "Play";
     } else {
         play = true;
+        restarted = false;
         playButton.innerHTML = "Pause";
         started = true;
         start_time = new Date().getTime();
@@ -282,7 +289,12 @@ function startReplay(replay_data) {
 function restartReplay() {
     console.log("Restarting replay");
 
+    if (replay_data == undefined) {
+        return;
+    }
+
     play = false;
+    restarted = true;
     playButton.innerHTML = "Play";
     eventBox.innerHTML = "";
     fireTable.innerHTML = "<tr><th><p>Codename</p></th><th><p>Goals</p></th><th><p>Assists</p></th><th><p>Steals</p></th><th><p>Clears</p></th><th><p>Passes</p></th><th><p>Blocks</p></th><th><p>Accuracy</p></th></tr>";
