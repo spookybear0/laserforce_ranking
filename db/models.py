@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, Optional
 from tortoise import Model, fields, functions
 from tortoise.expressions import F, Q
@@ -119,6 +120,12 @@ class PlayerStateType(IntEnum):
 class Permission(IntEnum):
     USER = 0
     ADMIN = 1
+
+@dataclass
+class BallPossessionEvent:
+    """This denotes a time at which an entity gains possession of the ball in Laserball."""
+    timestamp_millis: int
+    entity_id: Optional[str]
 
 class Player(Model):
     id = fields.IntField(pk=True)
@@ -1057,7 +1064,54 @@ class LaserballGame(Model):
     
     async def get_rounds_at_time(self, time):
         return (await self.events.filter(time__lte=time, type=EventType.ROUND_END).count()) + 1
-    
+
+    async def get_possession_timeline(self) -> list[BallPossessionEvent]:
+        """Returns a timeline of who had the ball at what time.
+
+        The result is a list of possession markers (timestamp and owning entity) in game order. The last entry will
+        always be a sentinel: The timestamp is the end of the game, and the entity is None.
+        """
+        events = await self.events.filter(type__in=
+                         [EventType.GETS_BALL, EventType.CLEAR, EventType.MISSION_END, EventType.STEAL, EventType.PASS]
+                         ).order_by("time").all()
+
+        result = []
+
+        for event in events:
+            match event.type:
+                case EventType.GETS_BALL:
+                    result.append(BallPossessionEvent(timestamp_millis=event.time, entity_id=event.arguments[0]))
+                case EventType.CLEAR:
+                    result.append(BallPossessionEvent(timestamp_millis=event.time, entity_id=event.arguments[2]))
+                case EventType.STEAL:
+                    result.append(BallPossessionEvent(timestamp_millis=event.time, entity_id=event.arguments[0]))
+                case EventType.PASS:
+                    result.append(BallPossessionEvent(timestamp_millis=event.time, entity_id=event.arguments[2]))
+                case EventType.MISSION_END:
+                    result.append(BallPossessionEvent(timestamp_millis=event.time, entity_id=None))
+
+        return result
+
+    async def get_possession_times(self) -> dict[str, int]:
+        """Returns the ball possession time for each entity.
+
+        Entity ID is key, possession time in milliseconds in value.
+        """
+        possession_events = await self.get_possession_timeline()
+
+        last_owner = None
+        last_timestamp = 0
+
+        possession_times = {}
+
+        for event in possession_events:
+            if last_owner and event.entity_id:
+                possession_times[event.entity_id] = possession_times.get(event.entity_id, 0) + event.timestamp_millis - last_timestamp
+            last_owner = event.entity_id
+            last_timestamp = event.timestamp_millis
+
+        return possession_times
+
     # funcs for getting win chance and draw chance
 
     async def get_win_chance_before_game(self) -> List[float]:

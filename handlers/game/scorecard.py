@@ -20,6 +20,11 @@ async def get_laserballstats(entity):
     return await LaserballStats.filter(entity=entity).first()
 
 
+def _millis_to_time(milliseconds: int) -> str:
+    """Converts milliseconds into an MM:SS string."""
+    return "%02d:%02d" % (milliseconds / 60000, milliseconds % 60000 / 1000)
+
+
 def _stat_str(key: str, value: str, condition: bool = True):
     return [{"key": key, "value": value}] if condition else []
 
@@ -46,7 +51,7 @@ async def _count_zaps(game: SM5Game, zapping_entity_id: str, zapped_entity_id: s
     ).count())
 
 
-async def _count_blocks(game: SM5Game, zapping_entity_id: str, zapped_entity_id: str) -> int:
+async def _count_blocks(game: LaserballGame, zapping_entity_id: str, zapped_entity_id: str) -> int:
     """Returns the number of times one entity blocked another."""
     return await (game.events.filter(
         arguments__filter={"0": zapping_entity_id}
@@ -166,12 +171,15 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
         entity_start = await entity_end.entity
         stats = await LaserballStats.filter(entity_id=entity_start.id).first()
 
+        possession_times = await game.get_possession_times()
+
         accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
 
         main_stats = (
                 _stat("Score", stats.score) +
                 _stat("Shots fired", stats.shots_fired) +
                 _stat_str("Accuracy", "%.2f%%" % (accuracy * 100)) +
+                _stat_str("Possession", _millis_to_time(possession_times.get(entity_start.entity_id))) +
                 _stat("Goals", stats.goals) +
                 _stat("Assists", stats.assists) +
                 _stat("Passes", stats.passes) +
@@ -195,6 +203,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "team": (await player.team).index,
                 "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
                 "score": player_stats[player.id].score,
+                "ball_possession": _millis_to_time(possession_times.get(player.entity_id, 0)),
                 "you_blocked": await _count_blocks(game, entity_start.entity_id, player.entity_id),
                 "blocked_you": await _count_blocks(game, player.entity_id, entity_start.entity_id),
                 "blocks": player_stats[player.id].blocks,
