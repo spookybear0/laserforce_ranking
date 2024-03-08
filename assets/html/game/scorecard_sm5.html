@@ -96,7 +96,7 @@
     }
 
 
-    .link-button {
+    .link_button {
         background: none;
         border: none;
         color: #2fa4e7;
@@ -106,67 +106,89 @@
         font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
     }
 
-    .link-button h3 {
+    .link_button h3 {
         margin: 0;
     }
 
-    .link-button:focus {
+    .link_button:focus {
         outline: none;
     }
 
-    .player-name-header {
+    .player_name_header {
         font-size: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 16px;
     }
 
-    .fire-team-header, .earth-team-header {
+    .fire_team_header, .earth_team_header {
         font-size: 20px;
         float: none;
         margin-bottom: 16px;
     }
 
-    .fire-team-header {
+    .fire_team_header {
         color: orangered;
+        font-size: 20px;
     }
 
-    .earth-team-header {
+    .earth_team_header {
         color: greenyellow;
+        font-size: 20px;
     }
 
-    .scorecard-main-stats {
+    .scorecard_main_stats {
         width: 45%;
         float: left;
     }
 
-    .scorecard-player-stats {
+    .scorecard_player_stats {
         width: 45%;
         float: left;
     }
 
     @media screen and (max-width: 991px) {
-        .scorecard-main-stats {
+        .scorecard_main_stats {
             width: 95%;
         }
 
-        .scorecard-player-stats {
+        .scorecard_player_stats {
             width: 95%;
+        }
+
+        .scorecard_stats {
+            width: 100%;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .scorecard_main_stats {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* center stuff on mobile */
+        .scorecard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     }
 
-    .scorecard-team-stats {
+    .scorecard_team_stats {
         float: none;
         margin-bottom: 16px;
     }
 
-    table.scorecard-main-stats-table {
+    table.scorecard_main_stats_table {
         border: 0px;
         width: 90%;
     }
 
-    table.scorecard-player-stats-table {
+    table.scorecard_player_stats_table {
         border: 0px;
         width: 90%;
     }
@@ -183,57 +205,59 @@
 
         <span title="Admin Page"><h3><a href="/game/sm5/{{ game.id }}/">Game</a></h3></span>
     </div>
-    <div class="scorecard-stats">
-        <div class="scorecard-main-stats">
-            <div class="player-name-header">
-                <img src="/assets/sm5/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30"
-                     height="30">
-                &nbsp;{{entity_start.name}}
+    <div class="scorecard">
+        <div class="scorecard_stats">
+            <div class="scorecard_main_stats">
+                <div class="player_name_header">
+                    <img src="/assets/sm5/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30"
+                        height="30">
+                    <h2 style="font-size: 20px;">&nbsp;{{entity_start.name}}</h2>
 
+                </div>
+                <table class="scorecard_main_stats_table">
+                    {% for stat in main_stats %}
+                    <tr>
+                        <td class="scorecard-main-key">{{ stat.key }}</td>
+                        <td class="scorecard-main-value">{{ stat.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
             </div>
-            <table class="scorecard-main-stats-table">
-                {% for stat in main_stats %}
-                <tr>
-                    <td class="scorecard-main-key">{{ stat.key }}</td>
-                    <td class="scorecard-main-value">{{ stat.value }}</td>
-                </tr>
-                {% endfor %}
-            </table>
         </div>
-    </div>
 
-    <div class="scorecard-player-stats">
-        {% for team in teams %}
-        <div class="scorecard-team-stats">
-            <div class="{{ team.class_name }}-team-header">{{ team.name }} ({{ team.score }})</div>
-            <table class="scorecard-player-stats-table">
-                <tr>
-                    <th>Player</th>
-                    <th>Role</th>
-                    <th>Score</th>
-                    <th>You zapped</th>
-                    <th>Zapped you</th>
-                    <th>You missiled</th>
-                    <th>Missiled you</th>
-                </tr>
-                {% for player in team.players %}
-                <tr>
-                    <td class="scorecard-player-stat">
-                        <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a></td>
-                    <td class="scorecard-player-stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
-                                                           alt="role image" width="30"
-                                                           height="30"></td>
-                    <td class="scorecard-player-stat">{{ player.score }}</td>
-                    <td class="scorecard-player-stat">{{ player.you_zapped }}</td>
-                    <td class="scorecard-player-stat">{{ player.zapped_you }}</td>
-                    <td class="scorecard-player-stat">{{ player.you_missiled }}</td>
-                    <td class="scorecard-player-stat">{{ player.missiled_you }}</td>
-                </tr>
-                {% endfor %}
+        <div class="scorecard_player_stats">
+            {% for team in teams %}
+            <div class="scorecard_team_stats">
+                <h2 class="{{ team.class_name }}_team_header">{{ team.name }} ({{ team.score }})</h2>
+                <table class="scorecard_player_stats_table">
+                    <tr>
+                        <th>Player</th>
+                        <th>Role</th>
+                        <th>Score</th>
+                        <th>You zapped</th>
+                        <th>Zapped you</th>
+                        <th>You missiled</th>
+                        <th>Missiled you</th>
+                    </tr>
+                    {% for player in team.players %}
+                    <tr>
+                        <td class="scorecard_player_stat">
+                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a></td>
+                        <td class="scorecard_player_stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
+                                                            alt="role image" width="30"
+                                                            height="30"></td>
+                        <td class="scorecard_player_stat">{{ player.score }}</td>
+                        <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
+                        <td class="scorecard_player_stat">{{ player.zapped_you }}</td>
+                        <td class="scorecard_player_stat">{{ player.you_missiled }}</td>
+                        <td class="scorecard_player_stat">{{ player.missiled_you }}</td>
+                    </tr>
+                    {% endfor %}
 
-            </table>
+                </table>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 
