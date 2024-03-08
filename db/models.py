@@ -874,6 +874,8 @@ class SM5Stats(Model):
         """
         mvp points according to lfstats.com
 
+        NOTE: this is a function, while LaserballStats.mvp_points is a property
+
         CAUTION: not completely accurate due to elimation points not being implemented
         """
 
