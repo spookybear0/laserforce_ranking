@@ -192,6 +192,15 @@
         border: 0px;
         width: 90%;
     }
+
+    .scorecard-graphs {
+    }
+
+    .pie-chart {
+        max-width: 25%;
+        display: flex;
+        float: left;
+    }
 </style>
 
 {% endblock %}
@@ -210,7 +219,7 @@
             <div class="scorecard_main_stats">
                 <div class="player_name_header">
                     <img src="/assets/sm5/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30"
-                        height="30">
+                         height="30">
                     <h2 style="font-size: 20px;">&nbsp;{{entity_start.name}}</h2>
 
                 </div>
@@ -242,10 +251,11 @@
                     {% for player in team.players %}
                     <tr>
                         <td class="scorecard_player_stat">
-                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a></td>
+                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a>
+                        </td>
                         <td class="scorecard_player_stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
-                                                            alt="role image" width="30"
-                                                            height="30"></td>
+                                                               alt="role image" width="30"
+                                                               height="30"></td>
                         <td class="scorecard_player_stat">{{ player.score }}</td>
                         <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
                         <td class="scorecard_player_stat">{{ player.zapped_you }}</td>
@@ -258,11 +268,61 @@
             </div>
             {% endfor %}
         </div>
+        <div class="scorecard-graphs">
+            <canvas class="pie-chart" id="score_components" style="clear: both;"></canvas>
+            <canvas class="pie-chart" id="negative_score_components"></canvas>
+        </div>
     </div>
 </div>
 
-
 <script>
+    already_shown_rounds = [];
+
+    new Chart("score_components", {
+        type: "pie",
+        data: {
+
+            labels: [{{ score_component_labels }}],
+            datasets: [{
+                backgroundColor: [{{ score_component_colors }}],
+                data: [{{ score_component_values }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Score Components",
+                fontColor: "white"
+            }
+        }
+    });
+
+    new Chart("negative_score_components", {
+        type: "pie",
+        data: {
+
+            labels: [{{ negative_score_component_labels }}],
+            datasets: [{
+                backgroundColor: [{{ negative_score_component_colors }}],
+                data: [{{ negative_score_component_values }}]
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Negative Score Components",
+                fontColor: "white"
+            }
+        }
+    });
 </script>
 
 {% endblock %}

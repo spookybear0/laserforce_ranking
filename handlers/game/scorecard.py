@@ -1,12 +1,19 @@
 
+from dataclasses import dataclass
 from sanic import Request
 from shared import app
 from typing import List
 from utils import render_template
-from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats, LaserballGame
+from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats, LaserballGame, EventType
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 
+
+@dataclass
+class _ScoreComponent:
+    name: str
+    score: int
+    color: str
 
 async def get_entity_end(entity):
     return await EntityEnds.filter(entity=entity).first()
@@ -109,6 +116,26 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
               _stat("Medic hits", stats.medic_hits)
         )
 
+        bases_destroyed = await (game.events.filter(type=EventType.DESTROY_BASE).
+                                 filter(arguments__filter={"0": entity_start.entity_id}).count())
+
+        # Parts that make up the final score.
+        # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
+        score_components = [
+            _ScoreComponent(name="Missiles", score=stats.missiled_opponent * 500, color="#ff23cd"),
+            _ScoreComponent(name="Zaps", score=stats.shot_opponent * 100, color="#29dc19"),
+            _ScoreComponent(name="Bases", score=bases_destroyed * 1001, color="#1284fe"),
+            _ScoreComponent(name="Nukes", score=stats.nukes_detonated * 500, color="#e98f08"),
+        ]
+
+        # Parts that count against the own score.
+        negative_score_components = [
+            _ScoreComponent(name="Zap own team", score=stats.shot_team * 100, color="#119903"),
+            _ScoreComponent(name="Missiled own team", score=stats.missiled_team * 500, color="#880155"),
+            _ScoreComponent(name="Got zapped", score=stats.times_zapped * 20, color="#29dc19"),
+            _ScoreComponent(name="Got missiled", score=stats.times_missiled * 100, color="#ff23cd"),
+        ]
+
         entity_starts: List[EntityStarts] = game.entity_starts
         player_entities = [
             player for player in list(entity_starts) if player.type == "player"
@@ -155,6 +182,12 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             entity_end=entity_end,
             main_stats=main_stats,
             teams=teams,
+            score_component_labels=", ".join([f"\"{component.name}\"" for component in score_components]),
+            score_component_colors=", ".join([f"\"{component.color}\"" for component in score_components]),
+            score_component_values=", ".join([str(component.score) for component in score_components]),
+            negative_score_component_labels=", ".join([f"\"{component.name}\"" for component in negative_score_components]),
+            negative_score_component_colors=", ".join([f"\"{component.color}\"" for component in negative_score_components]),
+            negative_score_component_values=", ".join([str(component.score) for component in negative_score_components])
         )
 
     if type == "lb":
