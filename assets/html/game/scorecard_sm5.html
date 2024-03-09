@@ -234,10 +234,10 @@
 
                 </div>
                 <table class="scorecard_main_stats_table">
-                    {% for stat in main_stats %}
+                    {% for key, value in main_stats.items() %}
                     <tr>
-                        <td class="scorecard-main-key">{{ stat.key }}</td>
-                        <td class="scorecard-main-value">{{ stat.value }}</td>
+                        <td class="scorecard-main-key">{{ key }}</td>
+                        <td class="scorecard-main-value">{{ value }}</td>
                     </tr>
                     {% endfor %}
                 </table>

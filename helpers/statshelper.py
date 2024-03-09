@@ -1,14 +1,30 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from sentry_sdk import Hub, start_transaction
-from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats
+from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats, LaserballGame
 from tortoise.expressions import F
 from tortoise.functions import Trim, Sum
 
 
 # stats helpers
 
+"""
 
-# average score at time, not sure if this a good statistic
+General helpers
+
+"""
+
+def _millis_to_time(milliseconds: Optional[int]) -> str:
+    """Converts milliseconds into an MM:SS string."""
+    if milliseconds is None:
+        return "00:00"
+
+    return "%02d:%02d" % (milliseconds / 60000, milliseconds % 60000 / 1000)
+
+"""
+
+Average score at time
+
+"""
 
 async def get_average_red_score_at_time_sm5(time: int) -> int:
     """
@@ -38,7 +54,49 @@ async def get_average_green_score_at_time_sm5(time: int) -> int:
 
     return sum(scores) // len(scores)
 
-# totals
+"""
+
+More specific stats
+
+"""
+
+async def count_zaps(game: SM5Game, zapping_entity_id: str, zapped_entity_id: str) -> int:
+    """Returns the number of times one entity zapped another."""
+    return await (game.events.filter(
+        arguments__filter={"0": zapping_entity_id}
+    ).filter(
+        arguments__filter={"1": " zaps "}
+    ).filter(
+        arguments__filter={"2": zapped_entity_id}
+    ).count())
+
+
+async def count_blocks(game: LaserballGame, zapping_entity_id: str, zapped_entity_id: str) -> int:
+    """Returns the number of times one entity blocked another."""
+    return await (game.events.filter(
+        arguments__filter={"0": zapping_entity_id}
+    ).filter(
+        arguments__filter={"1": " blocks "}
+    ).filter(
+        arguments__filter={"2": zapped_entity_id}
+    ).count())
+
+
+async def count_missiles(game: SM5Game, missiling_entity_id: str, missiled_entity_id: str) -> int:
+    """Returns the number of times one entity missiled another."""
+    return await (game.events.filter(
+        arguments__filter={"0": missiling_entity_id}
+    ).filter(
+        arguments__filter={"1": " missiles "}
+    ).filter(
+        arguments__filter={"2": missiled_entity_id}
+    ).count())
+
+"""
+
+Very general stats
+
+"""
 
 async def get_points_scored() -> int:
     """
