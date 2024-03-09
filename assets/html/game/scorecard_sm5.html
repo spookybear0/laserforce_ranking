@@ -28,7 +28,7 @@
     }
 
     body {
-        height: 130vh;
+        height: 100vh;
     }
 
     .role {
@@ -212,13 +212,16 @@
         width: 90%;
     }
 
-    .scorecard-graphs {
+    .scorecard_graphs {
+        width: 100%;
+        margin-top: 5rem;
+        display: flex;
+        align-items: center;
     }
 
-    .pie-chart {
-        max-width: 25%;
+    .pie_chart {
+        max-width: 50%;
         display: flex;
-        float: left;
     }
 </style>
 
@@ -245,11 +248,15 @@
                 <table class="scorecard_main_stats_table">
                     {% for key, value in main_stats.items() %}
                     <tr>
-                        <td class="scorecard-main-key">{{ key }}</td>
-                        <td class="scorecard-main-value">{{ value }}</td>
+                        <td class="scorecard_main_key">{{ key }}</td>
+                        <td class="scorecard_main_value">{{ value }}</td>
                     </tr>
                     {% endfor %}
                 </table>
+            </div>
+            <div class="scorecard_graphs">
+                <canvas class="pie_chart" id="score_components" style="clear: both;"></canvas>
+                <canvas class="pie_chart" id="negative_score_components"></canvas>
             </div>
         </div>
 
@@ -286,10 +293,6 @@
                 </table>
             </div>
             {% endfor %}
-        </div>
-        <div class="scorecard-graphs">
-            <canvas class="pie-chart" id="score_components" style="clear: both;"></canvas>
-            <canvas class="pie-chart" id="negative_score_components"></canvas>
         </div>
     </div>
 </div>
