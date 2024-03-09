@@ -225,7 +225,7 @@
     <div style="margin-left: 2rem; margin-right: 2rem; text-align: center;">
         <span title="Game Date"><h2 style="font-size: 25px;">Game on {{ game.get_timestamp()}}</h2></span>
         
-        <form method="post" action="/tools" class="inline">
+        <form method="post" action="/matchmaking" class="inline">
             <input type="hidden" name="mode" value="sm5">
             {% for player in players_matchmake_team1 %}
                 <input type="hidden" name="1player{{ loop.index }}" value="{{ player }}">

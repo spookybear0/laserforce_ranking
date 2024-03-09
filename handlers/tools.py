@@ -24,8 +24,8 @@ class FakePlayer:
     def __repr__(self) -> str:
         return f"{self.codename} (non member)"
 
-@app.get("/tools")
-async def tools(request: Request) -> str:
+@app.get("/matchmaking")
+async def matchmaking(request: Request) -> str:
     players = await Player.filter()
 
     # all_players = {codename: (sm5_rating, lb_rating)
@@ -33,7 +33,7 @@ async def tools(request: Request) -> str:
 
     return await render_template(
         request,
-        "tools.html",
+        "matchmaking.html",
         players=players,
         all_players=all_players,
         mode="sm5",
@@ -41,8 +41,10 @@ async def tools(request: Request) -> str:
         team2=[],
     )
 
-@app.post("/tools")
-async def tools_post(request: Request) -> str:
+@app.post("/matchmaking")
+async def matchmaking_post(request: Request) -> str:
+    # TODO: logging here
+
     data = request.form
 
     team1 = []
@@ -57,10 +59,7 @@ async def tools_post(request: Request) -> str:
         if not codename:
             continue
         codename = codename.strip()
-        print(codename)
         p = await Player.filter(codename=codename).first()
-        print(p)
-        print(p.sm5_rating)
         team1.append(p.codename)
 
     for i in range(16):
@@ -71,8 +70,6 @@ async def tools_post(request: Request) -> str:
         p = await Player.filter(codename=codename).first()
         team2.append(p.codename)
 
-    print(team1, team2)
-
     players = await Player.filter()
 
     # all_players = {codename: (sm5_rating, lb_rating)
@@ -80,7 +77,7 @@ async def tools_post(request: Request) -> str:
 
     return await render_template(
         request,
-        "tools.html",
+        "matchmaking.html",
         players=players,
         all_players=all_players,
         mode=mode,
