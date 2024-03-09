@@ -8,9 +8,9 @@ from sanic import exceptions, response
 from sanic.log import logger
 from helpers.statshelper import sentry_trace
 
-@app.get("/api/game/<type_:str>/<id:int>")
+@app.get("/api/game/<type_:str>/<id:int>/tdf")
 @sentry_trace
-async def api_game(request: Request, type_: str, id: int) -> str:
+async def api_game_tdf(request: Request, type_: str, id: int) -> str:
     """
     Returns a tdf file for the game
     """
@@ -31,7 +31,7 @@ async def api_game(request: Request, type_: str, id: int) -> str:
     # return the tdf file
     return await response.file(f"{full_type_name}_tdf/{game.tdf_name}", filename=game.tdf_name)
 
-@app.get("/api/game_json/<type_:str>/<id:int>")
+@app.get("/api/game/<type_:str>/<id:int>/json")
 @sentry_trace
 async def api_game_json(request: Request, type_: str, id: int) -> str:
     """
