@@ -8,12 +8,6 @@ from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, Lase
 from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks
 from sanic import exceptions
 
-@dataclass
-class _ScoreComponent:
-    name: str
-    score: int
-    color: str
-
 def get_players_from_team(all_players: List[dict], team_index: int):
     """Returns subset of the list of players - only those in the given team."""
     return [

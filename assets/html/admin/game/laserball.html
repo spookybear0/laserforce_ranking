@@ -503,7 +503,7 @@
                             <!--dropdown for player-->
                             <select id="player_dropdown_delete">
                                 {% for player in players %}
-                                    <option value="{{ player.name }}|{{ player.id }}">{{ player.name }} ({{ get_entity_end(player).score }})</option>
+                                    <option value="{{ player.name }}|{{ player.id }}">{{ player.name }} (ES: {{ player.id }}, EE: {{ get_entity_end(player).id }})</option>
                                 {% endfor %}
                             </select>
                             <input type="submit" value="Delete">

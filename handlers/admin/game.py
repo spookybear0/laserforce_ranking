@@ -26,14 +26,6 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake = []
-        entity_starts: List[EntityStarts] = game.entity_starts
-        for i, player in enumerate(entity_starts):
-            if player.type != "player":
-                continue
-
-            players_matchmake.append(player.name)
-
         return await render_template(
             request, "admin/game/sm5.html",
             game=game, get_entity_end=get_entity_end,
@@ -49,18 +41,13 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
-
-        players_matchmake = []
-        entity_starts: List[EntityStarts] = game.entity_starts
-        for i, player in enumerate(entity_starts):
-            if player.type != "player":
-                continue
-
-            players_matchmake.append(player.name)
         
         return await render_template(
             request, "admin/game/laserball.html",
-            game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
+            game=game, get_entity_end=get_entity_end,
+            get_laserballstats=get_laserballstats,
+            players=await game.get_players(),
+            battlesuits=await game.get_battlesuits(),
             fire_score=await game.get_red_score(),
             ice_score=await game.get_blue_score()
         )
