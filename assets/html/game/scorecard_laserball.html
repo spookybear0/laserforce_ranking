@@ -231,10 +231,10 @@
                     <h2 style="font-size: 20px;">&nbsp;{{entity_start.name}}</h2>
                 </div>
                 <table class="scorecard_main_stats_table">
-                    {% for stat in main_stats %}
+                    {% for key, value in main_stats.items() %}
                     <tr>
-                        <td class="scorecard_main_key">{{ stat.key }}</td>
-                        <td class="scorecard_main_value">{{ stat.value }}</td>
+                        <td class="scorecard_main_key">{{ key }}</td>
+                        <td class="scorecard_main_value">{{ value }}</td>
                     </tr>
                     {% endfor %}
                 </table>
