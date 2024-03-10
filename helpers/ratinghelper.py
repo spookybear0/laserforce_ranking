@@ -18,7 +18,7 @@ SIGMA = 25 / 3
 BETA = 25 / 6
 KAPPA = 0.0001
 TAU = 25 / 200 # default: 25/300 (for rating volatility)
-
+ZETA = 0.1 # default: 0 (custom addition for uneven team rating adjustment)
 
 class CustomPlackettLuce(PlackettLuce):
     def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:
@@ -34,12 +34,12 @@ class CustomPlackettLuce(PlackettLuce):
                 # team 1 has more players than team 2
                 for player in teams[1]:
                     # multiply by 1 + 0.1 * the difference in player count
-                    player.mu *= 1 + 0.1 * abs(len(teams[0]) - len(teams[1]))
+                    player.mu *= 1 + ZETA * abs(len(teams[0]) - len(teams[1]))
             elif len(teams[0]) < len(teams[1]):
                 # team 2 has more players than team 1
                 for player in teams[0]:
                     # multiply by 1 + 0.1 * the difference in player count
-                    player.mu *= 1 + 0.1 * abs(len(teams[0]) - len(teams[1]))
+                    player.mu *= 1 + ZETA * abs(len(teams[0]) - len(teams[1]))
 
             total_player_count = len(teams[0]) + len(teams[1])
             teams_ratings = self._calculate_team_ratings(teams)
