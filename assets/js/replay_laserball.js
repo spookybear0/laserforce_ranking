@@ -114,7 +114,7 @@ function setupGame(replay_data) {
         if (team["color_name"] == "Fire") {
             table = fireTable;
         } else {
-            table = earthTable;
+            table = iceTable;
         }
 
         role = player["role"];
@@ -180,7 +180,17 @@ function playEvents(replay_data) {
 
         for (let j = 0; j < events[i]["arguments"].length; j++) {
             if (events[i]["arguments"][j].startsWith("@") || events[i]["arguments"][j].startsWith("#")) {
-                updated_arguments.push(getEntityFromId(replay_data, events[i]["arguments"][j])["name"]);
+                entity = getEntityFromId(replay_data, events[i]["arguments"][j])["name"]
+
+                team = getTeamFromId(replay_data, getEntityFromId(replay_data, events[i]["arguments"][j])["team"]);
+
+                if (team["color_name"] == "Fire") {
+                    entity = `<span style="color: orangered;">${entity}</span>`;
+                }
+                else {
+                    entity = `<span style="color: #0096FF;">${entity}</span>`;
+                }
+                updated_arguments.push(entity);
             }
             else {
                 updated_arguments.push(events[i]["arguments"][j]);
@@ -191,7 +201,8 @@ function playEvents(replay_data) {
         oldScrollHeight = eventBox.scrollHeight;
 
         if (events[i]["type"] != MISS) {
-            eventBox.innerHTML += `<p class="event">${updated_arguments.join(" ")}</p>\n`;
+            formattedTime = Math.floor(events[i]["time"]/60000).toString().padStart(2, "0") + ":" + Math.floor((events[i]["time"]%60000)/1000).toString().padStart(2, "0");
+            eventBox.innerHTML += `<div class="event"><span>${formattedTime}</span> ${updated_arguments.join(" ")}</div>\n`;
         }
 
         if (oldScrollTop >= oldScrollHeight) {
@@ -277,11 +288,37 @@ function playEvents(replay_data) {
                 }
             }
         }
+
+        // team scores
+
+        fireScore = 0;
+        iceScore = 0;
+
+        for (let j = 0; j < replay_data["entity_starts"].length; j++) {
+            player = replay_data["entity_starts"][j];
+
+            if (player["type"] != "player") {
+                continue;
+            }
+
+            if (player["team"] == 0) {
+                fireScore += player["goals"];
+            }
+            else {
+                iceScore += player["goals"];
+            }
+        }
+
+        document.getElementById("fire_team_score").innerHTML = `Fire Team: ${fireScore}`;
+        document.getElementById("ice_team_score").innerHTML = `Ice Team: ${iceScore}`;
     }
 }
 
 function startReplay(replay_data) {
     console.log("Starting replay");
+
+    teamsLoadingPlaceholder.style.display = "none";
+    replayViewer.style.display = "flex";
 
     setupGame(replay_data);
 }
@@ -298,14 +335,16 @@ function restartReplay() {
     playButton.innerHTML = "Play";
     eventBox.innerHTML = "";
     fireTable.innerHTML = "<tr><th><p>Codename</p></th><th><p>Goals</p></th><th><p>Assists</p></th><th><p>Steals</p></th><th><p>Clears</p></th><th><p>Passes</p></th><th><p>Blocks</p></th><th><p>Accuracy</p></th></tr>";
-    earthTable.innerHTML = "<tr><th><p>Codename</p></th><th><p>Goals</p></th><th><p>Assists</p></th><th><p>Steals</p></th><th><p>Clears</p></th><th><p>Passes</p></th><th><p>Blocks</p></th><th><p>Accuracy</p></th></tr>";
+    iceTable.innerHTML = "<tr><th><p>Codename</p></th><th><p>Goals</p></th><th><p>Assists</p></th><th><p>Steals</p></th><th><p>Clears</p></th><th><p>Passes</p></th><th><p>Blocks</p></th><th><p>Accuracy</p></th></tr>";
     event_iteration = 0;
     startReplay(replay_data);
 }
 
 function onLoad() {
-    fireTable = document.getElementById("fire_team");
-    earthTable = document.getElementById("earth_team");
+    fireTable = document.getElementById("fire_table");
+    iceTable = document.getElementById("ice_table");
+    replayViewer = document.getElementById("replay_viewer");
+    teamsLoadingPlaceholder = document.getElementById("teams_loading_placeholder");
     eventBox = document.getElementById("events");
     speedText = document.getElementById("speed");
     playButton = document.getElementById("play");

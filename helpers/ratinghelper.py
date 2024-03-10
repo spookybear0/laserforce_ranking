@@ -19,7 +19,7 @@ BETA = 25 / 6
 KAPPA = 0.0001
 TAU = 25 / 200 # default: 25/300 (for rating volatility)
 
-model = PlackettLuce()
+model = PlackettLuce(MU, SIGMA, BETA, KAPPA, TAU)
 
 # sm5 elo helper functions
 

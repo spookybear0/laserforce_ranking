@@ -198,10 +198,14 @@ function setupGame(replay_data) {
 
         team = getTeamFromId(replay_data, player["team"]);
 
+        team_color_name = "orangered";
+
         if (team["color_name"] == "Fire") {
             table = fireTable;
+            team_color_name = "orangered";
         } else {
             table = earthTable;
+            team_color_name = "greenyellow";
         }
 
         role = player["role"];
@@ -213,13 +217,14 @@ function setupGame(replay_data) {
         row.innerHTML = 
         `
         <td><img src="/assets/sm5/roles/${defaults["name"]}.png" alt="role image" width="30" height="30"></td>
-        <td><p class="player_codename">${player["name"]}</p></td>
+        <td><p class="player_codename" style="color: ${team_color_name};">${player["name"]}</p></td>
         <td><p class="player_score">0</p></td>
         <td><p class="player_lives">${defaults["lives"]}</p></td>
         <td><p class="player_shots">${defaults["shots"]}</p></td>
         <td><p class="player_missiles">${defaults["missiles"]}</p></td>
         <td><p class="player_special_points">0</p></td>
         <td><p class="player_accuracy">0.00%</p></td>
+        <td><p class="player_kd">0.00</p></td>
         `;
 
         table.appendChild(row);
@@ -233,6 +238,7 @@ function setupGame(replay_data) {
         player["shots_fired"] = 0;
         player["score"] = 0;
         player["rapid_fire"] = false;
+        player["times_shot"] = 0;
         player["row"] = row;
         player["table"] = table;
     }
@@ -266,18 +272,36 @@ function playEvents(replay_data) {
         updated_arguments = [];
 
         for (let j = 0; j < events[i]["arguments"].length; j++) {
-            if (events[i]["arguments"][j].startsWith("@") || events[i]["arguments"][j].startsWith("#")) {
-                updated_arguments.push(getEntityFromId(replay_data, events[i]["arguments"][j])["name"]);
+            if (events[i]["arguments"][j].startsWith("@")) {
+                updated_arguments.push(`<span>${getEntityFromId(replay_data, events[i]["arguments"][j])["name"]}</span>`);
+            }
+            else if (events[i]["arguments"][j].startsWith("#")) {
+                // get team then change color to team color
+                entity = getEntityFromId(replay_data, events[i]["arguments"][j])["name"]
+
+                team = getTeamFromId(replay_data, getEntityFromId(replay_data, events[i]["arguments"][j])["team"]);
+                if (team["color_name"] == "Fire") {
+                    entity = `<span style="color: orangered;">${entity}</span>`;
+                }
+                else {
+                    entity = `<span style="color: greenyellow;">${entity}</span>`;
+                }
+
+                updated_arguments.push(entity);
             }
             else {
-                updated_arguments.push(events[i]["arguments"][j]);
+                updated_arguments.push(`<span>${events[i]["arguments"][j].trim()}</span>`);
             }
         }
 
         oldScrollTop = eventBox.scrollTop + eventBox.clientHeight;
         oldScrollHeight = eventBox.scrollHeight;
+        
+        formattedTime = Math.floor(events[i]["time"]/60000).toString().padStart(2, "0") + ":" + Math.floor((events[i]["time"]%60000)/1000).toString().padStart(2, "0");
 
-        eventBox.innerHTML += `<p class="event">${updated_arguments.join(" ")}</p>\n`;
+        if (events[i]["type"] != MISS) {
+            eventBox.innerHTML += `<div class="event"><span>${formattedTime}</span> ${updated_arguments.join(" ")}</div>\n`;
+        }
 
         if (oldScrollTop >= oldScrollHeight) {
             eventBox.scrollTop = eventBox.scrollHeight + 100;
@@ -324,6 +348,7 @@ function playEvents(replay_data) {
 
             victim = getEntityFromId(replay_data, events[i]["arguments"][2]);
             victim["score"] -= 20;
+            victim["times_shot"] += 1;
         }
         else if (events[i]["type"] == DOWNED_OPPONENT) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -342,6 +367,11 @@ function playEvents(replay_data) {
             if (victim["lives"] > 0) {
                 victim["lives"] -= 1
             }
+            victim["times_shot"] += 1;
+            victim["downed"] = true;
+            setTimeout(function() {
+                victim["downed"] = false;
+            }, 8000 * parseFloat(speedText.value));
         }
         else if (events[i]["type"] == DAMANGED_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -354,6 +384,7 @@ function playEvents(replay_data) {
 
             victim = getEntityFromId(replay_data, events[i]["arguments"][2]);
             victim["score"] -= 20;
+            victim["times_shot"] += 1;
         }
         else if (events[i]["type"] == DOWNED_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -370,6 +401,12 @@ function playEvents(replay_data) {
             if (victim["lives"] > 0) {
                 victim["lives"] -= 1;
             }
+            victim["times_shot"] += 1;
+
+            victim["downed"] = true;
+            setTimeout(function() {
+                victim["downed"] = false;
+            }, 8000 * parseFloat(speedText.value));
         }
         else if (events[i]["type"] == MISSILE_BASE_MISS || events[i]["type"] == MISSILE_MISS) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -394,6 +431,10 @@ function playEvents(replay_data) {
             victim = getEntityFromId(replay_data, events[i]["arguments"][2]);
             victim["score"] -= 100
             victim["lives"] -= 2
+            victim["downed"] = true;
+            setTimeout(function() {
+                victim["downed"] = false;
+            }, 8000 * parseFloat(speedText.value));
         }
         else if (events[i]["type"] == MISSILE_DOWN_TEAM || events[i]["type"] == MISSILE_DAMAGE_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -403,6 +444,10 @@ function playEvents(replay_data) {
             victim = getEntityFromId(replay_data, events[i]["arguments"][2]);
             victim["score"] -= 100;
             victim["lives"] -= 2;
+            victim["downed"] = true;
+            setTimeout(function() {
+                victim["downed"] = false;
+            }, 8000 * parseFloat(speedText.value));
         }
         else if (events[i]["type"] == ACTIVATE_RAPID_FIRE) {
             player = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -424,6 +469,11 @@ function playEvents(replay_data) {
             for (let j = 0; j < replay_data["entity_starts"].length; j++) {
                 player = replay_data["entity_starts"][j];
                 if (player["team"] != nuker["team"] && player["type"] == "player") {
+                    player["downed"] = true;
+                    setTimeout(function() {
+                        player["downed"] = false;
+                    }, 8000 * parseFloat(speedText.value));
+
                     if (player["lives"] < 3) {
                         player["lives"] = 0;
                     }
@@ -443,6 +493,11 @@ function playEvents(replay_data) {
             if (resupplyee["shots"] > defaults["shots_max"]) {
                 resupplyee["shots"] = defaults["shots_max"];
             }
+
+            resupplyee["downed"] = true;
+            setTimeout(function() {
+                resupplyee["downed"] = false;
+            }, 8000 * parseFloat(speedText.value));
             
             resupplyee["rapid_fire"] = false;
         }
@@ -454,6 +509,11 @@ function playEvents(replay_data) {
             if (resupplyee["lives"] > defaults["lives_max"]) {
                 resupplyee["lives"] = defaults["lives_max"];
             }
+
+            resupplyee["downed"] = true;
+            setTimeout(function() {
+                resupplyee["downed"] = false;
+            }, 8000 * parseFloat(speedText.value));
             
             resupplyee["rapid_fire"] = false;
         }
@@ -506,12 +566,20 @@ function playEvents(replay_data) {
                 accuracy = (player["shots_hit"]/player["shots_fired"]*100).toFixed(2) + "%";
             }
 
+            if (player["times_shot"] == 0) {
+                kd = "0.00";
+            }
+            else {
+                kd = (player["shots_hit"]/player["times_shot"]).toFixed(2);
+            }
+
             player["row"].getElementsByTagName("td")[2].getElementsByTagName("p")[0].innerHTML = player["score"];
             player["row"].getElementsByTagName("td")[3].getElementsByTagName("p")[0].innerHTML = player["lives"];
             player["row"].getElementsByTagName("td")[4].getElementsByTagName("p")[0].innerHTML = player["shots"];
             player["row"].getElementsByTagName("td")[5].getElementsByTagName("p")[0].innerHTML = player["missiles"];
             player["row"].getElementsByTagName("td")[6].getElementsByTagName("p")[0].innerHTML = player["special_points"];
             player["row"].getElementsByTagName("td")[7].getElementsByTagName("p")[0].innerHTML = accuracy;
+            player["row"].getElementsByTagName("td")[8].getElementsByTagName("p")[0].innerHTML = kd;
 
             table = player["table"];
 
@@ -526,12 +594,59 @@ function playEvents(replay_data) {
                     }
                 }
             }
+
+            // check if player is downed
+
+            color = player["row"].getElementsByTagName("td")[1].getElementsByTagName("p")[0].style.color;
+            
+            if (player["downed"]) {
+                if (color == "orangered") {
+                    player["row"].getElementsByTagName("td")[1].getElementsByTagName("p")[0].style.color = "#802200";
+                }
+                else if (color == "greenyellow") {
+                    player["row"].getElementsByTagName("td")[1].getElementsByTagName("p")[0].style.color = "#4d8000";
+                }
+            }
+            else {
+                if (color == "rgb(128, 34, 0)") {
+                    player["row"].getElementsByTagName("td")[1].getElementsByTagName("p")[0].style.color = "orangered";
+                }
+                else if (color == "rgb(77, 128, 0)") {
+                    player["row"].getElementsByTagName("td")[1].getElementsByTagName("p")[0].style.color = "greenyellow";
+                }
+            }
         }
+
+        // team scores
+
+        fireScore = 0;
+        earthScore = 0;
+
+        for (let j = 0; j < replay_data["entity_starts"].length; j++) {
+            player = replay_data["entity_starts"][j];
+
+            if (player["type"] != "player") {
+                continue;
+            }
+
+            if (player["team"] == 0) {
+                fireScore += player["score"];
+            }
+            else {
+                earthScore += player["score"];
+            }
+        }
+
+        document.getElementById("fire_team_score").innerHTML = `Fire Team: ${fireScore}`;
+        document.getElementById("earth_team_score").innerHTML = `Earth Team: ${earthScore}`;
     }
 }
 
 function startReplay(replay_data) {
     console.log("Starting replay");
+    
+    teamsLoadingPlaceholder.style.display = "none";
+    replayViewer.style.display = "flex";
 
     setupGame(replay_data);
 }
@@ -559,8 +674,10 @@ function restartReplay() {
 }
 
 function onLoad() {
-    fireTable = document.getElementById("fire_team");
-    earthTable = document.getElementById("earth_team");
+    fireTable = document.getElementById("fire_table");
+    earthTable = document.getElementById("earth_table");
+    replayViewer = document.getElementById("replay_viewer");
+    teamsLoadingPlaceholder = document.getElementById("teams_loading_placeholder");
     eventBox = document.getElementById("events");
     speedText = document.getElementById("speed");
     playButton = document.getElementById("play");
