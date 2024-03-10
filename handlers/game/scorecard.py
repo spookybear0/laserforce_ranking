@@ -56,62 +56,32 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         # Parts that make up the final score.
         # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
-        # TODO: rename?
-        score_components = [
+        score_components = {
+            "Missiles": stats.missiled_opponent * 500,
+            "Zaps": stats.shot_opponent * 100,
+            "Bases": bases_destroyed * 1001,
+            "Nukes": stats.nukes_detonated * 500,
+            "Zap own team": stats.shot_team * -100,
+            "Missiled own team": stats.missiled_team * -500,
+            "Got zapped": stats.times_zapped * -20,
+            "Got missiled": stats.times_missiled * -100,
+        }
+
+        score_composition = [
             {
-                "name": "Missiles",
-                "score": stats.missiled_opponent * 500,
-                "color": "#ff23cd",
-            },
-            {
-                "name": "Zaps",
-                "score": stats.shot_opponent * 100,
-                "color": "#29dc19",
-            },
-            {
-                "name": "Bases",
-                "score": bases_destroyed * 1001,
-                "color": "#1284fe",
-            },
-            {
-                "name": "Nukes",
-                "score": stats.nukes_detonated * 500,
-                "color": "#e98f08",
-            },
+                "name": component,
+                "color": "#00cc00" if score > 0 else "#dd0000",
+                "score": score,
+            }
+            for component, score in score_components.items() if score != 0
         ]
 
-        # Parts that count against the own score.
-        # TODO: rename?
-        negative_score_components = [
-            {
-                "name": "Zap own team",
-                "score": stats.shot_team * 100,
-                "color": "#119903",
-            },
-            {
-                "name": "Missiled own team",
-                "score": stats.missiled_team * 500,
-                "color": "#880155",
-            },
-            {
-                "name": "Got zapped",
-                "score": stats.times_zapped * 20,
-                "color": "#29dc19",
-            },
-            {
-                "name": "Got missiled",
-                "score": stats.times_missiled * 100,
-                "color": "#ff23cd",
-            },
-        ]
+        score_composition.sort(key=lambda x: x["score"], reverse=True)
 
         entity_starts: List[EntityStarts] = game.entity_starts
         player_entities = [
             player for player in list(entity_starts) if player.type == "player"
         ]
-
-        # TODO: This could be done in a single query with a nifty group_by,
-        #   but group_by doesn"t seem to work well with JSON columns.
 
         all_players = ([
             {
@@ -151,12 +121,9 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             entity_end=entity_end,
             main_stats=main_stats,
             teams=teams,
-            score_component_labels=", ".join([f"\"{component['name']}\"" for component in score_components]),
-            score_component_colors=", ".join([f"\"{component['color']}\"" for component in score_components]),
-            score_component_values=", ".join([str(component['score']) for component in score_components]),
-            negative_score_component_labels=", ".join([f"\"{component['name']}\"" for component in negative_score_components]),
-            negative_score_component_colors=", ".join([f"\"{component['color']}\"" for component in negative_score_components]),
-            negative_score_component_values=", ".join([str(component['score']) for component in negative_score_components])
+            score_composition_labels=", ".join([f"\"{component['name']}\"" for component in score_composition]),
+            score_composition_colors=", ".join([f"\"{component['color']}\"" for component in score_composition]),
+            score_composition_values=", ".join([str(component['score']) for component in score_composition]),
         )
 
     if type == "lb":
@@ -178,7 +145,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
         accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
 
         main_stats = {
-            "Score": stats['score'],
+            "Score": stats["score"],
             "Shots fired": stats.shots_fired,
             "Accuracy": "%.2f%%" % (accuracy * 100),
             "Possession": _millis_to_time(possession_times.get(entity_start.entity_id)),
@@ -201,10 +168,10 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         all_players = ([
             {
-                "name": player['name'],
+                "name": player["name"],
                 "team": (await player.team).index,
                 "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
-                "score": player_stats[player.id]['score'],
+                "score": player_stats[player.id]["score"],
                 "ball_possession": _millis_to_time(possession_times.get(player.entity_id, 0)),
                 "you_blocked": await count_blocks(game, entity_start.entity_id, player.entity_id),
                 "blocked_you": await count_blocks(game, player.entity_id, entity_start.entity_id),
