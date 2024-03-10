@@ -135,6 +135,35 @@
     #ice_team tr td .player_codename {
         color: #0096FF;
     }
+
+    @media screen and (max-width: 991px) {
+        .replay_viewer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-top: 2.5rem;
+        }
+
+        .event_box {
+            width: 90%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: auto;
+        }
+
+        table tr th:nth-child(5), table tr th:nth-child(6), table tr td:nth-child(5), table tr td:nth-child(6) {
+            display: none;
+        }
+        
+        h2 {
+            zoom: 2;
+        }
+
+        .event {
+            zoom: 1.75;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -146,7 +175,7 @@
 <div class="replay_viewer"  id="replay_viewer">
     <div class="team_box" id="teams">
         <div id="fire_team" class="team">
-            <h2 style="font-size: 20px; color: orangered;" class="team_score">Fire Team: {{ fire_score }}</h2>
+            <h2 style="font-size: 20px; color: orangered;" class="team_score" id="fire_team_score">Fire Team: 0</h2>
 
             <table id="fire_table">
                 <th><p>Codename</p></th>
@@ -161,7 +190,7 @@
         </div>
 
         <div id="ice_team" class="team">
-            <h2 style="font-size: 20px; color: #0096FF;" class="team_score">Ice Team: {{ ice_score }}</h2>
+            <h2 style="font-size: 20px; color: #0096FF;" class="team_score" id="ice_team_score">Ice Team: 0</h2>
 
             <table id="ice_table">
                 <th><p>Codename</p></th>

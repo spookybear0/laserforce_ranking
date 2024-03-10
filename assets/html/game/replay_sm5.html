@@ -136,14 +136,35 @@
         color: greenyellow;
     }
 
-    /*
 
-    (darker colors)
+    @media screen and (max-width: 991px) {
+        .replay_viewer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-top: 2.5rem;
+        }
 
-    fire down color: #802200
-    earth down color: #4d8000
+        .event_box {
+            width: 90%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: auto;
+        }
 
-    */
+        table tr th:nth-child(n+7), table tr th:nth-child(n+7), table tr td:nth-child(n+7), table tr td:nth-child(n+7) {
+            display: none;
+        }
+        
+        h2 {
+            zoom: 2;
+        }
+
+        .event {
+            zoom: 1.75;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -155,7 +176,7 @@
 <div class="replay_viewer" id="replay_viewer">
     <div id="teams" class="team_box">
         <div id="fire_team" class="team">
-            <h2 style="font-size: 20px; color: orangered;" class="team_score">Fire Team: {{ fire_score }}</h2>
+            <h2 style="font-size: 20px; color: orangered;" class="team_score" id="fire_team_score">Fire Team: 0</h2>
 
             <table id="fire_table">
                 <th class="role"><p>Role</p></th>
@@ -170,7 +191,7 @@
             </table>
         </div>
         <div id="earth_team" class="team">
-            <h2 style="font-size: 20px; color: greenyellow;" class="team_score">Earth Team: {{ earth_score }}</h2>
+            <h2 style="font-size: 20px; color: greenyellow;" class="team_score" id="earth_team_score">Earth Team: 0</h2>
 
             <table id="earth_table">
                 <th class="role"><p>Role</p></th>

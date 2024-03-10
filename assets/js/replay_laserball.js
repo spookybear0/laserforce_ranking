@@ -201,7 +201,8 @@ function playEvents(replay_data) {
         oldScrollHeight = eventBox.scrollHeight;
 
         if (events[i]["type"] != MISS) {
-            eventBox.innerHTML += `<div class="event">${updated_arguments.join(" ")}</div>\n`;
+            formattedTime = Math.floor(events[i]["time"]/60000).toString().padStart(2, "0") + ":" + Math.floor((events[i]["time"]%60000)/1000).toString().padStart(2, "0");
+            eventBox.innerHTML += `<div class="event"><span>${formattedTime}</span> ${updated_arguments.join(" ")}</div>\n`;
         }
 
         if (oldScrollTop >= oldScrollHeight) {
@@ -287,6 +288,29 @@ function playEvents(replay_data) {
                 }
             }
         }
+
+        // team scores
+
+        fireScore = 0;
+        iceScore = 0;
+
+        for (let j = 0; j < replay_data["entity_starts"].length; j++) {
+            player = replay_data["entity_starts"][j];
+
+            if (player["type"] != "player") {
+                continue;
+            }
+
+            if (player["team"] == 0) {
+                fireScore += player["goals"];
+            }
+            else {
+                iceScore += player["goals"];
+            }
+        }
+
+        document.getElementById("fire_team_score").innerHTML = `Fire Team: ${fireScore}`;
+        document.getElementById("ice_team_score").innerHTML = `Ice Team: ${iceScore}`;
     }
 }
 

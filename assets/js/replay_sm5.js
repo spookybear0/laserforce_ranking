@@ -299,9 +299,9 @@ function playEvents(replay_data) {
         
         formattedTime = Math.floor(events[i]["time"]/60000).toString().padStart(2, "0") + ":" + Math.floor((events[i]["time"]%60000)/1000).toString().padStart(2, "0");
 
-        eventBox.innerHTML += `<div class="event"><span>${formattedTime}</span> ${updated_arguments.join(" ")}</div>\n`;
-
-        console.log(`<div class="event">${updated_arguments.join(" ")}</div>\n`);
+        if (events[i]["type"] != MISS) {
+            eventBox.innerHTML += `<div class="event"><span>${formattedTime}</span> ${updated_arguments.join(" ")}</div>\n`;
+        }
 
         if (oldScrollTop >= oldScrollHeight) {
             eventBox.scrollTop = eventBox.scrollHeight + 100;
@@ -616,6 +616,29 @@ function playEvents(replay_data) {
                 }
             }
         }
+
+        // team scores
+
+        fireScore = 0;
+        earthScore = 0;
+
+        for (let j = 0; j < replay_data["entity_starts"].length; j++) {
+            player = replay_data["entity_starts"][j];
+
+            if (player["type"] != "player") {
+                continue;
+            }
+
+            if (player["team"] == 0) {
+                fireScore += player["score"];
+            }
+            else {
+                earthScore += player["score"];
+            }
+        }
+
+        document.getElementById("fire_team_score").innerHTML = `Fire Team: ${fireScore}`;
+        document.getElementById("earth_team_score").innerHTML = `Earth Team: ${earthScore}`;
     }
 }
 
