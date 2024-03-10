@@ -14,8 +14,6 @@ import bcrypt
 import math
 import sys
 
-model = PlackettLuce()
-
 def suffix(d):
     return {1:"st",2:"nd",3:"rd"}.get(d%20, "th")
 
@@ -506,6 +504,7 @@ class SM5Game(Model):
 
         # get the win chance
 
+        from helpers.ratinghelper import model
         return model.predict_win([elos_red, elos_green])
     
     async def get_win_chance_before_game(self) -> List[float]:
@@ -557,6 +556,7 @@ class SM5Game(Model):
 
         # get the win chance
 
+        from helpers.ratinghelper import model
         return model.predict_win([previous_elos_red, previous_elos_green])
     
     async def get_win_chance_after_game(self) -> List[float]:
@@ -608,6 +608,7 @@ class SM5Game(Model):
 
         # get the win chance
 
+        from helpers.ratinghelper import model
         return model.predict_win([current_elos_red, current_elos_green])
     
     def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
@@ -1162,6 +1163,7 @@ class LaserballGame(Model):
 
         # get the win chance
 
+        from helpers.ratinghelper import model
         return model.predict_win([previous_elos_red, previous_elos_blue])
     
 
@@ -1206,6 +1208,7 @@ class LaserballGame(Model):
 
         # get the win chance
 
+        from helpers.ratinghelper import model
         return model.predict_win([current_elos_red, current_elos_blue])
 
     async def get_win_chance(self) -> List[float]:
@@ -1250,6 +1253,7 @@ class LaserballGame(Model):
 
         # get the win chance
 
+        from helpers.ratinghelper import model
         return model.predict_win([elos_red, elos_blue])
     
     def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:

@@ -1,15 +1,15 @@
 from objects import Team, LaserballGamePlayer
 from random import shuffle
-from openskill.models import PlackettLuceRating as Rating, PlackettLuce
+from openskill.models import PlackettLuceRating, PlackettLuce
 import math
 from scipy.stats import norm
 from sanic.log import logger
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from db.models import SM5Game, Events, EntityStarts, EventType, Player, EntityEnds, LaserballGame
 from openskill.models.weng_lin.common import _unwind, phi_major, phi_major_inverse, phi_minor
 from objects import GameType
 from helpers import userhelper
-
+import itertools
 
 # CONSTANTS
 
@@ -19,7 +19,49 @@ BETA = 25 / 6
 KAPPA = 0.0001
 TAU = 25 / 200 # default: 25/300 (for rating volatility)
 
-model = PlackettLuce(MU, SIGMA, BETA, KAPPA, TAU)
+
+class CustomPlackettLuce(PlackettLuce):
+    def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:
+        # Check Arguments
+        self._check_teams(teams)
+
+        n = len(teams)
+
+        # 2 Player Case
+        if n == 2:
+            # CUSTOM ADDITION
+            if len(teams[0]) > len(teams[1]):
+                # team 1 has more players than team 2
+                for player in teams[1]:
+                    # multiply by 1 + 0.1 * the difference in player count
+                    player.mu *= 1 + 0.1 * abs(len(teams[0]) - len(teams[1]))
+            elif len(teams[0]) < len(teams[1]):
+                # team 2 has more players than team 1
+                for player in teams[0]:
+                    # multiply by 1 + 0.1 * the difference in player count
+                    player.mu *= 1 + 0.1 * abs(len(teams[0]) - len(teams[1]))
+
+            total_player_count = len(teams[0]) + len(teams[1])
+            teams_ratings = self._calculate_team_ratings(teams)
+            a = teams_ratings[0]
+            b = teams_ratings[1]
+
+            result = phi_major(
+                (a.mu - b.mu)
+                / math.sqrt(
+                    total_player_count * self.beta**2
+                    + a.sigma_squared
+                    + b.sigma_squared
+                )
+            )
+
+            return [result, 1 - result]
+
+        return PlackettLuce.predict_win(self, teams)
+    
+model = CustomPlackettLuce(MU, SIGMA, BETA, KAPPA, TAU)
+Rating = PlackettLuceRating
+
 
 # sm5 elo helper functions
 
@@ -361,6 +403,7 @@ def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType=GameTyp
     team3 = list(map(lambda x: getattr(x, f"{mode}_rating"), team3))
     team4 = list(map(lambda x: getattr(x, f"{mode}_rating"), team4))
 
+    # TODO: console.log
     print(team1, team2, team3, team4)
 
     if not team3:
