@@ -468,7 +468,7 @@ class SM5Game(Model):
         """
         Returns the win chance in the format [red, green]
         """
-        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+        from helpers.ratinghelper import MU, SIGMA
 
         # get the win chance for red team
         # this is based on the most current elo of the player's entity_end
@@ -484,7 +484,7 @@ class SM5Game(Model):
         for entity_end in entity_ends_red:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                elos_red.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
                 elos_red.append(Rating(player.sm5_mu, player.sm5_sigma))
@@ -499,7 +499,7 @@ class SM5Game(Model):
         for entity_end in entity_ends_green:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                elos_green.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                elos_green.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
                 elos_green.append(Rating(player.sm5_mu, player.sm5_sigma))
@@ -512,7 +512,7 @@ class SM5Game(Model):
         """
         Returns the win chance as guessed before the game happened in the format [red, green]
         """
-        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+        from helpers.ratinghelper import MU, SIGMA
 
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
@@ -528,7 +528,7 @@ class SM5Game(Model):
         for entity_end in entity_ends_red:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                previous_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                previous_elos_red.append(Rating(MU, SIGMA))
             else:
                 previous_elos_red.append(Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma))
 
@@ -542,7 +542,7 @@ class SM5Game(Model):
         for entity_end in entity_ends_green:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                previous_elos_green.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                previous_elos_green.append(Rating(MU, SIGMA))
             else:
                 previous_elos_green.append(Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma))
 
@@ -551,9 +551,9 @@ class SM5Game(Model):
         for i, elo in enumerate(previous_elos_red + previous_elos_green):
             if elo is None or elo.mu is None or elo.sigma is None:
                 if i < len(previous_elos_red):
-                    previous_elos_red[i] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+                    previous_elos_red[i] = Rating(MU, SIGMA)
                 else:
-                    previous_elos_green[i - len(previous_elos_red)] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+                    previous_elos_green[i - len(previous_elos_red)] = Rating(MU, SIGMA)
 
         # get the win chance
 
@@ -563,7 +563,7 @@ class SM5Game(Model):
         """
         Returns the win chance as guessed **directly** after the game happened in the format [red, green]
         """
-        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+        from helpers.ratinghelper import MU, SIGMA
 
         # get the win chance for red team
         # this is based on the current_elo of the player's entity_end
@@ -579,7 +579,7 @@ class SM5Game(Model):
         for entity_end in entity_ends_red:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                current_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                current_elos_red.append(Rating(MU, SIGMA))
             else:
                 current_elos_red.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
@@ -593,7 +593,7 @@ class SM5Game(Model):
         for entity_end in entity_ends_green:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                current_elos_green.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                current_elos_green.append(Rating(MU, SIGMA))
             else:
                 current_elos_green.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
@@ -602,9 +602,9 @@ class SM5Game(Model):
         for i, elo in enumerate(current_elos_red + current_elos_green):
             if elo is None or elo.mu is None or elo.sigma is None:
                 if i < len(current_elos_red):
-                    current_elos_red[i] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+                    current_elos_red[i] = Rating(MU, SIGMA)
                 else:
-                    current_elos_green[i - len(current_elos_red)] = Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA)
+                    current_elos_green[i - len(current_elos_red)] = Rating(MU, SIGMA)
 
         # get the win chance
 
@@ -1120,7 +1120,7 @@ class LaserballGame(Model):
         Returns the win chance before the game happened in the format [red, blue]
         """
 
-        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+        from helpers.ratinghelper import MU, SIGMA
 
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
@@ -1136,7 +1136,7 @@ class LaserballGame(Model):
         for entity_end in entity_ends_red:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                previous_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                previous_elos_red.append(Rating(MU, SIGMA))
             else:
                 previous_elos_red.append(Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma))
 
@@ -1150,7 +1150,7 @@ class LaserballGame(Model):
 
         for entity_end in entity_ends_blue:
             if (await entity_end.entity).entity_id.startswith("@"):
-                previous_elos_blue.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                previous_elos_blue.append(Rating(MU, SIGMA))
             else:
                 previous_elos_blue.append(Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma))
 
@@ -1164,7 +1164,7 @@ class LaserballGame(Model):
         Returns the win chance **directly** after the game happened in the format [red, blue]
         """
 
-        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+        from helpers.ratinghelper import MU, SIGMA
 
         # get the win chance for red team
         # this is based on the current_elo of the player's entity_end
@@ -1180,7 +1180,7 @@ class LaserballGame(Model):
         for entity_end in entity_ends_red:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                current_elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                current_elos_red.append(Rating(MU, SIGMA))
             else:
                 current_elos_red.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
@@ -1194,7 +1194,7 @@ class LaserballGame(Model):
 
         for entity_end in entity_ends_blue:
             if (await entity_end.entity).entity_id.startswith("@"):
-                current_elos_blue.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                current_elos_blue.append(Rating(MU, SIGMA))
             else:
                 current_elos_blue.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
@@ -1206,7 +1206,7 @@ class LaserballGame(Model):
         """
         Returns the win chance in the format [red, green]
         """
-        from helpers.ratinghelper import ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA
+        from helpers.ratinghelper import MU, SIGMA
 
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
@@ -1222,7 +1222,7 @@ class LaserballGame(Model):
         for entity_end in entity_ends_red:
             if (await entity_end.entity).entity_id.startswith("@"):
                 # non-member player
-                elos_red.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                elos_red.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
                 elos_red.append(Rating(player.sm5_mu, player.sm5_sigma))
@@ -1237,7 +1237,7 @@ class LaserballGame(Model):
 
         for entity_end in entity_ends_blue:
             if (await entity_end.entity).entity_id.startswith("@"):
-                elos_blue.append(Rating(ASSUMED_SKILL_MU, ASSUMED_SKILL_SIGMA))
+                elos_blue.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
                 elos_blue.append(Rating(player.sm5_mu, player.sm5_sigma))

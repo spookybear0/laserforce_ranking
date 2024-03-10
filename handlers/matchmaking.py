@@ -11,12 +11,12 @@ from openskill.models import PlackettLuceRating as Rating
 class FakePlayer:
     def __init__(self, codename: str) -> None:
         self.codename = codename
-        self.sm5_rating = Rating(ratinghelper.ASSUMED_SKILL_MU, ratinghelper.ASSUMED_SKILL_SIGMA)
-        self.laserball_rating = Rating(ratinghelper.ASSUMED_SKILL_MU, ratinghelper.ASSUMED_SKILL_SIGMA)
-        self.sm5_rating_mu = ratinghelper.ASSUMED_SKILL_MU
-        self.sm5_rating_sigma = ratinghelper.ASSUMED_SKILL_SIGMA
-        self.laserball_rating_mu = ratinghelper.ASSUMED_SKILL_MU
-        self.laserball_rating_sigma = ratinghelper.ASSUMED_SKILL_SIGMA
+        self.sm5_rating = Rating(ratinghelper.MU, ratinghelper.SIGMA)
+        self.laserball_rating = Rating(ratinghelper.MU, ratinghelper.SIGMA)
+        self.sm5_rating_mu = ratinghelper.MU
+        self.sm5_rating_sigma = ratinghelper.SIGMA
+        self.laserball_rating_mu = ratinghelper.MU
+        self.laserball_rating_sigma = ratinghelper.SIGMA
 
     def __str__(self) -> str:
         return f"{self.codename} (non member)"
