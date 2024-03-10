@@ -8,12 +8,12 @@ refresh_time = 60 * 30 # 30 minutes
 queryset_cache: Dict[str, Tuple[Any, QuerySet]] = {}
 original_await = QuerySet.__await__
 
-def __await__(self: QuerySet):
+def __await__(self: QuerySet) -> Any:
     self._make_query()
 
     if self.query in queryset_cache:
         result = queryset_cache[self.query][0]
-        async def _wrapper():
+        async def _wrapper() -> Any:
             return result
         
         yield from _wrapper().__await__()
@@ -29,13 +29,13 @@ def __await__(self: QuerySet):
 
             # schedule a refresh after 'refresh_time' seconds
 
-            async def _refresh():
+            async def _refresh() -> None:
                 await asyncio.sleep(refresh_time)
                 del queryset_cache[self.query]
 
             asyncio.ensure_future(_refresh())
 
-        async def _wrapper():
+        async def _wrapper() -> Any:
             return result_value
         
         yield from _wrapper().__await__()
@@ -43,5 +43,5 @@ def __await__(self: QuerySet):
         return result_value
 
 
-def use_cache():
+def use_cache() -> None:
     QuerySet.__await__ = __await__

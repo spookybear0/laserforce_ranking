@@ -7,7 +7,7 @@ from helpers.statshelper import sentry_trace
 
 @app.get("/players")
 @sentry_trace
-async def index(request: Request):
+async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     sort = int(request.args.get("sort", "2"))
     sort_direction = request.args.get("sort_dir", "desc")

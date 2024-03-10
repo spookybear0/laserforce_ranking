@@ -5,27 +5,27 @@ from shared import app
 from sanic import Request, HTTPResponse, response, exceptions
 from shared import app
 from urllib.parse import unquote
-from typing import Union
-from db.models import Player, SM5Game, LaserballGame
+from typing import Union, Optional
+from db.models import Player, SM5Game, LaserballGame, EntityEnds, EntityStarts, SM5Stats, LaserballStats
 from helpers.statshelper import sentry_trace
 from sanic.log import logger
 
 sql = app.ctx.sql
 
-async def get_entity_start(game, player):
+async def get_entity_start(game, player) -> Optional[EntityStarts]:
     return await game.entity_starts.filter(entity_id=player.entity_id).first()
 
-async def get_entity_end(game, entity_start):
+async def get_entity_end(game, entity_start) -> Optional[EntityEnds]:
     return await game.entity_ends.filter(entity=entity_start.id).first()
 
-async def get_sm5_stat(game, entity_start):
+async def get_sm5_stat(game, entity_start) -> Optional[SM5Stats]:
     return await game.sm5_stats.filter(entity_id=entity_start.id).first()
 
-async def get_laserball_stat(game, entity_start):
+async def get_laserball_stat(game, entity_start) -> Optional[LaserballStats]:
     return await game.laserball_stats.filter(entity=entity_start).first()
 
 
-async def get_role_labels_from_medians(median_role_score):
+async def get_role_labels_from_medians(median_role_score) -> list:
     labels = []
     for i, role_score in enumerate(median_role_score):
         if role_score == 0:

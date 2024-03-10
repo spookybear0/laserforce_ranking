@@ -14,10 +14,10 @@ import bcrypt
 import math
 import sys
 
-def suffix(d):
+def suffix(d) -> str:
     return {1:"st",2:"nd",3:"rd"}.get(d%20, "th")
 
-def strftime_ordinal(format, t):
+def strftime_ordinal(format, t) -> str:
     return t.strftime(format).replace("{S}", str(t.day) + suffix(t.day))
 
 class EventType(Enum):
@@ -141,19 +141,19 @@ class Player(Model):
     permissions = fields.IntEnumField(Permission, default=Permission.USER)
     
     @property
-    def sm5_ordinal(self):
+    def sm5_ordinal(self) -> float:
         return self.sm5_mu - 3 * self.sm5_sigma
     
     @property
-    def laserball_ordinal(self):
+    def laserball_ordinal(self) -> float:
         return self.laserball_mu - 3 * self.laserball_sigma
     
     @property
-    def sm5_rating(self):
+    def sm5_rating(self) -> Rating:
         return Rating(self.sm5_mu, self.sm5_sigma)
 
     @property
-    def laserball_rating(self):
+    def laserball_rating(self) -> Rating:
         return Rating(self.laserball_mu, self.laserball_sigma)
     
     # account stuff
@@ -428,36 +428,36 @@ class SM5Game(Model):
     def __repr__(self) -> str:
         return f"<SM5Game ({self.tdf_name})>"
     
-    async def get_red_score(self):
+    async def get_red_score(self) -> int:
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire").values_list("score")))
     
-    async def get_green_score(self):
+    async def get_green_score(self) -> int:
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Earth").values_list("score")))
     
-    async def get_entity_start_from_player(self, player: Player):
+    async def get_entity_start_from_player(self, player: Player) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(player=player).first()
     
-    async def get_entity_start_from_token(self, token: str):
+    async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(entity_id=token).first()
     
-    async def get_entity_end_from_player(self, player: Player):
+    async def get_entity_end_from_player(self, player: Player) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(player=player).first()
     
-    async def get_entity_end_from_token(self, token: str):
+    async def get_entity_end_from_token(self, token: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity_id=token).first()
     
-    async def get_entity_start_from_name(self, name: str):
+    async def get_entity_start_from_name(self, name: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(name=name).first()
     
-    async def get_entity_end_from_name(self, name: str):
+    async def get_entity_end_from_name(self, name: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity__name=name).first()
 
     # funcs for getting total score at a certain time for a team
     
-    async def get_red_score_at_time(self, time: int): # time in seconds
+    async def get_red_score_at_time(self, time: int) -> int: # time in seconds
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
 
-    async def get_green_score_at_time(self, time: int): # time in seconds
+    async def get_green_score_at_time(self, time: int) -> int: # time in seconds
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Earth").values_list("delta")))
     
     # funcs for getting win chance and draw chance
@@ -658,7 +658,7 @@ class SM5Game(Model):
             return None
         return id_[0]
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         # convert the entire game to a dict
         # this is used for the api
 
@@ -697,7 +697,7 @@ class Teams(Model):
     real_color_name = fields.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
 
     @property
-    def enum(self):
+    def enum(self) -> Team:
         conversions = {
             "Fire": Team.RED,
             "Earth": Team.GREEN,
@@ -709,7 +709,7 @@ class Teams(Model):
 
         return conversions[self.color_name]
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["index"] = self.index
@@ -744,7 +744,7 @@ class EntityStarts(Model):
     async def get_score(self) -> int:
         return (await self.get_entity_end()).score
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["id"] = self.id
@@ -760,7 +760,7 @@ class EntityStarts(Model):
 
         return final
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<EntityStarts id={self.id} entity_id={self.entity_id} type={self.type} name={self.name} team={self.team} level={self.level} role={self.role} battlesuit={self.battlesuit} member_id={self.member_id}>"
 
 class Events(Model):
@@ -769,10 +769,9 @@ class Events(Model):
     # variable number of fields depending on type of event
     # can be token or string for announcement
     # now make the field
-    # TODO: maybe make this not a json field
     arguments = fields.JSONField() # list of arguments
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["time"] = self.time
@@ -786,7 +785,7 @@ class PlayerStates(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     state = fields.IntEnumField(PlayerStateType)
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["time"] = self.time
@@ -802,7 +801,7 @@ class Scores(Model):
     delta = fields.IntField() # change in score
     new = fields.IntField() # new score
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["time"] = self.time
@@ -839,7 +838,7 @@ class EntityEnds(Model):
     async def get_sm5_stats(self) -> "SM5Stats":
         return SM5Stats.filter(entity__id=self.id).first()
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["time"] = self.time
@@ -906,8 +905,7 @@ class SM5Stats(Model):
         total_points += self.medic_hits - self.own_medic_hits
 
         # elims: minimum 1 point if your team eliminates the other team, increased by 1/60 for each of second of game time remaining above 1 minute.
-
-        # TODO: implement this
+        # ^ UPDATE: this has been voted out of the MVP Point system, does not need to be added
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled
 
@@ -997,7 +995,7 @@ class SM5Stats(Model):
 
         return total_points
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["entity"] = (await self.entity).entity_id
@@ -1058,19 +1056,19 @@ class LaserballGame(Model):
     def __repr__(self) -> str:
         return f"<LaserballGame ({self.tdf_name})>"
     
-    async def get_red_score(self):
+    async def get_red_score(self) -> int:
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player").values_list("score")))
     
-    async def get_blue_score(self):
+    async def get_blue_score(self) -> int:
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player").values_list("score")))
     
-    async def get_red_score_at_time(self, time):
+    async def get_red_score_at_time(self, time) -> int:
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
     
-    async def get_blue_score_at_time(self, time):
+    async def get_blue_score_at_time(self, time) -> int:
         return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Ice").values_list("delta")))
     
-    async def get_rounds_at_time(self, time):
+    async def get_rounds_at_time(self, time) -> int:
         return (await self.events.filter(time__lte=time, type=EventType.ROUND_END).count()) + 1
 
     async def get_possession_timeline(self) -> list[BallPossessionEvent]:
@@ -1283,7 +1281,7 @@ class LaserballGame(Model):
 
         return await self.entity_starts.filter(type="player")
     
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         # convert the entire game to a dict
         # this is used for the api
         final = {}
@@ -1344,7 +1342,7 @@ class LaserballStats(Model):
         """
         return (self.goals + self.assists) * 10000 + self.steals * 100 + self.blocks
 
-    async def to_dict(self):
+    async def to_dict(self) -> dict:
         final = {}
 
         final["entity"] = (await self.entity).entity_id

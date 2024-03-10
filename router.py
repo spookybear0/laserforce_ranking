@@ -4,8 +4,9 @@ from shared import app
 import importlib.util
 from sanic import Sanic
 from sanic.log import logger
+from types import ModuleType
 
-def import_from_dir(name, path):
+def import_from_dir(name, path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
@@ -15,8 +16,8 @@ def import_from_dir(name, path):
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 routes = []
 
-def add_all_routes(app: Sanic):
-    def import_dir(directory):
+def add_all_routes(app: Sanic) -> None:
+    def import_dir(directory) -> None:
         sys.path.append(directory)
         for f in os.listdir(directory):
             if os.path.isdir(directory + f) and f not in ["__pycache__"]:

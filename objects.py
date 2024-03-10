@@ -6,7 +6,7 @@ import datetime
 import openskill
 import sys
 
-def in_ipynb():
+def in_ipynb() -> bool:
     return "ipykernel" in sys.modules
 
 # not in juptyer notebook
@@ -22,7 +22,7 @@ class Team(Enum):
     GREEN = "green"
     BLUE = "blue"
 
-    def standardize(self):
+    def standardize(self) -> str:
         return self.value.capitalize()
     
 class Role(Enum):
@@ -58,11 +58,11 @@ class Player:
     game_player = None
     
     @property
-    def sm5_ordinal(self):
+    def sm5_ordinal(self) -> float:
         return self.sm5_mu - 3 * self.sm5_sigma
     
     @property
-    def laserball_ordinal(self):
+    def laserball_ordinal(self) -> float:
         return self.laserball_mu - 3 * self.laserball_sigma
     
     @property
@@ -77,7 +77,7 @@ class Player:
     def games(self) -> int:
         return IPLPlayer.from_id(self.player_id).games
 
-    async def _get_lifetime_stats(self):
+    async def _get_lifetime_stats(self) -> None:
         data = await sql.fetchone("SELECT SUM(goals), SUM(assists), SUM(steals), SUM(clears), SUM(blocks) FROM laserball_game_players WHERE player_id = %s", (self.player_id,))
         self.goals   = int(data[0]) if data[0] else 0
         self.assists = int(data[1]) if data[1] else 0
@@ -86,7 +86,7 @@ class Player:
         self.blocks  = int(data[4]) if data[4] else 0
     
     @classmethod
-    async def from_id(cls, id: int):
+    async def from_id(cls, id: int) -> "Player":
         data = await sql.fetchone("SELECT * FROM players WHERE id = %s", (id,))
         if not data:
             return None
@@ -95,7 +95,7 @@ class Player:
         return ret
 
     @classmethod
-    async def from_player_id(cls, player_id: str):
+    async def from_player_id(cls, player_id: str) -> "Player":
         data = await sql.fetchone("SELECT * FROM players WHERE player_id = %s", (player_id,))
         if not data:
             return None
@@ -104,7 +104,7 @@ class Player:
         return ret
     
     @classmethod
-    async def from_name(cls, name: str):
+    async def from_name(cls, name: str) -> "Player":
         data = await sql.fetchone("SELECT * FROM players WHERE codename = %s", (name,))
         if not data:
             return None
@@ -175,7 +175,7 @@ class Game:
                 final.append(player)
         return final
 
-    async def _set_game_players(self):
+    async def _set_game_players(self) -> None:
         self.red = await self._get_game_players_team(Team.RED)
 
         if self.type == GameType.SM5:
@@ -185,7 +185,7 @@ class Game:
             self.blue = await self._get_game_players_team(Team.BLUE)
             self.players = [*self.red, *self.blue]
 
-    async def _reload_elo(self):
+    async def _reload_elo(self) -> None:
         for player in [*self.players, *self.red, *self.green, *self.blue]:
             if player.player_id == "":
                 continue
@@ -201,7 +201,7 @@ class Game:
             return sum([player.game_player.goals for player in self.players if player.game_player.team == team])
 
     @classmethod
-    async def from_id(cls, id: int):
+    async def from_id(cls, id: int) -> "Game":
         data = await sql.fetchone("SELECT * FROM games WHERE id = %s", (id,))
         if not data:
             return None

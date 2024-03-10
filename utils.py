@@ -1,8 +1,9 @@
 from sanic import Request, response
 from db.models import Permission
+from typing import Callable, Any, Union
 from shared import app
 
-def get_post(request: Request):
+def get_post(request: Request) -> dict:
     """
     DEPRECATED
     """
@@ -23,8 +24,8 @@ async def render_template(r, template, *args, **kwargs) -> str:
     text = await app.ctx.jinja.render_async(template, r, *args, **kwargs)
     return text
 
-def admin_only(f):
-    async def wrapper(request: Request, *args, **kwargs):
+def admin_only(f) -> Callable:
+    async def wrapper(request: Request, *args, **kwargs) -> Union[response.HTTPResponse, Any]:
         if not request.ctx.session.get("permissions", 0) == Permission.ADMIN:
             request.ctx.session["previous_page"] = request.path
             return response.redirect("/login")

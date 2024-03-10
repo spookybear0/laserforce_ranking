@@ -4,7 +4,7 @@ from typing import List, Union, Dict, Optional
 from laserforce import Player as IPLPlayer
 import sys
 
-def in_ipynb():
+def in_ipynb() -> bool:
     return "ipykernel" in sys.modules
 
 if not in_ipynb():
@@ -16,7 +16,7 @@ import bcrypt
 async def player_from_token(game: SM5Game, token: str) -> EntityStarts:
     return await game.entity_starts.filter(entity_id=token).first()
 
-async def get_median_role_score(player: Optional[Player]=None):
+async def get_median_role_score(player: Optional[Player]=None) -> List[int]:
     """
     Returns a list of median scores for each role for a player.
 
@@ -88,7 +88,7 @@ async def database_player(player: IPLPlayer) -> None:
         await db_player.create()
     return db_player
 
-async def player_cron():
+async def player_cron() -> None:
     for i in range(10000):
         try:
             player: IPLPlayer = await IPLPlayer.from_id(f"4-43-{i}")
@@ -97,8 +97,8 @@ async def player_cron():
 
         await database_player(player)
 
-def to_hex(tag: str):
+def to_hex(tag: str) -> str:
     return "LF/0D00" + hex(int(tag)).strip("0x").upper()
 
-def to_decimal(tag: str):
+def to_decimal(tag: str) -> str:
     return "000" + str(int(tag.strip("LF/").strip("0D00"), 16))

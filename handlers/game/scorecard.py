@@ -8,7 +8,7 @@ from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, Lase
 from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks
 from sanic import exceptions
 
-def get_players_from_team(all_players: List[dict], team_index: int):
+def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict]:
     """Returns subset of the list of players - only those in the given team."""
     return [
         player for player in all_players if player["team"] == team_index

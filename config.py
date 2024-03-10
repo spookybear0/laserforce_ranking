@@ -18,7 +18,7 @@ config_options = list(default_config.keys())
 
 
 class JsonFile:
-    def __init__(self, file_name: str):
+    def __init__(self, file_name: str) -> None:
         self.file = None
         self.file_name = file_name
         if os.path.exists(file_name):

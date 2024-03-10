@@ -1,20 +1,20 @@
 from sanic import Request
 from shared import app
 from utils import render_template, admin_only
-from typing import Union, List
+from typing import Union, Optional
 from db.models import Player, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
 from sanic import exceptions, response
 from helpers import ratinghelper, adminhelper
 from sanic.log import logger
 import os
 
-async def get_entity_end(entity):
+async def get_entity_end(entity) -> Optional[EntityEnds]:
     return await EntityEnds.filter(entity=entity).first()
 
-async def get_sm5stats(entity):
+async def get_sm5stats(entity) -> Optional[SM5Stats]:
     return await SM5Stats.filter(entity=entity).first()
 
-async def get_laserballstats(entity):
+async def get_laserballstats(entity) -> Optional[LaserballStats]:
     return await LaserballStats.filter(entity=entity).first()
 
 @app.get("/admin/game/<mode>/<id>")

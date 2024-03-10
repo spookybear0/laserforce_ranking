@@ -7,6 +7,10 @@ import os
 import pymysql
 from config import config  # type: ignore
 
+"""
+Entire module is deprecated and should be replaced with Tortoise ORM.
+"""
+
 
 class MySQLPool:
     """The wrapper around the `aiomysql` module. It allows for
@@ -19,7 +23,7 @@ class MySQLPool:
             pool.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Creates the default values for the connector. Use the `connect`
         classmethod instead."""
         self._pool: aiomysql.Pool = None
@@ -27,7 +31,7 @@ class MySQLPool:
         self._loop: asyncio.AbstractEventLoop
 
     @classmethod
-    async def connect_with_config(cls, loop: asyncio.AbstractEventLoop = None):
+    async def connect_with_config(cls, loop: asyncio.AbstractEventLoop = None) -> "MySQLPool":
         """Creates a connection to the MySQL server and establishes a pool.
         Args:
             config_name (str): The name of the configuration file to be used.
@@ -61,7 +65,7 @@ class MySQLPool:
         database: str,
         port: int = 3306,
         loop: asyncio.AbstractEventLoop = None,
-    ):
+    ) -> "MySQLPool":
         """Creates the MySQL connecton pool. Handles authentication and the
         configuration of the object.
         Note:
@@ -103,7 +107,7 @@ class MySQLPool:
         database: str,
         port: int = 3306,
         loop: asyncio.AbstractEventLoop = None,
-    ):
+    ) -> None:
         """Connects the current object to the pool without creating a new
         object.
         Args:
@@ -151,7 +155,7 @@ class MySQLPool:
             # Grab a cur.
             async with pool.cursor() as cur:
                 # Execute and fetchone.
-                async def execute():
+                async def execute() -> None:
                     try:
                         await cur.execute(query, args)
                     except pymysql.InternalError:
@@ -188,7 +192,7 @@ class MySQLPool:
             # Grab a cur.
             async with pool.cursor() as cur:
                 # Execute and fetchall.
-                async def execute():
+                async def execute() -> None:
                     try:
                         await cur.execute(query, args)
                     except pymysql.InternalError:
@@ -228,7 +232,7 @@ class MySQLPool:
             # Grab a cur.
             async with pool.cursor() as cur:
                 # Execute it.
-                async def execute():
+                async def execute() -> None:
                     try:
                         await cur.execute(query, args)
                     except pymysql.InternalError:

@@ -267,7 +267,9 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     logger.info(f"Finished parsing {file_location} (game {game.id})")
 
-async def parse_laserball_game(file_location: str):
+    return game
+
+async def parse_laserball_game(file_location: str) -> LaserballGame:
     file = open(file_location, "r", encoding="utf-16")
 
     file_version = ""
@@ -627,6 +629,8 @@ async def parse_laserball_game(file_location: str):
             await entity_end.save()
 
     logger.info(f"Finished parsing {file_location} (game {game.id})")
+
+    return game
 
 async def parse_all_laserball_tdfs() -> None: # iterate through laserball_tdf folder
     directory = os.listdir("laserball_tdf")

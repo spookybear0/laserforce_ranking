@@ -5,17 +5,16 @@ from db.models import SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 from numpy import arange
-import math
-from typing import List
+from typing import List, Optional
 
 
-async def get_entity_end(entity):
+async def get_entity_end(entity) -> Optional[EntityEnds]:
     return await EntityEnds.filter(entity=entity).first()
 
-async def get_sm5stats(entity):
+async def get_sm5stats(entity) -> Optional[SM5Stats]:
     return await SM5Stats.filter(entity=entity).first()
 
-async def get_laserballstats(entity):
+async def get_laserballstats(entity) -> Optional[LaserballStats]:
     return await LaserballStats.filter(entity=entity).first()
 
 @app.get("/game/<type:str>/<id:int>/")

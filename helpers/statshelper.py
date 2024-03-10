@@ -1,9 +1,7 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Callable, Any
 from sentry_sdk import Hub, start_transaction
 from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats, LaserballGame
-from tortoise.expressions import F
-from tortoise.functions import Trim, Sum
-
+from tortoise.functions import Sum
 
 # stats helpers
 
@@ -412,11 +410,11 @@ async def get_ranking_accuracy() -> float:
 
 # performance helpers
 
-def sentry_trace(func):
+def sentry_trace(func) -> Callable:
     """
     Async sentry tracing decorator
     """
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs) -> Any:
         transaction = Hub.current.scope.transaction
         if transaction:
             with transaction.start_child(op=func.__name__):

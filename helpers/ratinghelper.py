@@ -309,7 +309,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     return True
 
-def matchmake(players, mode: GameType=GameType.SM5):
+def matchmake(players, mode: GameType=GameType.SM5) -> Tuple[List[Player], List[Player]]:
     # use win chance to matchmake   
 
     mode = mode.value
@@ -343,7 +343,7 @@ def matchmake(players, mode: GameType=GameType.SM5):
 
     return (best1, best2)
 
-def matchmake_teams(players, num_teams: int, mode: GameType=GameType.SM5):
+def matchmake_teams(players, num_teams: int, mode: GameType=GameType.SM5) -> List[List[Player]]:
     """
     Matchmakes 2-4 teams
     """
@@ -374,7 +374,7 @@ def matchmake_teams(players, num_teams: int, mode: GameType=GameType.SM5):
 
     return best_teams
 
-def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
+def get_win_chance(team1, team2, mode: GameType=GameType.SM5) -> float:
     """
     Gets win chance for two teams
     """
@@ -389,7 +389,7 @@ def get_win_chance(team1, team2, mode: GameType=GameType.SM5):
     # predict
     return model.predict_win([team1, team2])
 
-def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType=GameType.SM5):
+def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType=GameType.SM5) -> List[float]:
     """
     Gets win chances for 2-4 teams
     """
@@ -413,7 +413,7 @@ def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType=GameTyp
     return model.predict_win([team1, team2, team3, team4])
 
 
-def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
+def get_draw_chance(team1, team2, mode: GameType=GameType.SM5) -> float:
     """
     Gets draw chance for two teams
     """
@@ -428,7 +428,7 @@ def get_draw_chance(team1, team2, mode: GameType=GameType.SM5):
     # predict
     return model.predict_draw([team1, team2])
 
-async def recalculate_sm5_ratings():
+async def recalculate_sm5_ratings() -> None:
     """
     Recalculates sm5 ratings
     """
@@ -463,7 +463,7 @@ async def recalculate_sm5_ratings():
 
                 await entity_end.save()
 
-async def recalculate_laserball_ratings():
+async def recalculate_laserball_ratings() -> None:
     """
     Recalculates laserball ratings
     """
@@ -495,7 +495,7 @@ async def recalculate_laserball_ratings():
 
                 await entity_end.save()
 
-async def recalculate_ratings():
+async def recalculate_ratings() -> None:
     """
     Recalculates all ratings
     """
