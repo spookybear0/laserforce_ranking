@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}500 - Internal Server Error{% endblock %}
+
+{% block html_head %}
+
+<style>
+    @media screen and (max-width: 991px) {
+        h1, p {
+            zoom: 2;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<h1 style="text-align: center;">500 - Internal Server Error</h1>
+<p style="text-align: center;">The server encountered an internal error and was unable to complete your request.</p>
+{% endblock %}

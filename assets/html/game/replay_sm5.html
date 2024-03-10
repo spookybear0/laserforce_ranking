@@ -13,36 +13,24 @@
 <style>
     .replay_viewer {
         width: 100%;
-        height: calc(100% - 164px);
         display: flex;
         flex-direction: row;
-    }
-
-    .team_box {
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        margin: 0.5em;
-        margin-left: 15em;
-        margin-top: 5em;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 2.5rem;
     }
 
     .event_box {
-        width: 50%;
+        width: 40%;
         height: 100%;
         display: flex;
         flex-direction: column;
-        margin: 0;
-        margin-left: 15em;
-        margin-top: 5em;
-        margin-right: 15em;
     }
 
     .events {
         display: inline-block;
         width: 100%;
-        height: 70%;
+        height: 70vh;
         padding: 10px;
         margin: 0;
         border: 0;
@@ -81,26 +69,39 @@
         max-height: 30px;
     }
 
-    table {
+    .team {
         display: inline-block;
-        width: min-content;
-        padding: 10px;
-        margin-bottom: 3rem;
+        height: 35%;
+        padding: 1rem;
+        margin-bottom: 2rem;
         border: 0;
         vertical-align: top;
-        
-        border: 2px solid gray;
-        border-radius: 10px;
 
-        border-collapse: collapse;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
     }
 
-    th, td {
-        padding: 0.25em;
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
     }
 
     th, td, tr {
-        text-align: left;
+        text-align: center;
+        border: 1px solid lightgray;
+    }
+
+    td {
+        color: lightgray;
+        padding: 2px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
     }
 
     .controls {
@@ -115,16 +116,49 @@
         margin-left: 0.25rem;
         margin-right: 0.25rem;
     }
+
+    #replay_viewer {
+        display: none;
+    }
+
+    #teams_loading_placeholder {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100% - 164px);
+    }
+
+    #fire_team tr td .player_codename {
+        color: orangered;
+    }
+
+    #earth_team tr td .player_codename {
+        color: greenyellow;
+    }
+
+    /*
+
+    (darker colors)
+
+    fire down color: #802200
+    earth down color: #4d8000
+
+    */
 </style>
 {% endblock %}
 
 {% block content %}
 
-<div class="replay_viewer">
-    <div class="team_box">
-        <table id="fire_team">
-            <tr>
-                <th><p>Role</p></th>
+<div id="teams_loading_placeholder">
+    <h1>Loading Replay...</h1>
+</div>
+<div class="replay_viewer" id="replay_viewer">
+    <div id="teams" class="team_box">
+        <div id="fire_team" class="team">
+            <h2 style="font-size: 20px; color: orangered;" class="team_score">Fire Team: {{ fire_score }}</h2>
+
+            <table id="fire_table">
+                <th class="role"><p>Role</p></th>
                 <th><p>Codename</p></th>
                 <th><p>Score</p></th>
                 <th><p>Lives</p></th>
@@ -132,11 +166,14 @@
                 <th><p>Missiles</p></th>
                 <th><p>Spec</p></th>
                 <th><p>Accuracy</p></th>
-            </tr>
-        </table>
-        <table id="earth_team">
-            <tr>
-                <th><p>Role</p></th>
+                <th><p>K/D</p></th>
+            </table>
+        </div>
+        <div id="earth_team" class="team">
+            <h2 style="font-size: 20px; color: greenyellow;" class="team_score">Earth Team: {{ earth_score }}</h2>
+
+            <table id="earth_table">
+                <th class="role"><p>Role</p></th>
                 <th><p>Codename</p></th>
                 <th><p>Score</p></th>
                 <th><p>Lives</p></th>
@@ -144,8 +181,9 @@
                 <th><p>Missiles</p></th>
                 <th><p>Spec</p></th>
                 <th><p>Accuracy</p></th>
-            </tr>
-        </table>
+                <th><p>K/D</p></th>
+            </table>
+        </div>
     </div>
     <div class="event_box">
         <div class="events" id="events">
@@ -157,8 +195,8 @@
                 <option value="0.25">0.25x</option>
                 <option value="0.5">0.5x</option>
                 <option value="1.0" selected>1.0x</option>
+                <option value="1.5">1.5x</option>
                 <option value="2.0">2.0x</option>
-                <option value="4.0">4.0x</option>
             </select>
             <button id="restart" class="control">Restart</button>
         </div>

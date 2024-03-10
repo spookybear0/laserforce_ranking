@@ -660,25 +660,31 @@ class SM5Game(Model):
     async def to_dict(self):
         # convert the entire game to a dict
         # this is used for the api
+
+        await self.fetch_related("teams", "entity_starts", "events", "player_states", "scores", "entity_ends", "sm5_stats")
+
         final = {}
 
         final["id"] = self.id
         final["winner"] = self.winner.value
+        final["winner_color"] = self.winner_color
         final["tdf_name"] = self.tdf_name
         final["file_version"] = self.file_version
         final["software_version"] = self.software_version
         final["arena"] = self.arena
         final["mission_type"] = self.mission_type
         final["mission_name"] = self.mission_name
+        final["ranked"] = self.ranked
         final["start_time"] = str(self.start_time)
         final["mission_duration"] = self.mission_duration
         final["log_time"] = str(self.log_time)
-        final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
-        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in await self.entity_starts.all()]
-        final["events"] = [await (await event).to_dict() for event in await self.events.all()]
-        final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
-        final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
-        final["sm5_stats"] = [await (await sm5_stat).to_dict() for sm5_stat in await self.sm5_stats.all()]
+        final["teams"] = [await team.to_dict() for team in self.teams]
+        final["entity_starts"] = [await entity_start.to_dict() for entity_start in self.entity_starts]
+        final["events"] = [await event.to_dict() for event in self.events]
+        final["player_states"] = [await player_state.to_dict() for player_state in self.player_states]
+        final["scores"] = [await score.to_dict() for score in self.scores]
+        final["entity_ends"] = [await entity_end.to_dict() for entity_end in self.entity_ends]
+        final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
 
         return final
     
