@@ -178,7 +178,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
         accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
 
         main_stats = {
-            "Score": stats['score'],
+            "Score": stats.score,
             "Shots fired": stats.shots_fired,
             "Accuracy": "%.2f%%" % (accuracy * 100),
             "Possession": _millis_to_time(possession_times.get(entity_start.entity_id)),
@@ -201,10 +201,10 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         all_players = ([
             {
-                "name": player['name'],
+                "name": player.name,
                 "team": (await player.team).index,
                 "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
-                "score": player_stats[player.id]['score'],
+                "score": player_stats[player.id].score,
                 "ball_possession": _millis_to_time(possession_times.get(player.entity_id, 0)),
                 "you_blocked": await count_blocks(game, entity_start.entity_id, player.entity_id),
                 "blocked_you": await count_blocks(game, player.entity_id, entity_start.entity_id),
