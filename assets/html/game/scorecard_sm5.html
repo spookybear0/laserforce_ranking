@@ -219,7 +219,7 @@
         align-items: center;
     }
 
-    .pie_chart {
+    .chart {
         max-width: 50%;
         display: flex;
     }
@@ -255,8 +255,7 @@
                 </table>
             </div>
             <div class="scorecard_graphs">
-                <canvas class="pie_chart" id="score_components" style="clear: both;"></canvas>
-                <canvas class="pie_chart" id="negative_score_components"></canvas>
+                <canvas class="chart" id="score_composition"></canvas>
             </div>
         </div>
 
@@ -300,47 +299,34 @@
 <script>
     already_shown_rounds = [];
 
-    new Chart("score_components", {
-        type: "pie",
+    new Chart("score_composition", {
+        type: "horizontalBar",
         data: {
-
-            labels: [{{ score_component_labels }}],
+            labels: [{{ score_composition_labels }}],
             datasets: [{
-                backgroundColor: [{{ score_component_colors }}],
-                data: [{{ score_component_values }}]
+                backgroundColor: [{{ score_composition_colors }}],
+                data: [{{ score_composition_values }}]
             }]
         },
         options: {
             legend: {
                 display: false,
-                fullSize: false
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white"
+                    }
+                }],
+                yAxes: [{
+                    ticks:{
+                        fontColor: "white"
+                    }
+                }]
             },
             title: {
                 display: true,
-                text: "Score Components",
-                fontColor: "white"
-            }
-        }
-    });
-
-    new Chart("negative_score_components", {
-        type: "pie",
-        data: {
-
-            labels: [{{ negative_score_component_labels }}],
-            datasets: [{
-                backgroundColor: [{{ negative_score_component_colors }}],
-                data: [{{ negative_score_component_values }}]
-            }]
-        },
-        options: {
-            legend: {
-                display: false,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Negative Score Components",
+                text: "Score Composition",
                 fontColor: "white"
             }
         }
