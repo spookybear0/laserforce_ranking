@@ -197,8 +197,6 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
         entity_end.previous_rating_sigma = player.laserball_sigma
         await entity_end.save()
     
-    # TODO: benefits for scoring
-    
     # go through all events for each game
 
     events: List[Events] = await game.events.filter(type__in=
@@ -236,8 +234,6 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
                 scorer_elo = Rating(scorer_player.laserball_mu, scorer_player.laserball_sigma)
 
                 out = model.rate([[scorer_elo], [scorer_elo]], ranks=[0, 1])
-
-                print((out[0][0].mu - scorer_player.laserball_mu), (out[0][0].sigma - scorer_player.laserball_sigma))
 
                 scorer_player.laserball_mu += (out[0][0].mu - scorer_player.laserball_mu) * 1.5
                 scorer_player.laserball_sigma += (out[0][0].sigma - scorer_player.laserball_sigma) * 1.5
@@ -403,8 +399,7 @@ def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType=GameTyp
     team3 = list(map(lambda x: getattr(x, f"{mode}_rating"), team3))
     team4 = list(map(lambda x: getattr(x, f"{mode}_rating"), team4))
 
-    # TODO: console.log
-    print(team1, team2, team3, team4)
+    logger.debug("Predicting win chances")
 
     if not team3:
         return model.predict_win([team1, team2])

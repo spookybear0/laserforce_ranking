@@ -218,28 +218,34 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # add new players to the database
 
-    # TODO: find a way to get the player_id from the tdf file
-    # or from the token (entity_id which is the same as the entity_id)
-
     for e in entity_starts:
         # is a player and logged in
         if e.entity_id.startswith("@") and e.name == e.battlesuit:
             continue
+
+        db_member_id = e.member_id if e.member_id else ""
 
         if e.type == "player":
             # update entity_id if it's empty
             if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).entity_id == "":
                 player = await Player.filter(codename=e.name).first()
                 player.entity_id = e.entity_id
+                player.player_id = db_member_id
                 await player.save()
             # update player name if we have a new one and we have entity_id
             elif await Player.filter(entity_id=e.entity_id).exists() and (await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.name = e.name
+                player.player_id = db_member_id
+                await player.save()
+            # update player_id if we have entity_id and don't have player_id
+            elif await Player.filter(entity_id=e.entity_id).exists() and (await Player.filter(entity_id=e.entity_id).first()).player_id == "":
+                player = await Player.filter(entity_id=e.entity_id).first()
+                player.player_id = member_id
                 await player.save()
             # create new player if we don't have a name or entity_id
             elif not await Player.filter(codename=e.name).exists() and not await Player.filter(entity_id=e.entity_id).exists():
-                await Player.create(player_id="", codename=e.name, entity_id=e.entity_id)
+                await Player.create(player_id=db_member_id, codename=e.name, entity_id=e.entity_id)
 
     # update player rankings
 

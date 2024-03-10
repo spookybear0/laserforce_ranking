@@ -80,7 +80,6 @@ async def database_player(player: IPLPlayer) -> None:
     player.id = "-".join(player.id) # convert list to str
     db_player: Player = await Player.from_player_id(player.id)
 
-    # TODO: implement Player.update() and Player.create()
     if db_player:
         db_player.codename = player.codename
         await db_player.update()

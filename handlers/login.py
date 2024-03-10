@@ -20,7 +20,6 @@ async def login_post(request: Request) -> str:
     logger.debug(f"Logging in user {codename}")
 
     if not codename or not password:
-        # TODO: better error message
         raise exceptions.BadRequest("Missing codename or password")
     
     logger.debug("Checking if user exists")

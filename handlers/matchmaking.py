@@ -1,4 +1,4 @@
-from sanic import Request
+from sanic import Request, exceptions
 from shared import app
 from helpers import ratinghelper
 from utils import render_template, get_post
@@ -26,9 +26,10 @@ class FakePlayer:
 
 @app.get("/matchmaking")
 async def matchmaking(request: Request) -> str:
-    players = await Player.filter()
+    players = await Player.all()
 
     # all_players = {codename: (sm5_rating, lb_rating)
+    logger.debug("Getting ratings for all players")
     all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
 
     return await render_template(
@@ -43,8 +44,6 @@ async def matchmaking(request: Request) -> str:
 
 @app.post("/matchmaking")
 async def matchmaking_post(request: Request) -> str:
-    # TODO: logging here
-
     data = request.form
 
     team1 = []
@@ -54,25 +53,40 @@ async def matchmaking_post(request: Request) -> str:
     if mode == "": mode = "sm5"
     mode = GameType(mode)
 
+    logger.debug(f"Matchmaking with mode: {mode}")
+
+    logger.debug("Getting players from team 1")
+
     for i in range(16):
         codename = data.get(f"1player{i}")
         if not codename:
             continue
         codename = codename.strip()
-        p = await Player.filter(codename=codename).first()
-        team1.append(p.codename)
+        player = await Player.filter(codename=codename).first()
+
+        if not player:
+            return exceptions.BadRequest(f"Player {codename} not found")
+
+        team1.append(player.codename)
+
+    logger.debug("Getting players from team 2")
 
     for i in range(16):
         codename = data.get(f"2player{i}")
         if not codename:
             continue
         codename = codename.strip()
-        p = await Player.filter(codename=codename).first()
-        team2.append(p.codename)
+        player = await Player.filter(codename=codename).first()
 
-    players = await Player.filter()
+        if not player:
+            return exceptions.BadRequest(f"Player {codename} not found")
+
+        team2.append(player.codename)
+
+    players = await Player.all()
 
     # all_players = {codename: (sm5_rating, lb_rating)
+    logger.debug("Getting ratings for all players")
     all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
 
     return await render_template(
@@ -82,5 +96,5 @@ async def matchmaking_post(request: Request) -> str:
         all_players=all_players,
         mode=mode,
         team1=team1,
-        team2=team2,
+        team2=team2
     )
