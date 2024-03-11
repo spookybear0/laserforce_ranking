@@ -59,7 +59,7 @@ class CustomPlackettLuce(PlackettLuce):
 
         return PlackettLuce.predict_win(self, teams)
     
-model = CustomPlackettLuce(MU, SIGMA, BETA, KAPPA, TAU)
+model = CustomPlackettLuce(MU, SIGMA, BETA, KAPPA, tau=TAU)
 Rating = PlackettLuceRating
 
 
