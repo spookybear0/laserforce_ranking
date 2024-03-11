@@ -126,7 +126,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             score_composition_values=", ".join([str(component['score']) for component in score_composition]),
         )
 
-    if type == "lb":
+    if type == "laserball":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
 
         if not game:

@@ -15,7 +15,7 @@ async def api_matchmake(request: Request, type_: str) -> str:
 
     logger.info(f"Matchmaking requested for {type_}")
 
-    mode = GameType("laserball" if type_ == "lb" else "sm5")
+    mode = GameType("laserball" if type_ == "laserball" else "sm5")
 
     # get the teams
 

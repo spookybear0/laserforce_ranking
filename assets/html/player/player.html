@@ -302,7 +302,7 @@
                         {% endif %}
 
                         <tr>
-                            <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                            <td><a href="/game/laserball/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
                                 <td title="mu: {{ ('%.2f' % (entity_end.current_rating_mu|round(2))) if entity_end.current_rating_mu else 25 }}, sigma: {{ ('%.2f' % (entity_end.current_rating_sigma|round(2))) if entity_end.current_rating_sigma else 8.33 }}" style="font-weight: 500; color: white;">{{ ('%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2)) if entity_end.current_rating_mu and entity_end.current_rating_sigma else 0}}</td>

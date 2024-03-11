@@ -34,9 +34,15 @@ async def game_index(request: Request, type: str, id: int) -> str:
                 continue
 
             if (await player.team).enum == Team.RED:
-                players_matchmake_team1.append(player.name)
+                if player.entity_id.startswith("@"):
+                    players_matchmake_team1.append(player.name)
+                else:
+                    players_matchmake_team1.append(player.entity_id)
             elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
-                players_matchmake_team2.append(player.name)
+                if player.entity_id.startswith("@"):
+                    players_matchmake_team2.append(player.name)
+                else:
+                    players_matchmake_team2.append(player.entity_id)
 
         return await render_template(
             request, "game/sm5.html",
@@ -52,7 +58,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
         )
-    elif type == "lb":
+    elif type == "laserball":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
 
         if not game:
@@ -66,9 +72,15 @@ async def game_index(request: Request, type: str, id: int) -> str:
                 continue
 
             if (await player.team).enum == Team.RED:
-                players_matchmake_team1.append(player.name)
+                if player.entity_id.startswith("@"):
+                    players_matchmake_team1.append(player.name)
+                else:
+                    players_matchmake_team1.append(player.entity_id)
             elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
-                players_matchmake_team2.append(player.name)
+                if player.entity_id.startswith("@"):
+                    players_matchmake_team2.append(player.name)
+                else:
+                    players_matchmake_team2.append(player.entity_id)
         
         return await render_template(
             request, "game/laserball.html",

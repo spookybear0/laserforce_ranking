@@ -18,7 +18,7 @@ SIGMA = 25 / 3
 BETA = 25 / 6
 KAPPA = 0.0001
 TAU = 25 / 200 # default: 25/300 (for rating volatility)
-ZETA = 0.1 # default: 0 (custom addition for uneven team rating adjustment)
+ZETA = 0.09 # default: 0 (custom addition for uneven team rating adjustment)
 
 class CustomPlackettLuce(PlackettLuce):
     def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:

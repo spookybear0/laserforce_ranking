@@ -18,7 +18,7 @@ async def api_game_tdf(request: Request, type_: str, id: int) -> str:
 
     if type_ == "sm5":
         game = await SM5Game.filter(id=id).first()
-    elif type_ == "lb":
+    elif type_ == "laserball":
         game = await LaserballGame.filter(id=id).first()
     else:
         raise exceptions.BadRequest("Invalid game type!", status_code=400)
@@ -41,7 +41,7 @@ async def api_game_json(request: Request, type_: str, id: int) -> str:
 
     if type_ == "sm5":
         game = await SM5Game.filter(id=id).first()
-    elif type_ == "lb":
+    elif type_ == "laserball":
         game = await LaserballGame.filter(id=id).first()
     else:
         raise exceptions.BadRequest("Invalid game type!", status_code=400)

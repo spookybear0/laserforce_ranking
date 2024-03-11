@@ -247,9 +247,9 @@
                 <span title="Matchmake"><h3><a>Rematchmake</a></h3></span>
             </button>
         </form>
-        {% if is_admin %}<span title="Admin Page"><h3><a href="/admin/game/lb/{{ game.id }}/">Admin Page</a></h3></span>{% endif %}
-        <span><h3><a href="/api/game/lb/{{ game.id }}">Game File</a></h3></span>
-        <span title="Replay"><h3><a href="/game/lb/{{ game.id }}/replay">Replay</a></h3></span>
+        {% if is_admin %}<span title="Admin Page"><h3><a href="/admin/game/laserball/{{ game.id }}/">Admin Page</a></h3></span>{% endif %}
+        <span><h3><a href="/api/game/laserball/{{ game.id }}">Game File</a></h3></span>
+        <span title="Replay"><h3><a href="/game/laserball/{{ game.id }}/replay">Replay</a></h3></span>
     </div>
     <div class="userlist" style="text-align: left;">
         <div style="clear: both;"></div>
@@ -285,7 +285,7 @@
                                     <td><p>{{ laserball_stats.score }}</p></td>
                                 {% else %}
                                     <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
-                                    <td><a href="/game/lb/{{game.id}}/scorecard/{{entity_end.id}}">{{ laserball_stats.score }}</a></td>
+                                    <td><a href="/game/laserball/{{game.id}}/scorecard/{{entity_end.id}}">{{ laserball_stats.score }}</a></td>
                                 {% endif %}
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
@@ -332,11 +332,11 @@
                             {% set laserball_stats = get_laserballstats(entity) %}
                             <tr>
                                 {% if entity.entity_id.startswith("@") %}
-                                <td><p>{{ entity.name }}</p></td>
-                                <td><p>{{ laserball_stats.score }}</p></td>
+                                    <td><p>{{ entity.name }}</p></td>
+                                    <td><p>{{ laserball_stats.score }}</p></td>
                                 {% else %}
-                                <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
-                                <td><a href="/game/lb/{{game.id}}/scorecard/{{entity_end.id}}">{{ laserball_stats.score }}</a></td>
+                                    <td><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
+                                    <td><a href="/game/laserball/{{game.id}}/scorecard/{{entity_end.id}}">{{ laserball_stats.score }}</a></td>
                                 {% endif %}
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>

@@ -15,7 +15,7 @@ async def api_win_chances(request: Request, type_: str) -> str:
 
     logger.info(f"Win chances requested for {type_}")
 
-    mode = GameType("laserball" if type_ == "lb" else "sm5")
+    mode = GameType("laserball" if type_ == "laserball" else "sm5")
 
     # get the teams
 
@@ -40,29 +40,29 @@ async def api_win_chances(request: Request, type_: str) -> str:
     team3_players = []
     team4_players = []
 
-    def add_unrated_player(team) -> bool:
-        if codename == "Unrated Player":
+    async def add_unrated_player(team) -> bool:
+        if codename == "Unrated Player" or await Player.filter(codename=codename).first() is None:
             # dummy class to represent unrated player
             class _: pass
             p = _()
             p.codename = "Unrated Player"
-            p.sm5_rating = ratinghelper.Rating(25, 8.333)
-            p.laserball_rating = ratinghelper.Rating(25, 8.333)
+            p.sm5_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.laserball_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
             team.append(p)
             return True
         return False
 
     for codename in team1:
-        if not add_unrated_player(team1_players):
+        if not await add_unrated_player(team1_players):
             team1_players.append(await Player.filter(codename=codename).first())
     for codename in team2:
-        if not add_unrated_player(team2_players):
+        if not await add_unrated_player(team2_players):
             team2_players.append(await Player.filter(codename=codename).first())
     for codename in team3:
-        if not add_unrated_player(team3_players):
+        if not await add_unrated_player(team3_players):
             team3_players.append(await Player.filter(codename=codename).first())
     for codename in team4:
-        if not add_unrated_player(team4_players):
+        if not await add_unrated_player(team4_players):
             team4_players.append(await Player.filter(codename=codename).first())
 
     # calculate win chances

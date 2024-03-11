@@ -72,7 +72,7 @@ async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battles
 
     if mode == "sm5":
         tdf = "sm5_tdf/" + tdf
-    elif mode == "lb":
+    elif mode == "laserball":
         tdf = "laserball_tdf/" + tdf
     else:
         raise ValueError("Invalid mode")
@@ -133,7 +133,7 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
 
         id_ = (await SM5Stats.filter(entity__entity_id=entity_start.entity_id).first()).id
         await SM5Stats.filter(id=id_).delete()
-    elif mode == "lb":
+    elif mode == "laserball":
         # delete laserballstats
 
         logger.debug("Deleting laserballstats")
@@ -152,7 +152,7 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
 
     if mode == "sm5":
         tdf = "sm5_tdf/" + tdf
-    elif mode == "lb":
+    elif mode == "laserball":
         tdf = "laserball_tdf/" + tdf
     else:
         raise ValueError("Invalid mode")

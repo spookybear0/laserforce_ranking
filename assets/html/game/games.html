@@ -187,7 +187,7 @@
             </tr>
             {% for game in laserball_games %}
                 <tr>
-                    <td><a href="/game/lb/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
+                    <td><a href="/game/laserball/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                     {% if not game.winner %}
                         <td style="color: grey;">None</td>
                     {% elif game.winner.value == "blue" %}

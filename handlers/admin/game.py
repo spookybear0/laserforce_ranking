@@ -36,7 +36,7 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
             previous_game_id=await game.get_previous_game_id(),
             next_game_id=await game.get_next_game_id(),
         )
-    elif mode == "lb":
+    elif mode == "laserball":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
 
         if not game:
@@ -59,7 +59,7 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
 async def admin_game_rank(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
-    elif mode == "lb":
+    elif mode == "laserball":
         game = await LaserballGame.filter(id=id).first()
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
@@ -76,7 +76,7 @@ async def admin_game_rank(request: Request, mode: str, id: Union[int, str]) -> s
 async def admin_game_unrank(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
-    elif mode == "lb":
+    elif mode == "laserball":
         game = await LaserballGame.filter(id=id).first()
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
@@ -91,7 +91,7 @@ async def admin_game_unrank(request: Request, mode: str, id: Union[int, str]) ->
 async def admin_game_log_in_player(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
-    elif mode == "lb":
+    elif mode == "laserball":
         game = await LaserballGame.filter(id=id).first()
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
@@ -112,7 +112,7 @@ async def admin_game_delete(request: Request, mode: str, id: Union[int, str]) ->
         game = await SM5Game.filter(id=id).first()
         await game.delete()
         os.remove("sm5_tdf/" + game.tdf_name)
-    elif mode == "lb":
+    elif mode == "laserball":
         game = await LaserballGame.filter(id=id).first()
         await game.delete()
         os.remove("laserball_tdf/" + game.tdf_name)
@@ -126,7 +126,7 @@ async def admin_game_delete(request: Request, mode: str, id: Union[int, str]) ->
 async def admin_game_delete_player(request: Request, mode: str, id: Union[int, str]) -> str:
     if mode == "sm5":
         game = await SM5Game.filter(id=id).first()
-    elif mode == "lb":
+    elif mode == "laserball":
         game = await LaserballGame.filter(id=id).first()
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
