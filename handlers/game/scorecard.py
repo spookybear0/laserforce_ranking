@@ -135,9 +135,9 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "entity_end_id": player_entity_ends[player.id].id,
                 "role": player.role,
                 "score": player_entity_ends[player.id].score,
-                "lives_left": player_sm5_stats[player.id].lives_left,
-                "kd_ratio": "%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
-                             if player_sm5_stats[player.id].times_zapped > 0 else 1),
+                "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
+                "kd_ratio": ("%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
+                             if player_sm5_stats[player.id].times_zapped > 0 else 1)) if player.id in player_sm5_stats else "",
                 "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
                 "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
@@ -227,6 +227,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "ball_possession": _millis_to_time(possession_times.get(player.entity_id, 0)),
                 "you_blocked": await count_blocks(game, entity_start.entity_id, player.entity_id),
                 "blocked_you": await count_blocks(game, player.entity_id, entity_start.entity_id),
+                "mvp_points": "%.2f" % player_stats[player.id].mvp_points,
                 "blocks": player_stats[player.id].blocks,
                 "goals": player_stats[player.id].goals,
                 "passes": player_stats[player.id].passes,
