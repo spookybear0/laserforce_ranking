@@ -1,6 +1,10 @@
 from typing import List, Tuple, Optional, Callable, Any
 from sentry_sdk import Hub, start_transaction
-from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats, LaserballGame
+from tortoise.expressions import Q
+from tortoise.fields import ManyToManyRelation
+
+from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats, LaserballGame, PlayerStateEvent, \
+    PlayerStateDetailType, PlayerStateType, EventType, EntityStarts
 from tortoise.functions import Sum
 
 # stats helpers
@@ -10,6 +14,14 @@ from tortoise.functions import Sum
 General helpers
 
 """
+
+"""Max duration between an event and its resulting changes (like state change) in related tables.
+
+For example, this is the lost duration for which we would consider a state change to "DOWN"
+to be the effect of a preceding "missiled" event.
+This is typically less than 20ms. We're using 50 here just in case there is a bit of lag.
+"""
+_EVENT_LATENCY_THRESHOLD_MILLIS = 50
 
 def _millis_to_time(milliseconds: Optional[int]) -> str:
     """Converts milliseconds into an MM:SS string."""
@@ -424,3 +436,129 @@ def sentry_trace(func) -> Callable:
                 return await func(*args, **kwargs)
 
     return wrapper
+
+async def get_player_state_timeline(entity_start: EntityStarts,
+                                    entity_end: EntityEnds,
+                                    player_states: ManyToManyRelation,
+                                    events: ManyToManyRelation) -> list[PlayerStateEvent]:
+    """Returns a timeline of states for the given entity.
+
+    The result is a list of state markers (timestamp and owning entity) in game order. The last entry will
+    always be a sentinel: The timestamp is the end of the game, and the state is None.
+
+    Args:
+        entity_start: EntityStarts object for this entity.
+        entity_end: EntityEnds object for this entity.
+        player_states: The player_states object from the game model.
+        events: The events object from the game model.
+    """
+    states = await player_states.filter(entity=entity_start.id).all()
+
+    # Get every event where either a nuke was detonated, or where this entity was the target of
+    # an action.
+    entity_events = await events.filter(
+        Q(type=EventType.DETONATE_NUKE) | Q(arguments__filter={"2": entity_start.entity_id})).all()
+
+    # The entity starts in ACTIVE state.
+    result = [PlayerStateEvent(timestamp_millis=0, state=PlayerStateDetailType.ACTIVE)]
+
+    # We're going to walk through the state list and look for changes.
+    event_index = 0
+    event_count = len(entity_events)
+
+    for state in states:
+        new_state = PlayerStateDetailType.ACTIVE
+
+        # Note that we're ignoring other states, like UNKNOWN - we'll treat it as ACTIVE.
+
+        if state.state == PlayerStateType.RESETTABLE:
+            new_state = PlayerStateDetailType.RESETTABLE
+        elif state.state == PlayerStateType.DOWN:
+            new_state = PlayerStateDetailType.DOWN_FOR_OTHER
+
+            # If the player is down, let's find out why.
+            while event_index < event_count - 1 and entity_events[event_index].time < state.time:
+                event_index += 1
+
+            # Go to all events that JUST happened to this entity and see what was going on.
+            while True:
+                event = entity_events[event_index]
+                event_time = event.time
+                if event_time < state.time - _EVENT_LATENCY_THRESHOLD_MILLIS:
+                    # There is no relevant event within the given threshold. That's not expected,
+                    # but there may be some special kind of event, maybe custom for the game mode.
+                    # We're already defaulting to DOWN_FOR_OTHER.
+                    break
+
+                if event_time > state.time:
+                    # Go further back, we're not there yet.
+                    if event_index == 0:
+                        # As above - we weirdly can't find a relevant event.
+                        break
+
+                    event_index -= 1
+                    continue
+
+                # Okay, we're now looking at the event that immediately preceded the DOWN state.
+                if event.type == EventType.DETONATE_NUKE:
+                    new_state = PlayerStateDetailType.DOWN_NUKED
+                elif event.arguments[1] == " zaps ":
+                    new_state = PlayerStateDetailType.DOWN_ZAPPED
+                elif event.arguments[1] == " missiles ":
+                    new_state = PlayerStateDetailType.DOWN_MISSILED
+                elif event.arguments[1] == " resupplies ":
+                    new_state = PlayerStateDetailType.DOWN_FOR_RESUP
+                break
+
+        result.append(PlayerStateEvent(timestamp_millis=state.time, state=new_state))
+
+    # Finally, add a sentinel at the end so we count the time between the last state change and
+    # the end of the game. We need to use EntityEnds.time, not the MISSION_END time, in case the entity
+    # got eliminated.
+    result.append(PlayerStateEvent(timestamp_millis=entity_end.time, state=None))
+
+    return result
+
+
+async def get_player_state_distribution(entity_start: EntityStarts,
+                                        entity_end: EntityEnds,
+                                        player_states: ManyToManyRelation,
+                                        events: ManyToManyRelation,
+                                        label_map: dict[PlayerStateDetailType, str]) -> dict[str, int]:
+    """Creates a distribution of how much time an entity spent in each state.
+
+    Returns a dict with a display name for the state (as defined in label_map) and the time spent in that
+    state in milliseconds.
+
+    States for which there is no entry in label_map will be ignored.
+
+     Args:
+        entity_start: EntityStarts object for this entity.
+        entity_end: EntityEnds object for this entity.
+        player_states: The player_states object from the game model.
+        events: The events object from the game model.
+        label_map: Mapping from a state to a string. If the same string is used for multiple states, all times
+            will be merged into the same string.
+    """
+    timeline = await get_player_state_timeline(entity_start, entity_end, player_states, events)
+
+    result = {}
+
+    last_state = None
+    last_timestamp = 0
+
+    def _add_player_state(state: PlayerStateDetailType, duration_millis: int):
+        # Ignore states that are not in the label map.
+        if state not in label_map:
+            return
+        label = label_map[state]
+        result[label] = result.get(label, 0) + duration_millis
+
+    for state in timeline:
+        if last_state is not None:
+            _add_player_state(last_state, state.timestamp_millis - last_timestamp)
+
+        last_state = state.state
+        last_timestamp = state.timestamp_millis
+
+    return result
