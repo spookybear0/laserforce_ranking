@@ -125,6 +125,24 @@ class BallPossessionEvent:
     timestamp_millis: int
     entity_id: Optional[str]
 
+
+class PlayerStateDetailType(IntEnum):
+    ACTIVE = 0
+    DOWN_ZAPPED = 1
+    DOWN_MISSILED = 2
+    DOWN_NUKED = 3
+    DOWN_FOR_RESUP = 4
+    DOWN_FOR_OTHER = 5  # Down for a reason not obvious from logs
+    RESETTABLE = 6
+
+
+@dataclass
+class PlayerStateEvent:
+    """This denotes a time at which the player state changed."""
+    timestamp_millis: int
+    state: Optional[PlayerStateDetailType]
+
+
 class Player(Model):
     id = fields.IntField(pk=True)
     player_id = fields.CharField(20)
