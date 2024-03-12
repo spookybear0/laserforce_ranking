@@ -120,13 +120,25 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             player for player in list(entity_starts) if player.type == "player"
         ]
 
+        player_entity_ends = {
+            player.id: await EntityEnds.filter(entity=player.id).first() for player in player_entities
+        }
+
+        player_sm5_stats = {
+            player.id: await SM5Stats.filter(entity_id=player.id).first() for player in player_entities
+        }
+
         all_players = ([
             {
                 "name": player.name,
                 "team": (await player.team).index,
-                "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
+                "entity_end_id": player_entity_ends[player.id].id,
                 "role": player.role,
-                "score": (await EntityEnds.filter(entity=player.id).first()).score,
+                "score": player_entity_ends[player.id].score,
+                "lives_left": player_sm5_stats[player.id].lives_left,
+                "kd_ratio": "%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
+                             if player_sm5_stats[player.id].times_zapped > 0 else 1),
+                "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
                 "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
                 "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),

@@ -39,7 +39,7 @@ import router
 from mysql import MySQLPool
 from tortoise import Tortoise
 from config import config
-from helpers import cachehelper, adminhelper
+from helpers import cachehelper
 
 TORTOISE_ORM = {
     "connections": { "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce" },
