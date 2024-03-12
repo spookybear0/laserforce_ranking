@@ -258,6 +258,7 @@
                         <th>Steals</th>
                         <th>Clears</th>
                         <th>Blocks</th>
+                        <th><p title="Goal = 1, Assist = 0.75, Steal = 0.5, Clear = 0.25, Block = 0.3">MVP Points</p></th>
                     </tr>
                     {% for player in team.players %}
                     <tr>
@@ -273,6 +274,7 @@
                         <td class="scorecard_player_stat">{{ player.steals }}</td>
                         <td class="scorecard_player_stat">{{ player.clears }}</td>
                         <td class="scorecard_player_stat">{{ player.blocks }}</td>
+                        <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
                     </tr>
                     {% endfor %}
 
