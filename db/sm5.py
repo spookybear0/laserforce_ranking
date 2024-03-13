@@ -357,8 +357,6 @@ class SM5Stats(Model):
         mvp points according to lfstats.com
 
         NOTE: this is a function, while LaserballStats.mvp_points is a property
-
-        CAUTION: not completely accurate due to elimation points not being implemented
         """
 
         score: int = await (await self.entity).get_score()
@@ -380,11 +378,14 @@ class SM5Stats(Model):
         
         # check if team eliminated the other team
 
-        mission_length = (await game.events.filter(type=EventType.MISSION_END).first()).time
+        mission_end = await game.events.filter(type=EventType.MISSION_END).first()
 
-        if ((await (await self.entity).team).enum == Team.RED and await game.get_green_team_elimated()) or \
-        ((await (await self.entity).team).enum == Team.GREEN and await game.get_red_team_elimated()):
-            total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
+        if mission_end is not None:
+            mission_length = mission_end.time
+
+            if ((await (await self.entity).team).enum == Team.RED and await game.get_green_team_elimated()) or \
+            ((await (await self.entity).team).enum == Team.GREEN and await game.get_red_team_elimated()):
+                total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled
 
