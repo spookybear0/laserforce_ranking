@@ -6,7 +6,7 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
         CREATE TABLE IF NOT EXISTS `events` (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `time` INT NOT NULL,
-    `type` SMALLINT NOT NULL  COMMENT 'MISSION_START: 100\nMISSION_END: 101\nSHOT_EMPTY: 200\nMISS: 201\nMISS_BASE: 202\nHIT_BASE: 203\nDESTROY_BASE: 204\nDAMAGED_OPPONENT: 205\nDOWNED_OPPONENT: 206\nDAMANGED_TEAM: 207\nDOWNED_TEAM: 208\nLOCKING: 300\nMISSILE_BASE_MISS: 301\nMISSILE_BASE_DAMAGE: 302\nMISISLE_BASE_DESTROY: 303\nMISSILE_MISS: 304\nMISSILE_DAMAGE_OPPONENT: 305\nMISSILE_DOWN_OPPONENT: 306\nMISSILE_DAMAGE_TEAM: 307\nMISSILE_DOWN_TEAM: 308\nACTIVATE_RAPID_FIRE: 400\nDEACTIVATE_RAPID_FIRE: 401\nACTIVATE_NUKE: 404\nDETONATE_NUKE: 405\nRESUPPLY_AMMO: 500\nRESUPPLY_LIVES: 502\nAMMO_BOOST: 510\nLIFE_BOOST: 512\nPENALTY: 600\nACHIEVEMENT: 900\nBASE_AWARDED: 2819\nPASS: 1100\nGOAL: 1101\nSTEAL: 1103\nBLOCK: 1104\nROUND_START: 1105\nROUND_END: 1106\nGETS_BALL: 1107\nCLEAR: 1109',
+    `type` VARCHAR(4) NOT NULL  COMMENT 'MISSION_START: 0100\nMISSION_END: 0101\nSHOT_EMPTY: 0200\nMISS: 0201\nMISS_BASE: 0202\nHIT_BASE: 0203\nDESTROY_BASE: 0204\nDAMAGED_OPPONENT: 0205\nDOWNED_OPPONENT: 0206\nDAMANGED_TEAM: 0207\nDOWNED_TEAM: 0208\nLOCKING: 0300\nMISSILE_BASE_MISS: 0301\nMISSILE_BASE_DAMAGE: 0302\nMISISLE_BASE_DESTROY: 0303\nMISSILE_MISS: 0304\nMISSILE_DAMAGE_OPPONENT: 0305\nMISSILE_DOWN_OPPONENT: 0306\nMISSILE_DAMAGE_TEAM: 0307\nMISSILE_DOWN_TEAM: 0308\nACTIVATE_RAPID_FIRE: 0400\nDEACTIVATE_RAPID_FIRE: 0401\nACTIVATE_NUKE: 0404\nDETONATE_NUKE: 0405\nRESUPPLY_AMMO: 0500\nRESUPPLY_LIVES: 0502\nAMMO_BOOST: 0510\nLIFE_BOOST: 0512\nPENALTY: 0600\nACHIEVEMENT: 0900\nREWARD: 0902\nBASE_AWARDED: 0B03\nPASS: 1100\nGOAL: 1101\nASSIST: 1102\nSTEAL: 1103\nBLOCK: 1104\nROUND_START: 1105\nROUND_END: 1106\nGETS_BALL: 1107\nTIME_VIOLATION: 1108\nCLEAR: 1109\nFAIL_CLEAR: 110A',
     `arguments` JSON NOT NULL
 ) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `laserballgame` (
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `player` (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `player_id` VARCHAR(20) NOT NULL,
     `codename` VARCHAR(255) NOT NULL,
-    `ipl_id` VARCHAR(50) NOT NULL  DEFAULT '',
+    `entity_id` VARCHAR(50) NOT NULL  DEFAULT '',
     `sm5_mu` DOUBLE NOT NULL  DEFAULT 25,
     `sm5_sigma` DOUBLE NOT NULL  DEFAULT 8.333,
     `laserball_mu` DOUBLE NOT NULL  DEFAULT 25,
@@ -101,8 +101,9 @@ CREATE TABLE IF NOT EXISTS `entitystarts` (
     `type` VARCHAR(50) NOT NULL,
     `name` VARCHAR(75) NOT NULL,
     `level` INT NOT NULL,
-    `role` SMALLINT NOT NULL  COMMENT 'BASE: 0\nCOMMANDER: 1\nHEAVY: 2\nSCOUT: 3\nAMMO: 4\nMEDIC: 5',
+    `role` SMALLINT NOT NULL  COMMENT 'OTHER: 0\nCOMMANDER: 1\nHEAVY: 2\nSCOUT: 3\nAMMO: 4\nMEDIC: 5',
     `battlesuit` VARCHAR(50) NOT NULL,
+    `member_id` VARCHAR(50),
     `team_id` INT NOT NULL,
     CONSTRAINT `fk_entityst_teams_07c83741` FOREIGN KEY (`team_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
@@ -126,12 +127,21 @@ CREATE TABLE IF NOT EXISTS `laserballstats` (
     `steals` INT NOT NULL,
     `clears` INT NOT NULL,
     `blocks` INT NOT NULL,
+    `shots_fired` INT NOT NULL,
+    `shots_hit` INT NOT NULL,
     `started_with_ball` INT NOT NULL,
     `times_stolen` INT NOT NULL,
     `times_blocked` INT NOT NULL,
     `passes_received` INT NOT NULL,
     `entity_id` INT NOT NULL,
     CONSTRAINT `fk_laserbal_entityst_69c251be` FOREIGN KEY (`entity_id`) REFERENCES `entitystarts` (`id`) ON DELETE CASCADE
+) CHARACTER SET utf8mb4;
+CREATE TABLE IF NOT EXISTS `playerstates` (
+    `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `time` INT NOT NULL,
+    `state` SMALLINT NOT NULL  COMMENT 'ACTIVE: 0\nUNKNOWN: 1\nRESETTABLE: 2\nDOWN: 3',
+    `entity_id` INT NOT NULL,
+    CONSTRAINT `fk_playerst_entityst_ef31635a` FOREIGN KEY (`entity_id`) REFERENCES `entitystarts` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `sm5stats` (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -176,17 +186,23 @@ CREATE TABLE IF NOT EXISTS `aerich` (
     `app` VARCHAR(100) NOT NULL,
     `content` JSON NOT NULL
 ) CHARACTER SET utf8mb4;
+CREATE TABLE IF NOT EXISTS `laserballgame_entitystarts` (
+    `laserballgame_id` INT NOT NULL,
+    `entitystarts_id` INT NOT NULL,
+    FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`entitystarts_id`) REFERENCES `entitystarts` (`id`) ON DELETE CASCADE
+) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `laserballgame_events` (
     `laserballgame_id` INT NOT NULL,
     `events_id` INT NOT NULL,
     FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`events_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
-CREATE TABLE IF NOT EXISTS `laserballgame_entitystarts` (
+CREATE TABLE IF NOT EXISTS `laserballgame_playerstates` (
     `laserballgame_id` INT NOT NULL,
-    `entitystarts_id` INT NOT NULL,
+    `playerstates_id` INT NOT NULL,
     FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`entitystarts_id`) REFERENCES `entitystarts` (`id`) ON DELETE CASCADE
+    FOREIGN KEY (`playerstates_id`) REFERENCES `playerstates` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `laserballgame_entityends` (
     `laserballgame_id` INT NOT NULL,
@@ -194,11 +210,11 @@ CREATE TABLE IF NOT EXISTS `laserballgame_entityends` (
     FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`entityends_id`) REFERENCES `entityends` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
-CREATE TABLE IF NOT EXISTS `laserballgame_teams` (
+CREATE TABLE IF NOT EXISTS `laserballgame_scores` (
     `laserballgame_id` INT NOT NULL,
-    `teams_id` INT NOT NULL,
+    `scores_id` INT NOT NULL,
     FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`teams_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
+    FOREIGN KEY (`scores_id`) REFERENCES `scores` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `laserballgame_laserballstats` (
     `laserballgame_id` INT NOT NULL,
@@ -206,11 +222,11 @@ CREATE TABLE IF NOT EXISTS `laserballgame_laserballstats` (
     FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`laserballstats_id`) REFERENCES `laserballstats` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
-CREATE TABLE IF NOT EXISTS `laserballgame_scores` (
+CREATE TABLE IF NOT EXISTS `laserballgame_teams` (
     `laserballgame_id` INT NOT NULL,
-    `scores_id` INT NOT NULL,
+    `teams_id` INT NOT NULL,
     FOREIGN KEY (`laserballgame_id`) REFERENCES `laserballgame` (`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`scores_id`) REFERENCES `scores` (`id`) ON DELETE CASCADE
+    FOREIGN KEY (`teams_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `legacylaserballgame_legacylaserballgameplayer` (
     `legacylaserballgame_id` INT NOT NULL,
@@ -224,6 +240,12 @@ CREATE TABLE IF NOT EXISTS `legacysm5game_legacysm5gameplayer` (
     FOREIGN KEY (`legacysm5game_id`) REFERENCES `legacysm5game` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`legacysm5gameplayer_id`) REFERENCES `legacysm5gameplayer` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
+CREATE TABLE IF NOT EXISTS `sm5game_entitystarts` (
+    `sm5game_id` INT NOT NULL,
+    `entitystarts_id` INT NOT NULL,
+    FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`entitystarts_id`) REFERENCES `entitystarts` (`id`) ON DELETE CASCADE
+) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `sm5game_events` (
     `sm5game_id` INT NOT NULL,
     `events_id` INT NOT NULL,
@@ -236,11 +258,11 @@ CREATE TABLE IF NOT EXISTS `sm5game_sm5stats` (
     FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`sm5stats_id`) REFERENCES `sm5stats` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
-CREATE TABLE IF NOT EXISTS `sm5game_entitystarts` (
+CREATE TABLE IF NOT EXISTS `sm5game_playerstates` (
     `sm5game_id` INT NOT NULL,
-    `entitystarts_id` INT NOT NULL,
+    `playerstates_id` INT NOT NULL,
     FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`entitystarts_id`) REFERENCES `entitystarts` (`id`) ON DELETE CASCADE
+    FOREIGN KEY (`playerstates_id`) REFERENCES `playerstates` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `sm5game_entityends` (
     `sm5game_id` INT NOT NULL,
@@ -248,17 +270,17 @@ CREATE TABLE IF NOT EXISTS `sm5game_entityends` (
     FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`entityends_id`) REFERENCES `entityends` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;
-CREATE TABLE IF NOT EXISTS `sm5game_teams` (
-    `sm5game_id` INT NOT NULL,
-    `teams_id` INT NOT NULL,
-    FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`teams_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
-) CHARACTER SET utf8mb4;
 CREATE TABLE IF NOT EXISTS `sm5game_scores` (
     `sm5game_id` INT NOT NULL,
     `scores_id` INT NOT NULL,
     FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`scores_id`) REFERENCES `scores` (`id`) ON DELETE CASCADE
+) CHARACTER SET utf8mb4;
+CREATE TABLE IF NOT EXISTS `sm5game_teams` (
+    `sm5game_id` INT NOT NULL,
+    `teams_id` INT NOT NULL,
+    FOREIGN KEY (`sm5game_id`) REFERENCES `sm5game` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`teams_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4;"""
 
 

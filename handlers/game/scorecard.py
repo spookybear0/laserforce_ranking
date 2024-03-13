@@ -3,8 +3,10 @@ from sanic import Request
 from shared import app
 from typing import List
 from utils import render_template
-from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats, LaserballGame, EventType, \
-    PlayerStateDetailType
+from db.types import IntRole, EventType, PlayerStateDetailType
+from db.sm5 import SM5Game, SM5Stats
+from db.game import EntityEnds, EntityStarts
+from db.laserball import LaserballGame, LaserballStats
 from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks, \
     get_player_state_distribution
 from sanic import exceptions

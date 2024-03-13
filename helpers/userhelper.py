@@ -1,7 +1,4 @@
-from objects import Team, Role, GameType, SM5GamePlayer, LaserballGamePlayer
-from objects import Player as LegacyPlayer
-from typing import List, Union, Dict, Optional
-from laserforce import Player as IPLPlayer
+from typing import List, Optional
 import sys
 
 def in_ipynb() -> bool:
@@ -9,7 +6,10 @@ def in_ipynb() -> bool:
 
 if not in_ipynb():
     from shared import app
-from db.models import EntityStarts, SM5Game, EntityEnds, Player, IntRole
+from db.game import EntityEnds, EntityStarts
+from db.player import Player
+from db.types import IntRole
+from db.sm5 import SM5Game
 from statistics import median
 import bcrypt
 
@@ -56,45 +56,6 @@ def check_password(password: str, hashed: str) -> bool:
     except ValueError:
         return False
 
-### BELOW IS DEPRECATED ###
-if not in_ipynb():
-    sql = app.ctx.sql
-
-async def get_players(amount: int = 100, start: int = 0) -> List[Player]:
-    """
-    Returns players (but not associated with rankings) from database
-    """
-    q = await sql.fetchall(
-        "SELECT id FROM players ORDER BY id, id ASC LIMIT %s OFFSET %s",
-        (amount, start)
-    )
-    ret = []
-    for id_ in q:
-        ret.append(await LegacyPlayer.from_id(id_[0]))
-    return ret
-
-async def database_player(player: IPLPlayer) -> None:
-    """
-    Databases a player from a `laserforce.py` `IPLPlayer`
-    """
-    player.id = "-".join(player.id) # convert list to str
-    db_player: Player = await Player.from_player_id(player.id)
-
-    if db_player:
-        db_player.codename = player.codename
-        await db_player.update()
-    else:
-        await db_player.create()
-    return db_player
-
-async def player_cron() -> None:
-    for i in range(10000):
-        try:
-            player: IPLPlayer = await IPLPlayer.from_id(f"4-43-{i}")
-        except LookupError:  # player does not exist
-            continue
-
-        await database_player(player)
 
 def to_hex(tag: str) -> str:
     return "LF/0D00" + hex(int(tag)).strip("0x").upper()

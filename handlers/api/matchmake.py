@@ -2,7 +2,8 @@
 
 from sanic import Request
 from shared import app
-from db.models import GameType, Player
+from db.types import GameType
+from db.player import Player
 from sanic import response
 from sanic.log import logger
 from helpers import ratinghelper

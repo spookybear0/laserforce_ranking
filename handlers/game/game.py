@@ -1,7 +1,10 @@
 from sanic import Request
 from shared import app
 from utils import render_template, is_admin
-from db.models import SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats, Team
+from db.game import EntityEnds, EntityStarts
+from db.sm5 import SM5Game, SM5Stats
+from db.laserball import LaserballGame, LaserballStats
+from db.types import Team
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 from numpy import arange

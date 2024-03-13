@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "\\..\\")
 os.chdir(os.path.dirname(os.path.realpath(__file__)) + "\\..\\")
 
 from db.models import Player, SM5Game, EventType, Events, EntityStarts
-from objects import Team
+from db.types import Team
 import openskill
 import numpy as np
 import matplotlib.pyplot as plt

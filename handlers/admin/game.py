@@ -2,7 +2,9 @@ from sanic import Request
 from shared import app
 from utils import render_template, admin_only
 from typing import Union, Optional
-from db.models import Player, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballGame, LaserballStats
+from db.sm5 import SM5Game, SM5Stats
+from db.laserball import LaserballGame, LaserballStats
+from db.game import EntityEnds
 from sanic import exceptions, response
 from helpers import ratinghelper, adminhelper
 from sanic.log import logger

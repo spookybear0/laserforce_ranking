@@ -3,7 +3,8 @@
 from sanic import Request
 from shared import app
 from utils import render_template
-from db.models import SM5Game, LaserballGame
+from db.sm5 import SM5Game
+from db.laserball import LaserballGame
 from sanic import exceptions, response
 from sanic.log import logger
 from helpers.statshelper import sentry_trace

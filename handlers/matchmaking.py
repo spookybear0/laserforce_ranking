@@ -1,11 +1,9 @@
 from sanic import Request, exceptions
 from shared import app
 from helpers import ratinghelper
-from utils import render_template, get_post
-from objects import GameType
-from db.models import Player
+from utils import render_template
+from db.player import Player
 from sanic.log import logger
-from helpers.statshelper import sentry_trace
 from openskill.models import PlackettLuceRating as Rating
 
 class FakePlayer:

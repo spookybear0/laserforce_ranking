@@ -1,5 +1,5 @@
 from sanic import Request, response
-from db.models import Permission
+from db.types import Permission
 from typing import Callable, Any, Union
 from shared import app
 
