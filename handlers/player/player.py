@@ -1,12 +1,15 @@
 from helpers.userhelper import get_median_role_score
-from objects import GameType, Team
+from db.types import GameType, Team
 from utils import render_template, get_post
 from shared import app
 from sanic import Request, HTTPResponse, response, exceptions
 from shared import app
 from urllib.parse import unquote
 from typing import Union, Optional
-from db.models import Player, SM5Game, LaserballGame, EntityEnds, EntityStarts, SM5Stats, LaserballStats
+from db.player import Player
+from db.sm5 import SM5Game, SM5Stats
+from db.laserball import LaserballGame, LaserballStats
+from db.game import EntityEnds, EntityStarts
 from helpers.statshelper import sentry_trace
 from sanic.log import logger
 

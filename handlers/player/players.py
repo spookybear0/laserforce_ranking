@@ -1,7 +1,7 @@
 from sanic import Request
 from shared import app
 from utils import render_template
-from db.models import Player
+from db.player import Player
 from tortoise.expressions import F
 from helpers.statshelper import sentry_trace
 

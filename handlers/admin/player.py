@@ -2,7 +2,7 @@ from sanic import Request
 from shared import app
 from utils import render_template, admin_only
 from typing import Union
-from db.models import Player
+from db.player import Player
 
 @app.get("/admin/player/<id>")
 @admin_only

@@ -1,7 +1,8 @@
 from sanic import Request
 from shared import app
 from utils import render_template, admin_only
-from db.models import SM5Game, LaserballGame
+from db.sm5 import SM5Game
+from db.laserball import LaserballGame
 
 @app.get("/admin/games")
 @admin_only

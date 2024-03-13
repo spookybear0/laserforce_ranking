@@ -45,12 +45,19 @@ TORTOISE_ORM = {
     "connections": { "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce" },
     "apps": {
         "models": {
-            "models": ["db.models", "aerich.models"],
+            "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "aerich.models"],
             "default_connection": "default"
         }
     }
 }
 
+@app.listener("before_server_stop")
+async def close_db(app, loop) -> None:
+    """
+    Close the database connection when the server stops.
+    """
+    await app.ctx.sql.close()
+    await Tortoise.close_connections()
 
 @app.signal("server.init.before")
 async def setup_app(app, loop) -> None:

@@ -1,7 +1,11 @@
-from db.models import Player, Events, EventType, Teams, EntityStarts, SM5Game, EntityEnds, Scores, IntRole, SM5Stats, LaserballGame, LaserballStats, PlayerStates, PlayerStateType
+from db.player import Player
+from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
+from db.types import EventType, Team, PlayerStateType
+from db.sm5 import SM5Game, SM5Stats
+from db.laserball import LaserballGame, LaserballStats
 from typing import List, Dict
 from datetime import datetime
-from objects import Team
+from db.types import Team
 from sanic.log import logger
 from helpers import ratinghelper
 import aiohttp

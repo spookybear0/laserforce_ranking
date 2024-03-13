@@ -3,8 +3,11 @@ from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
 from tortoise.fields import ManyToManyRelation
 
-from db.models import SM5Game, EntityEnds, SM5Stats, IntRole, LaserballStats, LaserballGame, PlayerStateEvent, \
-    PlayerStateDetailType, PlayerStateType, EventType, EntityStarts
+
+from db.sm5 import SM5Game, SM5Stats
+from db.laserball import LaserballGame, LaserballStats
+from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent
+from db.game import EntityEnds, EntityStarts
 from tortoise.functions import Sum
 
 # stats helpers

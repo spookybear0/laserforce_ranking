@@ -1,8 +1,11 @@
 from tortoise import Tortoise
 from config import config
 from helpers import tdfhelper, userhelper, ratinghelper
-from db.models import Player, Permission, SM5Game, EntityStarts, Events, LaserballGame, SM5Stats
-from typing import List, Union
+from db.player import Player, Permission
+from db.types import Permission
+from db.sm5 import SM5Stats, SM5Game
+from db.laserball import LaserballGame
+from typing import Union
 from sanic.log import logger
 from shared import app
 
