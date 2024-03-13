@@ -45,6 +45,9 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
         entity_start = await entity_end.entity
         stats = await SM5Stats.filter(entity_id=entity_start.id).first()
 
+        if not stats:
+            raise exceptions.NotFound("Scorecard not found")
+
         can_missile = entity_start.role == IntRole.COMMANDER or entity_start.role == IntRole.HEAVY
         can_nuke = entity_start.role == IntRole.COMMANDER
         accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
@@ -191,6 +194,9 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         entity_start = await entity_end.entity
         stats = await LaserballStats.filter(entity_id=entity_start.id).first()
+
+        if not stats:
+            raise exceptions.NotFound("Scorecard not found")
 
         possession_times = await game.get_possession_times()
 
