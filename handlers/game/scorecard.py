@@ -139,6 +139,8 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "team": (await player.team).index,
                 "entity_end_id": player_entity_ends[player.id].id,
                 "role": player.role,
+                "css_class": "player%s%s" % (" active_player" if player.id == entity_start.id else "",
+                                             " eliminated_player" if player_sm5_stats[player.id].lives_left == 0 else ""),
                 "score": player_entity_ends[player.id].score,
                 "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
                 "kd_ratio": ("%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
