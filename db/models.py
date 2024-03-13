@@ -410,7 +410,7 @@ class SM5Game(Model):
     ranked = fields.BooleanField() # will this game affect player ratings and stats.
     ended_early = fields.BooleanField() # did the game end early?
     start_time = fields.DatetimeField()
-    mission_duration = fields.IntField() # in seconds
+    mission_duration = fields.IntField() # in milliseconds
     log_time = fields.DatetimeField(auto_now_add=True)
     # there is a field in the tdf called "penalty", no idea what it is
     teams = fields.ManyToManyField("models.Teams")
@@ -657,6 +657,31 @@ class SM5Game(Model):
         if not id_:
             return None
         return id_[0]
+    
+    async def get_red_team_elimated(self) -> bool:
+        """
+        Returns True if the other team was eliminated
+        """
+
+        red_players = await self.entity_starts \
+            .filter(team__color_name="Fire") \
+            .filter(type="player", sm5_stats__lives_left__gt=0) \
+            .count() # count the number of players on the red team that are still alive
+        
+        return red_players == 0
+    
+    async def get_green_team_elimated(self) -> bool:
+        """
+        Returns True if the other team was eliminated
+        """
+
+        green_players = await self.entity_starts \
+            .filter(team__color_name="Earth") \
+            .filter(type="player", sm5_stats__lives_left__gt=0) \
+            .count() # count the number of players on the green team that are still alive
+        
+        return green_players == 0
+
 
     async def to_dict(self) -> dict:
         # convert the entire game to a dict
@@ -891,7 +916,8 @@ class SM5Stats(Model):
         CAUTION: not completely accurate due to elimation points not being implemented
         """
 
-        score = await (await self.entity).get_score()
+        score: int = await (await self.entity).get_score()
+        game: SM5Game = await (await self.entity).game
 
         total_points = 0
 
@@ -904,8 +930,16 @@ class SM5Stats(Model):
 
         total_points += self.medic_hits - self.own_medic_hits
 
-        # elims: minimum 1 point if your team eliminates the other team, increased by 1/60 for each of second of game time remaining above 1 minute.
-        # ^ UPDATE: this has been voted out of the MVP Point system, does not need to be added
+        # elims: minimum 4 points if your team eliminates the other team, increased by 1/60 for each of second of game time remaining above 3 minutes.
+        # ^ UPDATE: changed by the committee to from 1 point for every 60 seconds of game time above 1 minute.
+        
+        # check if team eliminated the other team
+
+        mission_length = game.events.filter(type=EventType.MISSION_END).first().time
+
+        if ((await self.entity).team.enum == Team.RED and await game.get_green_team_elimated()) or \
+        ((await self.entity).team.enum == Team.GREEN and await game.get_red_team_elimated()):
+            total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled
 
