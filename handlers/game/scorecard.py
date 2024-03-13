@@ -1,11 +1,12 @@
 
-from dataclasses import dataclass
 from sanic import Request
 from shared import app
-from typing import List, Optional
+from typing import List
 from utils import render_template
-from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats, LaserballGame, EventType
-from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks
+from db.models import IntRole, SM5Game, EntityEnds, EntityStarts, SM5Stats, LaserballStats, LaserballGame, EventType, \
+    PlayerStateDetailType
+from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks, \
+    get_player_state_distribution
 from sanic import exceptions
 
 def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict]:
@@ -13,6 +14,18 @@ def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict
     return [
         player for player in all_players if player["team"] == team_index
     ]
+
+
+def _chart_values(values: list[int]) -> str:
+    """Creates a string to be used in JavaScript for a list of integers."""
+    return "[%s]" % ", ".join([str(value) for value in values])
+
+
+def _chart_strings(values: list[str]) -> str:
+    """Creates a string to be used in JavaScript for a list of strings.
+
+    Note that this will not escape the strings - they should not contain any double quotes."""
+    return "[%s]" % ", ".join(f"\"{value}\"" for value in values)
 
 
 @app.get("/game/<type:str>/<id:int>/scorecard/<entity_end_id:int>")
@@ -23,14 +36,17 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         if not game:
             raise exceptions.NotFound("Game not found")
-        
+
         entity_end = await EntityEnds.filter(id=entity_end_id).first()
 
         if not entity_end:
             raise exceptions.NotFound("Scorecard not found")
-        
+
         entity_start = await entity_end.entity
         stats = await SM5Stats.filter(entity_id=entity_start.id).first()
+
+        if not stats:
+            raise exceptions.NotFound("Scorecard not found")
 
         can_missile = entity_start.role == IntRole.COMMANDER or entity_start.role == IntRole.HEAVY
         can_nuke = entity_start.role == IntRole.COMMANDER
@@ -78,18 +94,54 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         score_composition.sort(key=lambda x: x["score"], reverse=True)
 
+        state_label_map = {
+            PlayerStateDetailType.ACTIVE: "Active",
+            PlayerStateDetailType.DOWN_ZAPPED: "Down",
+            PlayerStateDetailType.DOWN_MISSILED: "Down",
+            PlayerStateDetailType.DOWN_NUKED: "Down",
+            PlayerStateDetailType.DOWN_FOR_OTHER: "Down",
+            PlayerStateDetailType.DOWN_FOR_RESUP: "Down (Resup)",
+            PlayerStateDetailType.RESETTABLE: "Resettable",
+        }
+
+        state_colors = {
+            "Active": "#11dd11",
+            "Down": "#993202",
+            "Down (Resup)": "#8702ab",
+            "Resettable": "#430103",
+        }
+
+        state_distribution = await get_player_state_distribution(entity_start,entity_end, game.player_states, game.events,
+                                                                 state_label_map)
+
+        state_distribution_labels = list(state_distribution.keys())
+        state_distribution_values = list(state_distribution.values())
+        state_distribution_colors = [state_colors[state] for state in state_distribution.keys()]
+
         entity_starts: List[EntityStarts] = game.entity_starts
         player_entities = [
             player for player in list(entity_starts) if player.type == "player"
         ]
 
+        player_entity_ends = {
+            player.id: await EntityEnds.filter(entity=player.id).first() for player in player_entities
+        }
+
+        player_sm5_stats = {
+            player.id: await SM5Stats.filter(entity_id=player.id).first() for player in player_entities
+        }
+
         all_players = ([
             {
                 "name": player.name,
                 "team": (await player.team).index,
-                "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
+                "entity_end_id": player_entity_ends[player.id].id,
                 "role": player.role,
-                "score": (await EntityEnds.filter(entity=player.id).first()).score,
+                "score": player_entity_ends[player.id].score,
+                "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
+                "kd_ratio": ("%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
+                             if player_sm5_stats[player.id].times_zapped > 0 else 1)) if player.id in player_sm5_stats else "",
+                "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
                 "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
                 "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),
@@ -124,6 +176,9 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             score_composition_labels=", ".join([f"\"{component['name']}\"" for component in score_composition]),
             score_composition_colors=", ".join([f"\"{component['color']}\"" for component in score_composition]),
             score_composition_values=", ".join([str(component['score']) for component in score_composition]),
+            state_distribution_labels=_chart_strings(state_distribution_labels),
+            state_distribution_values=_chart_values(state_distribution_values),
+            state_distribution_colors=_chart_strings(state_distribution_colors),
         )
 
     if type == "laserball":
@@ -139,6 +194,9 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         entity_start = await entity_end.entity
         stats = await LaserballStats.filter(entity_id=entity_start.id).first()
+
+        if not stats:
+            raise exceptions.NotFound("Scorecard not found")
 
         possession_times = await game.get_possession_times()
 
@@ -175,6 +233,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "ball_possession": _millis_to_time(possession_times.get(player.entity_id, 0)),
                 "you_blocked": await count_blocks(game, entity_start.entity_id, player.entity_id),
                 "blocked_you": await count_blocks(game, player.entity_id, entity_start.entity_id),
+                "mvp_points": "%.2f" % player_stats[player.id].mvp_points,
                 "blocks": player_stats[player.id].blocks,
                 "goals": player_stats[player.id].goals,
                 "passes": player_stats[player.id].passes,

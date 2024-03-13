@@ -257,6 +257,9 @@
             <div class="scorecard_graphs">
                 <canvas class="chart" id="score_composition"></canvas>
             </div>
+            <div class="scorecard_graphs">
+                <canvas class="chart" id="state_distribution"></canvas>
+            </div>
         </div>
 
         <div class="scorecard_player_stats">
@@ -268,10 +271,13 @@
                         <th>Player</th>
                         <th>Role</th>
                         <th>Score</th>
+                        <th>K/D</th>
+                        <th>Lives</th>
                         <th>You zapped</th>
                         <th>Zapped you</th>
                         <th>You missiled</th>
                         <th>Missiled you</th>
+                        <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank">MVP Points</a></th>
                     </tr>
                     {% for player in team.players %}
                     <tr>
@@ -282,10 +288,13 @@
                                                                alt="role image" width="30"
                                                                height="30"></td>
                         <td class="scorecard_player_stat">{{ player.score }}</td>
+                        <td class="scorecard_player_stat">{{ player.kd_ratio }}</td>
+                        <td class="scorecard_player_stat">{{ player.lives_left }}</td>
                         <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
                         <td class="scorecard_player_stat">{{ player.zapped_you }}</td>
                         <td class="scorecard_player_stat">{{ player.you_missiled }}</td>
                         <td class="scorecard_player_stat">{{ player.missiled_you }}</td>
+                        <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
                     </tr>
                     {% endfor %}
 
@@ -300,6 +309,8 @@
     already_shown_rounds = [];
 
     new Chart("score_composition", {
+        // IMPORTANT: If ChartJs is ever upgrade to 3.0.0 or beyond, this needs to change to type "bar" with
+        // the option indexAxis set to "y".
         type: "horizontalBar",
         data: {
             labels: [{{ score_composition_labels }}],
@@ -331,6 +342,48 @@
             }
         }
     });
+
+    new Chart("state_distribution", {
+        type: "pie",
+        data: {
+            labels: {{ state_distribution_labels }},
+            datasets: [{
+                backgroundColor: {{ state_distribution_colors }},
+                data: {{ state_distribution_values }}
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: true,
+                text: "Time spent in each state",
+                fontColor: "white"
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        // convert milliseconds to MM:SS
+
+                        const index = tooltipItem["index"];
+                        const milliseconds = data.datasets[0].data[index];
+                        const seconds = Math.floor(milliseconds / 1000);
+                        const minutes = Math.floor(seconds / 60);
+                        const remainingSeconds = seconds % 60;
+
+                        const formattedMinutes = minutes.toString().padStart(2, "0");
+                        const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
+                        const label = data.labels[index];
+
+                        return `${label}: ${formattedMinutes}:${formattedSeconds}`;
+                    }
+                }
+            },
+        }
+    });
+
 </script>
 
 {% endblock %}

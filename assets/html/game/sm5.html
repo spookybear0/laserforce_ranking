@@ -278,7 +278,11 @@
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
-                                <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
+                                {% if entity.entity_id.startswith("@") %}
+                                    <td>{{ entity_end.score }}</td>
+                                {% else %}
+                                    <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
+                                {% endif %}
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
                                 <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
@@ -328,7 +332,11 @@
                                 {% if entity_end.current_rating_mu and game.ranked %}
                                     <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                 {% endif %}
-                                <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
+                                {% if entity.entity_id.startswith("@") %}
+                                    <td>{{ entity_end.score }}</td>
+                                {% else %}
+                                    <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
+                                {% endif %}
                                 <td><p>{{ sm5_stats.lives_left }}</p></td>
                                 <td><p>{{ sm5_stats.shots_left }}</p></td>
                                 <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
