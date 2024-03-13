@@ -11,6 +11,7 @@
         border: 1px solid lightgray;
         border-collapse: collapse;
         width: 100%;
+        color: lightgray;
     }
 
     th, td, tr {
@@ -19,7 +20,6 @@
     }
 
     td {
-        color: lightgray;
         padding: 2px;
     }
 
@@ -145,6 +145,17 @@
     .scorecard_player_stats {
         width: 45%;
         float: left;
+    }
+
+    .player {
+    }
+
+    .active_player {
+        font-weight: bold;
+    }
+
+    .eliminated_player {
+        color: gray;
     }
 
     @media screen and (max-width: 991px) {
@@ -280,7 +291,7 @@
                         <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank">MVP Points</a></th>
                     </tr>
                     {% for player in team.players %}
-                    <tr>
+                    <tr class="{{ player.css_class }}">
                         <td class="scorecard_player_stat">
                             <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a>
                         </td>
