@@ -1,4 +1,4 @@
-
+from numpy import arange
 from sanic import Request
 from shared import app
 from typing import List
@@ -169,6 +169,8 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             },
         ]
 
+        score_chart_data = [await game.get_entity_score_at_time(entity_start.id, t) for t in range(0, 900000+30000, 30000)]
+
         return await render_template(
             request,
             "game/scorecard_sm5.html",
@@ -183,6 +185,8 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             state_distribution_labels=_chart_strings(state_distribution_labels),
             state_distribution_values=_chart_values(state_distribution_values),
             state_distribution_colors=_chart_strings(state_distribution_colors),
+            score_chart_labels=[t for t in arange(0, 900000//1000//60+0.5, 0.5)],
+            score_chart_data=score_chart_data
         )
 
     if type == "laserball":

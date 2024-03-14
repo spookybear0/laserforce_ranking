@@ -64,6 +64,11 @@ class SM5Game(Model):
     async def get_entity_end_from_name(self, name: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity__name=name).first()
 
+    async def get_entity_score_at_time(self, entity_id: int, time_seconds: int) -> int:
+        scores = await self.scores.filter(time__lte=time_seconds, entity=entity_id).all()
+
+        return scores[-1].new if scores else 0
+
     # funcs for getting total score at a certain time for a team
     
     async def get_red_score_at_time(self, time: int) -> int: # time in seconds

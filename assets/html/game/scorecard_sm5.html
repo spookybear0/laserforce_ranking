@@ -314,6 +314,9 @@
             {% endfor %}
         </div>
     </div>
+    <div class="scorecard_graphs">
+        <canvas class="chart" id="score_chart"></canvas>
+    </div>
 </div>
 
 <script>
@@ -392,6 +395,82 @@
                     }
                 }
             },
+        }
+    });
+
+    new Chart("score_chart", {
+        type: "line",
+        data: {
+            labels: {{score_chart_labels}},
+            datasets: [
+            {
+                label: "{{entity_start.name}}'s Score",
+                data: {{score_chart_data}},
+                borderColor: "orangered",
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHitRadius: 10
+            }
+            ]
+        },
+        options: {
+            tooltips: {
+                callbacks: {
+                    title: function(tooltipItem, data) {
+                        // show formatted time
+
+                        var time = data.labels[tooltipItem[0].index];
+
+                        if (time.toString().endsWith(".5")) {
+                            return time.toString().slice(0, -2) + ":30";
+                        } else {
+                            return time + ":00";
+                        }
+                    },
+                }
+            },
+            responsive: true,
+            // change label colors to white
+            legend: {
+                labels: {
+                    fontColor: "white"
+                }
+            },
+            title: {
+                display: true,
+                text: "Score Over Time",
+                fontColor: "white"
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                        callback: function(value, index, values) {
+                            if (value.toString().endsWith(".5")) {
+                                return value.toString().slice(0, -2) + ":30";
+                            } else {
+                                return value + ":00";
+                            }
+                        },
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Time",
+                        fontColor: "white"
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Score",
+                        fontColor: "white"
+                    }
+                }]
+            }
         }
     });
 
