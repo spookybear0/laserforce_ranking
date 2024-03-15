@@ -4,7 +4,7 @@ from utils import render_template, is_admin
 from db.game import EntityEnds, EntityStarts
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
-from db.types import Team
+from db.types import Team, ElementTeam
 from sanic import exceptions
 from helpers.statshelper import sentry_trace
 from numpy import arange
@@ -50,11 +50,12 @@ async def game_index(request: Request, type: str, id: int) -> str:
         return await render_template(
             request, "game/sm5.html",
             game=game, get_entity_end=get_entity_end,
-            get_sm5stats=get_sm5stats, fire_score=await game.get_red_score(),
-            earth_score=await game.get_green_score(),
+            get_sm5stats=get_sm5stats,
+            fire_score=await game.get_team_score(ElementTeam.FIRE),
+            earth_score=await game.get_team_score(ElementTeam.EARTH),
             score_chart_labels=[t for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_green=[await game.get_green_score_at_time(t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_red=[await game.get_team_score_at_time(ElementTeam.FIRE, t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_green=[await game.get_team_score_at_time(ElementTeam.EARTH, t) for t in range(0, 900000+30000, 30000)],
             win_chance=await game.get_win_chance(),
             win_chance_before_game=await game.get_win_chance_before_game(),
             players_matchmake_team1=players_matchmake_team1,
@@ -88,11 +89,11 @@ async def game_index(request: Request, type: str, id: int) -> str:
         return await render_template(
             request, "game/laserball.html",
             game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
-            fire_score=await game.get_red_score(),
-            ice_score=await game.get_blue_score(),
+            fire_score=await game.get_team_score(ElementTeam.FIRE),
+            ice_score=await game.get_team_score(ElementTeam.ICE),
             score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_red_score_at_time(t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_blue=[await game.get_blue_score_at_time(t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_red=[await game.get_team_score_at_time(ElementTeam.FIRE, t) for t in range(0, 900000+30000, 30000)],
+            score_chart_data_blue=[await game.get_team_score_at_time(ElementTeam.ICE, t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
             win_chance_before_game=await game.get_win_chance_before_game(),
             win_chance_after_game=await game.get_win_chance_after_game(),

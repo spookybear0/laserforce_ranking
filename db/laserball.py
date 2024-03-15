@@ -2,7 +2,7 @@ try:
     from openskill.models import PlackettLuceRating as Rating
 except ImportError:
     from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating
-from db.types import Team, EventType, BallPossessionEvent
+from db.types import Team, EventType, BallPossessionEvent, ElementTeam
 from helpers.datehelper import strftime_ordinal
 from tortoise import Model, fields
 from typing import List
@@ -38,17 +38,11 @@ class LaserballGame(Model):
     def __repr__(self) -> str:
         return f"<LaserballGame ({self.tdf_name})>"
     
-    async def get_red_score(self) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player").values_list("score")))
-    
-    async def get_blue_score(self) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player").values_list("score")))
-    
-    async def get_red_score_at_time(self, time) -> int:
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
-    
-    async def get_blue_score_at_time(self, time) -> int:
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Ice").values_list("delta")))
+    async def get_team_score(self, team: ElementTeam) -> int:
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.value, entity__type="player").values_list("score")))
+
+    async def get_team_score_at_time(self, team: ElementTeam, time: int) -> int:
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name=team.value).values_list("delta")))
     
     async def get_rounds_at_time(self, time) -> int:
         return (await self.events.filter(time__lte=time, type=EventType.ROUND_END).count()) + 1

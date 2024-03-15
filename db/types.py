@@ -10,6 +10,25 @@ class Team(Enum):
     def standardize(self) -> str:
         return self.value.capitalize()
     
+
+class ElementTeam(Enum):
+    FIRE = "Fire"
+    EARTH = "Earth"
+    ICE = "Ice"
+
+
+TEAM_TO_ELEMENT_TEAM = {
+    Team.RED: ElementTeam.FIRE,
+    Team.GREEN: ElementTeam.EARTH,
+    Team.BLUE: ElementTeam.ICE,
+}
+
+SM5_ENEMY_TEAM = {
+    ElementTeam.EARTH: ElementTeam.FIRE,
+    ElementTeam.FIRE: ElementTeam.EARTH,
+}
+
+
 class Role(Enum):
     SCOUT = "scout"
     HEAVY = "heavy"
