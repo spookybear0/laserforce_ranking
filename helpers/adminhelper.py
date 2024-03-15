@@ -108,14 +108,19 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
 
         logger.debug(f"Deleting entity start {entity_start.name}")
 
-        await entity_start.delete()
+        try:
+            await entity_start.delete()
+        except Exception:
+            logger.warning("Failed to delete entity start, continuing")
     except Exception:
         logger.warning("Failed to delete entity start, continuing")
 
     try:
         logger.debug("Deleting entity end")
-
-        await (await entity_start.get_entity_end()).delete()
+        try:
+            await (await entity_start.get_entity_end()).delete()
+        except Exception:
+            logger.warning("Failed to delete entity end, continuing")
     except Exception:
         logger.warning("Failed to delete entity end, continuing")
 
@@ -135,14 +140,20 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
         logger.debug("Deleting sm5stats")
 
         id_ = (await SM5Stats.filter(entity__entity_id=entity_start.entity_id).first()).id
-        await SM5Stats.filter(id=id_).delete()
+        try:
+            await SM5Stats.filter(id=id_).delete()
+        except Exception:
+            logger.warning("Failed to delete sm5stats, continuing")
     elif mode == "laserball":
         # delete laserballstats
 
         logger.debug("Deleting laserballstats")
 
         id_ = (await LaserballGame.filter(entity__entity_id=entity_start.entity_id).first()).id
-        await LaserballGame.filter(id=id_).delete()
+        try:
+            await LaserballGame.filter(id=id_).delete()
+        except Exception:
+            logger.warning("Failed to delete laserballstats, continuing")
     else:
         raise ValueError("Invalid mode")
         
