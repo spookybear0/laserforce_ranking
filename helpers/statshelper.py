@@ -6,7 +6,7 @@ from tortoise.fields import ManyToManyRelation
 
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
-from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, ElementTeam
+from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team
 from db.game import EntityEnds, EntityStarts
 from tortoise.functions import Sum
 
@@ -39,7 +39,7 @@ Average score at time
 
 """
 
-async def get_average_team_score_at_time_sm5(team: ElementTeam, time: int) -> int:
+async def get_average_team_score_at_time_sm5(team: Team, time: int) -> int:
     """
     Gets the average score for one team at a given time
     by going through all games and finding the
@@ -392,7 +392,7 @@ async def get_ranking_accuracy() -> float:
 
     for game in await SM5Game.filter(ranked=True).all():
         red_chance, green_chance = await game.get_win_chance_before_game()
-        red_score, green_score = await game.get_team_score(ElementTeam.FIRE), await game.get_team_score(ElementTeam.EARTH)
+        red_score, green_score = await game.get_team_score(Team.RED), await game.get_team_score(Team.GREEN)
 
         # see if scores are close enough
         if int(red_chance) == int(green_chance) and abs(red_score - green_score) <= 3000:

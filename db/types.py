@@ -2,30 +2,55 @@ from dataclasses import dataclass
 from typing import Optional
 from enum import Enum, IntEnum
 
+
+@dataclass
+class _TeamDefinition:
+    """Descriptor for a team.
+
+    When converted to a string, it is shown as the lower-case color name so Tortoise can use it as an enum value for
+    its schema."""
+    color: str
+    element: str
+
+    def __eq__(self, color: str) -> bool:
+        return self.color == color
+
+    def __len__(self):
+        # Tortoise uses the length of the enum value.
+        return len(self.color)
+
+    def __str__(self):
+        return self.color
+
+    def __hash__(self):
+        return self.color.__hash__()
+
+
 class Team(Enum):
-    RED = "red"
-    GREEN = "green"
-    BLUE = "blue"
+    RED = _TeamDefinition(color="red", element="Fire")
+    GREEN = _TeamDefinition(color="green", element="Earth")
+    BLUE = _TeamDefinition(color="blue", element="Ice")
+
+    def __call__(cls, value, *args, **kw):
+        # Tortoise looks up values by the lower-case color name.
+        if type(value) is str:
+            for teams in cls:
+                if teams.value.color == value:
+                    return super().__call__(teams, *args, **kw)
+        return super().__call__(value, *args, **kw)
 
     def standardize(self) -> str:
-        return self.value.capitalize()
-    
+        return self.value.color.capitalize()
 
-class ElementTeam(Enum):
-    FIRE = "Fire"
-    EARTH = "Earth"
-    ICE = "Ice"
+    @property
+    def element(self) -> str:
+        return self.value.element
 
 
-TEAM_TO_ELEMENT_TEAM = {
-    Team.RED: ElementTeam.FIRE,
-    Team.GREEN: ElementTeam.EARTH,
-    Team.BLUE: ElementTeam.ICE,
-}
-
+# Mapping of opposing teams in SM5 games.
 SM5_ENEMY_TEAM = {
-    ElementTeam.EARTH: ElementTeam.FIRE,
-    ElementTeam.FIRE: ElementTeam.EARTH,
+    Team.GREEN: Team.RED,
+    Team.RED: Team.GREEN,
 }
 
 

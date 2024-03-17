@@ -1,6 +1,6 @@
 from db.player import Player
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
-from db.types import EventType, PlayerStateType, ElementTeam, Team
+from db.types import EventType, PlayerStateType, Team
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
 from typing import List, Dict
@@ -173,8 +173,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # winner determination
 
     winner = None
-    red_score = await game.get_team_score(ElementTeam.FIRE)
-    green_score = await game.get_team_score(ElementTeam.EARTH)
+    red_score = await game.get_team_score(Team.RED)
+    green_score = await game.get_team_score(Team.GREEN)
     if red_score > green_score:
         winner = Team.RED
     elif red_score < green_score:

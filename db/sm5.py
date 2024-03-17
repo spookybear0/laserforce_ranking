@@ -3,7 +3,7 @@ try:
 except ImportError:
     from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating
 from helpers.datehelper import strftime_ordinal
-from db.types import Team, IntRole, EventType, ElementTeam, TEAM_TO_ELEMENT_TEAM, SM5_ENEMY_TEAM
+from db.types import Team, IntRole, EventType, SM5_ENEMY_TEAM
 from typing import List, Optional
 from tortoise import Model, fields
 import math
@@ -40,8 +40,8 @@ class SM5Game(Model):
     def __repr__(self) -> str:
         return f"<SM5Game ({self.tdf_name})>"
     
-    async def get_team_score(self, team: ElementTeam) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.value).values_list("score")))
+    async def get_team_score(self, team: Team) -> int:
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element).values_list("score")))
     
     async def get_entity_start_from_player(self, player: "Player") -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(player=player).first()
@@ -68,8 +68,8 @@ class SM5Game(Model):
 
     # funcs for getting total score at a certain time for a team
     
-    async def get_team_score_at_time(self, team: ElementTeam, time: int) -> int: # time in seconds
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name=team.value).values_list("delta")))
+    async def get_team_score_at_time(self, team: Team, time: int) -> int: # time in seconds
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list("delta")))
 
     # funcs for getting win chance and draw chance
 
@@ -269,13 +269,13 @@ class SM5Game(Model):
             return None
         return id_[0]
     
-    async def get_team_eliminated(self, team: ElementTeam) -> bool:
+    async def get_team_eliminated(self, team: Team) -> bool:
         """
         Returns True if the other team was eliminated
         """
 
         players_alive_on_team = await self.entity_starts \
-            .filter(team__color_name=team.value) \
+            .filter(team__color_name=team.element) \
             .filter(type="player", sm5statss__lives_left__gt=0) \
             .count() # count the number of players on the red team that are still alive
         
@@ -369,7 +369,7 @@ class SM5Stats(Model):
         if mission_end is not None:
             mission_length = mission_end.time
 
-            if await game.get_team_eliminated(SM5_ENEMY_TEAM[TEAM_TO_ELEMENT_TEAM[(await (await self.entity).team).enum]]):
+            if await game.get_team_eliminated(SM5_ENEMY_TEAM[(await (await self.entity).team).enum]):
                 total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled

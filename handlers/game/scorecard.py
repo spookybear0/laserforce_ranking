@@ -3,7 +3,7 @@ from sanic import Request
 from shared import app
 from typing import List
 from utils import render_template
-from db.types import IntRole, EventType, PlayerStateDetailType, ElementTeam
+from db.types import IntRole, EventType, PlayerStateDetailType, Team
 from db.sm5 import SM5Game, SM5Stats
 from db.game import EntityEnds, EntityStarts
 from db.laserball import LaserballGame, LaserballStats
@@ -158,13 +158,13 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             {
                 "name": "Earth Team",
                 "class_name": "earth",
-                "score": await game.get_team_score(ElementTeam.EARTH),
+                "score": await game.get_team_score(Team.GREEN),
                 "players": get_players_from_team(all_players, 1)
             },
             {
                 "name": "Fire Team",
                 "class_name": "fire",
-                "score": await game.get_team_score(ElementTeam.FIRE),
+                "score": await game.get_team_score(Team.RED),
                 "players": get_players_from_team(all_players, 0)
             },
         ]
@@ -256,13 +256,13 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             {
                 "name": "Ice Team",
                 "class_name": "ice",
-                "score": await game.get_team_score(ElementTeam.ICE),
+                "score": await game.get_team_score(Team.BLUE),
                 "players": get_players_from_team(all_players, 1)
             },
             {
                 "name": "Fire Team",
                 "class_name": "fire",
-                "score": await game.get_team_score(ElementTeam.FIRE),
+                "score": await game.get_team_score(Team.RED),
                 "players": get_players_from_team(all_players, 0)
             },
         ]

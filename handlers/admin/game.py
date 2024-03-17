@@ -1,6 +1,6 @@
 from sanic import Request
 
-from db.types import ElementTeam
+from db.types import Team
 from shared import app
 from utils import render_template, admin_only
 from typing import Union, Optional
@@ -33,8 +33,8 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
         return await render_template(
             request, "admin/game/sm5.html",
             game=game, get_entity_end=get_entity_end,
-            get_sm5stats=get_sm5stats, fire_score=await game.get_team_score(ElementTeam.FIRE),
-            earth_score=await game.get_team_score(ElementTeam.EARTH),
+            get_sm5stats=get_sm5stats, fire_score=await game.get_team_score(Team.RED),
+            earth_score=await game.get_team_score(Team.GREEN),
             battlesuits=await game.get_battlesuits(),
             players=await game.get_players(),
             previous_game_id=await game.get_previous_game_id(),
@@ -52,8 +52,8 @@ async def admin_game(request: Request, mode: str, id: Union[int, str]) -> str:
             get_laserballstats=get_laserballstats,
             players=await game.get_players(),
             battlesuits=await game.get_battlesuits(),
-            fire_score=await game.get_team_score(ElementTeam.FIRE),
-            ice_score=await game.get_team_score(ElementTeam.ICE)
+            fire_score=await game.get_team_score(Team.RED),
+            ice_score=await game.get_team_score(Team.BLUE)
         )
     else:
         raise exceptions.NotFound("Not found: Invalid game type")
