@@ -67,52 +67,52 @@ class GameType(Enum):
 
 class EventType(Enum):
     # basic and sm5 events
-    MISSION_START = "0100"
-    MISSION_END = "0101"
-    SHOT_EMPTY = "0200" # unused?
-    MISS = "0201"
-    MISS_BASE = "0202"
-    HIT_BASE = "0203"
-    DESTROY_BASE = "0204"
-    DAMAGED_OPPONENT = "0205"
-    DOWNED_OPPONENT = "0206"
-    DAMANGED_TEAM = "0207" # unused?
-    DOWNED_TEAM = "0208" # unused?
-    LOCKING = "0300" # (aka missile start)
+    MISSION_START = "0100"  # Arguments: "* Mission Start *"
+    MISSION_END = "0101"  # Arguments: "* Mission End *"
+    SHOT_EMPTY = "0200"  # unused?
+    MISS = "0201"  # Arguments: "(entity 1)", " misses"
+    MISS_BASE = "0202"  # Arguments: "(entity 1)", " misses ", "(entity 2)". Entity 2 is a base
+    HIT_BASE = "0203"  # Arguments: "(entity 1)", " zaps ", "(entity 2)". Entity 2 is a base
+    DESTROY_BASE = "0204"  # Arguments: "(entity 1)", " destroys ", "(entity 2)". Entity 2 is a base
+    DAMAGED_OPPONENT = "0205"  # Arguments: "(entity 1)", " zaps ", "(entity 2)"
+    DOWNED_OPPONENT = "0206"  # Arguments: "(entity 1)", " zaps ", "(entity 2)"
+    DAMANGED_TEAM = "0207"  # unused?
+    DOWNED_TEAM = "0208"  # unused?
+    LOCKING = "0300"  # (aka missile start) Arguments: "(entity 1)", " locking ", "(entity 2)"
     MISSILE_BASE_MISS = "0301"
     MISSILE_BASE_DAMAGE = "0302"
-    MISISLE_BASE_DESTROY = "0303"
+    MISISLE_BASE_DESTROY = "0303"  # Arguments: "(entity 1)", " destroys ", "(entity 2)"
     MISSILE_MISS = "0304"
-    MISSILE_DAMAGE_OPPONENT = "0305" # unused? theres no way for a missile to not down/destroy
-    MISSILE_DOWN_OPPONENT = "0306"
-    MISSILE_DAMAGE_TEAM = "0307" # unused?
+    MISSILE_DAMAGE_OPPONENT = "0305"  # unused? theres no way for a missile to not down/destroy
+    MISSILE_DOWN_OPPONENT = "0306"  # Arguments: "(entity 1)", " missiles ", "(entity 2)"
+    MISSILE_DAMAGE_TEAM = "0307"  # unused?
     MISSILE_DOWN_TEAM = "0308"
-    ACTIVATE_RAPID_FIRE = "0400"
-    DEACTIVATE_RAPID_FIRE = "0401" # unused?
-    ACTIVATE_NUKE = "0404"
-    DETONATE_NUKE = "0405"
-    RESUPPLY_AMMO = "0500"
-    RESUPPLY_LIVES = "0502"
-    AMMO_BOOST = "0510"
-    LIFE_BOOST = "0512"
+    ACTIVATE_RAPID_FIRE = "0400"  # Arguments: "(entity 1)", " activates rapid fire"
+    DEACTIVATE_RAPID_FIRE = "0401"  # unused?
+    ACTIVATE_NUKE = "0404"  # Arguments: "(entity 1)", " activates nuke"
+    DETONATE_NUKE = "0405"  # Arguments: "(entity 1)", " detonates nuke"
+    RESUPPLY_AMMO = "0500"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
+    RESUPPLY_LIVES = "0502"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
+    AMMO_BOOST = "0510"  # Arguments: "(entity 1)", " resupplies team"
+    LIFE_BOOST = "0512"  # Arguments: "(entity 1)", " resupplies team"
     PENALTY = "0600"
-    ACHIEVEMENT = "0900"
-    REWARD = "0902"
-    BASE_AWARDED = "0B03" # (technically #0B03 in hex)
+    ACHIEVEMENT = "0900"  # Arguments: "(entity 1)", " completes an achievement!"
+    REWARD = "0902"  # Arguments: "(entity 1)", " earns a reward!"
+    BASE_AWARDED = "0B03"  # (technically #0B03 in hex)
 
     # laserball events
 
-    PASS = "1100"
-    GOAL = "1101"
-    ASSIST = "1102" # THIS IS NOT A REAL EVENT TYPE (as far as im aware, im generating it myself)
-    STEAL = "1103"
-    BLOCK = "1104"
-    ROUND_START = "1105"
-    ROUND_END = "1106"
-    GETS_BALL = "1107" # at the start of the round
+    PASS = "1100"  # Arguments: "(entity 1)", " passes to ", "(entity 2)"
+    GOAL = "1101"  # Arguments: "(entity 1)", " scores!"
+    ASSIST = "1102"  # THIS IS NOT A REAL EVENT TYPE (as far as im aware, im generating it myself)
+    STEAL = "1103"  # Arguments: "(entity 1)", " steals from ", "(entity 2)"
+    BLOCK = "1104"  # Arguments: "(entity 1)", " blocks ", "(entity 2)"
+    ROUND_START = "1105"  # Arguments: "★ Round Start ★"
+    ROUND_END = "1106"  # Arguments: "★ Round End ★"
+    GETS_BALL = "1107"  # at the start of the round. Arguments: "(entity 1)", " gets the ball"
     TIME_VIOLATION = "1108"
-    CLEAR = "1109"
-    FAIL_CLEAR = "110A"
+    CLEAR = "1109"  # Arguments: "(entity 1)", " clears to ", "(entity 2)"
+    FAIL_CLEAR = "110A"  # Arguments: "(entity 1)", " fails to clear"
     
 
 class IntRole(IntEnum):
