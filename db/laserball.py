@@ -38,17 +38,11 @@ class LaserballGame(Model):
     def __repr__(self) -> str:
         return f"<LaserballGame ({self.tdf_name})>"
     
-    async def get_red_score(self) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player").values_list("score")))
-    
-    async def get_blue_score(self) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player").values_list("score")))
-    
-    async def get_red_score_at_time(self, time) -> int:
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Fire").values_list("delta")))
-    
-    async def get_blue_score_at_time(self, time) -> int:
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name="Ice").values_list("delta")))
+    async def get_team_score(self, team: Team) -> int:
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element, entity__type="player").values_list("score")))
+
+    async def get_team_score_at_time(self, team: Team, time: int) -> int:
+        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list("delta")))
     
     async def get_rounds_at_time(self, time) -> int:
         return (await self.events.filter(time__lte=time, type=EventType.ROUND_END).count()) + 1

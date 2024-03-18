@@ -31,6 +31,10 @@ class Player(Model):
     @property
     def sm5_ordinal(self) -> float:
         return self.sm5_mu - 3 * self.sm5_sigma
+
+    @property
+    def is_member(self) -> bool:
+        return not self.entity_id.startswith("@")
     
     @property
     def laserball_ordinal(self) -> float:

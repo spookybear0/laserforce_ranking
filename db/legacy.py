@@ -13,11 +13,8 @@ class LegacySM5Game(Model):
     def __repr__(self) -> str:
         return f"<LegacySM5Game>"
     
-    async def get_red_players(self):
-        return await self.players.filter(team=Team.RED)
-    
-    async def get_green_players(self):
-        return await self.players.filter(team=Team.GREEN)
+    async def get_players_on_team(self, team: Team):
+        return await self.players.filter(team=team)
 
     
 class LegacySM5GamePlayer(Model):
@@ -39,11 +36,8 @@ class LegacyLaserballGame(Model):
     def __repr__(self) -> str:
         return f"<LegacyLaserballGame>"
     
-    async def get_red_players(self):
-        return await self.players.filter(team=Team.RED)
-    
-    async def get_blue_players(self):
-        return await self.players.filter(team=Team.BLUE)
+    async def get_players_on_team(self, team: Team):
+        return await self.players.filter(team=team)
 
 class LegacyLaserballGamePlayer(Model):
     player = fields.ForeignKeyField("models.Player")

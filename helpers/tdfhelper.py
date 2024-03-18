@@ -1,11 +1,10 @@
 from db.player import Player
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
-from db.types import EventType, Team, PlayerStateType
+from db.types import EventType, PlayerStateType, Team
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
 from typing import List, Dict
 from datetime import datetime
-from db.types import Team
 from sanic.log import logger
 from helpers import ratinghelper
 import aiohttp
@@ -174,9 +173,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # winner determination
 
     winner = None
-    if await game.get_red_score() > await game.get_green_score():
+    red_score = await game.get_team_score(Team.RED)
+    green_score = await game.get_team_score(Team.GREEN)
+    if red_score > green_score:
         winner = Team.RED
-    elif await game.get_red_score() < await game.get_green_score():
+    elif red_score < green_score:
         winner = Team.GREEN
     else: # tie or no winner or something crazy happened
         winner = None
