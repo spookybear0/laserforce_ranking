@@ -1,11 +1,5 @@
 from typing import List, Optional
-import sys
 
-def in_ipynb() -> bool:
-    return "ipykernel" in sys.modules
-
-if not in_ipynb():
-    from shared import app
 from db.game import EntityEnds, EntityStarts
 from db.player import Player
 from db.types import IntRole
