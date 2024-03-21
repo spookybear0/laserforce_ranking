@@ -86,7 +86,21 @@ class Events(Model):
     # variable number of fields depending on type of event
     # can be token or string for announcement
     # now make the field
+    # Note that it's typically easier to just use entity1, action, and entity2 instead of arguments.
+    # This field will remain for legacy reasons.
     arguments = fields.JSONField() # list of arguments
+
+    # The first entity involved in the action, typically the one performing the action.
+    # Can be empty in some cases, for example global events such as "* Mission Start *".
+    entity1 = fields.CharField(50, default="")
+
+    # The action being performed by the entity (or the global event, such as "* Mission Start *").
+    action = fields.CharField(50, default="")
+
+    # The second entity involved in the action, typically the entity that something is being done to.
+    # This can be empty if the action doesn't involve a specific recipient, for example if the main entity
+    # activates a nuke.
+    entity2 = fields.CharField(50, default="")
 
     async def to_dict(self) -> dict:
         final = {}

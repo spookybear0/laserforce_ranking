@@ -1,3 +1,5 @@
+from asyncio import Event
+
 from db.player import Player
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
 from db.types import EventType, PlayerStateType, Team
@@ -105,7 +107,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 token_to_entity[data[2]] = entity_start
             case "4": # event
                 # okay but why is event type a string
-                events.append(await Events.create(time=int(data[1]), type=EventType(data[2]), arguments=json.dumps(data[3:])))
+                events.append(await _create_event_from_data(data))
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
@@ -666,3 +668,67 @@ async def parse_all_sm5_tdfs() -> None:  # iterate through sm5_tdf folder
 async def parse_all_tdfs() -> None:
     await parse_all_sm5_tdfs()
     await parse_all_laserball_tdfs()
+
+
+def get_arguments_from_event(arguments: list[str]) -> dict[str, str]:
+    """Extracts specific semantic arguments from a list of event arguments.
+
+    Args:
+        arguments: The variable arguments of the event. Those are just the arguments that
+            are part of the JSON payload, so this should be list with 1-3 strings.
+
+    Returns:
+        A dict with the arguments. Will currently always contain "action",
+        "entity1", and "entity2".
+        "action" is almost always non-empty, "entity1" is usually non-empty,
+        "entity2" is often non-empty.
+    """
+    entity1 = ""
+    entity2 = ""
+    action = ""
+
+    if not arguments:
+        # There aren't known events with no arguments.
+        logger.error("Found event with no arguments")
+    else:
+        if len(arguments) == 1:
+            # This is a global event, such as "* Mission start *".
+            action = arguments[0]
+        else:
+            entity1 = arguments[0]
+            action = arguments[1]
+
+            if len(arguments) > 2:
+                entity2 = arguments[2]
+
+                if len(arguments) > 3:
+                    # There aren't known events with more than 3 arguments.
+                    logger.error(f"Found event with more than 3 arguments: {str(arguments)}")
+
+    return {
+        "entity1": entity1,
+        "action": action,
+        "entity2": entity2,
+    }
+
+
+async def _create_event_from_data(data: list[str]) -> Events:
+    """Creates an Events object from arguments in an events table.
+
+    Args:
+        data: All strings in the line of the TDF file that define this event,
+            so this should be a list of at least 4 strings (and the first one
+            should be "4" to indicate that this is an event).
+    """
+    arguments = json.dumps(data[3:])
+
+    if len(data) < 4:
+        # There aren't really any events without arguments, so this is broken.
+        # We should alert about that.
+        return await Events.create(time=int(data[1]), type=EventType(data[2]), arguments=arguments)
+
+    semantic_arguments = get_arguments_from_event(data[3:])
+
+    return await Events.create(time=int(data[1]), type=EventType(data[2]), arguments=arguments,
+                               entity1=semantic_arguments["entity1"], action=semantic_arguments["action"],
+                               entity2=semantic_arguments["entity2"])
