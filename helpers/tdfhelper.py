@@ -107,7 +107,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 token_to_entity[data[2]] = entity_start
             case "4": # event
                 # okay but why is event type a string
-                events.append(await _create_event_from_data(data))
+                events.append(await create_event_from_data(data))
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
@@ -712,7 +712,7 @@ def get_arguments_from_event(arguments: list[str]) -> dict[str, str]:
     }
 
 
-async def _create_event_from_data(data: list[str]) -> Events:
+async def create_event_from_data(data: list[str]) -> Events:
     """Creates an Events object from arguments in an events table.
 
     Args:
