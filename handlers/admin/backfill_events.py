@@ -64,7 +64,7 @@ async def _update_events(events: list[Events]):
         # If this event already has an action, then it has previously been
         # converted to the new format already, so we don't need to do anything
         # here.
-        if not event.action:
+        if event.action:
             continue
 
         semantic_arguments = get_arguments_from_event(event.arguments)
@@ -75,3 +75,4 @@ async def _update_events(events: list[Events]):
 
     if events_to_update:
         await Events.bulk_update(events_to_update, fields=['entity1', 'action', 'entity2'])
+        logger.info('Updating %d events' % len(events_to_update))
