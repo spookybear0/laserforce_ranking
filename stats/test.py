@@ -72,7 +72,9 @@ class Player:
 
     @property
     def games(self) -> int:
-        return IPLPlayer.from_id(self.player_id).games
+        # TODO: Fix the reference to IPLPlayer
+        # return IPLPlayer.from_id(self.player_id).games
+        return 0
 
     async def _get_lifetime_stats(self):
         cursor = mydb.cursor()
