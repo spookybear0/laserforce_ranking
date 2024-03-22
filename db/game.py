@@ -1,5 +1,6 @@
+from __future__ import annotations
 
-from db.types import Team, IntRole, EventType, PlayerStateType, BallPossessionEvent
+from db.types import Team, IntRole, EventType, PlayerStateType
 from tortoise import Model, fields
 from db.sm5 import SM5Stats
 
@@ -166,9 +167,9 @@ class EntityEnds(Model):
     
     async def get_entity_start(self) -> EntityStarts:
         return await self.entity
-    
+
     async def get_sm5_stats(self) -> "SM5Stats":
-        return SM5Stats.filter(entity__id=self.id).first()
+        return await SM5Stats.filter(entity__id=(await self.entity).entity_id).first()
 
     async def to_dict(self) -> dict:
         final = {}
@@ -183,7 +184,7 @@ class EntityEnds(Model):
         return final
     
     def __str__(self) -> str:
-        return f"<EntityEnd {self.entity_id} score={self.score}>"
-    
+        return f"<EntityEnd {self.entity} score={self.score}>"
+
     def __repr__(self) -> str:
         return str(self)

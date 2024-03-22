@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 try:
     from openskill.models import PlackettLuceRating as Rating
 except ImportError:
