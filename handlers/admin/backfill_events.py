@@ -7,16 +7,28 @@ from shared import app
 from utils import admin_only
 
 
+_BATCH_SIZE = 10000
+
 @app.get("/admin/backfill_events")
 @admin_only
 async def backfill_events(request: Request) -> str:
     response = await request.respond(content_type="text/html")
 
-    await response.send("<html><body><H1>Updating</H1>\n")
+    await response.send("<html><body><H1>Updating...</H1>\n")
 
-    # Get all events. We only need those without an action. If it has one, it has already been migrated.
-    events = await Events.filter(action="").all()
-    updated_event_count = await _update_events(events)
+    updated_event_count = 0
+
+    while True:
+        # Get all events. We only need those without an action. If it has one, it has already been migrated.
+        events = await Events.filter(action="").limit(_BATCH_SIZE).all()
+
+        # Keep going until there's nothing left to update.
+        if not events:
+            break
+
+        update_count = await _update_events(events)
+        updated_event_count += update_count
+        await response.send(f"Updated {update_count} events\n<br>")
 
     await response.send(f"<h2>All done.</h2>\n{updated_event_count} events updated.\n</body></html>")
 
