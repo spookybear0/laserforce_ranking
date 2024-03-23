@@ -48,7 +48,7 @@ async def setup_test_database():
 
 
 async def teardown_test_database():
-    await Toirtoise.close_connections()
+    await Tortoise.close_connections()
 
 
 async def create_sm5_game_1() -> SM5Game:
