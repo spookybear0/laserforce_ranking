@@ -110,10 +110,10 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             "Active": "#11dd11",
             "Down": "#993202",
             "Down (Resup)": "#8702ab",
-            "Resettable": "#430103",
+            "Resettable": "#cbd103",
         }
 
-        state_distribution = await get_player_state_distribution(entity_start,entity_end, game.player_states, game.events,
+        state_distribution = await get_player_state_distribution(entity_start, entity_end, game.player_states, game.events,
                                                                  state_label_map)
 
         state_distribution_labels = list(state_distribution.keys())
@@ -150,6 +150,8 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
                 "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),
                 "missiled_you": await count_missiles(game, player.entity_id, entity_start.entity_id),
+                "state_distribution_values": list((await get_player_state_distribution(player, player_entity_ends[player.id],
+                                                                                 game.player_states, game.events, state_label_map)).values())
             } for player in player_entities
         ])
         all_players.sort(key=lambda x: x["score"], reverse=True)
