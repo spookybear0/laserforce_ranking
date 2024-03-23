@@ -1,3 +1,8 @@
+# flake8: noqa: F821
+# Disable "unknown name" because we're using forward references here that flake8 has no love for.
+
+from __future__ import annotations
+
 try:
     from openskill.models import PlackettLuceRating as Rating
 except ImportError:
