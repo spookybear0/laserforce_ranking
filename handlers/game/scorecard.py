@@ -133,6 +133,8 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             player.id: await SM5Stats.filter(entity_id=player.id).first() for player in player_entities
         }
 
+        game_duration = await game.get_actual_game_duration()
+
         all_players = ([
             {
                 "name": player.name,
@@ -143,6 +145,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                                              " eliminated_player" if player_sm5_stats[player.id] or player_sm5_stats[player.id].lives_left == 0 else ""),
                 "score": player_entity_ends[player.id].score,
                 "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
+                "time_in_game_values": [player_entity_ends[player.id].time, game_duration - player_entity_ends[player.id].time],
                 "kd_ratio": ("%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
                              if player_sm5_stats[player.id].times_zapped > 0 else 1)) if player.id in player_sm5_stats else "",
                 "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),

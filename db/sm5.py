@@ -71,6 +71,15 @@ class SM5Game(Model):
 
         return scores[-1].new if scores else 0
 
+    async def get_actual_game_duration(self) -> int:
+        """Returns the actual mission duration time in milliseconds.
+
+        Returns the expected duration time unless the game terminated early, for example because one entire team was
+        eliminated."""
+        end_event = await self.events.filter(type=EventType.MISSION_END).first()
+
+        return end_event.time if end_event else self.mission_duration
+
     # funcs for getting total score at a certain time for a team
     
     async def get_team_score_at_time(self, team: Team, time: int) -> int: # time in seconds

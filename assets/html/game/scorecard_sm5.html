@@ -290,6 +290,7 @@
                         <th>Uptime</th>
                         <th>K/D</th>
                         <th>Lives</th>
+                        <th>Time in game</th>
                         <th>You zapped</th>
                         <th>Zapped you</th>
                         <th>You missiled</th>
@@ -308,6 +309,7 @@
                         <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end_id}}"></canvas></td>
                         <td class="scorecard_player_stat">{{ player.kd_ratio }}</td>
                         <td class="scorecard_player_stat">{{ player.lives_left }}</td>
+                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="time_in_game_{{player.entity_end_id}}"></canvas></td>
                         <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
                         <td class="scorecard_player_stat">{{ player.zapped_you }}</td>
                         <td class="scorecard_player_stat">{{ player.you_missiled }}</td>
@@ -490,9 +492,38 @@
                         fullSize: false
                     },
                     title: {
-                display: false,
-                text: "Time spent in each state",
-                fontColor: "white"
+                        display: false,
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const index = tooltipItem["index"];
+                                const label = data.labels[index];
+                                const milliseconds = data.datasets[0].data[index];
+
+                                return `${label}: ${ms_to_mmss(milliseconds)}`;
+                            }
+                        }
+                    },
+                }
+            });
+
+            new Chart("time_in_game_{{player.entity_end_id}}", {
+                type: "pie",
+                data: {
+                    labels: ["In game", "Eliminated"],
+                    datasets: [{
+                        backgroundColor: ["#00ff00", "#000000"],
+                        data: {{ player.time_in_game_values }}
+                    }]
+                },
+                options: {
+                    legend: {
+                        display: false,
+                        fullSize: false
+                    },
+                    title: {
+                        display: false,
                     },
                     tooltips: {
                         callbacks: {
