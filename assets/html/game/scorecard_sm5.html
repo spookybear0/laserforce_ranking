@@ -234,6 +234,11 @@
         max-width: 50%;
         display: flex;
     }
+
+    .mini-chart {
+        max-width: 64px;
+        display: flex;
+    }
 </style>
 
 {% endblock %}
@@ -282,6 +287,7 @@
                         <th>Player</th>
                         <th>Role</th>
                         <th>Score</th>
+                        <th>Uptime</th>
                         <th>K/D</th>
                         <th>Lives</th>
                         <th>You zapped</th>
@@ -299,6 +305,7 @@
                                                                alt="role image" width="30"
                                                                height="30"></td>
                         <td class="scorecard_player_stat">{{ player.score }}</td>
+                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end_id}}"></canvas></td>
                         <td class="scorecard_player_stat">{{ player.kd_ratio }}</td>
                         <td class="scorecard_player_stat">{{ player.lives_left }}</td>
                         <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
@@ -379,19 +386,11 @@
             tooltips: {
                 callbacks: {
                     label: function(tooltipItem, data) {
-                        // convert milliseconds to MM:SS
-
                         const index = tooltipItem["index"];
-                        const milliseconds = data.datasets[0].data[index];
-                        const seconds = Math.floor(milliseconds / 1000);
-                        const minutes = Math.floor(seconds / 60);
-                        const remainingSeconds = seconds % 60;
-
-                        const formattedMinutes = minutes.toString().padStart(2, "0");
-                        const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
                         const label = data.labels[index];
+                        const milliseconds = data.datasets[0].data[index];
 
-                        return `${label}: ${formattedMinutes}:${formattedSeconds}`;
+                        return `${label}: ${ms_to_mmss(milliseconds)}`;
                     }
                 }
             },
@@ -473,6 +472,43 @@
             }
         }
     });
+
+    {% for team in teams %}
+            {% for player in team.players %}
+                new Chart("uptime_{{player.entity_end_id}}", {
+                type: "pie",
+                data: {
+                    labels: {{ state_distribution_labels }},
+                    datasets: [{
+                        backgroundColor: {{ state_distribution_colors }},
+                        data: {{ player.state_distribution_values }}
+                    }]
+                },
+                options: {
+                    legend: {
+                        display: false,
+                        fullSize: false
+                    },
+                    title: {
+                display: false,
+                text: "Time spent in each state",
+                fontColor: "white"
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const index = tooltipItem["index"];
+                                const label = data.labels[index];
+                                const milliseconds = data.datasets[0].data[index];
+
+                                return `${label}: ${ms_to_mmss(milliseconds)}`;
+                            }
+                        }
+                    },
+                }
+            });
+         {% endfor %}
+    {% endfor %}
 
 </script>
 
