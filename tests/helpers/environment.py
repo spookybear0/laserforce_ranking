@@ -69,6 +69,10 @@ async def setup_test_database():
     _TEST_SM5_GAME = await create_sm5_game_1()
 
 
+async def teardown_test_database():
+    await Tortoise.close_connections()
+
+
 async def create_sm5_game_1() -> SM5Game:
     events = []
     events.extend([await create_zap_event(100, ENTITY_ID_1, ENTITY_ID_2),
