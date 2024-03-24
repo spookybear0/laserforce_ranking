@@ -12,7 +12,7 @@ from typing import Optional
 
 from tortoise import Tortoise
 
-from db.game import Events
+from db.game import Events, EntityStarts, Teams, EntityEnds
 from db.sm5 import SM5Game
 from db.types import EventType, Team
 from helpers.tdfhelper import create_event_from_data
@@ -20,6 +20,11 @@ from helpers.tdfhelper import create_event_from_data
 ENTITY_ID_1 = "Entity#1"
 ENTITY_ID_2 = "Entity#2"
 ENTITY_ID_3 = "Entity#3"
+ENTITY_ID_4 = "Entity#4"
+
+_RED_TEAM: Optional[Teams] = None
+_BLUE_TEAM: Optional[Teams] = None
+_GREEN_TEAM: Optional[Teams] = None
 
 _TEST_SM5_GAME: Optional[SM5Game] = None
 
@@ -32,17 +37,34 @@ def get_sm5_game_id() -> int:
     return _TEST_SM5_GAME.id
 
 
+def get_red_team() -> Teams:
+    assert _RED_TEAM
+    return _RED_TEAM
+
+
+def get_green_team() -> Teams:
+    assert _GREEN_TEAM
+    return _GREEN_TEAM
+
+
 async def setup_test_database():
     """Creates a test in-memory database using SQLite, connects Tortoise to it, and generates the schema.
 
     It will also generate the test dataset."""
-    global _TEST_SM5_GAME
+    global _TEST_SM5_GAME, _RED_TEAM, _GREEN_TEAM, _BLUE_TEAM
 
     await Tortoise.init(db_url="sqlite://:memory:",
                         modules={
                             "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "aerich.models"]})
 
     await Tortoise.generate_schemas()
+
+    _RED_TEAM = await Teams.create(index=0, name="Fire Team", color_enum=0, color_name=Team.RED.element,
+                                   real_color_name=Team.RED.standardize())
+    _GREEN_TEAM = await Teams.create(index=1, name="Earth Team", color_enum=1, color_name=Team.GREEN.element,
+                                     real_color_name=Team.GREEN.standardize())
+    _BLUE_TEAM = await Teams.create(index=2, name="Ice Team", color_enum=2, color_name=Team.BLUE.element,
+                                    real_color_name=Team.BLUE.standardize())
 
     _TEST_SM5_GAME = await create_sm5_game_1()
 
@@ -69,6 +91,86 @@ async def create_sm5_game_1() -> SM5Game:
     return game
 
 
+async def add_sm5_event(event: Events):
+    assert _TEST_SM5_GAME
+
+    await _TEST_SM5_GAME.events.add(event)
+
+
 async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_entity_id: str) -> Events:
     return await create_event_from_data(
         ["4", str(time_millis), EventType.DOWNED_OPPONENT, zapping_entity_id, " zaps ", zapped_entity_id])
+
+
+async def create_mission_end_event(time_millis) -> Events:
+    return await create_event_from_data(["4", str(time_millis), EventType.MISSION_END, "* Mission End *"])
+
+
+async def add_entity(
+        entity_id: str,
+        team: Teams,
+        start_time_millis: int = 0,
+        end_time_millis: int = 900000,
+        type: str = "player",
+        name: str = "Some Player",
+        level: int = 0,
+        role: int = 0,
+        battlesuit: str = "Panther",
+        member_id: str = "4-43-000",
+        score: int = 0,
+        sm5_game: Optional[SM5Game] = None
+):
+    entity_start = await create_entity_start(
+        entity_id=entity_id,
+        team=team,
+        time_millis=start_time_millis,
+        type=type,
+        name=name,
+        level=level,
+        role=role,
+        battlesuit=battlesuit,
+        member_id=member_id
+    )
+
+    entity_end = await create_entity_ends(
+        entity_start=entity_start,
+        time_millis=end_time_millis,
+        score=score
+    )
+
+    if sm5_game:
+        await sm5_game.entity_starts.add(entity_start)
+        await sm5_game.entity_ends.add(entity_end)
+
+
+async def create_entity_start(
+        entity_id: str,
+        team: Teams,
+        time_millis: int = 0,
+        type: str = "player",
+        name: str = "Some Player",
+        level: int = 0,
+        role: int = 0,
+        battlesuit: str = "Panther",
+        member_id: str = "4-43-000"
+) -> EntityStarts:
+    return await EntityStarts.create(time=time_millis,
+                                     entity_id=entity_id,
+                                     type=type,
+                                     name=name,
+                                     team=team,
+                                     level=level,
+                                     role=role,
+                                     battlesuit=battlesuit,
+                                     member_id=member_id)
+
+
+async def create_entity_ends(
+        entity_start: EntityStarts,
+        time_millis: int = 90000,
+        type: int = 1,
+        score: int = 0) -> EntityEnds:
+    return await EntityEnds.create(time=time_millis,
+                                   entity=entity_start,
+                                   type=type,
+                                   score=score)

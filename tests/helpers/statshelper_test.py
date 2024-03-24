@@ -5,7 +5,7 @@ from helpers.statshelper import count_zaps
 from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id
 
 
-class TestStringMethods(unittest.IsolatedAsyncioTestCase):
+class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         await setup_test_database()
 
