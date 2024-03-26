@@ -1,5 +1,7 @@
 from numpy import arange
 from sanic import Request
+
+from helpers.gamehelper import SM5_STATE_LABEL_MAP, SM5_STATE_COLORS, get_players_from_team
 from shared import app
 from typing import List
 from utils import render_template
@@ -8,14 +10,8 @@ from db.sm5 import SM5Game, SM5Stats
 from db.game import EntityEnds, EntityStarts
 from db.laserball import LaserballGame, LaserballStats
 from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks, \
-    get_player_state_distribution
+    get_player_state_distribution, get_sm5_score_components, get_sm5_kd_ratio
 from sanic import exceptions
-
-def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict]:
-    """Returns subset of the list of players - only those in the given team."""
-    return [
-        player for player in all_players if player["team"] == team_index
-    ]
 
 
 def _chart_values(values: list[int]) -> str:
@@ -69,21 +65,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             "Medic hits": stats.medic_hits,
         }
 
-        bases_destroyed = await (game.events.filter(type=EventType.DESTROY_BASE).
-                                 filter(arguments__filter={"0": entity_start.entity_id}).count())
-
-        # Parts that make up the final score.
-        # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
-        score_components = {
-            "Missiles": stats.missiled_opponent * 500,
-            "Zaps": stats.shot_opponent * 100,
-            "Bases": bases_destroyed * 1001,
-            "Nukes": stats.nukes_detonated * 500,
-            "Zap own team": stats.shot_team * -100,
-            "Missiled own team": stats.missiled_team * -500,
-            "Got zapped": stats.times_zapped * -20,
-            "Got missiled": stats.times_missiled * -100,
-        }
+        score_components = await get_sm5_score_components(game, stats, entity_start)
 
         score_composition = [
             {
@@ -96,29 +78,12 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         score_composition.sort(key=lambda x: x["score"], reverse=True)
 
-        state_label_map = {
-            PlayerStateDetailType.ACTIVE: "Active",
-            PlayerStateDetailType.DOWN_ZAPPED: "Down",
-            PlayerStateDetailType.DOWN_MISSILED: "Down",
-            PlayerStateDetailType.DOWN_NUKED: "Down",
-            PlayerStateDetailType.DOWN_FOR_OTHER: "Down",
-            PlayerStateDetailType.DOWN_FOR_RESUP: "Down (Resup)",
-            PlayerStateDetailType.RESETTABLE: "Resettable",
-        }
-
-        state_colors = {
-            "Active": "#11dd11",
-            "Down": "#993202",
-            "Down (Resup)": "#8702ab",
-            "Resettable": "#cbd103",
-        }
-
         state_distribution = await get_player_state_distribution(entity_start, entity_end, game.player_states, game.events,
-                                                                 state_label_map)
+                                                                 SM5_STATE_LABEL_MAP)
 
         state_distribution_labels = list(state_distribution.keys())
         state_distribution_values = list(state_distribution.values())
-        state_distribution_colors = [state_colors[state] for state in state_distribution.keys()]
+        state_distribution_colors = [SM5_STATE_COLORS[state] for state in state_distribution.keys()]
 
         entity_starts: List[EntityStarts] = game.entity_starts
         player_entities = [
@@ -146,15 +111,14 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "score": player_entity_ends[player.id].score,
                 "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
                 "time_in_game_values": [player_entity_ends[player.id].time, game_duration - player_entity_ends[player.id].time],
-                "kd_ratio": ("%.2f" % (player_sm5_stats[player.id].shot_opponent / player_sm5_stats[player.id].times_zapped
-                             if player_sm5_stats[player.id].times_zapped > 0 else 1)) if player.id in player_sm5_stats else "",
+                "kd_ratio": ("%.2f" % get_sm5_kd_ratio(player_sm5_stats[player.id])) if player.id in player_sm5_stats else "",
                 "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
                 "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
                 "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),
                 "missiled_you": await count_missiles(game, player.entity_id, entity_start.entity_id),
                 "state_distribution_values": list((await get_player_state_distribution(player, player_entity_ends[player.id],
-                                                                                 game.player_states, game.events, state_label_map)).values())
+                                                                                 game.player_states, game.events, SM5_STATE_LABEL_MAP)).values())
             } for player in player_entities
         ])
         all_players.sort(key=lambda x: x["score"], reverse=True)
