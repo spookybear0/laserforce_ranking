@@ -128,6 +128,9 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
 
     # go through all events and delete them
 
+    if entity_start is None:
+        return
+
     async for event in game.events:
         arguments = event.arguments
         for info in arguments:
@@ -139,9 +142,9 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
 
         logger.debug("Deleting sm5stats")
 
-        id_ = (await SM5Stats.filter(entity__entity_id=entity_start.entity_id).first()).id
+        sm5_stats = (await SM5Stats.filter(entity__entity_id=entity_start.entity_id).first())
         try:
-            await SM5Stats.filter(id=id_).delete()
+            await SM5Stats.filter(id=sm5_stats.id).delete()
         except Exception:
             logger.warning("Failed to delete sm5stats, continuing")
     elif mode == "laserball":
@@ -149,9 +152,9 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
 
         logger.debug("Deleting laserballstats")
 
-        id_ = (await LaserballGame.filter(entity__entity_id=entity_start.entity_id).first()).id
+        sm5_stats = (await LaserballGame.filter(entity__entity_id=entity_start.entity_id).first())
         try:
-            await LaserballGame.filter(id=id_).delete()
+            await LaserballGame.filter(id=sm5_stats.id).delete()
         except Exception:
             logger.warning("Failed to delete laserballstats, continuing")
     else:
