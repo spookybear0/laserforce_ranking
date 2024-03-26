@@ -21,6 +21,12 @@ class _TeamDefinition:
 
     def __str__(self):
         return self.color
+    
+    def __repr__(self):
+        return f'"{self.color}"'
+    
+    def __json__(self):
+        return f'"{self.color}"'
 
     def __hash__(self):
         return self.color.__hash__()
