@@ -135,6 +135,10 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         game_duration = await game.get_actual_game_duration()
 
+        for player in player_entities:
+            if player.id not in player_sm5_stats or player_sm5_stats.get(player.id) is None:
+                raise exceptions.NotFound("Player stats not found")
+
         all_players = ([
             {
                 "name": player.name,

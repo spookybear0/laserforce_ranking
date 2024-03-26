@@ -51,6 +51,12 @@ TORTOISE_ORM = {
     }
 }
 
+@app.exception(AttributeError)
+async def handle_attribute_error(request, exception):
+    # check if the error is due to _sentry_hub
+    if "_sentry_hub" not in str(exception):
+        raise exception
+
 @app.listener("before_server_stop")
 async def close_db(app, loop) -> None:
     """
