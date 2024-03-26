@@ -1,4 +1,7 @@
 from sanic import Request
+
+
+from helpers.gamehelper import get_team_rosters, get_player_display_names, get_matchmaking_teams
 from shared import app
 from utils import render_template, is_admin
 from db.game import EntityEnds, EntityStarts
@@ -24,28 +27,14 @@ async def get_laserballstats(entity) -> Optional[LaserballStats]:
 @sentry_trace
 async def game_index(request: Request, type: str, id: int) -> str:
     if type == "sm5":
-        game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
+        game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake_team1 = []
-        players_matchmake_team2 = []
-        entity_starts: List[EntityStarts] = game.entity_starts
-        for i, player in enumerate(entity_starts):
-            if player.type != "player":
-                continue
+        team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
 
-            if (await player.team).enum == Team.RED:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team1.append(player.name)
-                else:
-                    players_matchmake_team1.append(player.entity_id)
-            elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team2.append(player.name)
-                else:
-                    players_matchmake_team2.append(player.entity_id)
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
 
         return await render_template(
             request, "game/sm5.html",
@@ -63,29 +52,15 @@ async def game_index(request: Request, type: str, id: int) -> str:
             is_admin=is_admin(request)
         )
     elif type == "laserball":
-        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
+        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake_team1 = []
-        players_matchmake_team2 = []
-        entity_starts: List[EntityStarts] = game.entity_starts
-        for i, player in enumerate(entity_starts):
-            if player.type != "player":
-                continue
+        team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
 
-            if (await player.team).enum == Team.RED:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team1.append(player.name)
-                else:
-                    players_matchmake_team1.append(player.entity_id)
-            elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team2.append(player.name)
-                else:
-                    players_matchmake_team2.append(player.entity_id)
-        
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
+
         return await render_template(
             request, "game/laserball.html",
             game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,

@@ -47,6 +47,11 @@ def get_green_team() -> Teams:
     return _GREEN_TEAM
 
 
+def get_blue_team() -> Teams:
+    assert _BLUE_TEAM
+    return _BLUE_TEAM
+
+
 async def setup_test_database():
     """Creates a test in-memory database using SQLite, connects Tortoise to it, and generates the schema.
 
