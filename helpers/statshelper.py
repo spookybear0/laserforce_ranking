@@ -33,6 +33,35 @@ def _millis_to_time(milliseconds: Optional[int]) -> str:
 
     return "%02d:%02d" % (milliseconds / 60000, milliseconds % 60000 / 1000)
 
+
+async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start: EntityStarts) -> dict[str, int]:
+    """Returns a dict with individual components that make up a player's total score.
+
+    Each key is a component ("Missiles", "Nukes", etc), and the value is the amount of
+    points - positive or negative - the player got for all these."""
+    bases_destroyed = await (game.events.filter(type=EventType.DESTROY_BASE).
+                             filter(arguments__filter={"0": entity_start.entity_id}).count())
+
+    # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
+    return {
+        "Missiles": stats.missiled_opponent * 500,
+        "Zaps": stats.shot_opponent * 100,
+        "Bases": bases_destroyed * 1001,
+        "Nukes": stats.nukes_detonated * 500,
+        "Zap own team": stats.shot_team * -100,
+        "Missiled own team": stats.missiled_team * -500,
+        "Got zapped": stats.times_zapped * -20,
+        "Got missiled": stats.times_missiled * -100,
+    }
+
+
+def get_sm5_kd_ratio(stats: SM5Stats) -> float:
+    """Returns the K/D for a player.
+
+    This is the number of zaps (not downs) over the number of times the player got zapped.
+    1 if the player was never zapped."""
+    return stats.shot_opponent / stats.times_zapped if stats.times_zapped > 0 else 1.0
+
 """
 
 Average score at time
