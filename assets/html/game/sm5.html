@@ -493,6 +493,7 @@
         }
     });
 
+    {% if game.ranked %}
     new Chart("win_chance_before_game", {
         type: "pie",
         data: {
@@ -521,7 +522,7 @@
             labels: ["Fire", "Earth"],
             datasets: [{
                 backgroundColor: ["#b91d47","#00aba9"],
-                data: [{{ (win_chance[0]*100)|round(2) }}, {{ (win_chance[1]*100)|round(2) }}]
+                data: [{{ (win_chance_after_game[0]*100)|round(2) }}, {{ (win_chance_after_game[1]*100)|round(2) }}]
             }]
         },
         options: {
@@ -536,6 +537,7 @@
             }
         }
     });
+    {% endif %}
 </script>
 
 </body>

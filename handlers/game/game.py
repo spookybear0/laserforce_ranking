@@ -47,6 +47,13 @@ async def game_index(request: Request, type: str, id: int) -> str:
                 else:
                     players_matchmake_team2.append(player.entity_id)
 
+        if game.ranked:
+            win_chance_after_game = await game.get_win_chance_after_game()
+            win_chance_before_game = await game.get_win_chance_before_game()
+        else:
+            win_chance_after_game = None
+            win_chance_before_game = None
+
         return await render_template(
             request, "game/sm5.html",
             game=game, get_entity_end=get_entity_end,
@@ -56,8 +63,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_labels=[t for t in arange(0, 900000//1000//60+0.5, 0.5)],
             score_chart_data_red=[await game.get_team_score_at_time(Team.RED, t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_green=[await game.get_team_score_at_time(Team.GREEN, t) for t in range(0, 900000+30000, 30000)],
-            win_chance=await game.get_win_chance(),
-            win_chance_before_game=await game.get_win_chance_before_game(),
+            win_chance_after_game=win_chance_after_game,
+            win_chance_before_game=win_chance_before_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
@@ -85,7 +92,16 @@ async def game_index(request: Request, type: str, id: int) -> str:
                     players_matchmake_team2.append(player.name)
                 else:
                     players_matchmake_team2.append(player.entity_id)
+
+        print(game.ranked)
         
+        if game.ranked and (await game.entity_ends)[0].current_rating_mu:
+            win_chance_after_game = await game.get_win_chance_after_game()
+            win_chance_before_game = await game.get_win_chance_before_game()
+        else:
+            win_chance_after_game = None
+            win_chance_before_game = None
+
         return await render_template(
             request, "game/laserball.html",
             game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
@@ -95,8 +111,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             score_chart_data_red=[await game.get_team_score_at_time(Team.RED, t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_blue=[await game.get_team_score_at_time(Team.BLUE, t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
-            win_chance_before_game=await game.get_win_chance_before_game(),
-            win_chance_after_game=await game.get_win_chance_after_game(),
+            win_chance_after_game=win_chance_after_game,
+            win_chance_before_game=win_chance_before_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
