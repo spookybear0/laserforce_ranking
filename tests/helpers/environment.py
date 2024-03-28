@@ -47,6 +47,11 @@ def get_green_team() -> Teams:
     return _GREEN_TEAM
 
 
+def get_blue_team() -> Teams:
+    assert _BLUE_TEAM
+    return _BLUE_TEAM
+
+
 async def setup_test_database():
     """Creates a test in-memory database using SQLite, connects Tortoise to it, and generates the schema.
 
@@ -106,6 +111,11 @@ async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_enti
         ["4", str(time_millis), EventType.DOWNED_OPPONENT, zapping_entity_id, " zaps ", zapped_entity_id])
 
 
+async def create_destroy_base_event(time_millis: int, destroying_entity_id: str, base_entity_str: str) -> Events:
+    return await create_event_from_data(
+        ["4", str(time_millis), EventType.DESTROY_BASE, destroying_entity_id, " destroys ", base_entity_str])
+
+
 async def create_mission_end_event(time_millis) -> Events:
     return await create_event_from_data(["4", str(time_millis), EventType.MISSION_END, "* Mission End *"])
 
@@ -123,7 +133,7 @@ async def add_entity(
         member_id: str = "4-43-000",
         score: int = 0,
         sm5_game: Optional[SM5Game] = None
-):
+) -> (EntityStarts, EntityEnds):
     entity_start = await create_entity_start(
         entity_id=entity_id,
         team=team,
@@ -145,6 +155,8 @@ async def add_entity(
     if sm5_game:
         await sm5_game.entity_starts.add(entity_start)
         await sm5_game.entity_ends.add(entity_end)
+
+    return entity_start, entity_end
 
 
 async def create_entity_start(

@@ -3,7 +3,6 @@ from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
 from tortoise.fields import ManyToManyRelation
 
-
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team
@@ -26,12 +25,62 @@ This is typically less than 20ms. We're using 50 here just in case there is a bi
 """
 _EVENT_LATENCY_THRESHOLD_MILLIS = 50
 
+
 def _millis_to_time(milliseconds: Optional[int]) -> str:
     """Converts milliseconds into an MM:SS string."""
     if milliseconds is None:
         return "00:00"
 
     return "%02d:%02d" % (milliseconds / 60000, milliseconds % 60000 / 1000)
+
+
+async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start: EntityStarts) -> dict[str, int]:
+    """Returns a dict with individual components that make up a player's total score.
+
+    Each key is a component ("Missiles", "Nukes", etc), and the value is the amount of
+    points - positive or negative - the player got for all these."""
+    bases_destroyed = await (game.events.filter(type=EventType.DESTROY_BASE).
+                             filter(arguments__filter={"0": entity_start.entity_id}).count())
+
+    # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
+    return {
+        "Missiles": stats.missiled_opponent * 500,
+        "Zaps": stats.shot_opponent * 100,
+        "Bases": bases_destroyed * 1001,
+        "Nukes": stats.nukes_detonated * 500,
+        "Zap own team": stats.shot_team * -100,
+        "Missiled own team": stats.missiled_team * -500,
+        "Got zapped": stats.times_zapped * -20,
+        "Got missiled": stats.times_missiled * -100,
+    }
+
+
+def get_sm5_kd_ratio(stats: SM5Stats) -> float:
+    """Returns the K/D for a player.
+
+    This is the number of zaps (not downs) over the number of times the player got zapped.
+    1 if the player was never zapped."""
+    return stats.shot_opponent / stats.times_zapped if stats.times_zapped > 0 else 1.0
+
+
+async def get_sm5_single_team_score_graph_data(game: SM5Game, team:Team) -> List[int]:
+    """Returns data for a score graph for one team.
+
+    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    """
+    return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + 30000, 30000)]
+
+
+async def get_sm5_team_score_graph_data(game: SM5Game, teams: List[Team]) -> dict[Team, List[int]]:
+    """Returns data for a score graph for all teams.
+
+    Returns a dict with an entry for each team. For each team, there will be a list of data points containing the team's
+    current score at the given time, one for every 30 seconds.
+    """
+    return {
+        team: await get_sm5_single_team_score_graph_data(game, team) for team in teams
+    }
+
 
 """
 

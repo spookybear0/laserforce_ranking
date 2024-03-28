@@ -4,9 +4,10 @@ from utils import render_template, is_admin
 from db.game import EntityEnds, EntityStarts
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
+from helpers.gamehelper import get_team_rosters, get_matchmaking_teams, get_player_display_names
 from db.types import Team
 from sanic import exceptions
-from helpers.statshelper import sentry_trace
+from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data
 from numpy import arange
 from typing import List, Optional
 
@@ -29,23 +30,19 @@ async def game_index(request: Request, type: str, id: int) -> str:
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake_team1 = []
-        players_matchmake_team2 = []
-        entity_starts: List[EntityStarts] = game.entity_starts
-        for i, player in enumerate(entity_starts):
-            if player.type != "player":
-                continue
 
-            if (await player.team).enum == Team.RED:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team1.append(player.name)
-                else:
-                    players_matchmake_team1.append(player.entity_id)
-            elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team2.append(player.name)
-                else:
-                    players_matchmake_team2.append(player.entity_id)
+        team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
+
+        scores = {
+            team: await game.get_team_score(team) for team in team_rosters.keys()
+        }
+
+        score_chart_data = await get_sm5_team_score_graph_data(game, list(team_rosters.keys()))
+
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
+
+        # Sort the teams in order of their score.
+        team_ranking = sorted(scores.keys(), key=lambda team: scores[team], reverse=True)
 
         if game.ranked:
             win_chance_after_game = await game.get_win_chance_after_game()
@@ -56,15 +53,15 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         return await render_template(
             request, "game/sm5.html",
-            game=game, get_entity_end=get_entity_end,
+            team_ranking=team_ranking,
+            team_rosters=team_rosters,
+            scores=scores,
+            game=game,
             get_sm5stats=get_sm5stats,
-            fire_score=await game.get_team_score(Team.RED),
-            earth_score=await game.get_team_score(Team.GREEN),
             score_chart_labels=[t for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_team_score_at_time(Team.RED, t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_green=[await game.get_team_score_at_time(Team.GREEN, t) for t in range(0, 900000+30000, 30000)],
-            win_chance_after_game=win_chance_after_game,
+            score_chart_data=score_chart_data,
             win_chance_before_game=win_chance_before_game,
+            win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
@@ -75,27 +72,21 @@ async def game_index(request: Request, type: str, id: int) -> str:
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        players_matchmake_team1 = []
-        players_matchmake_team2 = []
-        entity_starts: List[EntityStarts] = game.entity_starts
-        for i, player in enumerate(entity_starts):
-            if player.type != "player":
-                continue
 
-            if (await player.team).enum == Team.RED:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team1.append(player.name)
-                else:
-                    players_matchmake_team1.append(player.entity_id)
-            elif (await player.team).enum in [Team.BLUE, Team.GREEN]:
-                if player.entity_id.startswith("@"):
-                    players_matchmake_team2.append(player.name)
-                else:
-                    players_matchmake_team2.append(player.entity_id)
+        team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
 
-        print(game.ranked)
+        scores = {
+            team: await game.get_team_score(team) for team in team_rosters.keys()
+        }
+
+        score_chart_data = await get_sm5_team_score_graph_data(game, list(team_rosters.keys()))
+
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
+
+        # Sort the teams in order of their score.
+        team_ranking = sorted(scores.keys(), key=lambda team: scores[team], reverse=True)
         
-        if game.ranked and (await game.entity_ends)[0].current_rating_mu:
+        if game.ranked:
             win_chance_after_game = await game.get_win_chance_after_game()
             win_chance_before_game = await game.get_win_chance_before_game()
         else:
@@ -104,15 +95,17 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         return await render_template(
             request, "game/laserball.html",
-            game=game, get_entity_end=get_entity_end, get_laserballstats=get_laserballstats,
+            game=game,
+            get_entity_end=get_entity_end,
+            get_laserballstats=get_laserballstats,
             fire_score=await game.get_team_score(Team.RED),
             ice_score=await game.get_team_score(Team.BLUE),
             score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, 900000//1000//60+0.5, 0.5)],
             score_chart_data_red=[await game.get_team_score_at_time(Team.RED, t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_blue=[await game.get_team_score_at_time(Team.BLUE, t) for t in range(0, 900000+30000, 30000)],
             score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
-            win_chance_after_game=win_chance_after_game,
             win_chance_before_game=win_chance_before_game,
+            win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
             is_admin=is_admin(request)
