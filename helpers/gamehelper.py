@@ -9,7 +9,7 @@ from typing import List, Optional, Dict
 
 from sanic import exceptions
 
-from db.game import EntityStarts, EntityEnds, Teams
+from db.game import EntityStarts, EntityEnds
 from db.types import PlayerStateDetailType, Team
 
 """Map of every possible player state and the display name for it in SM5 games.

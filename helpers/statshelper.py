@@ -3,7 +3,6 @@ from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
 from tortoise.fields import ManyToManyRelation
 
-
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team
@@ -25,6 +24,7 @@ to be the effect of a preceding "missiled" event.
 This is typically less than 20ms. We're using 50 here just in case there is a bit of lag.
 """
 _EVENT_LATENCY_THRESHOLD_MILLIS = 50
+
 
 def _millis_to_time(milliseconds: Optional[int]) -> str:
     """Converts milliseconds into an MM:SS string."""
@@ -61,6 +61,26 @@ def get_sm5_kd_ratio(stats: SM5Stats) -> float:
     This is the number of zaps (not downs) over the number of times the player got zapped.
     1 if the player was never zapped."""
     return stats.shot_opponent / stats.times_zapped if stats.times_zapped > 0 else 1.0
+
+
+async def get_sm5_single_team_score_graph_data(game: SM5Game, team:Team) -> List[int]:
+    """Returns data for a score graph for one team.
+
+    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    """
+    return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + 30000, 30000)]
+
+
+async def get_sm5_team_score_graph_data(game: SM5Game, teams: List[Team]) -> dict[Team, List[int]]:
+    """Returns data for a score graph for all teams.
+
+    Returns a dict with an entry for each team. For each team, there will be a list of data points containing the team's
+    current score at the given time, one for every 30 seconds.
+    """
+    return {
+        team: await get_sm5_single_team_score_graph_data(game, team) for team in teams
+    }
+
 
 """
 
