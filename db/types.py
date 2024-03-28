@@ -11,6 +11,8 @@ class _TeamDefinition:
     its schema."""
     color: str
     element: str
+    css_class: str
+    css_color_name: str
 
     def __eq__(self, color: str) -> bool:
         return self.color == color
@@ -33,9 +35,9 @@ class _TeamDefinition:
 
 
 class Team(Enum):
-    RED = _TeamDefinition(color="red", element="Fire")
-    GREEN = _TeamDefinition(color="green", element="Earth")
-    BLUE = _TeamDefinition(color="blue", element="Ice")
+    RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered")
+    GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow")
+    BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF")
 
     def __call__(cls, value, *args, **kw):
         # Tortoise looks up values by the lower-case color name.
@@ -51,6 +53,14 @@ class Team(Enum):
     @property
     def element(self) -> str:
         return self.value.element
+
+    @property
+    def css_class(self) -> str:
+        return self.value.css_class
+
+    @property
+    def css_color_name(self) -> str:
+        return self.value.css_color_name
 
 
 # Mapping of opposing teams in SM5 games.
