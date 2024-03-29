@@ -4,12 +4,11 @@ This is different from statshelper in that it does not calculate stats, it
 only deals with getting and extracting and visualizing data.
 """
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import List, Optional, Dict
+from typing import List, Dict
 
 from sanic import exceptions
 
-from db.game import EntityStarts, EntityEnds
+from db.game import EntityStarts, EntityEnds, PlayerInfo
 from db.types import PlayerStateDetailType, Team
 
 """Map of every possible player state and the display name for it in SM5 games.
@@ -37,14 +36,6 @@ SM5_STATE_COLORS = {
     "Down (Resup)": "#8702ab",
     "Resettable": "#cbd103",
 }
-
-
-@dataclass
-class PlayerInfo:
-    """Information about a player in one particular game."""
-    entity_start: EntityStarts
-    entity_end: Optional[EntityEnds]
-    display_name: str
 
 
 def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict]:

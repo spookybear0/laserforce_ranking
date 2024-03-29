@@ -25,6 +25,54 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 >
     <meta property="og:image" content="">
 
+{% macro alive_time_chart(entity_id, chart_data) -%}
+
+    new Chart("time_in_game_{{entity_id}}", {
+        type: "pie",
+        data: {
+            labels: ["In game", "Eliminated"],
+            datasets: [{
+                backgroundColor: ["#00ff00", "#000000"],
+                data: {{ chart_data }}
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+                display: false,
+            }
+        }
+    });
+
+{%- endmacro %}
+
+{% macro uptime_chart(entity_id, state_distribution) -%}
+
+    new Chart("uptime_{{entity_id}}", {
+        type: "pie",
+        data: {
+            labels: {{ state_distribution.labels }},
+            datasets: [{
+                backgroundColor: {{ state_distribution.colors }},
+                data: {{ state_distribution.data }}
+            }]
+        },
+        options: {
+            legend: {
+                display: false,
+                fullSize: false
+            },
+            title: {
+              display: false,
+            }
+        }
+    });
+
+    {%- endmacro %}
+
     <script>
         function toggleNav() {
             // animate the nav-items

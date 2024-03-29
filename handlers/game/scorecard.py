@@ -10,7 +10,8 @@ from db.sm5 import SM5Game, SM5Stats
 from db.game import EntityEnds, EntityStarts
 from db.laserball import LaserballGame, LaserballStats
 from helpers.statshelper import sentry_trace, _millis_to_time, count_zaps, count_missiles, count_blocks, \
-    get_player_state_distribution, get_sm5_score_components, get_sm5_kd_ratio
+    get_player_state_distribution, get_sm5_score_components, get_sm5_kd_ratio, get_sm5_single_player_score_graph_data, \
+    get_sm5_player_alive_times, get_player_state_distribution_pie_chart
 from sanic import exceptions
 
 
@@ -114,15 +115,15 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                                              " eliminated_player" if player_sm5_stats[player.id] or player_sm5_stats[player.id].lives_left == 0 else ""),
                 "score": player_entity_ends[player.id].score,
                 "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
-                "time_in_game_values": [player_entity_ends[player.id].time, game_duration - player_entity_ends[player.id].time],
+                "time_in_game_values": get_sm5_player_alive_times(game_duration, player_entity_ends[player.id]),
                 "kd_ratio": ("%.2f" % get_sm5_kd_ratio(player_sm5_stats[player.id])) if player.id in player_sm5_stats else "",
                 "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
                 "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
                 "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),
                 "missiled_you": await count_missiles(game, player.entity_id, entity_start.entity_id),
-                "state_distribution_values": list((await get_player_state_distribution(player, player_entity_ends[player.id],
-                                                                                 game.player_states, game.events, SM5_STATE_LABEL_MAP)).values())
+                "state_distribution": get_player_state_distribution_pie_chart(await get_player_state_distribution(player, player_entity_ends[player.id],
+                                                                              game.player_states, game.events, SM5_STATE_LABEL_MAP), SM5_STATE_COLORS)
             } for player in player_entities
         ])
         all_players.sort(key=lambda x: x["score"], reverse=True)
@@ -142,7 +143,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             },
         ]
 
-        score_chart_data = [await game.get_entity_score_at_time(entity_start.id, t) for t in range(0, 900000+30000, 30000)]
+        score_chart_data = await get_sm5_single_player_score_graph_data(game, entity_start.id)
 
         return await render_template(
             request,

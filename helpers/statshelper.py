@@ -5,7 +5,7 @@ from tortoise.fields import ManyToManyRelation
 
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
-from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team
+from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
 from db.game import EntityEnds, EntityStarts
 from tortoise.functions import Sum
 
@@ -63,7 +63,19 @@ def get_sm5_kd_ratio(stats: SM5Stats) -> float:
     return stats.shot_opponent / stats.times_zapped if stats.times_zapped > 0 else 1.0
 
 
-async def get_sm5_single_team_score_graph_data(game: SM5Game, team:Team) -> List[int]:
+def get_sm5_player_alive_times(game_duration_millis: int, player: EntityEnds) -> List[int]:
+    return [player.time, game_duration_millis - player.time]
+
+
+async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:
+    """Returns data for a score graph for one player.
+
+    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    """
+    return [await game.get_entity_score_at_time(entity_id, time) for time in range(0, 900000 + 30000, 30000)]
+
+
+async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> List[int]:
     """Returns data for a score graph for one team.
 
     Returns a list with data points containing the current score at the given time, one for every 30 seconds.
@@ -597,3 +609,13 @@ async def get_player_state_distribution(entity_start: EntityStarts,
         last_timestamp = state.timestamp_millis
 
     return result
+
+
+def get_player_state_distribution_pie_chart(distribution: dict[str, int],
+                                            state_color_map: dict[str, str]) -> PieChartData:
+    """Takes state distribution data from get_player_state_distribution() and turns it into pie chart data."""
+    return PieChartData(
+        labels=list(distribution.keys()),
+        colors=[state_color_map[state] for state in distribution.keys()],
+        data=list(distribution.values())
+    )

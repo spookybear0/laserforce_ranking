@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Optional
+
 from db.types import Team, IntRole, EventType, PlayerStateType
 from tortoise import Model, fields
 from db.sm5 import SM5Stats
@@ -191,3 +194,11 @@ class EntityEnds(Model):
 
     def __repr__(self) -> str:
         return str(self)
+
+
+@dataclass
+class PlayerInfo:
+    """Information about a player in one particular game."""
+    entity_start: EntityStarts
+    entity_end: Optional[EntityEnds]
+    display_name: str

@@ -12,7 +12,7 @@ from typing import Optional
 
 from tortoise import Tortoise
 
-from db.game import Events, EntityStarts, Teams, EntityEnds
+from db.game import Events, EntityStarts, Teams, EntityEnds, Scores
 from db.sm5 import SM5Game
 from db.types import EventType, Team
 from helpers.tdfhelper import create_event_from_data
@@ -190,3 +190,9 @@ async def create_entity_ends(
                                    entity=entity_start,
                                    type=type,
                                    score=score)
+
+
+async def add_sm5_score(game: SM5Game, entity: EntityStarts, time_millis: int, old_score: int, score: int):
+    score = await Scores.create(entity=entity, time=time_millis, old=old_score, delta=score-old_score, new=score)
+
+    await game.scores.add(score)
