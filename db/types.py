@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 from enum import Enum, IntEnum
 
 
@@ -202,3 +202,11 @@ class PlayerStateEvent:
     """This denotes a time at which the player state changed."""
     timestamp_millis: int
     state: Optional[PlayerStateDetailType]
+
+
+@dataclass
+class PieChartData:
+    """Data sent to a frontend template to display a pie chart."""
+    labels: List[str]
+    colors: List[str]
+    data: List[int]

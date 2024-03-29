@@ -188,6 +188,10 @@
         }
     }
 
+    .mini-chart {
+        max-width: 64px;
+        display: flex;
+    }
 
     .link-button {
         background: none;
@@ -285,9 +289,11 @@
                                 {% endif %}
                                 <th><p>Score</p></th>
                                 <th><p>Lives</p></th>
+                                <th><p>Alive</p></th>
                                 <th><p>Shots</p></th>
                                 <th><p>Accuracy</p></th>
                                 <th><p>K/D</p></th>
+                                <th><p>States</p></th>
                                 <th><p>Missiled Other</p></th>
                                 <th><p>Missiled</p></th>
                                 <th><p>Shot Team</p></th>
@@ -315,9 +321,11 @@
                                             <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
                                         {% endif %}
                                         <td><p>{{ sm5_stats.lives_left }}</p></td>
+                                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="time_in_game_{{entity_end.id}}"></canvas></td>
                                         <td><p>{{ sm5_stats.shots_left }}</p></td>
                                         <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
                                         <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
+                                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
                                         <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
                                         <td><p>{{ sm5_stats.times_missiled }}</p></td>
                                         <td><p>{{ sm5_stats.shot_team }}</p></td>
@@ -471,6 +479,13 @@
         }
     });
     {% endif %}
+
+    {% for team in team_ranking %}
+        {% for player in team_rosters[team] %}
+            {{ uptime_chart(player.entity_end.id, uptime_values[player.entity_end.id]) }}
+            {{ alive_time_chart(player.entity_end.id, time_in_game_values[player.entity_end.id]) }}
+        {% endfor %}
+    {% endfor %}
 </script>
 
 </body>

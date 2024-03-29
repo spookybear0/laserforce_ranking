@@ -377,7 +377,7 @@
         },
         options: {
             legend: {
-                display: false,
+                display: true,
                 fullSize: false
             },
             title: {
@@ -477,67 +477,8 @@
 
     {% for team in teams %}
             {% for player in team.players %}
-                new Chart("uptime_{{player.entity_end_id}}", {
-                type: "pie",
-                data: {
-                    labels: {{ state_distribution_labels }},
-                    datasets: [{
-                        backgroundColor: {{ state_distribution_colors }},
-                        data: {{ player.state_distribution_values }}
-                    }]
-                },
-                options: {
-                    legend: {
-                        display: false,
-                        fullSize: false
-                    },
-                    title: {
-                        display: false,
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function(tooltipItem, data) {
-                                const index = tooltipItem["index"];
-                                const label = data.labels[index];
-                                const milliseconds = data.datasets[0].data[index];
-
-                                return `${label}: ${ms_to_mmss(milliseconds)}`;
-                            }
-                        }
-                    },
-                }
-            });
-
-            new Chart("time_in_game_{{player.entity_end_id}}", {
-                type: "pie",
-                data: {
-                    labels: ["In game", "Eliminated"],
-                    datasets: [{
-                        backgroundColor: ["#00ff00", "#000000"],
-                        data: {{ player.time_in_game_values }}
-                    }]
-                },
-                options: {
-                    legend: {
-                        display: false,
-                        fullSize: false
-                    },
-                    title: {
-                        display: false,
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function(tooltipItem, data) {
-                                const index = tooltipItem["index"];
-                                const label = data.labels[index];
-                                const milliseconds = data.datasets[0].data[index];
-
-                                return `${label}: ${ms_to_mmss(milliseconds)}`;
-                            }
-                        }
-                    },
-                }
-            });
+            {{ uptime_chart(player.entity_end_id, player.state_distribution) }}
+            {{ alive_time_chart(player.entity_end_id, player.time_in_game_values) }}
          {% endfor %}
     {% endfor %}
 

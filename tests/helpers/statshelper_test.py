@@ -1,9 +1,12 @@
 import unittest
 
+from db.game import EntityStarts
 from db.sm5 import SM5Game, SM5Stats
-from helpers.statshelper import count_zaps, get_sm5_kd_ratio, get_sm5_score_components
+from db.types import Team
+from helpers.statshelper import count_zaps, get_sm5_kd_ratio, get_sm5_score_components, \
+    get_sm5_single_player_score_graph_data, get_sm5_single_team_score_graph_data, get_sm5_team_score_graph_data
 from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id, \
-    teardown_test_database, create_destroy_base_event, add_entity, get_red_team
+    teardown_test_database, create_destroy_base_event, add_entity, get_red_team, get_green_team, add_sm5_score
 
 
 class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
@@ -64,6 +67,77 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(1.0, get_sm5_kd_ratio(stats))
+
+    async def test_get_sm5_single_player_score_graph_data(self):
+        entity1 = await self.create_score_test_scenario()
+
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+        scores = await get_sm5_single_player_score_graph_data(game, entity1.id)
+
+        self.assertEqual([
+            # 00:00
+            0, 0, 0, 0, 100, 100, 100, 100, 100, 100,
+            # 05:00
+            100, 100, 100, 100, 500, 500, 500, 500, 500, 500,
+            # 10:00
+            500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500], scores)
+
+    async def test_get_sm5_single_team_score_graph_data(self):
+        await self.create_score_test_scenario()
+
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+        scores = await get_sm5_single_team_score_graph_data(game, Team.RED)
+
+        self.assertEqual([
+            # 00:00
+            0, 0, 0, 0, 100, 100, 100, 100, 100, 100,
+            # 05:00
+            400, 400, 400, 400, 800, 800, 800, 800, 800, 800,
+            # 10:00
+            800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800], scores)
+
+    async def test_get_sm5_team_score_graph_data(self):
+        await self.create_score_test_scenario()
+
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+        scores = await get_sm5_team_score_graph_data(game, [Team.RED, Team.GREEN])
+
+        self.assertEqual({
+            Team.RED: [
+                # 00:00
+                0, 0, 0, 0, 100, 100, 100, 100, 100, 100,
+                # 05:00
+                400, 400, 400, 400, 800, 800, 800, 800, 800, 800,
+                # 10:00
+                800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800],
+            Team.GREEN: [
+                # 00:00
+                0, 0, 0, 0, 0, 0, 0, 200, 200, 200,
+                # 05:00
+                200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+                # 10:00
+                200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]},
+            scores)
+
+    async def create_score_test_scenario(self) -> EntityStarts:
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        entity1, entity_end1 = await add_entity(entity_id="@LoggedIn", team=get_red_team())
+        entity2, entity_end2 = await add_entity(entity_id="@Member", team=get_green_team())
+        entity3, entity_end3 = await add_entity(entity_id="NotLoggedIn", team=get_red_team())
+
+        # At 01:40: 100 points.
+        await add_sm5_score(game, time_millis=100000, entity=entity1, old_score=0, score=100)
+        # At 03:20: 200 points for green team.
+        await add_sm5_score(game, time_millis=200000, entity=entity2, old_score=0, score=200)
+        # At 05:00: 300 points for entity3.
+        await add_sm5_score(game, time_millis=300000, entity=entity3, old_score=0, score=300)
+        # At 06:40: 500 points.
+        await add_sm5_score(game, time_millis=400000, entity=entity1, old_score=100, score=500)
+        # At 16:40 (Irrelevant, past end of the game)
+        await add_sm5_score(game, time_millis=1000000, entity=entity1, old_score=500, score=600)
+
+        return entity1
 
 
 if __name__ == '__main__':
