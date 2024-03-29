@@ -72,7 +72,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
 
-        team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
+        team_rosters = await get_team_rosters(await game.entity_starts.all(), await game.entity_ends.all())
 
         scores = {
             team: await game.get_team_score(team) for team in team_rosters.keys()
