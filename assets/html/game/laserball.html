@@ -59,11 +59,11 @@
     }
 
     tr:nth-child(odd) > td:nth-child(1) {
-        background-color: #000000;
+        background-color: var(--alternate-table-background-color);
     }
 
     tr > th:nth-child(1) {
-        background-color: #000000;
+        background-color: var(--alternate-table-background-color);
     }
 
     body {
@@ -501,6 +501,7 @@
         }
     });
 
+    {% if game.ranked and win_chance_before_game and win_chance_after_game %}
     new Chart("win_chance_before_game", {
         type: "pie",
         data: {
@@ -544,6 +545,7 @@
             }
         }
     });
+    {% endif %}
 </script>
 
 </body>

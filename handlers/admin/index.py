@@ -25,7 +25,7 @@ async def admin_recalculate_sm5_ratings(request: Request) -> str:
 
     return response.json({"status": "ok"})
 
-@app.post("/admin/recalculate_lb_ratings")
+@app.post("/admin/recalculate_laserball_ratings")
 @admin_only
 async def admin_recalculate_lb_ratings(request: Request) -> str:
     asyncio.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings")
