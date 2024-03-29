@@ -1,6 +1,7 @@
 from numpy import arange
 from sanic import Request
 
+from helpers.formattinghelper import create_ratio_string
 from helpers.gamehelper import SM5_STATE_LABEL_MAP, SM5_STATE_COLORS, get_players_from_team
 from shared import app
 from typing import List
@@ -18,6 +19,11 @@ from sanic import exceptions
 def _chart_values(values: list[int]) -> str:
     """Creates a string to be used in JavaScript for a list of integers."""
     return "[%s]" % ", ".join([str(value) for value in values])
+
+
+
+def _calc_ratio(numerator: int, divisor: int) -> float:
+    return float(numerator) / float(divisor) if divisor else 0.0
 
 
 def _chart_strings(values: list[str]) -> str:
@@ -120,6 +126,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
                 "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
                 "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
+                "hit_ratio": create_ratio_string(_calc_ratio(await count_zaps(game, entity_start.entity_id, player.entity_id), await count_zaps(game, player.entity_id, entity_start.entity_id))),
                 "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),
                 "missiled_you": await count_missiles(game, player.entity_id, entity_start.entity_id),
                 "state_distribution": get_player_state_distribution_pie_chart(await get_player_state_distribution(player, player_entity_ends[player.id],

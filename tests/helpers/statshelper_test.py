@@ -4,9 +4,11 @@ from db.game import EntityStarts
 from db.sm5 import SM5Game, SM5Stats
 from db.types import Team
 from helpers.statshelper import count_zaps, get_sm5_kd_ratio, get_sm5_score_components, \
-    get_sm5_single_player_score_graph_data, get_sm5_single_team_score_graph_data, get_sm5_team_score_graph_data
+    get_sm5_single_player_score_graph_data, get_sm5_single_team_score_graph_data, get_sm5_team_score_graph_data, \
+    get_sm5_gross_positive_score, get_points_per_minute
 from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id, \
-    teardown_test_database, create_destroy_base_event, add_entity, get_red_team, get_green_team, add_sm5_score
+    teardown_test_database, create_destroy_base_event, add_entity, get_red_team, get_green_team, add_sm5_score, \
+    create_award_base_event
 
 
 class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
@@ -29,6 +31,9 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         await game.events.add(await create_destroy_base_event(time_millis=20000,
                                                               destroying_entity_id=ENTITY_ID_1,
                                                               base_entity_str="@reactor"))
+        await game.events.add(await create_award_base_event(time_millis=20000,
+                                                            destroying_entity_id=ENTITY_ID_1,
+                                                            base_entity_str="@yellow_base"))
         entity_start, entity_end = await add_entity(entity_id=ENTITY_ID_1, team=get_red_team())
 
         stats = SM5Stats(
@@ -44,13 +49,40 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         self.assertDictEqual({
             "Missiles": 1500,
             "Zaps": 500,
-            "Bases": 2002,
+            "Bases": 3003,
             "Nukes": 3500,
             "Zap own team": -1100,
             "Missiled own team": -6500,
             "Got zapped": -340,
             "Got missiled": -2300,
         }, await get_sm5_score_components(game, stats, entity_start))
+
+    def test_get_sm5_gross_positive_score(self):
+        net_score = get_sm5_gross_positive_score({
+            "Zaps": 3000,
+            "Forgot to take out the trash": -200,
+            "Nukes": 500,
+            "Got missiled": -400,
+        })
+
+        # The final score should only be the positive parts (3000 and 500).
+        self.assertEqual(3500, net_score)
+
+    async def test_get_points_per_minute(self):
+        entity, entity_end = await add_entity(ENTITY_ID_1, team=get_red_team(), end_time_millis=900000, score=3000)
+
+        points_per_minute = get_points_per_minute(entity_end)
+
+        # 3000 points in 15 minutes.
+        self.assertEqual(200, points_per_minute)
+
+    async def test_get_points_per_minute_zero_time(self):
+        entity, entity_end = await add_entity(ENTITY_ID_1, team=get_red_team(), end_time_millis=0, score=3000)
+
+        points_per_minute = get_points_per_minute(entity_end)
+
+        self.assertEqual(0, points_per_minute)
+
 
     async def test_get_kd_ratio(self):
         stats = SM5Stats(

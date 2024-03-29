@@ -39,7 +39,7 @@ async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start:
 
     Each key is a component ("Missiles", "Nukes", etc), and the value is the amount of
     points - positive or negative - the player got for all these."""
-    bases_destroyed = await (game.events.filter(type=EventType.DESTROY_BASE).
+    bases_destroyed = await (game.events.filter(Q(type=EventType.DESTROY_BASE) | Q(type=EventType.BASE_AWARDED)).
                              filter(arguments__filter={"0": entity_start.entity_id}).count())
 
     # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
@@ -53,6 +53,23 @@ async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start:
         "Got zapped": stats.times_zapped * -20,
         "Got missiled": stats.times_missiled * -100,
     }
+
+
+def get_sm5_gross_positive_score(score_components: dict[str, int]) -> int:
+    """Returns the gross positive SM5 score (i.e. the score with all the negative components taken out.
+
+    Args:
+        score_components: The score components as returned by get_sm5_score_components().
+    Returns:
+        The positive part of the score (i.e. without penalties like getting zapped or missiling their own team)."""
+    return sum([
+        value for value in score_components.values() if value > 0
+    ])
+
+
+def get_points_per_minute(entity: EntityEnds) -> int:
+    """Returns the points per minute scored for the duration the player was in the game."""
+    return int(entity.score * 60000 / entity.time) if entity.time > 0 else 0
 
 
 def get_sm5_kd_ratio(stats: SM5Stats) -> float:

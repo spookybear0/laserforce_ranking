@@ -12,16 +12,14 @@ from helpers.gamehelper import get_team_rosters, get_matchmaking_teams
 from db.types import Team
 from sanic import exceptions
 from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, get_sm5_player_alive_times, \
-    get_player_state_distribution, get_player_state_distribution_pie_chart
+    get_player_state_distribution, get_player_state_distribution_pie_chart, get_points_per_minute, \
+    get_sm5_score_components, get_sm5_gross_positive_score
 from numpy import arange
 from typing import List, Optional
 
 
 async def get_entity_end(entity) -> Optional[EntityEnds]:
     return await EntityEnds.filter(entity=entity).first()
-
-async def get_sm5stats(entity) -> Optional[SM5Stats]:
-    return await SM5Stats.filter(entity=entity).first()
 
 async def get_laserballstats(entity) -> Optional[LaserballStats]:
     return await LaserballStats.filter(entity=entity).first()
@@ -48,6 +46,23 @@ async def game_index(request: Request, type: str, id: int) -> str:
         time_in_game_values = {
             player.entity_end.id: get_sm5_player_alive_times(game_duration, player.entity_end) for player in
             all_players if player
+        }
+
+        points_per_minute = {
+            player.entity_end.id: get_points_per_minute(player.entity_end) for player in all_players
+        }
+
+        player_stats = {
+            player.entity_end.id: await SM5Stats.filter(entity=player.entity_start).first() for player in all_players
+        }
+
+        score_components = {
+            player.entity_end.id: await get_sm5_score_components(game, player_stats[player.entity_end.id],
+                                                                 player.entity_start) for player in all_players
+        }
+
+        gross_positive_points = {
+            player.entity_end.id: get_sm5_gross_positive_score(score_components[player.entity_end.id]) for player in all_players
         }
 
         uptime_values = {
@@ -80,8 +95,10 @@ async def game_index(request: Request, type: str, id: int) -> str:
             scores=scores,
             game=game,
             time_in_game_values=time_in_game_values,
+            player_stats=player_stats,
             uptime_values=uptime_values,
-            get_sm5stats=get_sm5stats,
+            gross_positive_points=gross_positive_points,
+            points_per_minute=points_per_minute,
             score_chart_labels=[t for t in arange(0, 900000 // 1000 // 60 + 0.5, 0.5)],
             score_chart_data=score_chart_data,
             win_chance_before_game=win_chance_before_game,
