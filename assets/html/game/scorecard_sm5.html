@@ -121,20 +121,10 @@
         justify-content: center;
     }
 
-    .fire_team_header, .earth_team_header {
+    .team-header {
         font-size: 20px;
         float: none;
         margin-bottom: 16px;
-    }
-
-    .fire_team_header {
-        color: orangered;
-        font-size: 20px;
-    }
-
-    .earth_team_header {
-        color: greenyellow;
-        font-size: 20px;
     }
 
     .scorecard_main_stats {
@@ -281,7 +271,7 @@
         <div class="scorecard_player_stats">
             {% for team in teams %}
             <div class="scorecard_team_stats">
-                <h2 class="{{ team.class_name }}_team_header">{{ team.name }} ({{ team.score }})</h2>
+                <h2 class="{{ team.class_name }} team-header">{{ team.name }} ({{ team.score }})</h2>
                 <table class="scorecard_player_stats_table">
                     <tr>
                         <th>Player</th>
@@ -406,15 +396,18 @@
         data: {
             labels: {{score_chart_labels}},
             datasets: [
+            {% for player_score_chart in score_chart_data %}
             {
-                label: "{{entity_start.name}}'s Score",
-                data: {{score_chart_data}},
-                borderColor: "orangered",
+                label: "{{ player_score_chart.label }}",
+                data: {{ player_score_chart.data }},
+                borderColor: "{{ player_score_chart.color }}",
+                borderWidth: {{ player_score_chart.borderWidth }},
                 fill: false,
                 tension: 0.4,
                 pointRadius: 0,
-                pointHitRadius: 10
-            }
+                pointHitRadius: 30
+            }{{ "," if not loop.last }}
+            {% endfor %}
             ]
         },
         options: {
