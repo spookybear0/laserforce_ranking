@@ -114,7 +114,7 @@ class EventType(Enum):
     PENALTY = "0600"
     ACHIEVEMENT = "0900"  # Arguments: "(entity 1)", " completes an achievement!"
     REWARD = "0902"  # Arguments: "(entity 1)", " earns a reward!"
-    BASE_AWARDED = "0B03"  # (technically #0B03 in hex)
+    BASE_AWARDED = "0B03"  # (technically #0B03 in hex) Arguments: "(entity 1)", " is awarded ", "(entity 2)"
 
     # laserball events
 

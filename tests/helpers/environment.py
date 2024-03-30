@@ -116,6 +116,11 @@ async def create_destroy_base_event(time_millis: int, destroying_entity_id: str,
         ["4", str(time_millis), EventType.DESTROY_BASE, destroying_entity_id, " destroys ", base_entity_str])
 
 
+async def create_award_base_event(time_millis: int, destroying_entity_id: str, base_entity_str: str) -> Events:
+    return await create_event_from_data(
+        ["4", str(time_millis), EventType.BASE_AWARDED, destroying_entity_id, " is awarded ", base_entity_str])
+
+
 async def create_mission_end_event(time_millis) -> Events:
     return await create_event_from_data(["4", str(time_millis), EventType.MISSION_END, "* Mission End *"])
 

@@ -288,9 +288,11 @@
                                     <th title="Current rating after game has been played"><p>Rating</p></th>
                                 {% endif %}
                                 <th><p>Score</p></th>
-                                <th><p>Lives</p></th>
+                                <th><p>Positive Score</p></th>
+                                <th><p>Points/Minute</p></th>
+                                <th><p>Lives Left</p></th>
                                 <th><p>Alive</p></th>
-                                <th><p>Shots</p></th>
+                                <th><p>Shots Left</p></th>
                                 <th><p>Accuracy</p></th>
                                 <th><p>K/D</p></th>
                                 <th><p>States</p></th>
@@ -303,7 +305,7 @@
                                 {% for player in team_rosters[team] %}
                                     {% set entity = player.entity_start %}
                                     {% set entity_end = player.entity_end %}
-                                    {% set sm5_stats = get_sm5stats(entity) %}
+                                    {% set sm5_stats = player_stats[entity_end.id] %}
 
                                     <tr>
                                         <td class="role fixed-column" style="width: 30px"><p><img src="/assets/sm5/roles/{{entity.role|string|lower}}.png" alt="role image" width="30" height="30"></p></td>
@@ -320,6 +322,8 @@
                                         {% else %}
                                             <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
                                         {% endif %}
+                                        <td><p>{{ gross_positive_points[entity_end.id] }}</p></td>
+                                        <td><p>{{ points_per_minute[entity_end.id] }}</p></td>
                                         <td><p>{{ sm5_stats.lives_left }}</p></td>
                                         <td class="scorecard_player_stat"><canvas class="mini-chart" id="time_in_game_{{entity_end.id}}"></canvas></td>
                                         <td><p>{{ sm5_stats.shots_left }}</p></td>
