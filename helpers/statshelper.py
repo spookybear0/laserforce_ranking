@@ -26,7 +26,7 @@ This is typically less than 20ms. We're using 50 here just in case there is a bi
 _EVENT_LATENCY_THRESHOLD_MILLIS = 50
 
 
-def _millis_to_time(milliseconds: Optional[int]) -> str:
+def millis_to_time(milliseconds: Optional[int]) -> str:
     """Converts milliseconds into an MM:SS string."""
     if milliseconds is None:
         return "00:00"

@@ -1,6 +1,49 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Optional, List
 from enum import Enum, IntEnum
+
+
+@dataclass
+class RgbColor:
+    """An RGB value, with each component having a value between 0 and 255."""
+    red: int
+    green: int
+    blue: int
+
+    @property
+    def rgb_value(self) -> str:
+        """Returns the color as an RGB string to plug into HTML or CSS."""
+        return "#%02x%02x%02x" % (self.red, self.green, self.blue)
+
+    def add(self, other: "RgbColor") -> "RgbColor":
+        """Returns a new RgbColor() that is the addition of this and the other one.
+
+        Components are clamped at their max value."""
+        return RgbColor(
+            red=self._add_values(self.red, other.red),
+            green=self._add_values(self.green, other.green),
+            blue=self._add_values(self.blue, other.blue)
+        )
+
+    def multiply(self, multiplier: int) -> "RgbColor":
+        """Returns a new RgbColor() that is each component multiplied by a value.
+
+        Components are clamped at their max value."""
+        return RgbColor(
+            red=self._add_values(self.red, multiplier),
+            green=self._add_values(self.green, multiplier),
+            blue=self._add_values(self.blue, multiplier)
+        )
+
+    @staticmethod
+    def _add_values(value1: int, value2: int) -> int:
+        return min(value1 + value2, 255)
+
+    @staticmethod
+    def _multiply_value(value1: int, value2: int) -> int:
+        return min(value1 * value2, 255)
 
 
 @dataclass
@@ -13,6 +56,7 @@ class _TeamDefinition:
     element: str
     css_class: str
     css_color_name: str
+    dim_color: RgbColor
 
     def __eq__(self, color: str) -> bool:
         return self.color == color
@@ -23,10 +67,10 @@ class _TeamDefinition:
 
     def __str__(self):
         return self.color
-    
+
     def __repr__(self):
         return f'"{self.color}"'
-    
+
     def __json__(self):
         return f'"{self.color}"'
 
@@ -35,9 +79,12 @@ class _TeamDefinition:
 
 
 class Team(Enum):
-    RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered")
-    GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow")
-    BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF")
+    RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered",
+                          dim_color=RgbColor(red=68, green=17, blue=0))
+    GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow",
+                            dim_color=RgbColor(red=43, green=60, blue=12))
+    BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF",
+                           dim_color=RgbColor(red=0, green=37, blue=68))
 
     def __call__(cls, value, *args, **kw):
         # Tortoise looks up values by the lower-case color name.
@@ -48,19 +95,28 @@ class Team(Enum):
         return super().__call__(value, *args, **kw)
 
     def standardize(self) -> str:
+        """The color name starting in upper case, like "Red" or "Blue"."""
         return self.value.color.capitalize()
 
     @property
     def element(self) -> str:
+        """The element, like "Fire" or "Ice"."""
         return self.value.element
 
     @property
     def css_class(self) -> str:
+        """CSS class to use to show text using the color of this team."""
         return self.value.css_class
 
     @property
     def css_color_name(self) -> str:
+        """CSS color to use for this team, could be a RGB HEX value or a CSS color value."""
         return self.value.css_color_name
+
+    @property
+    def dim_color(self) -> RgbColor:
+        """Color to use for this team at a darker brightness, good for line graphs showing peripheral data."""
+        return self.value.dim_color
 
 
 # Mapping of opposing teams in SM5 games.
@@ -210,3 +266,12 @@ class PieChartData:
     labels: List[str]
     colors: List[str]
     data: List[int]
+
+
+@dataclass
+class LineChartData:
+    """Data sent to a frontend template to display a line chart dataset."""
+    label: str
+    color: str
+    data: List[int]
+    borderWidth: int = 3
