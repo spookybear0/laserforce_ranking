@@ -1,14 +1,16 @@
 import unittest
 
 from db.game import EntityStarts
+from db.laserball import LaserballGame
 from db.sm5 import SM5Game, SM5Stats
 from db.types import Team
 from helpers.statshelper import count_zaps, get_sm5_kd_ratio, get_sm5_score_components, \
     get_sm5_single_player_score_graph_data, get_sm5_single_team_score_graph_data, get_sm5_team_score_graph_data, \
-    get_sm5_gross_positive_score, get_points_per_minute
-from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id, \
+    get_sm5_gross_positive_score, get_points_per_minute, count_blocks, count_missiles, get_points_scored
+from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, ENTITY_ID_3, get_sm5_game_id, \
     teardown_test_database, create_destroy_base_event, add_entity, get_red_team, get_green_team, add_sm5_score, \
-    create_award_base_event
+    create_award_base_event, create_block_event, get_laserball_game_id, create_zap_event, create_missile_event, \
+    create_team
 
 
 class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
@@ -22,6 +24,49 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
         zaps = await count_zaps(game, ENTITY_ID_1, ENTITY_ID_2)
         self.assertEqual(3, zaps)
+
+    async def test_count_blocks(self):
+        game = await LaserballGame.filter(id=get_laserball_game_id()).first()
+
+        await game.events.add(
+            await create_block_event(time_millis=1000, blocking_entity_id=ENTITY_ID_1, blocked_entity_id=ENTITY_ID_2))
+        await game.events.add(
+            await create_block_event(time_millis=50000, blocking_entity_id=ENTITY_ID_1, blocked_entity_id=ENTITY_ID_2))
+        await game.events.add(
+            await create_block_event(time_millis=80000, blocking_entity_id=ENTITY_ID_2, blocked_entity_id=ENTITY_ID_1))
+        await game.events.add(
+            await create_block_event(time_millis=90000, blocking_entity_id=ENTITY_ID_1, blocked_entity_id=ENTITY_ID_3))
+        await game.events.add(
+            await create_zap_event(time_millis=95000, zapping_entity_id=ENTITY_ID_1, zapped_entity_id=ENTITY_ID_2))
+        await game.events.add(
+            await create_missile_event(time_millis=98000, missiling_entity_id=ENTITY_ID_1,
+                                       missiled_entity_id=ENTITY_ID_2))
+
+        zaps = await count_blocks(game, ENTITY_ID_1, ENTITY_ID_2)
+        self.assertEqual(2, zaps)
+
+    async def test_count_missiles(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        await game.events.add(
+            await create_missile_event(time_millis=1000, missiling_entity_id=ENTITY_ID_1,
+                                       missiled_entity_id=ENTITY_ID_2))
+        await game.events.add(
+            await create_missile_event(time_millis=50000, missiling_entity_id=ENTITY_ID_1,
+                                       missiled_entity_id=ENTITY_ID_2))
+        await game.events.add(
+            await create_missile_event(time_millis=80000, missiling_entity_id=ENTITY_ID_2,
+                                       missiled_entity_id=ENTITY_ID_1))
+        await game.events.add(
+            await create_missile_event(time_millis=90000, missiling_entity_id=ENTITY_ID_1,
+                                       missiled_entity_id=ENTITY_ID_3))
+        await game.events.add(
+            await create_block_event(time_millis=92000, blocking_entity_id=ENTITY_ID_1, blocked_entity_id=ENTITY_ID_2))
+        await game.events.add(
+            await create_zap_event(time_millis=95000, zapping_entity_id=ENTITY_ID_1, zapped_entity_id=ENTITY_ID_2))
+
+        zaps = await count_missiles(game, ENTITY_ID_1, ENTITY_ID_2)
+        self.assertEqual(2, zaps)
 
     async def test_get_sm5_score_components(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
@@ -82,7 +127,6 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         points_per_minute = get_points_per_minute(entity_end)
 
         self.assertEqual(0, points_per_minute)
-
 
     async def test_get_kd_ratio(self):
         stats = SM5Stats(
@@ -150,6 +194,36 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
                 # 10:00
                 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]},
             scores)
+
+    async def test_get_points_scored(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        entity1, entity_end1 = await add_entity(entity_id=ENTITY_ID_1, team=get_red_team(), score=3000)
+        entity2, entity_end2 = await add_entity(entity_id=ENTITY_ID_2, team=get_red_team(), score=50000)
+        entity3, entity_end3 = await add_entity(entity_id=ENTITY_ID_3, team=get_green_team(), score=700000)
+
+        await game.entity_ends.add(*[entity_end1, entity_end2, entity_end3])
+
+        game2 = await SM5Game.create(winner_color=Team.RED.value.color, tdf_name="in_memory_test",
+                                     file_version="0.test.0",
+                                     software_version="12.34.56", arena="Test Arena", mission_name="Space Marines 5",
+                                     mission_type=0, ranked=True, ended_early=False, start_time=2222222,
+                                     mission_duration=900000)
+
+        red_team_2 = await create_team(0, Team.RED)
+        green_team_2 = await create_team(1, Team.GREEN)
+
+        entity1, entity_end1 = await add_entity(entity_id=ENTITY_ID_1, team=get_red_team(), score=3)
+        entity2, entity_end2 = await add_entity(entity_id=ENTITY_ID_2, team=get_red_team(), score=50)
+        entity3, entity_end3 = await add_entity(entity_id=ENTITY_ID_3, team=get_green_team(), score=700)
+
+        await game2.teams.add(*[red_team_2, green_team_2])
+        await game2.entity_ends.add(*[entity_end1, entity_end2, entity_end3])
+
+        total_points_scored = await get_points_scored()
+
+        self.assertEqual(753753, total_points_scored)
+
 
     async def create_score_test_scenario(self) -> EntityStarts:
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
