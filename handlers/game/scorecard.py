@@ -148,6 +148,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "score": player_entity_ends[player.id].score,
                 "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
                 "time_in_game_values": get_sm5_player_alive_times(game_duration, player_entity_ends[player.id]),
+                "time_in_game": millis_to_time(player_entity_ends[player.id].time),
                 "kd_ratio": ("%.2f" % get_sm5_kd_ratio(
                     player_sm5_stats[player.id])) if player.id in player_sm5_stats else "",
                 "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
