@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from db.types import Team, IntRole, EventType, PlayerStateType
 from tortoise import Model, fields
@@ -200,5 +199,5 @@ class EntityEnds(Model):
 class PlayerInfo:
     """Information about a player in one particular game."""
     entity_start: EntityStarts
-    entity_end: Optional[EntityEnds]
+    entity_end: EntityEnds
     display_name: str
