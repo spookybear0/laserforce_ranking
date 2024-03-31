@@ -325,7 +325,10 @@
                                         <td><p>{{ gross_positive_points[entity_end.id] }}</p></td>
                                         <td><p>{{ points_per_minute[entity_end.id] }}</p></td>
                                         <td><p>{{ sm5_stats.lives_left }}</p></td>
-                                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="time_in_game_{{entity_end.id}}"></canvas></td>
+                                        <td class="scorecard_player_stat"><div style="display: flex">
+                                            <canvas class="mini-chart" id="time_in_game_{{entity_end.id}}"></canvas>
+                                            <span style="margin: auto">{{ millis_to_time(entity_end.time) }}</span></div></td>
+                                        </td>
                                         <td><p>{{ sm5_stats.shots_left }}</p></td>
                                         <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
                                         <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
