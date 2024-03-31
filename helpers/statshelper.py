@@ -147,23 +147,17 @@ async def count_zaps(game: SM5Game, zapping_entity_id: str, zapped_entity_id: st
 
 async def count_blocks(game: LaserballGame, zapping_entity_id: str, zapped_entity_id: str) -> int:
     """Returns the number of times one entity blocked another."""
-    return await (game.events.filter(
-        arguments__filter={"0": zapping_entity_id}
-    ).filter(
-        arguments__filter={"1": " blocks "}
-    ).filter(
-        arguments__filter={"2": zapped_entity_id}
+    return await (game.events.filter(entity1=zapping_entity_id,
+                                     action=" blocks ",
+                                     entity2=zapped_entity_id
     ).count())
 
 
 async def count_missiles(game: SM5Game, missiling_entity_id: str, missiled_entity_id: str) -> int:
     """Returns the number of times one entity missiled another."""
-    return await (game.events.filter(
-        arguments__filter={"0": missiling_entity_id}
-    ).filter(
-        arguments__filter={"1": " missiles "}
-    ).filter(
-        arguments__filter={"2": missiled_entity_id}
+    return await (game.events.filter(entity1=missiling_entity_id,
+                                     action=" missiles ",
+                                     entity2=missiled_entity_id
     ).count())
 
 """

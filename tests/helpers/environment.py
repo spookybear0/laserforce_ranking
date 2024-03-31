@@ -13,6 +13,7 @@ from typing import Optional
 from tortoise import Tortoise
 
 from db.game import Events, EntityStarts, Teams, EntityEnds, Scores
+from db.laserball import LaserballGame
 from db.sm5 import SM5Game
 from db.types import EventType, Team
 from helpers.tdfhelper import create_event_from_data
@@ -27,6 +28,7 @@ _BLUE_TEAM: Optional[Teams] = None
 _GREEN_TEAM: Optional[Teams] = None
 
 _TEST_SM5_GAME: Optional[SM5Game] = None
+_TEST_LASERBALL_GAME: Optional[LaserballGame] = None
 
 
 def get_sm5_game_id() -> int:
@@ -35,6 +37,14 @@ def get_sm5_game_id() -> int:
     May only be called after the database has been initialized with setup_test_database()."""
     assert _TEST_SM5_GAME
     return _TEST_SM5_GAME.id
+
+
+def get_laserball_game_id() -> int:
+    """Returns the game ID of the test Laserball game.
+
+    May only be called after the database has been initialized with setup_test_database()."""
+    assert _TEST_LASERBALL_GAME
+    return _TEST_LASERBALL_GAME.id
 
 
 def get_red_team() -> Teams:
@@ -56,7 +66,7 @@ async def setup_test_database():
     """Creates a test in-memory database using SQLite, connects Tortoise to it, and generates the schema.
 
     It will also generate the test dataset."""
-    global _TEST_SM5_GAME, _RED_TEAM, _GREEN_TEAM, _BLUE_TEAM
+    global _TEST_SM5_GAME, _TEST_LASERBALL_GAME, _RED_TEAM, _GREEN_TEAM, _BLUE_TEAM
 
     await Tortoise.init(db_url="sqlite://:memory:",
                         modules={
@@ -64,14 +74,12 @@ async def setup_test_database():
 
     await Tortoise.generate_schemas()
 
-    _RED_TEAM = await Teams.create(index=0, name="Fire Team", color_enum=0, color_name=Team.RED.element,
-                                   real_color_name=Team.RED.standardize())
-    _GREEN_TEAM = await Teams.create(index=1, name="Earth Team", color_enum=1, color_name=Team.GREEN.element,
-                                     real_color_name=Team.GREEN.standardize())
-    _BLUE_TEAM = await Teams.create(index=2, name="Ice Team", color_enum=2, color_name=Team.BLUE.element,
-                                    real_color_name=Team.BLUE.standardize())
+    _RED_TEAM = await create_team(0, Team.RED)
+    _GREEN_TEAM = await create_team(1, Team.GREEN)
+    _BLUE_TEAM = await create_team(2, Team.BLUE)
 
     _TEST_SM5_GAME = await create_sm5_game_1()
+    _TEST_LASERBALL_GAME = await create_laserball_game_1()
 
 
 async def teardown_test_database():
@@ -95,7 +103,19 @@ async def create_sm5_game_1() -> SM5Game:
                                 mission_type=0, ranked=True, ended_early=False, start_time=2222222,
                                 mission_duration=900000)
 
+    await game.teams.add(*[_RED_TEAM, _GREEN_TEAM])
     await game.events.add(*events)
+    await game.save()
+    return game
+
+
+async def create_laserball_game_1() -> LaserballGame:
+    game = await LaserballGame.create(winner=Team.RED, winner_color=Team.RED.value.color, tdf_name="in_memory_test",
+                                      file_version="0.test.0",
+                                      software_version="12.34.56", arena="Test Arena", mission_name="Laserball",
+                                      mission_type=0, ranked=True, ended_early=False, start_time=2222222,
+                                      mission_duration=900000)
+
     await game.save()
     return game
 
@@ -109,6 +129,16 @@ async def add_sm5_event(event: Events):
 async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_entity_id: str) -> Events:
     return await create_event_from_data(
         ["4", str(time_millis), EventType.DOWNED_OPPONENT, zapping_entity_id, " zaps ", zapped_entity_id])
+
+
+async def create_block_event(time_millis: int, blocking_entity_id: str, blocked_entity_id: str) -> Events:
+    return await create_event_from_data(
+        ["4", str(time_millis), EventType.BLOCK, blocking_entity_id, " blocks ", blocked_entity_id])
+
+
+async def create_missile_event(time_millis: int, missiling_entity_id: str, missiled_entity_id: str) -> Events:
+    return await create_event_from_data(
+        ["4", str(time_millis), EventType.MISSILE_DOWN_OPPONENT, missiling_entity_id, " missiles ", missiled_entity_id])
 
 
 async def create_destroy_base_event(time_millis: int, destroying_entity_id: str, base_entity_str: str) -> Events:
@@ -197,7 +227,12 @@ async def create_entity_ends(
                                    score=score)
 
 
+async def create_team(index: int, team: Team) -> Teams:
+    return await Teams.create(index=index, name=f"{team.element} Team", color_enum=index, color_name=team.element,
+                              real_color_name=team.standardize())
+
+
 async def add_sm5_score(game: SM5Game, entity: EntityStarts, time_millis: int, old_score: int, score: int):
-    score = await Scores.create(entity=entity, time=time_millis, old=old_score, delta=score-old_score, new=score)
+    score = await Scores.create(entity=entity, time=time_millis, old=old_score, delta=score - old_score, new=score)
 
     await game.scores.add(score)
