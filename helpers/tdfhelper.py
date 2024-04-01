@@ -36,10 +36,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     start_time: str = ""
     mission_duration = 0
 
-    teams: Teams = []
+    teams: List[Teams] = []
     entity_starts: List[EntityStarts] = []
-    events: Events = []
-    scores: Scores = []
+    events: List[Events] = []
+    scores: List[Scores] = []
     entity_ends: List[EntityEnds] = []
     sm5_stats: List[SM5Stats] = []
     player_states: List[PlayerStates] = []
