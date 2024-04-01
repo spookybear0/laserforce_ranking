@@ -56,6 +56,9 @@ async def game_index(request: Request, type: str, id: int) -> str:
             player.entity_end.id: await SM5Stats.filter(entity=player.entity_start).first() for player in all_players
         }
 
+        # Some players may not have SM5Stats, possibly because they were deleted.
+        all_players = [player for player in all_players if player.entity_end.id in player_stats]
+
         score_components = {
             player.entity_end.id: await get_sm5_score_components(game, player_stats[player.entity_end.id],
                                                                  player.entity_start) for player in all_players

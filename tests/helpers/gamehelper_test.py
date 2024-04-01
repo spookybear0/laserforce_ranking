@@ -37,18 +37,20 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
         self.assertCountEqual([player2, player3], players_in_team)
 
     async def test_get_team_rosters(self):
-        entity1, entity_end1 = await add_entity(entity_id="@LoggedIn", name="Indy", team=get_red_team(), type="player")
+        entity1, entity_end1 = await add_entity(entity_id="@LoggedIn", name="Indy", team=get_red_team())
         entity2, entity_end2 = await add_entity(entity_id="Red Base", name="Red Base", team=get_red_team(), type="base")
-        entity3, entity_end3 = await add_entity(entity_id="@Member", name="Miles", team=get_green_team(), type="player")
-        entity4, entity_end4 = await add_entity(entity_id="NotLoggedIn", name="Bumblebee", team=get_red_team(), type="player")
+        entity3, entity_end3 = await add_entity(entity_id="@Member", name="Miles", team=get_green_team())
+        entity4, entity_end4 = await add_entity(entity_id="NotLoggedIn", name="Bumblebee", team=get_red_team())
+        entity5, entity_end5 = await add_entity(entity_id="@KickedPlayer", name="Removed", team=get_red_team(), omit_entity_end=True)
 
-        roster = await get_team_rosters([entity1, entity2, entity3, entity4],
+        roster = await get_team_rosters([entity1, entity2, entity3, entity4, entity5],
                                         [entity_end1, entity_end2, entity_end3, entity_end4])
 
         player1 = PlayerInfo(entity_start=entity1, entity_end=entity_end1, display_name="Indy")
         # entity2 is not a player2 and should be ignored.
         player3 = PlayerInfo(entity_start=entity3, entity_end=entity_end3, display_name="Miles")
         player4 = PlayerInfo(entity_start=entity4, entity_end=entity_end4, display_name="NotLoggedIn")
+        # entity5 doesn't have an EntityEnds and should be ignored.
 
         self.assertDictEqual({
             Team.RED: [player1, player4],
