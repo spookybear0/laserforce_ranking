@@ -13,6 +13,8 @@ from db.game import EntityEnds, EntityStarts
 from helpers.statshelper import sentry_trace
 from sanic.log import logger
 
+_GAMES_PER_PAGE = 5
+
 sql = app.ctx.sql
 
 async def get_entity_start(game, player) -> Optional[EntityStarts]:
@@ -51,6 +53,9 @@ async def get_role_labels_from_medians(median_role_score) -> list:
 @app.get("/player/<id>")
 @sentry_trace
 async def player_get(request: Request, id: Union[int, str]) -> str:
+    sm5page = int(request.args.get("sm5page", 0))
+    lbpage = int(request.args.get("lbpage", 0))
+
     id = unquote(id)
 
     player = await Player.get_or_none(player_id=id)
@@ -68,8 +73,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     logger.debug("Loading recent games")
     
-    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5)
-    recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5)
+    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5).offset(_GAMES_PER_PAGE * sm5page)
+    recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5).offset(_GAMES_PER_PAGE * lbpage)
 
     median_role_score = await get_median_role_score(player)
 
@@ -129,6 +134,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         get_entity_end=get_entity_end,
         get_sm5_stat=get_sm5_stat,
         get_laserball_stat=get_laserball_stat,
+        sm5page=sm5page,
+        lbpage=lbpage,
         # team rate pies (sm5/laserball)
         red_teams_sm5=red_teams_sm5,
         green_teams_sm5=green_teams_sm5,

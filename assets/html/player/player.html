@@ -18,6 +18,14 @@
         overflow: auto;
     }
 
+    .paging {
+        margin-top: 16px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 80%;
+        font-size: 24;
+    }
+
     .sidebar a {
         display: block;
         color: white;
@@ -270,6 +278,10 @@
                         </tr>
                     {% endfor %}
                 </table>
+                <div class="paging">
+                    {% if sm5page > 0 %}<a href="/player/{{ player.codename }}?sm5page={{ sm5page-1 }}&lbpage={{ lbpage }}" id="prev_href"><p style="float: left;">Prev</p></a>{% endif %}
+                    <a href="/player/{{ player.codename }}?sm5page={{ sm5page+1 }}&lbpage={{ lbpage }}" id="next_href"><p style="float: right;">Next</p></a>
+                </div>
             </div>
             {% endif %}
             {% if recent_games_laserball %}
@@ -323,6 +335,10 @@
                         </tr>
                     {% endfor %}
                 </table>
+                <div class="paging">
+                    {% if lbpage > 0 %}<a href="/player/{{ player.codename }}?sm5page={{ sm5page }}&lbpage={{ lbpage-1 }}" id="prev_href"><p style="float: left;">Prev</p></a>{% endif %}
+                    <a href="/player/{{ player.codename }}?sm5page={{ sm5page }}&lbpage={{ lbpage+1 }}" id="next_href"><p style="float: right;">Next</p></a>
+                </div>
             </div>
             {% endif %}
 
