@@ -54,6 +54,8 @@ async def get_team_rosters(entity_starts: List[EntityStarts], entity_ends: List[
 
     Non-player entities will be ignored. The values will be a list of names, either the
     name if the player is not logged in, or the entity ID if the player is logged in.
+
+    Players without a matching entity_end will not be added.
     """
     result = defaultdict(list)
 
@@ -71,7 +73,8 @@ async def get_team_rosters(entity_starts: List[EntityStarts], entity_ends: List[
         entity_end = entity_ends_dict[player.id] if player.id in entity_ends_dict else None
         display_name = player.name if player.entity_id.startswith("@") else player.entity_id
 
-        team_roster.append(PlayerInfo(entity_start=player, entity_end=entity_end, display_name=display_name))
+        if entity_end:
+            team_roster.append(PlayerInfo(entity_start=player, entity_end=entity_end, display_name=display_name))
 
     return result
 

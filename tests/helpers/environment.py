@@ -167,8 +167,9 @@ async def add_entity(
         battlesuit: str = "Panther",
         member_id: str = "4-43-000",
         score: int = 0,
-        sm5_game: Optional[SM5Game] = None
-) -> (EntityStarts, EntityEnds):
+        sm5_game: Optional[SM5Game] = None,
+        omit_entity_end: bool = False,
+) -> (EntityStarts, Optional[EntityEnds]):
     entity_start = await create_entity_start(
         entity_id=entity_id,
         team=team,
@@ -181,15 +182,19 @@ async def add_entity(
         member_id=member_id
     )
 
-    entity_end = await create_entity_ends(
-        entity_start=entity_start,
-        time_millis=end_time_millis,
-        score=score
-    )
-
     if sm5_game:
         await sm5_game.entity_starts.add(entity_start)
-        await sm5_game.entity_ends.add(entity_end)
+
+    if omit_entity_end:
+        entity_end = None
+    else:
+        entity_end = await create_entity_ends(
+            entity_start=entity_start,
+            time_millis=end_time_millis,
+            score=score
+        )
+        if sm5_game:
+            await sm5_game.entity_ends.add(entity_end)
 
     return entity_start, entity_end
 
