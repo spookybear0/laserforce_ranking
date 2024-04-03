@@ -1,20 +1,17 @@
-from itertools import chain
-
 from numpy import arange
 from sanic import Request
 
-from helpers.formattinghelper import create_ratio_string
-from helpers.gamehelper import SM5_STATE_LABEL_MAP, SM5_STATE_COLORS, get_players_from_team, get_team_rosters
+from helpers.gamehelper import SM5_STATE_COLORS, get_players_from_team
+from helpers.sm5helper import get_sm5_player_stats
 from shared import app
 from typing import List
 from utils import render_template
 from db.types import IntRole, Team, LineChartData, RgbColor
-from db.sm5 import SM5Game, SM5Stats
+from db.sm5 import SM5Game
 from db.game import EntityEnds, EntityStarts
 from db.laserball import LaserballGame, LaserballStats
-from helpers.statshelper import sentry_trace, millis_to_time, count_zaps, count_missiles, count_blocks, \
-    get_player_state_distribution, get_sm5_score_components, get_sm5_kd_ratio, get_sm5_single_player_score_graph_data, \
-    get_sm5_player_alive_times, get_player_state_distribution_pie_chart
+from helpers.statshelper import sentry_trace, millis_to_time, count_blocks, \
+    get_sm5_single_player_score_graph_data
 from sanic import exceptions
 
 
@@ -39,10 +36,6 @@ def _get_score_chart_color(player_id: int, scorecard_player_id: int, team: Team,
     return team.dim_color.add(modifier).rgb_value
 
 
-def _calc_ratio(numerator: int, divisor: int) -> float:
-    return float(numerator) / float(divisor) if divisor else 0.0
-
-
 def _chart_strings(values: list[str]) -> str:
     """Creates a string to be used in JavaScript for a list of strings.
 
@@ -65,31 +58,33 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             raise exceptions.NotFound("Scorecard not found")
 
         entity_start = await entity_end.entity
-        stats = await SM5Stats.filter(entity_id=entity_start.id).first()
 
-        if not stats:
+        if not entity_start:
             raise exceptions.NotFound("Scorecard not found")
 
-        can_missile = entity_start.role == IntRole.COMMANDER or entity_start.role == IntRole.HEAVY
-        can_nuke = entity_start.role == IntRole.COMMANDER
-        accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
-        kd_ratio = stats.shot_opponent / stats.times_zapped if stats.times_zapped > 0 else 1
+        full_stats = await get_sm5_player_stats(game, entity_start)
+
+        if entity_end_id not in full_stats.all_players:
+            raise exceptions.NotFound("Scorecard not found")
+
+        player_stats = full_stats.all_players[entity_end_id]
+
+        can_missile = player_stats.role == IntRole.COMMANDER or player_stats.role == IntRole.HEAVY
+        can_nuke = player_stats.role == IntRole.COMMANDER
 
         main_stats = {
-            "Score": entity_end.score,
-            "Lives left": stats.lives_left,
-            "Shots left": stats.shots_left,
-            "Shots fired": stats.shots_fired,
-            "Accuracy": "%.2f%%" % (accuracy * 100),
-            "K/D": "%.2f" % kd_ratio,
-            "Missiles fired": stats.missile_hits,
-            "Missiled team": stats.missiled_team,
-            "Nukes detonated": stats.nukes_detonated,
-            "Nukes canceled": stats.nuke_cancels,
-            "Medic hits": stats.medic_hits,
+            "Score": player_stats.score,
+            "Lives left": player_stats.lives_left,
+            "Shots left": player_stats.shots_left,
+            "Shots fired": player_stats.shots_fired,
+            "Accuracy": "%.2f%%" % (player_stats.accuracy * 100),
+            "K/D": "%.2f" % player_stats.kd_ratio,
+            "Missiles fired": player_stats.missile_hits,
+            "Missiled team": player_stats.missiled_team,
+            "Nukes detonated": player_stats.nukes_detonated,
+            "Nukes canceled": player_stats.nuke_cancels,
+            "Medic hits": player_stats.medic_hits,
         }
-
-        score_components = await get_sm5_score_components(game, stats, entity_start)
 
         score_composition = [
             {
@@ -97,92 +92,22 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
                 "color": "#00cc00" if score > 0 else "#dd0000",
                 "score": score,
             }
-            for component, score in score_components.items() if score != 0
+            for component, score in player_stats.score_components.items() if score != 0
         ]
 
         score_composition.sort(key=lambda x: x["score"], reverse=True)
 
-        state_distribution = await get_player_state_distribution(entity_start, entity_end, game.player_states,
-                                                                 game.events,
-                                                                 SM5_STATE_LABEL_MAP)
-
-        state_distribution_labels = list(state_distribution.keys())
-        state_distribution_values = list(state_distribution.values())
-        state_distribution_colors = [SM5_STATE_COLORS[state] for state in state_distribution.keys()]
-
-        team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
-
-        player_teams = {
-            player.entity_start.id: team for team, player_list in team_rosters.items() for player in player_list
-        }
-
-        # Get a flat list of all players across all teams.
-        player_entities = [
-            player.entity_start for player in list(chain.from_iterable(team_rosters.values()))
-        ]
-
-        player_entity_ends = {
-            player.entity_start.id: player.entity_end for player in list(chain.from_iterable(team_rosters.values()))
-        }
-
-        player_sm5_stats = {
-            player.id: await SM5Stats.filter(entity_id=player.id).first() for player in player_entities
-        }
-
-        game_duration = await game.get_actual_game_duration()
-
-        for player in player_entities:
-            if player.id not in player_sm5_stats or player_sm5_stats.get(player.id) is None:
-                raise exceptions.NotFound("Player stats for entity %d not found" % player.id)
-
-        all_players = ([
-            {
-                "name": player.name,
-                "entity_start_id": player.id,
-                "entity_end_id": player_entity_ends[player.id].id,
-                "team": player_teams[player.id],
-                "role": player.role,
-                "css_class": "player%s%s" % (" active_player" if player.id == entity_start.id else "",
-                                             " eliminated_player" if player_sm5_stats[player.id] or player_sm5_stats[
-                                                 player.id].lives_left == 0 else ""),
-                "score": player_entity_ends[player.id].score,
-                "lives_left": player_sm5_stats[player.id].lives_left if player.id in player_sm5_stats else "",
-                "time_in_game_values": get_sm5_player_alive_times(game_duration, player_entity_ends[player.id]),
-                "time_in_game": millis_to_time(player_entity_ends[player.id].time),
-                "kd_ratio": ("%.2f" % get_sm5_kd_ratio(
-                    player_sm5_stats[player.id])) if player.id in player_sm5_stats else "",
-                "mvp_points": "%.2f" % await player_sm5_stats[player.id].mvp_points(),
-                "you_zapped": await count_zaps(game, entity_start.entity_id, player.entity_id),
-                "zapped_you": await count_zaps(game, player.entity_id, entity_start.entity_id),
-                "hit_ratio": create_ratio_string(
-                    _calc_ratio(await count_zaps(game, entity_start.entity_id, player.entity_id),
-                                await count_zaps(game, player.entity_id, entity_start.entity_id))),
-                "you_missiled": await count_missiles(game, entity_start.entity_id, player.entity_id),
-                "missiled_you": await count_missiles(game, player.entity_id, entity_start.entity_id),
-                "state_distribution": get_player_state_distribution_pie_chart(
-                    await get_player_state_distribution(player, player_entity_ends[player.id],
-                                                        game.player_states, game.events, SM5_STATE_LABEL_MAP),
-                    SM5_STATE_COLORS)
-            } for player in player_entities
-        ])
-        all_players.sort(key=lambda x: x["score"], reverse=True)
-
-        teams = [
-            {
-                "name": f"{team.element} Team",
-                "class_name": team.css_class,
-                "score": await game.get_team_score(team),
-                "players": [player for player in all_players if player["team"] == team]
-            }
-            for team in team_rosters.keys()]
+        state_distribution_labels = list(player_stats.state_distribution.keys())
+        state_distribution_values = list(player_stats.state_distribution.values())
+        state_distribution_colors = [SM5_STATE_COLORS[state] for state in player_stats.state_distribution.keys()]
 
         score_chart_data = [
             LineChartData(
-                label=player["name"],
-                color=_get_score_chart_color(player["entity_start_id"], entity_start.id, player["team"], index),
-                data=await get_sm5_single_player_score_graph_data(game, player["entity_start_id"]),
-                borderWidth=6 if entity_start.id == player["entity_start_id"] else 3
-            ) for index, player in enumerate(all_players)
+                label=player.name,
+                color=_get_score_chart_color(player.entity_start.id, entity_start.id, player.team, index),
+                data=await get_sm5_single_player_score_graph_data(game, player.entity_start.id),
+                borderWidth=6 if entity_start.id == player.entity_start.id else 3
+            ) for index, player in enumerate(full_stats.all_players.values())
         ]
 
         return await render_template(
@@ -192,7 +117,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             entity_start=entity_start,
             entity_end=entity_end,
             main_stats=main_stats,
-            teams=teams,
+            teams=full_stats.teams,
             score_composition_labels=", ".join([f"\"{component['name']}\"" for component in score_composition]),
             score_composition_colors=", ".join([f"\"{component['color']}\"" for component in score_composition]),
             score_composition_values=", ".join([str(component['score']) for component in score_composition]),

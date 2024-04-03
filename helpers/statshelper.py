@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, Tuple, Optional, Callable, Any
 from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
@@ -10,6 +11,81 @@ from db.game import EntityEnds, EntityStarts
 from tortoise.functions import Sum
 
 # stats helpers
+
+
+@dataclass
+class PlayerCoreGameStats:
+    """The stats for a player for one game that apply to most game formats (at least both SM5 and LB)."""
+    entity_start: EntityStarts
+
+    entity_end: EntityEnds
+
+    css_class: str
+
+    team: Team
+
+    # Total number of shots fired.
+    shots_fired: int
+
+    # Total number of shots that hit something.
+    shots_hit: int
+
+    # Total number of shots that hit an opponent.
+    shot_opponent: int
+
+    # Total number of times the player was hit by an opponent.
+    times_zapped: int
+
+    # Breakdown of the score.
+    score_components: dict[str, int]
+
+    @property
+    def name(self) -> str:
+        return self.entity_start.name
+
+    @property
+    def score(self) -> int:
+        """Final score for this player."""
+        return self.entity_end.score
+
+    @property
+    def time_in_game_millis(self) -> int:
+        """How long this player was in the game (in milliseconds)."""
+        return self.entity_end.time
+
+    # How many times the player spent in each state.
+    #
+    # The values are in milliseconds. The actual keys depend on the game type.
+    state_distribution: dict[str, int]
+
+    # MVP points. The formula depends on the game type.
+    mvp_points: float
+
+    @property
+    def accuracy(self) -> float:
+        """Accuracy, between 0.0 and 1.0."""
+        return self.shots_hit / self.shots_fired if self.shots_fired else 0.0
+
+    @property
+    def kd_ratio(self) -> float:
+        """K/D ratio, number of zaps over number of times zapped."""
+        return self.shot_opponent / self.times_zapped if self.times_zapped else 1.0
+
+    @property
+    def kd_ratio_str(self) -> str:
+        return "%.2g" % self.kd_ratio
+
+@dataclass
+class TeamCoreGameStats:
+    """The stats for a team for one game that apply to most game formats (at least both SM5 and LB)."""
+    # Final team score, including adjustments.
+    score: int
+    team: Team
+
+    @property
+    def name(self) -> str:
+        return f"{self.team.element} Team"
+
 
 """
 
@@ -81,7 +157,19 @@ def get_sm5_kd_ratio(stats: SM5Stats) -> float:
 
 
 def get_sm5_player_alive_times(game_duration_millis: int, player: EntityEnds) -> List[int]:
+    # Only return one value if the player was never eliminated so the pie chart is 100% filled.
+    if player.time >= game_duration_millis:
+        return [player.time]
+
     return [player.time, game_duration_millis - player.time]
+
+
+def get_sm5_player_alive_labels(game_duration_millis: int, player: EntityEnds) -> List[str]:
+    # Only return one value if the player was never eliminated so the pie chart is 100% filled.
+    if player.time >= game_duration_millis:
+        return ["Alive"]
+
+    return ["Alive", "Dead"]
 
 
 async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:

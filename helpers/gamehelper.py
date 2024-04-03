@@ -49,7 +49,7 @@ def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict
 
 
 async def get_team_rosters(entity_starts: List[EntityStarts], entity_ends: List[EntityEnds]) -> dict[
-    Team, List[PlayerInfo]]:
+        Team, List[PlayerInfo]]:
     """Returns a dict with each team and a list of players in each.
 
     Non-player entities will be ignored. The values will be a list of names, either the

@@ -271,7 +271,7 @@
         <div class="scorecard_player_stats">
             {% for team in teams %}
             <div class="scorecard_team_stats">
-                <h2 class="{{ team.class_name }} team-header">{{ team.name }} ({{ team.score }})</h2>
+                <h2 class="{{ team.team.css_class }} team-header">{{ team.name }} ({{ team.score }})</h2>
                 <table class="scorecard_player_stats_table">
                     <tr>
                         <th>Player</th>
@@ -291,22 +291,22 @@
                     {% for player in team.players %}
                     <tr class="{{ player.css_class }}">
                         <td class="scorecard_player_stat">
-                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a>
+                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
                         </td>
                         <td class="scorecard_player_stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
                                                                alt="role image" width="30"
                                                                height="30"></td>
                         <td class="scorecard_player_stat">{{ player.score }}</td>
-                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end_id}}"></canvas></td>
-                        <td class="scorecard_player_stat">{{ player.kd_ratio }}</td>
+                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                        <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>
                         <td class="scorecard_player_stat">{{ player.lives_left }}</td>
-                        <td class="scorecard_player_stat"><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end_id}}"></canvas>
+                        <td class="scorecard_player_stat"><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
                             <span style="margin: auto">{{ player.time_in_game }}</span></div></td>
-                        <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
-                        <td class="scorecard_player_stat">{{ player.zapped_you }}</td>
-                        <td class="scorecard_player_stat">{{ player.hit_ratio }}</td>
-                        <td class="scorecard_player_stat">{{ player.you_missiled }}</td>
-                        <td class="scorecard_player_stat">{{ player.missiled_you }}</td>
+                        <td class="scorecard_player_stat">{{ player.zapped_by_main_player }}</td>
+                        <td class="scorecard_player_stat">{{ player.zapped_main_player }}</td>
+                        <td class="scorecard_player_stat">{{ player.main_player_hit_ratio }}</td>
+                        <td class="scorecard_player_stat">{{ player.missiled_by_main_player }}</td>
+                        <td class="scorecard_player_stat">{{ player.missiled_main_player }}</td>
                         <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
                     </tr>
                     {% endfor %}
@@ -473,8 +473,8 @@
 
     {% for team in teams %}
             {% for player in team.players %}
-            {{ uptime_chart(player.entity_end_id, player.state_distribution) }}
-            {{ alive_time_chart(player.entity_end_id, player.time_in_game_values) }}
+                {{ uptime_chart(player.entity_end.id, player.state_distribution_pie_chart) }}
+                {{ alive_time_chart(player.entity_end.id, player.alive_time_values, player.alive_time_labels) }}
          {% endfor %}
     {% endfor %}
 
