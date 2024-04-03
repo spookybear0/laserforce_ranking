@@ -13,7 +13,7 @@ from db.types import Team
 from sanic import exceptions
 from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, get_sm5_player_alive_times, \
     get_player_state_distribution, get_player_state_distribution_pie_chart, get_points_per_minute, \
-    get_sm5_score_components, get_sm5_gross_positive_score, millis_to_time
+    get_sm5_score_components, get_sm5_gross_positive_score, millis_to_time, get_sm5_player_alive_labels
 from numpy import arange
 from typing import List, Optional
 
@@ -45,6 +45,11 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         time_in_game_values = {
             player.entity_end.id: get_sm5_player_alive_times(game_duration, player.entity_end) for player in
+            all_players if player
+        }
+
+        time_in_game_labels = {
+            player.entity_end.id: get_sm5_player_alive_labels(game_duration, player.entity_end) for player in
             all_players if player
         }
 
@@ -99,6 +104,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             game=game,
             millis_to_time=millis_to_time,
             time_in_game_values=time_in_game_values,
+            time_in_game_labels=time_in_game_labels,
             player_stats=player_stats,
             uptime_values=uptime_values,
             gross_positive_points=gross_positive_points,

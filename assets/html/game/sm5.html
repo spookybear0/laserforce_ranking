@@ -490,7 +490,7 @@
     {% for team in team_ranking %}
         {% for player in team_rosters[team] %}
             {{ uptime_chart(player.entity_end.id, uptime_values[player.entity_end.id]) }}
-            {{ alive_time_chart(player.entity_end.id, time_in_game_values[player.entity_end.id]) }}
+            {{ alive_time_chart(player.entity_end.id, time_in_game_values[player.entity_end.id], time_in_game_labels[player.entity_end.id]) }}
         {% endfor %}
     {% endfor %}
 </script>
