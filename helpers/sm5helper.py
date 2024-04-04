@@ -10,7 +10,7 @@ from helpers.formattinghelper import create_ratio_string
 from helpers.gamehelper import get_team_rosters, SM5_STATE_LABEL_MAP, SM5_STATE_COLORS
 from helpers.statshelper import PlayerCoreGameStats, get_player_state_distribution, get_sm5_score_components, \
     count_zaps, count_missiles, TeamCoreGameStats, get_sm5_player_alive_times, get_sm5_player_alive_labels, \
-    get_player_state_distribution_pie_chart
+    get_player_state_distribution_pie_chart, get_sm5_player_alive_colors
 
 
 # TODO: A lot of stuff from statshelper.py should be moved here. But let's do that separately to keep the commit size
@@ -26,6 +26,9 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
 
     # Labels for alive_time_values. Can be plugged into a pie chart.
     alive_time_labels: List[str]
+
+    # Colors for alive_time_values. Can be plugged into a pie chart.
+    alive_time_colors: List[str]
 
     # How many times this player zapped the main player (for score cards). None if this wasn't computed.
     zapped_main_player: Optional[int]
@@ -179,6 +182,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
                 stats=stats,
                 alive_time_values=get_sm5_player_alive_times(game_duration, player.entity_end),
                 alive_time_labels=get_sm5_player_alive_labels(game_duration, player.entity_end),
+                alive_time_colors=get_sm5_player_alive_colors(game_duration, player.entity_end),
                 zapped_main_player=zapped_main_player,
                 zapped_by_main_player=zapped_by_main_player,
                 missiled_main_player=missiled_main_player,

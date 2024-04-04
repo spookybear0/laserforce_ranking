@@ -31,15 +31,16 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     <img src="/assets/sm5/roles/{{player.role|string|lower}}.png" alt="{{ player.role }}" width="30" height="30">
 {%- endmacro %}
 
-{% macro alive_time_chart(entity_id, chart_data, chart_labels) -%}
+{% macro alive_time_chart(player) -%}
 
-    new Chart("time_in_game_{{entity_id}}", {
+    new Chart("time_in_game_{{player.entity_end.id}}", {
         type: "pie",
         data: {
-            labels: {{ chart_labels }},
+            labels: {{ player.alive_time_labels }},
             datasets: [{
-                backgroundColor: ["#00ff00", "#000000"],
-                data: {{ chart_data }}
+                backgroundColor: {{ player.alive_time_colors }},
+                data: {{ player.alive_time_values }},
+                borderWidth: 0
             }]
         },
         options: {
@@ -150,6 +151,29 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
         @media screen and (max-width: 991px) {
             :root {
               --alternate-table-background-color: #000000;
+            }
+
+            .outer-scrolling-table {
+                width: 100%;
+            }
+
+            .inner-scrolling-table {
+                position: relative;
+                overflow: auto;
+                border: 1px solid black;
+                white-space: nowrap;
+            }
+
+            .fixed-column {
+                position: sticky;
+                z-index: 1;
+                left: 0px;
+            }
+
+            .second-fixed-column {
+                position: sticky;
+                z-index: 1;
+                left: 75px;
             }
         }
 
