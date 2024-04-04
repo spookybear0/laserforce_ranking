@@ -201,3 +201,7 @@ class PlayerInfo:
     entity_start: EntityStarts
     entity_end: EntityEnds
     display_name: str
+
+    @property
+    def is_member(self) -> bool:
+        return not self.entity_start.entity_id.startswith("@")

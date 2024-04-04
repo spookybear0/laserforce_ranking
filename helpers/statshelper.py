@@ -7,7 +7,7 @@ from tortoise.fields import ManyToManyRelation
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
-from db.game import EntityEnds, EntityStarts
+from db.game import EntityEnds, EntityStarts, PlayerInfo
 from tortoise.functions import Sum
 
 # stats helpers
@@ -16,9 +16,7 @@ from tortoise.functions import Sum
 @dataclass
 class PlayerCoreGameStats:
     """The stats for a player for one game that apply to most game formats (at least both SM5 and LB)."""
-    entity_start: EntityStarts
-
-    entity_end: EntityEnds
+    player_info: PlayerInfo
 
     css_class: str
 
@@ -38,6 +36,14 @@ class PlayerCoreGameStats:
 
     # Breakdown of the score.
     score_components: dict[str, int]
+
+    @property
+    def entity_start(self) -> EntityStarts:
+        return self.player_info.entity_start
+
+    @property
+    def entity_end(self) -> EntityEnds:
+        return self.player_info.entity_end
 
     @property
     def name(self) -> str:
@@ -67,6 +73,10 @@ class PlayerCoreGameStats:
         return self.shots_hit / self.shots_fired if self.shots_fired else 0.0
 
     @property
+    def accuracy_str(self) -> str:
+        return "%.2f" % self.accuracy
+
+    @property
     def kd_ratio(self) -> float:
         """K/D ratio, number of zaps over number of times zapped."""
         return self.shot_opponent / self.times_zapped if self.times_zapped else 1.0
@@ -74,6 +84,14 @@ class PlayerCoreGameStats:
     @property
     def kd_ratio_str(self) -> str:
         return "%.2g" % self.kd_ratio
+
+    @property
+    def points_per_minute(self) -> int:
+        return get_points_per_minute(self.entity_end)
+
+    def get_gross_positive_score(self) -> int:
+        return get_sm5_gross_positive_score(self.score_components)
+
 
 @dataclass
 class TeamCoreGameStats:
@@ -85,6 +103,18 @@ class TeamCoreGameStats:
     @property
     def name(self) -> str:
         return f"{self.team.element} Team"
+
+    @property
+    def css_color_name(self) -> str:
+        return self.team.css_color_name
+
+    @property
+    def element(self) -> str:
+        return self.team.element
+
+    @property
+    def color(self) -> str:
+        return self.team.value.color
 
 
 """

@@ -1,9 +1,9 @@
 """Various helpers specifically for SM5 games.
 """
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict
 
-from db.game import EntityStarts, EntityEnds
+from db.game import EntityStarts, PlayerInfo
 from db.sm5 import SM5Game, SM5Stats
 from db.types import Team, IntRole, PieChartData
 from helpers.formattinghelper import create_ratio_string
@@ -51,12 +51,24 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
         return self.stats.shots_left
 
     @property
+    def shot_team(self) -> int:
+        return self.stats.shot_team
+
+    @property
     def missile_hits(self) -> int:
         return self.stats.missile_hits
 
     @property
     def missiled_team(self) -> int:
         return self.stats.missiled_team
+
+    @property
+    def missiled_opponent(self) -> int:
+        return self.stats.missiled_opponent
+
+    @property
+    def times_missiled(self) -> int:
+        return self.stats.times_missiled
 
     @property
     def nukes_detonated(self) -> int:
@@ -84,6 +96,9 @@ class TeamSm5GameStats(TeamCoreGameStats):
     """The stats for a team for one SM5 game."""
     players: List[PlayerSm5GameStats]
 
+    def get_player_infos(self) -> List[PlayerInfo]:
+        return [player.player_info for player in self.players]
+
 
 @dataclass
 class FullSm5Stats:
@@ -93,8 +108,16 @@ class FullSm5Stats:
     # Dict with all players from all teams. Key is the entity end ID.
     all_players: dict[int, PlayerSm5GameStats]
 
+    def get_teams(self) -> List[Team]:
+        return [team.team for team in self.teams]
 
-async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts]) -> FullSm5Stats:
+    def get_team_rosters(self) -> Dict[Team, List[PlayerInfo]]:
+        return {
+            team.team: team.get_player_infos() for team in self.teams
+        }
+
+
+async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts] = None) -> FullSm5Stats:
     """Returns all teams with all player stats for an SM5 game.
 
     Returns:
@@ -143,8 +166,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
 
             player = PlayerSm5GameStats(
                 team=team,
-                entity_start=player.entity_start,
-                entity_end=player.entity_end,
+                player_info=player,
                 css_class="player%s%s" % (" active_player" if is_main_player else "",
                                           " eliminated_player" if stats.lives_left == 0 else ""),
                 state_distribution=state_distribution,

@@ -71,7 +71,7 @@ async def get_team_rosters(entity_starts: List[EntityStarts], entity_ends: List[
         team_roster = result[player_team]
 
         entity_end = entity_ends_dict[player.id] if player.id in entity_ends_dict else None
-        display_name = player.name if player.entity_id.startswith("@") else player.entity_id
+        display_name = player.name
 
         if entity_end:
             team_roster.append(PlayerInfo(entity_start=player, entity_end=entity_end, display_name=display_name))
