@@ -25,6 +25,12 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 >
     <meta property="og:image" content="">
 
+{# --- Macros to use in player tables --- #}
+
+{% macro sm5_role_icon(player) -%}
+    <img src="/assets/sm5/roles/{{player.role|string|lower}}.png" alt="{{ player.role }}" width="30" height="30">
+{%- endmacro %}
+
 {% macro alive_time_chart(entity_id, chart_data, chart_labels) -%}
 
     new Chart("time_in_game_{{entity_id}}", {
@@ -48,6 +54,15 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     });
 
 {%- endmacro %}
+
+{% macro player_reference(player_info) -%}
+    {% if player_info.is_member %}
+    <a href="/player/{{player_info.entity_start.name}}"><p>{{ player_info.display_name }}</p></a>
+    {% else %}
+    <p>{{ player_info.display_name }}</p>
+    {% endif %}
+{%- endmacro %}
+
 
 {% macro uptime_chart(entity_id, state_distribution) -%}
 
@@ -144,6 +159,14 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
         .earth-team {
             color: greenyellow;
+        }
+
+        .active_player {
+            font-weight: bold;
+        }
+
+        .eliminated_player {
+            color: gray;
         }
     </style>
     

@@ -1,8 +1,6 @@
-from itertools import chain
-
 from sanic import Request
 
-from helpers.gamehelper import SM5_STATE_LABEL_MAP, SM5_STATE_COLORS
+from helpers.sm5helper import get_sm5_player_stats
 from shared import app
 from utils import render_template, is_admin
 from db.game import EntityEnds, EntityStarts
@@ -11,11 +9,10 @@ from db.laserball import LaserballGame, LaserballStats
 from helpers.gamehelper import get_team_rosters, get_matchmaking_teams
 from db.types import Team
 from sanic import exceptions
-from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, get_sm5_player_alive_times, \
-    get_player_state_distribution, get_player_state_distribution_pie_chart, get_points_per_minute, \
-    get_sm5_score_components, get_sm5_gross_positive_score, millis_to_time, get_sm5_player_alive_labels
+from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
+    millis_to_time
 from numpy import arange
-from typing import List, Optional
+from typing import Optional
 
 
 async def get_entity_end(entity) -> Optional[EntityEnds]:
@@ -28,66 +25,16 @@ async def get_laserballstats(entity) -> Optional[LaserballStats]:
 @sentry_trace
 async def game_index(request: Request, type: str, id: int) -> str:
     if type == "sm5":
-        game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts").first()
+        game: SM5Game = await SM5Game.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        game_duration = await game.get_actual_game_duration()
-        team_rosters = await get_team_rosters(await game.entity_starts.all(), await game.entity_ends.all())
+        full_stats = await get_sm5_player_stats(game)
 
-        # Get a flat list of all players across all teams.
-        all_players = list(chain.from_iterable(team_rosters.values()))
+        score_chart_data = await get_sm5_team_score_graph_data(game, full_stats.get_teams())
 
-        scores = {
-            team: await game.get_team_score(team) for team in team_rosters.keys()
-        }
-
-        time_in_game_values = {
-            player.entity_end.id: get_sm5_player_alive_times(game_duration, player.entity_end) for player in
-            all_players if player
-        }
-
-        time_in_game_labels = {
-            player.entity_end.id: get_sm5_player_alive_labels(game_duration, player.entity_end) for player in
-            all_players if player
-        }
-
-        points_per_minute = {
-            player.entity_end.id: get_points_per_minute(player.entity_end) for player in all_players
-        }
-
-        player_stats = {
-            player.entity_end.id: await SM5Stats.filter(entity=player.entity_start).first() for player in all_players
-        }
-
-        # Some players may not have SM5Stats, possibly because they were deleted.
-        all_players = [player for player in all_players if player.entity_end.id in player_stats]
-
-        score_components = {
-            player.entity_end.id: await get_sm5_score_components(game, player_stats[player.entity_end.id],
-                                                                 player.entity_start) for player in all_players
-        }
-
-        gross_positive_points = {
-            player.entity_end.id: get_sm5_gross_positive_score(score_components[player.entity_end.id]) for player in all_players
-        }
-
-        uptime_values = {
-            player.entity_end.id: get_player_state_distribution_pie_chart(
-                await get_player_state_distribution(player.entity_start, player.entity_end,
-                                                    game.player_states, game.events, SM5_STATE_LABEL_MAP),
-                SM5_STATE_COLORS)
-            for player in
-            all_players if player
-        }
-
-        score_chart_data = await get_sm5_team_score_graph_data(game, list(team_rosters.keys()))
-
-        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
-
-        # Sort the teams in order of their score.
-        team_ranking = sorted(scores.keys(), key=lambda team: scores[team], reverse=True)
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(full_stats.get_team_rosters())
 
         if game.ranked:
             win_chance_after_game = await game.get_win_chance_after_game()
@@ -98,17 +45,9 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         return await render_template(
             request, "game/sm5.html",
-            team_ranking=team_ranking,
-            team_rosters=team_rosters,
-            scores=scores,
+            teams=full_stats.teams,
             game=game,
             millis_to_time=millis_to_time,
-            time_in_game_values=time_in_game_values,
-            time_in_game_labels=time_in_game_labels,
-            player_stats=player_stats,
-            uptime_values=uptime_values,
-            gross_positive_points=gross_positive_points,
-            points_per_minute=points_per_minute,
             score_chart_labels=[t for t in arange(0, 900000 // 1000 // 60 + 0.5, 0.5)],
             score_chart_data=score_chart_data,
             win_chance_before_game=win_chance_before_game,

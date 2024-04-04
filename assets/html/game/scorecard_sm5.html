@@ -140,14 +140,6 @@
     .player {
     }
 
-    .active_player {
-        font-weight: bold;
-    }
-
-    .eliminated_player {
-        color: gray;
-    }
-
     @media screen and (max-width: 991px) {
         .scorecard_main_stats {
             width: 95%;
@@ -293,9 +285,7 @@
                         <td class="scorecard_player_stat">
                             <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
                         </td>
-                        <td class="scorecard_player_stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
-                                                               alt="role image" width="30"
-                                                               height="30"></td>
+                        <td class="scorecard_player_stat">{{ sm5_role_icon(player) }}</td>
                         <td class="scorecard_player_stat">{{ player.score }}</td>
                         <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
                         <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>

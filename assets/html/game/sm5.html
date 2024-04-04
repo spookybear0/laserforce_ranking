@@ -41,6 +41,7 @@
         border: 1px solid lightgray;
         border-collapse: collapse;
         width: 100%;
+        color: lightgray;
     }
 
     th, td, tr {
@@ -49,7 +50,6 @@
     }
 
     td {
-        color: lightgray;
         padding: 2px;
     }
 
@@ -240,8 +240,8 @@
             row = 4;
         {% endif %}
 
-        {% for team in team_rosters.keys() %}
-        sortTable(document.getElementById("{{ team.value.color }}_table"), row)
+        {% for team in teams %}
+        sortTable(document.getElementById("{{ team.color }}_table"), row)
         {% endfor %}
     }
 
@@ -275,13 +275,13 @@
     </div>
     <div class="userlist" style="text-align: left;">
         <div id="teams">
-            {% for team in team_ranking %}
-                <div id="{{ team.value.color }}_team" class="team">
-                    <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ scores[team] }}</h2>
+            {% for team in teams %}
+                <div id="{{ team.color }}_team" class="team">
+                    <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}</h2>
 
                     <div class="outer-scrolling-table">
                         <div class="inner-scrolling-table">
-                            <table id="{{ team.value.color }}_table">
+                            <table id="{{ team.color }}_table">
                                 <th class="role fixed-column"><p>Role</p></th>
                                 <th class="second-fixed-column"><p>Codename</p></th>
                                 {% if game.ranked %}
@@ -302,43 +302,36 @@
                                 <th><p>Missiled Team</p></th>
                                 <th><p>Medic Hits</p></th>
                                 <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank"><p>MVP Points</p></a></th>
-                                {% for player in team_rosters[team] %}
-                                    {% set entity = player.entity_start %}
-                                    {% set entity_end = player.entity_end %}
-                                    {% set sm5_stats = player_stats[entity_end.id] %}
+                                {% for player in team.players %}
 
-                                    <tr>
-                                        <td class="role fixed-column" style="width: 30px"><p><img src="/assets/sm5/roles/{{entity.role|string|lower}}.png" alt="role image" width="30" height="30"></p></td>
-                                        {% if entity.entity_id.startswith("@") %}
-                                            <td class="second-fixed-column"><p>{{ entity.name }}</p></td>
+                                    <tr class="{{ player.css_class }}">
+                                        <td class="role fixed-column" style="width: 30px"><p>{{ sm5_role_icon(player) }}</p></td>
+                                        <td class="second-fixed-column">{{ player_reference(player.player_info) }}</td>
+                                        {% if game.ranked %}
+                                            <td title="mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2) }}">{{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}</td>
+                                        {% endif %}
+                                        {% if player.player_info.is_member %}
+                                            <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.score }}</a></td>
                                         {% else %}
-                                            <td class="second-fixed-column"><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
+                                            <td>{{ player.score }}</td>
                                         {% endif %}
-                                        {% if entity_end.current_rating_mu and game.ranked %}
-                                            <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
-                                        {% endif %}
-                                        {% if entity.entity_id.startswith("@") %}
-                                            <td>{{ entity_end.score }}</td>
-                                        {% else %}
-                                            <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{entity_end.id}}">{{ entity_end.score }}</a></td>
-                                        {% endif %}
-                                        <td><p>{{ gross_positive_points[entity_end.id] }}</p></td>
-                                        <td><p>{{ points_per_minute[entity_end.id] }}</p></td>
-                                        <td><p>{{ sm5_stats.lives_left }}</p></td>
+                                        <td><p>{{ player.get_gross_positive_score() }}</p></td>
+                                        <td><p>{{ player.points_per_minute }}</p></td>
+                                        <td><p>{{ player.lives_left }}</p></td>
                                         <td class="scorecard_player_stat"><div style="display: flex">
-                                            <canvas class="mini-chart" id="time_in_game_{{entity_end.id}}"></canvas>
-                                            <span style="margin: auto">{{ millis_to_time(entity_end.time) }}</span></div></td>
+                                            <canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
+                                            <span style="margin: auto">{{ millis_to_time(player.entity_end.time) }}</span></div></td>
                                         </td>
-                                        <td><p>{{ sm5_stats.shots_left }}</p></td>
-                                        <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
-                                        <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
+                                        <td><p>{{ player.shots_left }}</p></td>
+                                        <td title="{{player.shots_hit}}/{{player.shots_fired}}"><p>{{ player.accuracy_str }}</p></td>
+                                        <td title="{{player.shot_opponent}}/{{player.times_zapped}}"><p>{{ player.kd_ratio_str }}</p></td>
                                         <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
-                                        <td><p>{{ sm5_stats.missiled_opponent }}</p></td>
-                                        <td><p>{{ sm5_stats.times_missiled }}</p></td>
-                                        <td><p>{{ sm5_stats.shot_team }}</p></td>
-                                        <td><p>{{ sm5_stats.missiled_team }}</p></td>
-                                        <td><p>{{ sm5_stats.medic_hits }}</p></td>
-                                        <td><p>{{ "%.2f" % (sm5_stats.mvp_points()|round(2)) }}</p></td>
+                                        <td><p>{{ player.missiled_opponent }}</p></td>
+                                        <td><p>{{ player.times_missiled }}</p></td>
+                                        <td><p>{{ player.shot_team }}</p></td>
+                                        <td><p>{{ player.missiled_team }}</p></td>
+                                        <td><p>{{ player.medic_hits }}</p></td>
+                                        <td><p>{{ "%.2f" % (player.mvp_points | round(2)) }}</p></td>
                                     </tr>
                                 {% endfor %}
                             </table>
@@ -368,10 +361,10 @@
         data: {
             labels: {{score_chart_labels}},
             datasets: [
-            {% for team in team_ranking %}
+            {% for team in teams %}
             {
                 label: "{{ team.element }} Team Score",
-                data: {{score_chart_data[team]}},
+                data: {{score_chart_data[team.team]}},
                 borderColor: "{{ team.css_color_name }}",
                 fill: false,
                 tension: 0.4,
@@ -487,11 +480,11 @@
     });
     {% endif %}
 
-    {% for team in team_ranking %}
-        {% for player in team_rosters[team] %}
-            {{ uptime_chart(player.entity_end.id, uptime_values[player.entity_end.id]) }}
-            {{ alive_time_chart(player.entity_end.id, time_in_game_values[player.entity_end.id], time_in_game_labels[player.entity_end.id]) }}
-        {% endfor %}
+    {% for team in teams %}
+            {% for player in team.players %}
+                {{ uptime_chart(player.entity_end.id, player.state_distribution_pie_chart) }}
+                {{ alive_time_chart(player.entity_end.id, player.alive_time_values, player.alive_time_labels) }}
+         {% endfor %}
     {% endfor %}
 </script>
 
