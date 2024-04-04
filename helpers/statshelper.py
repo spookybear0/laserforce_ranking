@@ -109,6 +109,10 @@ class TeamCoreGameStats:
         return self.team.css_color_name
 
     @property
+    def css_class(self) -> str:
+        return self.team.css_class
+
+    @property
     def element(self) -> str:
         return self.team.element
 
