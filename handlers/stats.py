@@ -2,7 +2,7 @@ from sanic import Request
 from shared import app
 from utils import render_template
 from helpers import statshelper
-from db.types import Team
+from db.types import Team, IntRole
 from helpers.statshelper import sentry_trace
 from db.sm5 import SM5Game
 from db.laserball import LaserballGame
@@ -35,11 +35,11 @@ async def stats(request: Request) -> str:
 
     logger.debug("Loading SM5 role stats")
 
-    top_commanders = await statshelper.get_top_commanders()
-    top_heavies = await statshelper.get_top_heavies()
-    top_scouts = await statshelper.get_top_scouts()
-    top_ammos = await statshelper.get_top_ammos()
-    top_medics = await statshelper.get_top_medics()
+    top_commanders = await statshelper.get_top_role_players(role=IntRole.COMMANDER)
+    top_heavies = await statshelper.get_top_role_players(role=IntRole.HEAVY)
+    top_scouts = await statshelper.get_top_role_players(role=IntRole.SCOUT)
+    top_ammos = await statshelper.get_top_role_players(role=IntRole.AMMO)
+    top_medics = await statshelper.get_top_role_players(role=IntRole.MEDIC)
 
     logger.debug("Loading laserball stats")
 
