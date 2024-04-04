@@ -123,29 +123,6 @@
             background-color: var(--alternate-table-background-color);
         }
 
-        .fixed-column {
-            position: sticky;
-            z-index: 1;
-            left: 0px;
-        }
-
-        .second-fixed-column {
-            position: sticky;
-            z-index: 1;
-            left: 75px;
-        }
-
-        .outer-scrolling-table {
-            width: 100%;
-        }
-
-        .inner-scrolling-table {
-            position: relative;
-            overflow: auto;
-            border: 1px solid black;
-            white-space: nowrap;
-        }
-
         .team {
             margin-left: 0;
             margin-right: 0;
@@ -294,7 +271,7 @@
                                 <th><p>Alive</p></th>
                                 <th><p>Shots Left</p></th>
                                 <th><p>Accuracy</p></th>
-                                <th><p>K/D</p></th>
+                                <th><p>K/D Ratio</p></th>
                                 <th><p>States</p></th>
                                 <th><p>Missiled Other</p></th>
                                 <th><p>Missiled</p></th>
@@ -483,7 +460,7 @@
     {% for team in teams %}
             {% for player in team.players %}
                 {{ uptime_chart(player.entity_end.id, player.state_distribution_pie_chart) }}
-                {{ alive_time_chart(player.entity_end.id, player.alive_time_values, player.alive_time_labels) }}
+                {{ alive_time_chart(player) }}
          {% endfor %}
     {% endfor %}
 </script>

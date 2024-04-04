@@ -48,16 +48,6 @@
         max-width: 30%;
     }
 
-    @media screen and (max-width: 1200px) {
-        table tr td:nth-child(n+11) {
-            display: none;
-        }
-        
-        table tr th:nth-child(n+11) {
-            display: none;
-        }
-    }
-
     @media screen and (max-width: 991px) {
         .userlist {
             background: none;
@@ -74,14 +64,6 @@
             table-layout: auto;
         }
 
-        table tr td:nth-child(n+6) {
-            display: none;
-        }
-        
-        table tr th:nth-child(n+6) {
-            display: none;
-        }
-
         .desktop_notif {
             display: block;
         }
@@ -92,6 +74,11 @@
 
         body {
             height: 85%;
+        }
+
+        .role {
+            width: 75px;
+            min-width: 75px;
         }
     }
 
@@ -168,6 +155,30 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        tr:nth-child(even) > td:nth-child(1) {
+            background-color: #252525;
+        }
+
+        tr:nth-child(odd) > td:nth-child(1) {
+            background-color: var(--alternate-table-background-color);
+        }
+
+        tr:nth-child(even) > td:nth-child(2) {
+            background-color: #252525;
+        }
+
+        tr:nth-child(odd) > td:nth-child(2) {
+            background-color: var(--alternate-table-background-color);
+        }
+
+        tr > th:nth-child(1) {
+            background-color: var(--alternate-table-background-color);
+        }
+
+        tr > th:nth-child(2) {
+            background-color: var(--alternate-table-background-color);
         }
     }
 
@@ -264,44 +275,48 @@
             {% for team in teams %}
             <div class="scorecard_team_stats">
                 <h2 class="{{ team.team.css_class }} team-header">{{ team.name }} ({{ team.score }})</h2>
-                <table class="scorecard_player_stats_table">
-                    <tr>
-                        <th>Player</th>
-                        <th>Role</th>
-                        <th>Score</th>
-                        <th>Uptime</th>
-                        <th>K/D</th>
-                        <th>Lives</th>
-                        <th>Time in game</th>
-                        <th>You zapped</th>
-                        <th>Zapped you</th>
-                        <th>Hit ratio</th>
-                        <th>You missiled</th>
-                        <th>Missiled you</th>
-                        <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank">MVP Points</a></th>
-                    </tr>
-                    {% for player in team.players %}
-                    <tr class="{{ player.css_class }}">
-                        <td class="scorecard_player_stat">
-                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
-                        </td>
-                        <td class="scorecard_player_stat">{{ sm5_role_icon(player) }}</td>
-                        <td class="scorecard_player_stat">{{ player.score }}</td>
-                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
-                        <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>
-                        <td class="scorecard_player_stat">{{ player.lives_left }}</td>
-                        <td class="scorecard_player_stat"><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
-                            <span style="margin: auto">{{ player.time_in_game }}</span></div></td>
-                        <td class="scorecard_player_stat">{{ player.zapped_by_main_player }}</td>
-                        <td class="scorecard_player_stat">{{ player.zapped_main_player }}</td>
-                        <td class="scorecard_player_stat">{{ player.main_player_hit_ratio }}</td>
-                        <td class="scorecard_player_stat">{{ player.missiled_by_main_player }}</td>
-                        <td class="scorecard_player_stat">{{ player.missiled_main_player }}</td>
-                        <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
-                    </tr>
-                    {% endfor %}
+                <div class="outer-scrolling-table">
+                    <div class="inner-scrolling-table">
+                        <table class="scorecard_player_stats_table">
+                            <tr>
+                                <th class="role fixed-column">Role</th>
+                                <th class="second-fixed-column">Player</th>
+                                <th>Score</th>
+                                <th>Uptime</th>
+                                <th>K/D</th>
+                                <th>Lives</th>
+                                <th>Time in game</th>
+                                <th>You zapped</th>
+                                <th>Zapped you</th>
+                                <th>Hit ratio</th>
+                                <th>You missiled</th>
+                                <th>Missiled you</th>
+                                <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank">MVP Points</a></th>
+                            </tr>
+                            {% for player in team.players %}
+                            <tr class="{{ player.css_class }}">
+                                <td class="role fixed-column">{{ sm5_role_icon(player) }}</td>
+                                <td class="second-fixed-column">
+                                    <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
+                                </td>
+                                <td class="scorecard_player_stat">{{ player.score }}</td>
+                                <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                                <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>
+                                <td class="scorecard_player_stat">{{ player.lives_left }}</td>
+                                <td class="scorecard_player_stat"><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
+                                    <span style="margin: auto">{{ player.time_in_game }}</span></div></td>
+                                <td class="scorecard_player_stat">{{ player.zapped_by_main_player }}</td>
+                                <td class="scorecard_player_stat">{{ player.zapped_main_player }}</td>
+                                <td class="scorecard_player_stat">{{ player.main_player_hit_ratio }}</td>
+                                <td class="scorecard_player_stat">{{ player.missiled_by_main_player }}</td>
+                                <td class="scorecard_player_stat">{{ player.missiled_main_player }}</td>
+                                <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
+                            </tr>
+                            {% endfor %}
 
-                </table>
+                        </table>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -464,7 +479,7 @@
     {% for team in teams %}
             {% for player in team.players %}
                 {{ uptime_chart(player.entity_end.id, player.state_distribution_pie_chart) }}
-                {{ alive_time_chart(player.entity_end.id, player.alive_time_values, player.alive_time_labels) }}
+                {{ alive_time_chart(player) }}
          {% endfor %}
     {% endfor %}
 

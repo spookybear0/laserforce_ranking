@@ -83,7 +83,7 @@ class PlayerCoreGameStats:
 
     @property
     def kd_ratio_str(self) -> str:
-        return "%.2g" % self.kd_ratio
+        return "%.2g (%d/%d)" % (self.kd_ratio, self.shot_opponent, self.times_zapped)
 
     @property
     def points_per_minute(self) -> int:
@@ -192,7 +192,7 @@ def get_sm5_kd_ratio(stats: SM5Stats) -> float:
 
 def get_sm5_player_alive_times(game_duration_millis: int, player: EntityEnds) -> List[int]:
     # Only return one value if the player was never eliminated so the pie chart is 100% filled.
-    if player.time >= game_duration_millis:
+    if did_player_survive_sm5_game(game_duration_millis, player):
         return [player.time]
 
     return [player.time, game_duration_millis - player.time]
@@ -200,10 +200,22 @@ def get_sm5_player_alive_times(game_duration_millis: int, player: EntityEnds) ->
 
 def get_sm5_player_alive_labels(game_duration_millis: int, player: EntityEnds) -> List[str]:
     # Only return one value if the player was never eliminated so the pie chart is 100% filled.
-    if player.time >= game_duration_millis:
+    if did_player_survive_sm5_game(game_duration_millis, player):
         return ["Alive"]
 
     return ["Alive", "Dead"]
+
+
+def get_sm5_player_alive_colors(game_duration_millis: int, player: EntityEnds) -> List[str]:
+    # Only return one value if the player was never eliminated so the pie chart is 100% filled.
+    if did_player_survive_sm5_game(game_duration_millis, player):
+        return ["#00ff00"]
+
+    return ["#ff0000", "#000000"]
+
+
+def did_player_survive_sm5_game(game_duration_millis: int, player: EntityEnds) -> bool:
+    return player.time >= game_duration_millis
 
 
 async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:
