@@ -30,7 +30,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
 
-        full_stats = await get_sm5_player_stats(game)
+        full_stats = await get_sm5_player_stats(game, compute_lives_over_time=True)
 
         score_chart_data = await get_sm5_team_score_graph_data(game, full_stats.get_teams())
 
@@ -54,6 +54,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
+            lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
             is_admin=is_admin(request)
         )
     elif type == "laserball":
