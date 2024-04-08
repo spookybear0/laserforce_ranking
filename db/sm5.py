@@ -11,6 +11,7 @@ from helpers.datehelper import strftime_ordinal
 from db.types import Team, IntRole, EventType, SM5_ENEMY_TEAM
 from typing import List, Optional
 from tortoise import Model, fields
+from helpers.cachehelper import cache
 import math
 import sys
 
@@ -87,6 +88,7 @@ class SM5Game(Model):
 
     # funcs for getting win chance and draw chance
 
+    @cache()
     async def get_win_chance(self) -> List[float]:
         """
         Returns the win chance in the format [red, green]
@@ -132,6 +134,7 @@ class SM5Game(Model):
         from helpers.ratinghelper import model
         return model.predict_win([elos_red, elos_green])
     
+    @cache()
     async def get_win_chance_before_game(self) -> List[float]:
         """
         Returns the win chance as guessed before the game happened in the format [red, green]
@@ -184,6 +187,7 @@ class SM5Game(Model):
         from helpers.ratinghelper import model
         return model.predict_win([previous_elos_red, previous_elos_green])
     
+    @cache()
     async def get_win_chance_after_game(self) -> List[float]:
         """
         Returns the win chance as guessed **directly** after the game happened in the format [red, green]

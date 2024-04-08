@@ -4,6 +4,7 @@ except ImportError:
     from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating
 from db.types import Team, EventType, BallPossessionEvent
 from helpers.datehelper import strftime_ordinal
+from helpers.cachehelper import cache
 from tortoise import Model, fields
 from typing import List
 import sys
@@ -47,6 +48,7 @@ class LaserballGame(Model):
     async def get_rounds_at_time(self, time) -> int:
         return (await self.events.filter(time__lte=time, type=EventType.ROUND_END).count()) + 1
 
+    @cache()
     async def get_possession_timeline(self) -> list[BallPossessionEvent]:
         """Returns a timeline of who had the ball at what time.
 
@@ -96,6 +98,7 @@ class LaserballGame(Model):
 
     # funcs for getting win chance and draw chance
 
+    @cache()
     async def get_win_chance_before_game(self) -> List[float]:
         """
         Returns the win chance before the game happened in the format [red, blue]
@@ -140,7 +143,7 @@ class LaserballGame(Model):
         from helpers.ratinghelper import model
         return model.predict_win([previous_elos_red, previous_elos_blue])
     
-
+    @cache()
     async def get_win_chance_after_game(self) -> List[float]:
         """
         Returns the win chance **directly** after the game happened in the format [red, blue]
@@ -185,6 +188,7 @@ class LaserballGame(Model):
         from helpers.ratinghelper import model
         return model.predict_win([current_elos_red, current_elos_blue])
 
+    @cache()
     async def get_win_chance(self) -> List[float]:
         """
         Returns the win chance in the format [red, green]

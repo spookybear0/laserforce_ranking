@@ -46,6 +46,11 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     token_to_entity = {}
 
+    # default values, will be changed later
+
+    ranked = True
+    ended_early = False # will be changed to false if there's a mission end event
+
     linenum = 0
     while True:
         linenum += 1
@@ -108,6 +113,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             case "4": # event
                 # okay but why is event type a string
                 events.append(await create_event_from_data(data))
+
+                if EventType[data[2]] == EventType.MISSION_END: # game ended naturally
+                    ended_early = False
+
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
             case "5": # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
@@ -151,10 +160,12 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
         index += 1
 
-    # default values, will be changed later
-
-    ranked = True
-    ended_early = False
+    # before creating the game, we need to make sure this game wasn't a false start
+    # which means that game ended early and it lasted less than 3 minutes
+    
+    if ended_early and mission_duration < 3 * 60 * 1000:
+        logger.warning("Game ended early and lasted less than 3 minutes, skipping")
+        return None
 
     game = await SM5Game.create(winner=None, winner_color="none", tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
@@ -192,12 +203,12 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # determine if the game should be ranked automatically
 
-    # 5 < team size < 7
+    # 5 < team size < 7 and teams are not of unequal size (ratings are not tested for unequal team sizes)
 
     team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").count()
     team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").count()
 
-    if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5:
+    if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
         ranked = False
 
     # check if there are any non-member players
@@ -209,10 +220,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # check if game was ended early (but not by elimination)
 
-    # if it didn't end naturally
-    if not await game.events.filter(type=EventType.MISSION_END).exists():
-        ranked = False
-        ended_early = True
+    # ended_early = if there's a mission end event (natural end by time or elim)
+    # value set in event parsing
 
     logger.debug(f"Ranked={ranked}, Ended Early={ended_early}")
 
@@ -305,6 +314,11 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     number_of_rounds = 0
 
     token_to_entity = {}
+
+    # default values, will be changed later
+
+    ranked = True
+    ended_early = True # will be changed to false if there's a mission end event
 
     linenum = 0
     while True:
@@ -423,6 +437,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 elif event_type == EventType.MISS:
                     laserball_stats[args[0]].shots_fired += 1
                     await laserball_stats[args[0]].save()
+                elif event_type == EventType.MISSION_END: # game ended naturally
+                    ended_early = False
 
                 events.append(await Events.create(time=int(data[1]), type=event_type, arguments=json.dumps(data[3:])))
 
@@ -525,11 +541,13 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
         raise Exception("Invalid team color") # or can't find correct team color
     
     logger.debug(f"Winner: {winner}")
-    
-    # default values, will be changed later
 
-    ranked = True
-    ended_early = False
+    # before creating the game, we need to make sure this game wasn't a false start
+    # which means that game ended early and it lasted less than 3 minutes
+    
+    if ended_early and mission_duration < 3 * 60 * 1000:
+        logger.warning("Game ended early and lasted less than 3 minutes, skipping")
+        return None
 
     game = await LaserballGame.create(winner=winner, winner_color=winner.value if winner else "none", tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
@@ -570,11 +588,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
     # check if game was ended early (but not by elimination)
 
-    # if it didn't end naturally
-
-    if not await game.events.filter(type=EventType.MISSION_END).exists():
-        ranked = False
-        ended_early = True
+    # ended_early = if there's a mission end event (natural end by time or elim)
+    # value set in event parsing
     
     game.ranked = ranked
     game.ended_early = ended_early

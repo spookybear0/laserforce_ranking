@@ -54,6 +54,17 @@
         });
     }
 
+    function flush_cache() {
+        alert("Flushing cache in background...");
+        fetch("/admin/flush_cache", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
 </script>
 {% endblock %}
 
@@ -64,5 +75,6 @@
 <button onclick="recalculate_ratings()" class="button">Recalculate Ratings</button>
 <button onclick="recalculate_sm5_ratings()" class="button">Recalculate SM5 Ratings</button>
 <button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
+<button onclick="flush_cache()" class="button">Flush Cache</button>
 
 {% endblock %}

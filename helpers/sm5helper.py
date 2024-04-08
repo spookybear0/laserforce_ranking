@@ -14,6 +14,7 @@ from helpers.gamehelper import get_team_rosters, SM5_STATE_LABEL_MAP, SM5_STATE_
 from helpers.statshelper import PlayerCoreGameStats, get_player_state_distribution, get_sm5_score_components, \
     count_zaps, count_missiles, TeamCoreGameStats, get_sm5_player_alive_times, get_sm5_player_alive_labels, \
     get_player_state_distribution_pie_chart, get_sm5_player_alive_colors
+from helpers.cachehelper import cache
 
 
 # TODO: A lot of stuff from statshelper.py should be moved here. But let's do that separately to keep the commit size
@@ -165,7 +166,7 @@ class FullSm5Stats:
             for team in self.teams
         ]
 
-
+@cache()
 async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts] = None,
                                compute_lives_over_time: bool = False) -> FullSm5Stats:
     """Returns all teams with all player stats for an SM5 game.
@@ -278,7 +279,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
         all_players=all_players,
     )
 
-
+@cache()
 async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[PlayerInfo]], granularity_millis: int) -> \
         dict[int, list[int]]:
     lives_timeline = defaultdict(list)

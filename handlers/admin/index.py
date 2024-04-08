@@ -2,6 +2,8 @@ from sanic import Request, response
 from shared import app
 from utils import render_template, admin_only
 from helpers.ratinghelper import recalculate_ratings, recalculate_laserball_ratings, recalculate_sm5_ratings
+from helpers.cachehelper import flush_cache
+from sanic.log import logger
 import asyncio
 
 @app.get("/admin")
@@ -29,5 +31,14 @@ async def admin_recalculate_sm5_ratings(request: Request) -> str:
 @admin_only
 async def admin_recalculate_lb_ratings(request: Request) -> str:
     asyncio.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings")
+
+    return response.json({"status": "ok"})
+
+@app.post("/admin/flush_cache")
+@admin_only
+async def admin_flush_cache(request: Request) -> str:
+    logger.info("Flushing cache")
+    flush_cache()
+    logger.info("Cache flushed")
 
     return response.json({"status": "ok"})

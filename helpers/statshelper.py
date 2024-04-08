@@ -9,6 +9,7 @@ from db.laserball import LaserballGame, LaserballStats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
 from db.game import EntityEnds, EntityStarts, PlayerInfo
 from tortoise.functions import Sum
+from helpers.cachehelper import cache
 
 # stats helpers
 
@@ -218,6 +219,7 @@ def did_player_survive_sm5_game(game_duration_millis: int, player: EntityEnds) -
     return player.time >= game_duration_millis
 
 
+@cache()
 async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:
     """Returns data for a score graph for one player.
 
@@ -226,6 +228,7 @@ async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) 
     return [await game.get_entity_score_at_time(entity_id, time) for time in range(0, 900000 + 30000, 30000)]
 
 
+@cache()
 async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> List[int]:
     """Returns data for a score graph for one team.
 
@@ -234,6 +237,7 @@ async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> Lis
     return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + 30000, 30000)]
 
 
+@cache()
 async def get_sm5_team_score_graph_data(game: SM5Game, teams: List[Team]) -> dict[Team, List[int]]:
     """Returns data for a score graph for all teams.
 

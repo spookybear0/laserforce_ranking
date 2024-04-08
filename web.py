@@ -76,8 +76,6 @@ async def setup_app(app, loop) -> None:
         config=TORTOISE_ORM
     )
 
-    #await adminhelper.repopulate_database()
-
     # use cache on production server
     cachehelper.use_cache()
 

@@ -3,6 +3,7 @@ from shared import app
 from utils import render_template
 from db.player import Player
 from sanic.log import logger
+from helpers.cachehelper import flush_cache
 
 @app.get("/login")
 async def login(request: Request) -> str:
@@ -39,6 +40,8 @@ async def login_post(request: Request) -> str:
     request.ctx.session["permissions"] = player.permissions
 
     logger.debug("Redirecting to previous page")
+
+    flush_cache(flush_queryset=False)
 
     # redirect to previous page
     return response.redirect(request.ctx.session.get("previous_page", "/"))
