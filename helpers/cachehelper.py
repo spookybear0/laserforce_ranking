@@ -1,6 +1,7 @@
 from tortoise.queryset import QuerySet
 from typing import Dict, Any, Tuple, Union
 from sanic.log import logger
+from sanic.request import Request
 import asyncio
 import time
 
@@ -66,8 +67,15 @@ def cache(ttl: Union[float, int]=60*2, refresh_in_background: bool=True):
         async def wrapper(*args, **kwargs):
             if not function_cache_enabled:
                 return await f(*args, **kwargs)
+            
+            request_args = None
+            if len(args) > 0 and isinstance(args[0], Request):
+                request: Request = args[0]
+                request_args = request.args
 
             key = f"{f.__name__}_{args}_{kwargs}"
+            if request_args:
+                key += f"_{request_args}"
             result = None
 
             if key in function_cache:
