@@ -74,6 +74,10 @@
         max-width: 90%;
     }
 
+    #lives_chart {
+        max-width: 90%;
+    }
+
     #win_chance_before_game, #win_chance {
         max-width: 30%;
     }
@@ -153,6 +157,10 @@
         }
 
         #score_chart {
+            max-width: 100%;
+        }
+
+        #lives_chart {
             max-width: 100%;
         }
 
@@ -319,6 +327,7 @@
         </div>
         <div id="stats">
             <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
+            <canvas class="inline-block" id="lives_chart" style="clear: both;"></canvas>
             <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
                 <canvas class="inline-block" id="win_chance_before_game" style="clear: both;"></canvas>
                 <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
@@ -377,6 +386,84 @@
             title: {
                 display: true,
                 text: "Score Over Time",
+                fontColor: "white"
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                        callback: function(value, index, values) {
+                            if (value.toString().endsWith(".5")) {
+                                return value.toString().slice(0, -2) + ":30";
+                            } else {
+                                return value + ":00";
+                            }
+                        },
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Time",
+                        fontColor: "white"
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Score",
+                        fontColor: "white"
+                    }
+                }]
+            }
+        }
+    });
+
+    new Chart("lives_chart", {
+        type: "line",
+        data: {
+            labels: {{score_chart_labels}},
+            datasets: [
+            {% for chart in lives_over_time %}
+            {
+                label: "{{ chart.label }}",
+                data: {{ chart.data }},
+                borderColor: "{{ chart.color }}",
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHitRadius: 10
+            }{{ "," if not loop.last }}
+            {% endfor %}
+            ]
+        },
+        options: {
+            tooltips: {
+                callbacks: {
+                    title: function(tooltipItem, data) {
+                        // show formatted time
+
+                        var time = data.labels[tooltipItem[0].index];
+
+                        if (time.toString().endsWith(".5")) {
+                            return time.toString().slice(0, -2) + ":30";
+                        } else {
+                            return time + ":00";
+                        }
+                    },
+                }
+            },
+            responsive: true,
+            // change label colors to white
+            legend: {
+                labels: {
+                    fontColor: "white"
+                }
+            },
+            title: {
+                display: true,
+                text: "Average Lives Over Time",
                 fontColor: "white"
             },
             scales: {
