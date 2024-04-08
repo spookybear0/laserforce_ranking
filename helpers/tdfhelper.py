@@ -114,7 +114,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 # okay but why is event type a string
                 events.append(await create_event_from_data(data))
 
-                if EventType[data[2]] == EventType.MISSION_END: # game ended naturally
+                if EventType(data[2]) == EventType.MISSION_END: # game ended naturally
                     ended_early = False
 
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
