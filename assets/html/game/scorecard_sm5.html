@@ -302,11 +302,11 @@
                                     <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
                                 </td>
                                 <td class="scorecard_player_stat">{{ player.score }}</td>
-                                <td class="scorecard_player_stat"><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
+                                <td class="scorecard_player_stat" {{ tooltip("sm5_alive") }}><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
                                     <span style="margin: auto">{{ player.time_in_game }}</span></div></td>
                                 <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>
                                 <td class="scorecard_player_stat">{{ player.lives_left }}</td>
-                                <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                                <td class="scorecard_player_stat" {{ tooltip("sm5_states") }}><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
                                 <td class="scorecard_player_stat">{{ player.zapped_by_main_player }}</td>
                                 <td class="scorecard_player_stat">{{ player.zapped_main_player }}</td>
                                 <td class="scorecard_player_stat">{{ player.main_player_hit_ratio }}</td>
