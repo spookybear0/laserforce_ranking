@@ -8,9 +8,11 @@ from sanic import response
 from sanic.log import logger
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
+from helpers.cachehelper import cache
 
 @app.get("/api/<type_:str>/win_chances")
 @sentry_trace
+@cache()
 async def api_win_chances(request: Request, type_: str) -> str:
     # 2-4 teams (team1, team2, ...)
 

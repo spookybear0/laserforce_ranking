@@ -34,6 +34,7 @@
         padding: 10px;
         border-radius: 10px;
         overflow: auto;
+        max-height: 80vh;
     }
 
     ::-webkit-scrollbar {
@@ -54,9 +55,19 @@
         background: #555;
     }
 
+    .sub-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+    }
+
     .teams-div {
         width: 50rem;
-        height: 90%;
+        height: 70vh;
+        /*expand up and down all the way on firefox */
+        
         padding: 10px;
         border-radius: 10px;
         flex-direction: row;
@@ -72,6 +83,7 @@
         border-radius: 10px;
         width: 40%;
         height: 100%;
+        margin-bottom: 3rem;
     }
 
     .controls-div {
@@ -147,7 +159,7 @@
 
         .team-div {
             width: 90%;
-            margin-top: 1rem;
+            margin-top: 2rem;
         }
 
         .players-div {

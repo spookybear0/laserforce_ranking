@@ -14,6 +14,7 @@ from db.laserball import LaserballGame, LaserballStats
 from helpers.statshelper import sentry_trace, millis_to_time, count_blocks, \
     get_sm5_single_player_score_graph_data
 from sanic import exceptions
+from helpers.cachehelper import cache
 
 
 # Modifiers for the score card colors of other players. One of these will be applied
@@ -46,6 +47,7 @@ def _chart_strings(values: list[str]) -> str:
 
 @app.get("/game/<type:str>/<id:int>/scorecard/<entity_end_id:int>")
 @sentry_trace
+@cache()
 async def scorecard(request: Request, type: str, id: int, entity_end_id: int) -> str:
     if type == "sm5":
         game = await SM5Game.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()

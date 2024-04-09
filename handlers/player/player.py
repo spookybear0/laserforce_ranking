@@ -12,6 +12,7 @@ from db.laserball import LaserballGame, LaserballStats
 from db.game import EntityEnds, EntityStarts
 from helpers.statshelper import sentry_trace
 from sanic.log import logger
+from helpers.cachehelper import cache
 
 _GAMES_PER_PAGE = 5
 
@@ -52,6 +53,7 @@ async def get_role_labels_from_medians(median_role_score) -> list:
 
 @app.get("/player/<id>")
 @sentry_trace
+@cache()
 async def player_get(request: Request, id: Union[int, str]) -> str:
     sm5page = int(request.args.get("sm5page", 0))
     lbpage = int(request.args.get("lbpage", 0))

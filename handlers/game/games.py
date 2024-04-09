@@ -5,11 +5,13 @@ from db.sm5 import SM5Game
 from db.laserball import LaserballGame
 from tortoise.expressions import F
 from helpers.statshelper import sentry_trace
+from helpers.cachehelper import cache
 
 GAMES_PER_PAGE = 15
 
 @app.get("/games")
 @sentry_trace
+@cache()
 async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")

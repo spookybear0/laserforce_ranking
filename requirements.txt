@@ -18,3 +18,4 @@ aiohttp
 websockets==10.0
 aioredis
 aerich
+pytest

@@ -9,6 +9,7 @@ from db.laserball import LaserballGame, LaserballStats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
 from db.game import EntityEnds, EntityStarts, PlayerInfo
 from tortoise.functions import Sum
+from helpers.cachehelper import cache
 
 # stats helpers
 
@@ -218,6 +219,7 @@ def did_player_survive_sm5_game(game_duration_millis: int, player: EntityEnds) -
     return player.time >= game_duration_millis
 
 
+@cache()
 async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:
     """Returns data for a score graph for one player.
 
@@ -226,6 +228,7 @@ async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) 
     return [await game.get_entity_score_at_time(entity_id, time) for time in range(0, 900000 + 30000, 30000)]
 
 
+@cache()
 async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> List[int]:
     """Returns data for a score graph for one team.
 
@@ -234,6 +237,7 @@ async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> Lis
     return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + 30000, 30000)]
 
 
+@cache()
 async def get_sm5_team_score_graph_data(game: SM5Game, teams: List[Team]) -> dict[Team, List[int]]:
     """Returns data for a score graph for all teams.
 
@@ -433,152 +437,22 @@ async def get_blocks() -> int:
 # could be improved by accounting for the amount of games played
 # could be combined into one function
 
-async def get_top_commanders(amount=5) -> List[Tuple[str, int]]:
+async def get_top_role_players(amount=5, role: IntRole=IntRole.COMMANDER) -> List[Tuple[str, int, int]]:
     """
-    Gets the top commanders by going through
+    Gets the top players of a given role by going through
     all games and getting the average score
     for each player
     """
 
-    data = {}
+    players = {}
 
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.COMMANDER).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
+    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=role).all():
+        name = (await entity_end.entity).name
+        if name not in players:
+            players[name] = (0, 0)
+        players[name] = (players[name][0]+entity_end.score, players[name][1]+1)
 
-    # get the average score for each player
-
-    commanders = []
-
-    for key, value in data.items():
-        commanders.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    commanders.sort(key=lambda x: x[1], reverse=True)
-
-    return commanders[:amount]
-    
-
-async def get_top_heavies(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top heavies by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.HEAVY).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    heavies = []
-
-    for key, value in data.items():
-        heavies.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    heavies.sort(key=lambda x: x[1], reverse=True)
-
-    return heavies[:amount]
-
-async def get_top_scouts(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top scouts by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.SCOUT).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    scouts = []
-
-    for key, value in data.items():
-        scouts.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    scouts.sort(key=lambda x: x[1], reverse=True)
-
-    return scouts[:amount]
-
-async def get_top_ammos(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top ammos by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.AMMO).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    ammos = []
-
-    for key, value in data.items():
-        ammos.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    ammos.sort(key=lambda x: x[1], reverse=True)
-
-    return ammos[:amount]
-
-async def get_top_medics(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top medics by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.MEDIC).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    medics = []
-
-    for key, value in data.items():
-        medics.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    medics.sort(key=lambda x: x[1], reverse=True)
-
-    return medics[:amount]
+    return sorted([(name, score//games, games) for name, (score, games) in players.items()], key=lambda x: x[1], reverse=True)[:amount]
 
 # get ranking accuracy
 
