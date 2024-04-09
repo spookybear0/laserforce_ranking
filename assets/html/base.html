@@ -41,7 +41,6 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     new Chart("time_in_game_{{player.entity_end.id}}", {
         type: "pie",
         data: {
-            labels: {{ player.alive_time_labels }},
             datasets: [{
                 backgroundColor: {{ player.alive_time_colors }},
                 data: {{ player.alive_time_values }},
@@ -55,6 +54,9 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             },
             title: {
                 display: false,
+            },
+            tooltips: {
+                enabled: false
             }
         }
     });
@@ -92,6 +94,9 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             },
             title: {
               display: false,
+            },
+            tooltips: {
+                enabled: false
             }
         }
     });

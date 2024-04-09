@@ -305,14 +305,14 @@
                                         <td><p>{{ player.get_gross_positive_score() }}</p></td>
                                         <td><p>{{ player.points_per_minute }}</p></td>
                                         <td><p>{{ player.lives_left }}</p></td>
-                                        <td class="scorecard_player_stat"><div style="display: flex">
+                                        <td class="scorecard_player_stat" {{ tooltip("sm5_alive") }}><div style="display: flex">
                                             <canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
                                             <span style="margin: auto">{{ millis_to_time(player.entity_end.time) }}</span></div></td>
                                         </td>
                                         <td><p>{{ player.shots_left }}</p></td>
                                         <td title="{{player.shots_hit}}/{{player.shots_fired}}"><p>{{ player.accuracy_str }}</p></td>
                                         <td title="{{player.shot_opponent}}/{{player.times_zapped}}"><p>{{ player.kd_ratio_str }}</p></td>
-                                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                                        <td class="scorecard_player_stat" {{ tooltip("sm5_states") }}><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
                                         <td><p>{{ player.missiled_opponent }}</p></td>
                                         <td><p>{{ player.times_missiled }}</p></td>
                                         <td><p>{{ player.shot_team }}</p></td>
