@@ -1,6 +1,7 @@
 from sanic import Request
 
 from helpers.sm5helper import get_sm5_player_stats
+from helpers.tooltips import TOOLTIP_INFO
 from shared import app
 from utils import render_template, is_admin
 from db.game import EntityEnds, EntityStarts
@@ -55,6 +56,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
+            tooltip_info=TOOLTIP_INFO,
             is_admin=is_admin(request)
         )
     elif type == "laserball":
