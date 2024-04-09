@@ -5,7 +5,8 @@ from sanic.request import Request
 import asyncio
 import time
 
-refresh_time = 60 * 30 # 30 minutes
+refresh_time_queryset = 60 * 30 # 30 minutes
+refresh_time_function = 0 # 0 seconds
 
 queryset_cache: Dict[str, Tuple[Any, QuerySet]] = {}
 function_cache: Dict[str, Any] = {}
@@ -31,10 +32,10 @@ def __await__(self: QuerySet) -> Any:
         if "LIMIT 1" not in self.query:
             queryset_cache[self.query] = (result_value, self)
 
-            # schedule a refresh after 'refresh_time' seconds
+            # schedule a refresh after 'refresh_time_queryset' seconds
 
             async def _refresh() -> None:
-                await asyncio.sleep(refresh_time)
+                await asyncio.sleep(refresh_time_queryset)
                 del queryset_cache[self.query]
 
             asyncio.ensure_future(_refresh())
@@ -62,7 +63,7 @@ def flush_cache(flush_queryset: bool=True, flush_function: bool=True) -> None:
 # cache decorator (modified from aiocache.cached)
 # ttl: time to live in seconds
 # refresh_in_background: whether to refresh the cache in the background after ttl seconds
-def cache(ttl: Union[float, int]=60*2, refresh_in_background: bool=True):
+def cache(ttl: Union[float, int]=refresh_time_function, refresh_in_background: bool=True):
     def decorator(f):
         async def wrapper(*args, **kwargs):
             if not function_cache_enabled:

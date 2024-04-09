@@ -75,7 +75,7 @@ class PlayerCoreGameStats:
 
     @property
     def accuracy_str(self) -> str:
-        return "%.2f" % self.accuracy
+        return ("%.2f" % (self.accuracy * 100)) + "%"
 
     @property
     def kd_ratio(self) -> float:
