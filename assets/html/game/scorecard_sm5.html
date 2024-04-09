@@ -234,6 +234,8 @@
     }
 </style>
 
+{% include "game/sm5_tooltips_include.html" %}
+
 {% endblock %}
 
 
@@ -279,19 +281,19 @@
                     <div class="inner-scrolling-table">
                         <table class="scorecard_player_stats_table">
                             <tr>
-                                <th class="role fixed-column">Role</th>
-                                <th class="second-fixed-column">Player</th>
-                                <th>Score</th>
-                                <th>Uptime</th>
-                                <th>K/D</th>
-                                <th>Lives</th>
-                                <th>Time in game</th>
-                                <th>You zapped</th>
-                                <th>Zapped you</th>
-                                <th>Hit ratio</th>
-                                <th>You missiled</th>
-                                <th>Missiled you</th>
-                                <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank">MVP Points</a></th>
+                                <th class="role fixed-column" {{ tooltip("sm5_role") }}><p>Role</p></th>
+                                <th class="second-fixed-column" {{ tooltip("sm5_codename") }}><p>Codename</p></th>
+                                <th {{ tooltip("sm5_score") }}><p>Score</p></th>
+                                <th {{ tooltip("sm5_alive") }}><p>Alive</p></th>
+                                <th {{ tooltip("sm5_kd_ratio") }}><p>K/D Ratio</p></th>
+                                <th {{ tooltip("sm5_lives_left") }}><p>Lives Left</p></th>
+                                <th {{ tooltip("sm5_states") }}><p>States</p></th>
+                                <th {{ tooltip("sm5_you_zapped") }}><p>You zapped</p></th>
+                                <th {{ tooltip("sm5_zapped_you") }}><p>Zapped you</p></th>
+                                <th {{ tooltip("sm5_hit_ratio") }}><p>Hit ratio</p></th>
+                                <th {{ tooltip("sm5_you_missiled") }}><p>You missiled</p></th>
+                                <th {{ tooltip("sm5_missiled_you") }}><p>Missiled you</p></th>
+                                <th {{ tooltip("sm5_mvp_points") }}><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank"><p>MVP Points</p></a></th>
                             </tr>
                             {% for player in team.players %}
                             <tr class="{{ player.css_class }}">
@@ -300,17 +302,17 @@
                                     <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
                                 </td>
                                 <td class="scorecard_player_stat">{{ player.score }}</td>
-                                <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
-                                <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>
-                                <td class="scorecard_player_stat">{{ player.lives_left }}</td>
                                 <td class="scorecard_player_stat"><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
                                     <span style="margin: auto">{{ player.time_in_game }}</span></div></td>
+                                <td class="scorecard_player_stat">{{ player.kd_ratio_str }}</td>
+                                <td class="scorecard_player_stat">{{ player.lives_left }}</td>
+                                <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
                                 <td class="scorecard_player_stat">{{ player.zapped_by_main_player }}</td>
                                 <td class="scorecard_player_stat">{{ player.zapped_main_player }}</td>
                                 <td class="scorecard_player_stat">{{ player.main_player_hit_ratio }}</td>
                                 <td class="scorecard_player_stat">{{ player.missiled_by_main_player }}</td>
                                 <td class="scorecard_player_stat">{{ player.missiled_main_player }}</td>
-                                <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
+                                <td class="scorecard_player_stat">{{ "%.2f" % (player.mvp_points | round(2)) }}</td>
                             </tr>
                             {% endfor %}
 

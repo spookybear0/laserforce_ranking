@@ -3,6 +3,7 @@ from sanic import Request
 
 from helpers.gamehelper import SM5_STATE_COLORS, get_players_from_team
 from helpers.sm5helper import get_sm5_player_stats
+from helpers.tooltips import TOOLTIP_INFO
 from shared import app
 from typing import List
 from utils import render_template
@@ -127,7 +128,8 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             state_distribution_values=_chart_values(state_distribution_values),
             state_distribution_colors=_chart_strings(state_distribution_colors),
             score_chart_labels=[t for t in arange(0, 900000 // 1000 // 60 + 0.5, 0.5)],
-            score_chart_data=score_chart_data
+            score_chart_data=score_chart_data,
+            tooltip_info=TOOLTIP_INFO,
         )
 
     if type == "laserball":

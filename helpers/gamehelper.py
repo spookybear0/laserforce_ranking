@@ -34,8 +34,8 @@ SM5_STATE_LABEL_MAP = {
 All keys in this dict map to values in SM5_STATE_LABEL_MAP."""
 SM5_STATE_COLORS = {
     "Active": "#11dd11",
-    "Down": "#993202",
-    "Down (Resup)": "#8702ab",
+    "Down": "#cc3202",
+    "Down (Resup)": "#2102cb",
     "Resettable": "#cbd103",
 }
 
