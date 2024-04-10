@@ -3,7 +3,7 @@ from sanic import Request
 from helpers.sm5helper import get_sm5_player_stats
 from helpers.tooltips import TOOLTIP_INFO
 from shared import app
-from utils import render_template, is_admin, render_cached_template
+from utils import is_admin, render_cached_template
 from db.game import EntityEnds, EntityStarts
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
@@ -60,7 +60,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Rendering template")
 
-        return await render_template(
+        return await render_cached_template(
             request, "game/sm5.html",
             teams=full_stats.teams,
             game=game,

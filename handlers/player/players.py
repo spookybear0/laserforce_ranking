@@ -1,6 +1,6 @@
 from sanic import Request
 from shared import app
-from utils import render_template
+from utils import render_cached_template
 from db.player import Player
 from tortoise.expressions import F
 from helpers.statshelper import sentry_trace
@@ -32,7 +32,7 @@ async def index(request: Request) -> str:
 
     order_by = "-" + order_by if sort_direction == "desc" else order_by
 
-    return await render_template(request,
+    return await render_cached_template(request,
                                 "player/players.html",
                                 players=await Player.filter().limit(25).offset(25 * page)
                                     .annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma"),

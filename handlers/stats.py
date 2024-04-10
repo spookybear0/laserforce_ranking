@@ -1,6 +1,6 @@
 from sanic import Request
 from shared import app
-from utils import render_template
+from utils import render_cached_template
 from helpers import statshelper
 from db.types import Team, IntRole
 from helpers.statshelper import sentry_trace
@@ -56,7 +56,7 @@ async def stats(request: Request) -> str:
 
     logger.debug("Rendering stats page")
 
-    return await render_template(request,
+    return await render_cached_template(request,
         "stats.html",
         zip=zip,
 

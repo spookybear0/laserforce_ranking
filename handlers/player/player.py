@@ -1,6 +1,6 @@
 from helpers.userhelper import get_median_role_score
 from db.types import GameType, Team
-from utils import render_template, get_post
+from utils import render_cached_template, get_post
 from shared import app
 from sanic import Request, HTTPResponse, response, exceptions
 from shared import app
@@ -126,7 +126,7 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     logger.debug("Rendering player page")
 
-    return await render_template(
+    return await render_cached_template(
         request, "player/player.html",
         # general player info
         player=player,
