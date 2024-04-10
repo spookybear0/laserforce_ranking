@@ -17,7 +17,9 @@ from helpers.cachehelper import cache
 @dataclass
 class PlayerCoreGameStats:
     """The stats for a player for one game that apply to most game formats (at least both SM5 and LB)."""
-    player_info: PlayerInfo
+
+    # Every player will have this object except for fake game stats, like the sum of a team.
+    player_info: Optional[PlayerInfo]
 
     css_class: str
 
@@ -39,26 +41,26 @@ class PlayerCoreGameStats:
     score_components: dict[str, int]
 
     @property
-    def entity_start(self) -> EntityStarts:
-        return self.player_info.entity_start
+    def entity_start(self) -> Optional[EntityStarts]:
+        return self.player_info.entity_start if self.player_info else None
 
     @property
-    def entity_end(self) -> EntityEnds:
-        return self.player_info.entity_end
+    def entity_end(self) -> Optional[EntityEnds]:
+        return self.player_info.entity_end if self.player_info else None
 
     @property
     def name(self) -> str:
-        return self.entity_start.name
+        return self.entity_start.name if self.entity_start else ""
 
     @property
     def score(self) -> int:
         """Final score for this player."""
-        return self.entity_end.score
+        return self.entity_end.score if self.entity_end else 0
 
     @property
     def time_in_game_millis(self) -> int:
         """How long this player was in the game (in milliseconds)."""
-        return self.entity_end.time
+        return self.entity_end.time if self.entity_end else 0
 
     # How many times the player spent in each state.
     #
@@ -75,7 +77,7 @@ class PlayerCoreGameStats:
 
     @property
     def accuracy_str(self) -> str:
-        return ("%.2f" % (self.accuracy * 100)) + "%"
+        return "%.2f%%" % (self.accuracy * 100)
 
     @property
     def kd_ratio(self) -> float:

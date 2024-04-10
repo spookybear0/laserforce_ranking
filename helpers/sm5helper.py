@@ -94,8 +94,8 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
         return self.stats.medic_hits
 
     @property
-    def role(self) -> IntRole:
-        return self.entity_start.role
+    def role(self) -> Optional[IntRole]:
+        return self.entity_start.role if self.entity_start else None
 
     @property
     def state_distribution_pie_chart(self) -> PieChartData:
@@ -103,9 +103,54 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
 
 
 @dataclass
+class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
+    """Fake SM5 player game stats for the sum of all players in a team."""
+    total_score: int
+
+    total_gross_positive_score: int
+
+    average_points_per_minute: int
+
+    average_lives_left: int
+
+    average_shots_left: int
+
+    @property
+    def name(self) -> str:
+        return "Total"
+
+    @property
+    def score(self) -> int:
+        return self.total_score
+
+    @property
+    def lives_left(self) -> int:
+        return self.average_lives_left
+
+    @property
+    def shots_left(self) -> int:
+        return self.average_shots_left
+
+    @property
+    def points_per_minute(self) -> int:
+        return self.average_points_per_minute
+
+    def get_gross_positive_score(self) -> int:
+        return self.total_gross_positive_score
+
+
+@dataclass
 class TeamSm5GameStats(TeamCoreGameStats):
     """The stats for a team for one SM5 game."""
     players: List[PlayerSm5GameStats]
+
+    # The stats for every player in the game, plus a fake stat at the end with the sum (or average) of all players.
+    @property
+    def players_with_sum(self):
+        return self.players + [self.sum_player]
+
+    # A fake player that has the sum (or average where appropriate) of all players in the team.
+    sum_player: Sm5PlayerGameStatsSum
 
     # Average number of lives across all players over time, for every 30 seconds. Only valid if the stats were created
     # with compute_lives_over_time set to true.
@@ -187,6 +232,24 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
 
     for team in team_rosters.keys():
         players = []
+        avg_state_distribution = {}
+        avg_score_components = {}
+        sum_mvp_points = 0
+        sum_shots_fired = 0
+        sum_shots_hit = 0
+        sum_shots_left = 0
+        sum_lives_left = 0
+        avg_lives_over_time = {}
+        sum_shot_opponent = 0
+        sum_times_zapped = 0
+        sum_zapped_main_player = 0
+        sum_zapped_by_main_player = 0
+        sum_missiled_main_player = 0
+        sum_missiled_by_main_player = 0
+        sum_score = 0
+        sum_points_per_minute = 0
+        sum_gross_positive_score = 0
+
         for player in team_rosters[team]:
             stats = await SM5Stats.filter(entity_id=player.entity_start.id).first()
 
@@ -216,8 +279,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
                 missiled_by_main_player = await count_missiles(game, main_player.entity_id,
                                                                player.entity_start.entity_id)
 
-                main_player_hit_ratio = create_ratio_string(
-                    _calc_ratio(zapped_by_main_player, zapped_main_player))
+                main_player_hit_ratio = "%.2f" % _calc_ratio(zapped_by_main_player, zapped_main_player)
 
             lives_over_time = live_over_time_per_player[
                 player.entity_end.id] if player.entity_end.id in live_over_time_per_player else []
@@ -249,6 +311,23 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             players.append(player)
             all_players[player.entity_end.id] = player
 
+            # Run a tally so we can compute the sum/average for the team.
+            sum_score += player.score
+            sum_gross_positive_score += player.get_gross_positive_score()
+            sum_points_per_minute += player.points_per_minute
+            sum_mvp_points += player.mvp_points
+            sum_shots_fired += player.shots_fired
+            sum_shots_hit += player.shots_hit
+            sum_shots_left += player.shots_left
+            sum_lives_left += player.lives_left
+            avg_lives_over_time = {}
+            sum_shot_opponent += player.shot_opponent
+            sum_times_zapped += player.times_zapped
+            sum_zapped_main_player += player.zapped_main_player if player.zapped_main_player else 0
+            sum_zapped_by_main_player += player.zapped_by_main_player if player.zapped_by_main_player else 0
+            sum_missiled_main_player += player.missiled_main_player if player.missiled_main_player else 0
+            sum_missiled_by_main_player += player.missiled_by_main_player if player.missiled_by_main_player else 0
+
         # Create the lives-over-time average for the entire team.
         lives_over_time_team_average = []
 
@@ -261,6 +340,39 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
                 lives_sum = sum([player.lives_over_time[index] for player in players])
                 lives_over_time_team_average.append(lives_sum / player_count)
 
+        # Fake the player count to 1 if there aren't any so we don't divide by 0. All the numbers will be 0 anyway so
+        # it won't make a difference.
+        average_divider = player_count if player_count else 1
+
+        # Create the sum of all players in the game.
+        sum_player = Sm5PlayerGameStatsSum(
+            team=team,
+            player_info=None,
+            css_class="team_totals",
+            total_score=sum_score,
+            total_gross_positive_score=sum_gross_positive_score,
+            average_points_per_minute=int(sum_points_per_minute / average_divider),
+            state_distribution=avg_state_distribution,
+            score_components=avg_score_components,
+            mvp_points=sum_mvp_points / average_divider,
+            shots_fired=sum_shots_fired,
+            shots_hit=sum_shots_hit,
+            average_shots_left=int(sum_shots_left / average_divider),
+            average_lives_left=int(sum_lives_left / average_divider),
+            lives_over_time=avg_lives_over_time,
+            shot_opponent=sum_shot_opponent,
+            times_zapped=sum_times_zapped,
+            stats=None,
+            alive_time_values=get_sm5_player_alive_times(game_duration, player.entity_end),
+            alive_time_labels=get_sm5_player_alive_labels(game_duration, player.entity_end),
+            alive_time_colors=get_sm5_player_alive_colors(game_duration, player.entity_end),
+            zapped_main_player=sum_zapped_main_player,
+            zapped_by_main_player=sum_zapped_by_main_player,
+            missiled_main_player=sum_missiled_main_player,
+            missiled_by_main_player=sum_missiled_by_main_player,
+            main_player_hit_ratio="%.2f" % _calc_ratio(sum_zapped_by_main_player, sum_zapped_main_player)
+        )
+
         # Sort the roster by score.
         players.sort(key=lambda x: x.score, reverse=True)
         teams.append(
@@ -268,6 +380,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
                 team=team,
                 score=await game.get_team_score(team),
                 players=players,
+                sum_player=sum_player,
                 lives_over_time=lives_over_time_team_average
             ))
 

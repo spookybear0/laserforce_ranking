@@ -299,12 +299,10 @@
                                 <th {{ tooltip("sm5_missiled_you") }}><p>Missiled you</p></th>
                                 <th {{ tooltip("sm5_mvp_points") }}><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank"><p>MVP Points</p></a></th>
                             </tr>
-                            {% for player in team.players %}
+                            {% for player in team.players_with_sum %}
                             <tr class="{{ player.css_class }}">
                                 <td class="role fixed-column">{{ sm5_role_icon(player) }}</td>
-                                <td class="second-fixed-column">
-                                    <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.name }}</a>
-                                </td>
+                                <td class="second-fixed-column">{{ player_reference(player) }}</td>
                                 <td>{{ player.score }}</td>
                                 <td>{{ player.get_gross_positive_score() }}</td>
                                 <td>{{ player.points_per_minute }}</td>
