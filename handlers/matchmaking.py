@@ -96,8 +96,6 @@ async def matchmaking_post(request: Request) -> str:
 
         team2.append(player.codename)
 
-    print(all_players)
-
     return await render_template(
         request,
         "matchmaking.html",

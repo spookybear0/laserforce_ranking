@@ -1,6 +1,6 @@
 from sanic import Request
 from shared import app
-from utils import render_template
+from utils import render_cached_template
 from helpers import statshelper
 from db.types import Team, IntRole
 from helpers.statshelper import sentry_trace
@@ -9,11 +9,11 @@ from db.laserball import LaserballGame
 from db.player import Player
 from db.game import EntityEnds
 from sanic.log import logger
-from helpers.cachehelper import cache
+from helpers.cachehelper import cache_template
 
 @app.get("/stats")
 @sentry_trace
-@cache()
+@cache_template()
 async def stats(request: Request) -> str:
     logger.info("Loading stats page")
 
@@ -56,7 +56,7 @@ async def stats(request: Request) -> str:
 
     logger.debug("Rendering stats page")
 
-    return await render_template(request,
+    return await render_cached_template(request,
         "stats.html",
         zip=zip,
 
