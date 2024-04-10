@@ -2,6 +2,7 @@ from tortoise.queryset import QuerySet
 from typing import Dict, Any, Tuple, Union
 from sanic.log import logger
 from sanic.request import Request
+from db.types import Permission
 import asyncio
 import time
 
@@ -10,6 +11,7 @@ refresh_time_function = 0 # 0 seconds
 
 queryset_cache: Dict[str, Tuple[Any, QuerySet]] = {}
 function_cache: Dict[str, Any] = {}
+template_cache: Dict[str, Any] = {}
 function_cache_enabled = False
 original_await = QuerySet.__await__
 
@@ -69,6 +71,7 @@ def cache(ttl: Union[float, int]=refresh_time_function, refresh_in_background: b
             if not function_cache_enabled:
                 return await f(*args, **kwargs)
             
+            request = None
             request_args = None
             if len(args) > 0 and isinstance(args[0], Request):
                 request: Request = args[0]
@@ -88,7 +91,7 @@ def cache(ttl: Union[float, int]=refresh_time_function, refresh_in_background: b
                 if refresh_in_background and ttl_left < 0:
                     async def _refresh() -> None:
                         logger.debug(f"Refreshing cache for {key}")
-                        del function_cache[key]
+
                         result = await f(*args, **kwargs)
                         function_cache[key] = (result, time.time() + ttl)
                         logger.debug(f"Cache refreshed for {key}")
@@ -96,9 +99,97 @@ def cache(ttl: Union[float, int]=refresh_time_function, refresh_in_background: b
                     asyncio.ensure_future(_refresh())
             else:
                 logger.debug(f"Cache miss for {key}")
+
                 result = await f(*args, **kwargs)
                 function_cache[key] = (result, time.time() + ttl)
             return result
 
         return wrapper
     return decorator
+
+# cache template by saving the args passed to the template and replacing the request with the new one with the additional args with the correct session
+def cache_template_old(ttl: Union[float, int]=refresh_time_function, refresh_in_background: bool=True):
+    # don't cache results, just cache the template args
+    def decorator(f):
+        async def wrapper(request: Request, template: str, *args, **kwargs) -> str:
+            if not function_cache_enabled:
+                additional_kwargs = {
+                    "session": request.ctx.session,
+                    "config": request.app.ctx.config,
+                    "Permission": Permission
+                }
+
+                kwargs = {**kwargs, **additional_kwargs}
+
+                return await f(request, template, *args, **kwargs)
+            
+            key = f"{f.__name__}_{template}_{args}_{kwargs}"
+            result = None
+
+            if key in template_cache:
+                logger.debug(f"Cache hit for {key}")
+                template, args, kwargs = template_cache[key]
+            else:
+                logger.debug(f"Cache miss for {key}")
+                template_cache[key] = (template, args, kwargs)
+
+            additional_kwargs = {
+                "session": request.ctx.session,
+                "config": request.app.ctx.config,
+                "Permission": Permission
+            }
+
+            kwargs = {**kwargs, **additional_kwargs}
+
+            result = await f(request, template, *args, **kwargs)
+            
+            return result
+
+        return wrapper
+    return decorator
+
+def cache_template(ttl: Union[float, int]=refresh_time_function, refresh_in_background: bool=True):
+    # cache the results of the template
+    def decorator(f):
+        async def wrapper(*args, **kwargs) -> str:
+            if not function_cache_enabled:
+                additional_kwargs = {
+                    "session": args[0].ctx.session,
+                    "config": args[0].app.ctx.config,
+                    "Permission": Permission
+                }
+
+                kwargs = {**kwargs, **additional_kwargs}
+
+                return await f(*args, **kwargs)
+            
+            key = f"{f.__name__}_{args}_{kwargs}"
+            result = None
+
+            if key in function_cache:
+                logger.debug(f"Cache hit for {key}")
+                result = function_cache[key][0]
+                ttl_left = function_cache[key][1] - time.time()
+                logger.debug(f"TTL left for {key}: {ttl_left}")
+
+                if refresh_in_background and ttl_left < 0:
+                    async def _refresh() -> None:
+                        logger.debug(f"Refreshing cache for {key}")
+
+                        result = await f(*args, **kwargs)
+                        function_cache[key] = (result, time.time() + ttl)
+                        logger.debug(f"Cache refreshed for {key}")
+
+                    asyncio.ensure_future(_refresh())
+            else:
+                logger.debug(f"Cache miss for {key}")
+
+                result = await f(*args, **kwargs)
+                function_cache[key] = (result, time.time() + ttl)
+            from utils import render_template
+            return await render_template(args[0], result[1], *result[2], **result[3])
+
+        return wrapper
+    return decorator
+
+# monkey patch app.post and app.get to use the cache decorator

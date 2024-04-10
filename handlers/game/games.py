@@ -1,17 +1,17 @@
 from sanic import Request
 from shared import app
-from utils import render_template
+from utils import render_cached_template
 from db.sm5 import SM5Game
 from db.laserball import LaserballGame
 from tortoise.expressions import F
 from helpers.statshelper import sentry_trace
-from helpers.cachehelper import cache
+from helpers.cachehelper import cache_template
 
 GAMES_PER_PAGE = 15
 
 @app.get("/games")
 @sentry_trace
-@cache()
+@cache_template()
 async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
@@ -43,7 +43,7 @@ async def index(request: Request) -> str:
     sm5_games = await SM5Game.all().order_by(order_by).limit(GAMES_PER_PAGE).offset(GAMES_PER_PAGE * page)
     laserball_games = await LaserballGame.all().order_by(order_by).limit(GAMES_PER_PAGE).offset(GAMES_PER_PAGE * page)
 
-    return await render_template(
+    return await render_cached_template(
         request,
         "game/games.html",
         sm5_games=sm5_games,

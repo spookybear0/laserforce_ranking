@@ -17,7 +17,6 @@ async def servererror(request: Request, exception: Exception) -> str:
 
 @app.exception(BadRequest)
 async def badrequest(request: Request, exception: Exception) -> str:
-    print(exception)
     description = exception.args[0] if exception.args else "The server could not understand your request."
 
     return await render_template(request, "errors/400.html", description=description)

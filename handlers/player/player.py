@@ -53,7 +53,7 @@ async def get_role_labels_from_medians(median_role_score) -> list:
 
 @app.get("/player/<id>")
 @sentry_trace
-@cache()
+#@cache()
 async def player_get(request: Request, id: Union[int, str]) -> str:
     sm5page = int(request.args.get("sm5page", 0))
     lbpage = int(request.args.get("lbpage", 0))

@@ -2,6 +2,7 @@ from sanic import Request, response
 from db.types import Permission
 from typing import Callable, Any, Union
 from shared import app
+from helpers.cachehelper import cache_template  
 
 def get_post(request: Request) -> dict:
     """
@@ -23,6 +24,9 @@ async def render_template(r, template, *args, **kwargs) -> str:
 
     text = await app.ctx.jinja.render_async(template, r, *args, **kwargs)
     return text
+
+async def render_cached_template(r, template, *args, **kwargs) -> str:
+    return r, template, args, kwargs
 
 def admin_only(f) -> Callable:
     async def wrapper(request: Request, *args, **kwargs) -> Union[response.HTTPResponse, Any]:

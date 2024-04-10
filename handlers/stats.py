@@ -13,7 +13,7 @@ from helpers.cachehelper import cache
 
 @app.get("/stats")
 @sentry_trace
-@cache()
+#@cache()
 async def stats(request: Request) -> str:
     logger.info("Loading stats page")
 

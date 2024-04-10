@@ -8,7 +8,7 @@ from helpers.cachehelper import cache
 
 @app.get("/")
 @sentry_trace
-@cache()
+#@cache()
 async def index(request: Request) -> str:
     logger.info("Loading index page")
 

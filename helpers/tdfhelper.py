@@ -137,7 +137,6 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             
                 logger.debug(f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
             case "9": # player state
-                print(data)
                 player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]], state=PlayerStateType(int(data[3]))))
                 logger.debug(f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
                 

@@ -3,7 +3,7 @@ from sanic import Request
 from helpers.sm5helper import get_sm5_player_stats
 from helpers.tooltips import TOOLTIP_INFO
 from shared import app
-from utils import render_template, is_admin
+from utils import render_template, is_admin, render_cached_template
 from db.game import EntityEnds, EntityStarts
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
@@ -15,7 +15,7 @@ from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
 from numpy import arange
 from typing import Optional
 from sanic.log import logger
-from helpers.cachehelper import cache
+from helpers.cachehelper import cache_template
 
 async def get_entity_end(entity) -> Optional[EntityEnds]:
     return await EntityEnds.filter(entity=entity).first()
@@ -25,7 +25,7 @@ async def get_laserballstats(entity) -> Optional[LaserballStats]:
 
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
-@cache()
+@cache_template()
 async def game_index(request: Request, type: str, id: int) -> str:
     if type == "sm5":
         logger.debug(f"Fetching sm5 game with ID {id}")
@@ -117,7 +117,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Rendering template")
 
-        return await render_template(
+        return await render_cached_template(
             request, "game/laserball.html",
             game=game,
             get_entity_end=get_entity_end,

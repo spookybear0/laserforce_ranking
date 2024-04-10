@@ -8,7 +8,7 @@ from helpers.cachehelper import cache
 
 @app.get("/players")
 @sentry_trace
-@cache()
+#@cache()
 async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     sort = int(request.args.get("sort", "2"))
