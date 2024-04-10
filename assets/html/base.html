@@ -33,7 +33,9 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 {# --- Macros to use in player tables --- #}
 
 {% macro sm5_role_icon(player) -%}
-    <img src="/assets/sm5/roles/{{player.role|string|lower}}.png" alt="{{ player.role }}" width="30" height="30">
+    {% if player.role %}
+        <img src="/assets/sm5/roles/{{player.role|string|lower}}.png" alt="{{ player.role }}" width="30" height="30">
+    {% endif %}
 {%- endmacro %}
 
 {% macro alive_time_chart(player) -%}
@@ -63,11 +65,15 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
 {%- endmacro %}
 
-{% macro player_reference(player_info) -%}
-    {% if player_info.is_member %}
-    <a href="/player/{{player_info.entity_start.name}}"><p>{{ player_info.display_name }}</p></a>
+{% macro player_reference(player) -%}
+    {% if not player.player_info %}
+        <p>{{ player.name }}</p>
     {% else %}
-    <p>{{ player_info.display_name }}</p>
+        {% if player.player_info.is_member %}
+            <a href="/player/{{player.player_info.entity_start.name}}"><p>{{ player.player_info.display_name }}</p></a>
+        {% else %}
+            <p>{{ player.player_info.display_name }}</p>
+        {% endif %}
     {% endif %}
 {%- endmacro %}
 
@@ -205,6 +211,10 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
         .eliminated_player {
             color: gray;
+        }
+
+        .team_totals {
+            font-weight: bold;
         }
     </style>
     

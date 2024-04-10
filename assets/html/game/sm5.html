@@ -293,7 +293,7 @@
 
                                     <tr class="{{ player.css_class }}">
                                         <td class="role fixed-column" style="width: 30px"><p>{{ sm5_role_icon(player) }}</p></td>
-                                        <td class="second-fixed-column">{{ player_reference(player.player_info) }}</td>
+                                        <td class="second-fixed-column">{{ player_reference(player) }}</td>
                                         {% if game.ranked %}
                                             <td title="mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2) }}">{{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}</td>
                                         {% endif %}
