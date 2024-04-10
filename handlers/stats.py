@@ -9,11 +9,11 @@ from db.laserball import LaserballGame
 from db.player import Player
 from db.game import EntityEnds
 from sanic.log import logger
-from helpers.cachehelper import cache
+from helpers.cachehelper import cache_template
 
 @app.get("/stats")
 @sentry_trace
-#@cache()
+@cache_template()
 async def stats(request: Request) -> str:
     logger.info("Loading stats page")
 

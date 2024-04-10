@@ -4,11 +4,11 @@ from utils import render_template
 from db.player import Player
 from tortoise.expressions import F
 from helpers.statshelper import sentry_trace
-from helpers.cachehelper import cache
+from helpers.cachehelper import cache_template
 
 @app.get("/players")
 @sentry_trace
-#@cache()
+@cache_template()
 async def index(request: Request) -> str:
     page = int(request.args.get("page", 0))
     sort = int(request.args.get("sort", "2"))
