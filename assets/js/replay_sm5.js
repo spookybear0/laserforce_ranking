@@ -108,8 +108,6 @@ var GETS_BALL = 1107;
 var CLEAR = 1108;
 
 function playAudio(audio) {
-    console.log(audio);
-    console.log(audio.src);
     audio.volume = 0.5;
     if (!recalculating) {
         audio.play();
@@ -168,7 +166,6 @@ function finishedPlayingIntro() {
     base_timestamp = new Date().getTime();
 
     // play the game start sfx
-    console.log("Playing game start sfx");
     playAudio(alarm_start_audio);
 
     playEvents(replay_data);
