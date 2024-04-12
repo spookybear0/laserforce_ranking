@@ -478,6 +478,7 @@ class SM5Stats(Model):
 
         return total_points
 
+    @cache()
     async def to_dict(self) -> dict:
         final = {}
 

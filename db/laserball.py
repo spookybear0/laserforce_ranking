@@ -212,7 +212,7 @@ class LaserballGame(Model):
                 elos_red.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
-                elos_red.append(Rating(player.sm5_mu, player.sm5_sigma))
+                elos_red.append(Rating(player.laserball_mu, player.laserball_sigma))
 
         # get all the entity_ends for the green team
 
@@ -227,7 +227,7 @@ class LaserballGame(Model):
                 elos_blue.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
-                elos_blue.append(Rating(player.sm5_mu, player.sm5_sigma))
+                elos_blue.append(Rating(player.laserball_mu, player.laserball_sigma))
 
         # get the win chance
 
@@ -261,6 +261,7 @@ class LaserballGame(Model):
 
         return await self.entity_starts.filter(type="player")
     
+    @cache()
     async def to_dict(self) -> dict:
         # convert the entire game to a dict
         # this is used for the api

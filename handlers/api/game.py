@@ -2,12 +2,12 @@
 
 from sanic import Request
 from shared import app
-from utils import render_template
 from db.sm5 import SM5Game
 from db.laserball import LaserballGame
 from sanic import exceptions, response
 from sanic.log import logger
 from helpers.statshelper import sentry_trace
+from helpers.cachehelper import cache
 
 @app.get("/api/game/<type_:str>/<id:int>/tdf")
 @sentry_trace
@@ -34,6 +34,7 @@ async def api_game_tdf(request: Request, type_: str, id: int) -> str:
 
 @app.get("/api/game/<type_:str>/<id:int>/json")
 @sentry_trace
+@cache()
 async def api_game_json(request: Request, type_: str, id: int) -> str:
     """
     This is meant for the web frontend only to request a game from the api

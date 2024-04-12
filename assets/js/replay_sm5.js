@@ -814,8 +814,8 @@ function restartReplay() {
 function resetGame() {
     eventBox.innerHTML = "";
     event_iteration = 0;
-    fireTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";
-    earthTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";
+    fireTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p><th><p>K/D</p></th></tr>";
+    earthTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p><th><p>K/D</p></th></tr>";
 }
 
 function onLoad() {
