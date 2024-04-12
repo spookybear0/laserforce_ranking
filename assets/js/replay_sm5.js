@@ -108,6 +108,8 @@ var GETS_BALL = 1107;
 var CLEAR = 1108;
 
 function playAudio(audio) {
+    console.log(audio);
+    console.log(audio.src);
     audio.volume = 0.5;
     if (!recalculating) {
         audio.play();
@@ -126,6 +128,7 @@ replay_data = undefined;
 current_starting_sound_playing = undefined;
 
 started = false;
+cancelled_starting_sound = false;
 restarted = false;
 play = false;
 scrub = false; // for when going back in time
@@ -153,23 +156,47 @@ function getCurrentGameTimeMillis() {
     return base_game_time_millis + (now - base_timestamp) * get_playback_speed();
 }
 
+function finishedPlayingIntro() {
+    console
+    if (current_starting_sound_playing != audio || restarted || cancelled_starting_sound) {
+        return;
+    }
+    play = true;
+    restarted = false;
+    playButton.innerHTML = "Pause";
+    started = true;
+    base_timestamp = new Date().getTime();
+
+    // play the game start sfx
+    console.log("Playing game start sfx");
+    playAudio(alarm_start_audio);
+
+    playEvents(replay_data);
+}
+
 function playPause() {
     if (replay_data == undefined) {
         return;
     }
 
-    if (play) {
+    if (play) { // pause the game
         // Lock the game time at what it currently is.
         base_game_time_millis = getCurrentGameTimeMillis();
         base_timestamp = new Date().getTime();
 
         play = false;
         playButton.innerHTML = "Play";
-    } else {
+    } else { // play the game
         base_timestamp = new Date().getTime();
 
         restarted = false;
-        if (!started) {
+        if (current_starting_sound_playing != undefined) {
+            restartReplay();
+            restarted = false;
+            finishedPlayingIntro();
+            cancelled_starting_sound = true; // cancel the callback for the starting sound
+        }
+        else if (!started) {
             base_game_time_millis = 0
             // starting the game for the first time
             
@@ -185,20 +212,7 @@ function playPause() {
             audio.addEventListener("loadeddata", () => {
                 // wait for the sfx to finish
                 setTimeout(function() {
-                    if (current_starting_sound_playing != audio || restarted) {
-                        return;
-                    }
-                    play = true;
-                    restarted = false;
-                    playButton.innerHTML = "Pause";
-                    started = true;
-                    base_timestamp = new Date().getTime();
-
-                    // play the game start sfx
-                    audio = new Audio("/assets/sm5/audio/Effect/General Quarters.wav");
-                    audio.play();
-
-                    playEvents(replay_data);
+                    finishedPlayingIntro();
                 }, audio.duration*1000);
             });
             return;
