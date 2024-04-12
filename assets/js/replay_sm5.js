@@ -105,7 +105,28 @@ current_sound_playing = undefined;
 started = false;
 restarted = false;
 play = false;
-start_time = 0;
+playback_speed = 1.0;
+
+// The timestamp (wall clock) when we last started to play back or change the playback settings.
+base_timestamp = 0;
+
+// The game time in milliseconds at the time of base_timestamp.
+base_game_time_millis = 0;
+
+// The current time being shown in the time label, in seconds.
+time_label_seconds = 0;
+
+/* Returns the time in the game (in milliseconds) that's currently active. */
+function getCurrentGameTimeMillis() {
+    // If we're not currently playing back, the game time remains unchanged.
+    if (!play) {
+        return base_game_time_millis;
+    }
+
+    const now = new Date().getTime();
+
+    return base_game_time_millis + (now - base_timestamp) * get_playback_speed();
+}
 
 function playPause() {
     if (replay_data == undefined) {
@@ -113,11 +134,18 @@ function playPause() {
     }
 
     if (play) {
+        // Lock the game time at what it currently is.
+        base_game_time_millis = getCurrentGameTimeMillis();
+        base_timestamp = new Date().getTime();
+
         play = false;
         playButton.innerHTML = "Play";
     } else {
+        base_timestamp = new Date().getTime();
+
         restarted = false;
         if (!started) {
+            base_game_time_millis = 0
             // starting the game for the first time
             
             // choose a random sfx 0-3
@@ -138,7 +166,7 @@ function playPause() {
                     restarted = false;
                     playButton.innerHTML = "Pause";
                     started = true;
-                    start_time = new Date().getTime();
+                    base_timestamp = new Date().getTime();
                     playEvents(replay_data);
                 }, audio.duration*1000);
             });
@@ -149,7 +177,6 @@ function playPause() {
         playButton.innerHTML = "Pause";
         started = true;
         restarted = false;
-        start_time = new Date().getTime();
         playEvents(replay_data);
     }
 }
@@ -250,22 +277,44 @@ function sleep(ms) {
 
 event_iteration = 0;
 
+function get_playback_speed() {
+    return playback_speed;
+}
+
+function onSpeedChange() {
+    const new_playback_speed = parseFloat(speedText.value);
+
+    if (playback_speed != new_playback_speed) {
+        if (play) {
+            base_game_time_millis = getCurrentGameTimeMillis();
+            base_timestamp = new Date().getTime();
+        }
+
+        playback_speed = new_playback_speed;
+    }
+}
+
 function playEvents(replay_data) {
     let events = replay_data["events"];
+
+    setTimeSlider(getCurrentGameTimeMillis() / 1000);
 
     for (let i = event_iteration; i < events.length; i++) {
         event_iteration = i;
 
-        if (!play) {
+        if (!play && !scrub) {
             return;
         }
 
         events[i]["type"] = parseInt(events[i]["type"]);
 
         // check if event is in the future while accounting for speed
-        if (events[i]["time"] > (new Date().getTime() - start_time)*parseFloat(speedText.value)) {
+        if (events[i]["time"] > getCurrentGameTimeMillis()) {
             event_iteration = i;
-            setTimeout(playEvents, 100, replay_data);
+
+            if (play) {
+                setTimeout(playEvents, 100, replay_data);
+            }
             return;
         }
 
@@ -297,16 +346,10 @@ function playEvents(replay_data) {
         oldScrollTop = eventBox.scrollTop + eventBox.clientHeight;
         oldScrollHeight = eventBox.scrollHeight;
         
-        formattedTime = Math.floor(events[i]["time"]/60000).toString().padStart(2, "0") + ":" + Math.floor((events[i]["time"]%60000)/1000).toString().padStart(2, "0");
-
         if (events[i]["type"] != MISS) {
-            eventBox.innerHTML += `<div class="event"><span>${formattedTime}</span> ${updated_arguments.join(" ")}</div>\n`;
+            eventBox.innerHTML += `<div class="event">${updated_arguments.join(" ")}</div>\n`;
         }
 
-        if (oldScrollTop >= oldScrollHeight) {
-            eventBox.scrollTop = eventBox.scrollHeight + 100;
-        }
-        
         if (events[i]["type"] == MISS || events[i]["type"] == MISS_BASE) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
             shooter["shots_fired"] += 1;
@@ -371,7 +414,7 @@ function playEvents(replay_data) {
             victim["downed"] = true;
             setTimeout(function() {
                 victim["downed"] = false;
-            }, 8000 * parseFloat(speedText.value));
+            }, 8000 * get_playback_speed());
         }
         else if (events[i]["type"] == DAMANGED_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -406,7 +449,7 @@ function playEvents(replay_data) {
             victim["downed"] = true;
             setTimeout(function() {
                 victim["downed"] = false;
-            }, 8000 * parseFloat(speedText.value));
+            }, 8000 * get_playback_speed());
         }
         else if (events[i]["type"] == MISSILE_BASE_MISS || events[i]["type"] == MISSILE_MISS) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -434,7 +477,7 @@ function playEvents(replay_data) {
             victim["downed"] = true;
             setTimeout(function() {
                 victim["downed"] = false;
-            }, 8000 * parseFloat(speedText.value));
+            }, 8000 * get_playback_speed());
         }
         else if (events[i]["type"] == MISSILE_DOWN_TEAM || events[i]["type"] == MISSILE_DAMAGE_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -447,7 +490,7 @@ function playEvents(replay_data) {
             victim["downed"] = true;
             setTimeout(function() {
                 victim["downed"] = false;
-            }, 8000 * parseFloat(speedText.value));
+            }, 8000 * get_playback_speed());
         }
         else if (events[i]["type"] == ACTIVATE_RAPID_FIRE) {
             player = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -472,7 +515,7 @@ function playEvents(replay_data) {
                     player["downed"] = true;
                     setTimeout(function() {
                         player["downed"] = false;
-                    }, 8000 * parseFloat(speedText.value));
+                    }, 8000 * get_playback_speed());
 
                     if (player["lives"] < 3) {
                         player["lives"] = 0;
@@ -497,7 +540,7 @@ function playEvents(replay_data) {
             resupplyee["downed"] = true;
             setTimeout(function() {
                 resupplyee["downed"] = false;
-            }, 8000 * parseFloat(speedText.value));
+            }, 8000 * get_playback_speed());
             
             resupplyee["rapid_fire"] = false;
         }
@@ -513,7 +556,7 @@ function playEvents(replay_data) {
             resupplyee["downed"] = true;
             setTimeout(function() {
                 resupplyee["downed"] = false;
-            }, 8000 * parseFloat(speedText.value));
+            }, 8000 * get_playback_speed());
             
             resupplyee["rapid_fire"] = false;
         }
@@ -617,6 +660,8 @@ function playEvents(replay_data) {
             }
         }
 
+        eventBox.scrollTop = eventBox.scrollHeight;
+
         // team scores
 
         fireScore = 0;
@@ -646,6 +691,7 @@ function startReplay(replay_data) {
     console.log("Starting replay");
     
     teamsLoadingPlaceholder.style.display = "none";
+    timeSlider.style.display = "block";
     replayViewer.style.display = "flex";
 
     setupGame(replay_data);
@@ -665,12 +711,20 @@ function restartReplay() {
     play = false;
     started = false;
     restarted = true;
+
+    // If true, we're not playing back, but we're paused and just want to evaluate the game at a different time.
+    scrub = false;
+
+    resetGame();
     playButton.innerHTML = "Play";
+    startReplay(replay_data);
+}
+
+function resetGame() {
     eventBox.innerHTML = "";
+    event_iteration = 0;
     fireTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";
     earthTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";
-    event_iteration = 0;
-    startReplay(replay_data);
 }
 
 function onLoad() {
@@ -678,6 +732,7 @@ function onLoad() {
     earthTable = document.getElementById("earth_table");
     replayViewer = document.getElementById("replay_viewer");
     teamsLoadingPlaceholder = document.getElementById("teams_loading_placeholder");
+    timeSlider = document.getElementById("time_slider");
     eventBox = document.getElementById("events");
     speedText = document.getElementById("speed");
     playButton = document.getElementById("play");
@@ -696,7 +751,47 @@ function onLoad() {
         })
 }
 
+function onTimeChange(seconds) {
+    // If the new time is earlier than before, we need to reevaluate everything.
+    if (seconds * 1000 < base_game_time_millis) {
+        resetGame();
+        setupGame(replay_data);
+    }
 
+    base_game_time_millis = seconds * 1000
+    base_timestamp = new Date().getTime();
+
+    setTimeLabel(seconds);
+
+    // If we're not currently playing back, we need to manually update.
+    if (!play) {
+        scrub = true;
+        playEvents(replay_data);
+        scrub = false;
+    }
+}
+
+function setTimeSlider(seconds) {
+    document.getElementById("time-slider").value = seconds;
+    setTimeLabel(seconds);
+}
+
+function setTimeLabel(seconds) {
+    const totalSeconds = Math.floor(seconds);
+
+    if (totalSeconds == time_label_seconds) {
+        return;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+    const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
+
+    document.getElementById("timestamp").innerHTML = `${formattedMinutes}:${formattedSeconds}`;
+    time_label_seconds = totalSeconds;
+}
 
 document.addEventListener("DOMContentLoaded", function() {
     onLoad();
