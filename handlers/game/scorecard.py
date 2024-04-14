@@ -219,4 +219,4 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             main_stats=main_stats,
             teams=teams,
         )
-    return exceptions.BadRequest("Invalid game type")
+    raise exceptions.BadRequest("Invalid game type")

@@ -135,4 +135,4 @@ async def game_index(request: Request, type: str, id: int) -> str:
             is_admin=is_admin(request)
         )
     else:
-        raise exceptions.NotFound("Not found: Invalid game type")
+        raise exceptions.BadRequest("Invalid game type")
