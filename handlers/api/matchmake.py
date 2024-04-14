@@ -9,7 +9,9 @@ from sanic.log import logger
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
 
-@app.get("/api/<type_:str>/matchmake")
+# this api is only used for internal purposes (matchmake page)
+
+@app.get("/api/internal/matchmake/<type_:str>")
 @sentry_trace
 async def api_matchmake(request: Request, type_: str) -> str:
     # 2-4 teams (team1, team2, ...)

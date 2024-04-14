@@ -2,7 +2,7 @@ from sanic import Request, response
 from db.types import Permission
 from typing import Callable, Any, Union
 from shared import app
-from helpers.cachehelper import cache_template  
+from db.player import Player
 
 def get_post(request: Request) -> dict:
     """
@@ -12,6 +12,19 @@ def get_post(request: Request) -> dict:
     for key in data:
         data[key] = data[key]
     return data
+
+# listen before request
+@app.middleware("request")
+async def add_session_to_request(request: Request) -> None:
+    if request.headers.get("Cookie") is not None:
+        # check login with cookie
+        player = await Player.filter(codename=request.cookies.get("codename")).first()
+        if player is not None and player.check_password(request.cookies.get("password")):
+            request.ctx.session.update({
+                "codename": player.codename,
+                "player_id": player.player_id,
+                "permissions": player.permissions
+            })
 
 async def render_template(r, template, *args, **kwargs) -> str:
     additional_kwargs = {
