@@ -7,6 +7,7 @@ from helpers.datehelper import strftime_ordinal
 from helpers.cachehelper import cache
 from tortoise import Model, fields
 from typing import List, Optional
+from db.game import EntityStarts, EntityEnds
 import sys
 
 class LaserballGame(Model):
@@ -39,16 +40,16 @@ class LaserballGame(Model):
     def __repr__(self) -> str:
         return f"<LaserballGame ({self.tdf_name})>"
     
-    async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
+    async def get_entity_start_from_token(self, token: str) -> Optional[EntityStarts]:
         return await self.entity_starts.filter(entity_id=token).first()
     
-    async def get_entity_end_from_token(self, token: str) -> Optional["EntityEnds"]:
+    async def get_entity_end_from_token(self, token: str) -> Optional[EntityEnds]:
         return await self.entity_ends.filter(entity_id=token).first()
     
-    async def get_entity_start_from_name(self, name: str) -> Optional["EntityStarts"]:
+    async def get_entity_start_from_name(self, name: str) -> Optional[EntityStarts]:
         return await self.entity_starts.filter(name=name).first()
     
-    async def get_entity_end_from_name(self, name: str) -> Optional["EntityEnds"]:
+    async def get_entity_end_from_name(self, name: str) -> Optional[EntityEnds]:
         return await self.entity_ends.filter(entity__name=name).first()
     
     async def get_laserball_stat_from_name(self, name: str) -> Optional["LaserballStats"]:
