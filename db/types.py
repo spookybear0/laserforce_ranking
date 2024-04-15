@@ -57,6 +57,7 @@ class _TeamDefinition:
     css_class: str
     css_color_name: str
     dim_color: RgbColor
+    dim_css_class: str
 
     def __eq__(self, color: str) -> bool:
         return self.color == color
@@ -80,11 +81,11 @@ class _TeamDefinition:
 
 class Team(Enum):
     RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered",
-                          dim_color=RgbColor(red=68, green=17, blue=0))
+                          dim_color=RgbColor(red=68, green=17, blue=0), dim_css_class="fire-team-dim")
     GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow",
-                            dim_color=RgbColor(red=43, green=60, blue=12))
+                            dim_color=RgbColor(red=43, green=60, blue=12), dim_css_class="earth-team-dim")
     BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF",
-                           dim_color=RgbColor(red=0, green=37, blue=68))
+                           dim_color=RgbColor(red=0, green=37, blue=68), dim_css_class="ice-team-dim")
 
     def __call__(cls, value, *args, **kw):
         # Tortoise looks up values by the lower-case color name.
@@ -109,6 +110,11 @@ class Team(Enum):
         return self.value.css_class
 
     @property
+    def dim_css_class(self) -> str:
+        """CSS class to use to show text using the color of this team but dimmed (used when a player is down)."""
+        return self.value.dim_css_class
+
+    @property
     def css_color_name(self) -> str:
         """CSS color to use for this team, could be a RGB HEX value or a CSS color value."""
         return self.value.css_color_name
@@ -117,6 +123,11 @@ class Team(Enum):
     def dim_color(self) -> RgbColor:
         """Color to use for this team at a darker brightness, good for line graphs showing peripheral data."""
         return self.value.dim_color
+
+    @property
+    def name(self) -> str:
+        """The display name, like "Earth Team"."""
+        return f"{self.element} Team"
 
 
 # Mapping of opposing teams in SM5 games.
