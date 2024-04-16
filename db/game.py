@@ -187,7 +187,7 @@ class EntityEnds(Model):
         final["score"] = self.score
         final["current_rating_mu"] = self.current_rating_mu
         final["current_rating_sigma"] = self.current_rating_sigma
-        if self.current_rating_mu and self.current_rating sigma:
+        if self.current_rating_mu and self.current_rating_sigma:
             final["current_rating"] = self.current_rating_mu - 3 * self.current_rating_sigma
         else:
             final["current_rating"] = None
