@@ -315,9 +315,9 @@ class SM5Game(Model):
         final["mission_name"] = self.mission_name
         final["ranked"] = self.ranked
         final["ended_early"] = self.ended_early
-        final["start_time"] = str(self.start_time)
+        final["start_time"] = self.start_time.timestamp()
         final["mission_duration"] = self.mission_duration
-        final["log_time"] = str(self.log_time)
+        final["log_time"] = self.log_time.timestamp()
         
         if full:
             final["teams"] = [await team.to_dict() for team in self.teams]

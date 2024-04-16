@@ -265,7 +265,7 @@ function setupGame(replay_data) {
             continue;
         }
 
-        team = getTeamFromId(replay_data, player["team"]);
+        team = getTeamFromId(replay_data, player["team_index"]);
 
         team_color_name = "orangered";
 
@@ -377,7 +377,7 @@ function playEvents(replay_data) {
                 // get team then change color to team color
                 entity = getEntityFromId(replay_data, events[i]["arguments"][j])["name"]
 
-                team = getTeamFromId(replay_data, getEntityFromId(replay_data, events[i]["arguments"][j])["team"]);
+                team = getTeamFromId(replay_data, getEntityFromId(replay_data, events[i]["arguments"][j])["team_index"]);
                 if (team["color_name"] == "Fire") {
                     entity = `<span style="color: orangered;">${entity}</span>`;
                 }
@@ -582,7 +582,7 @@ function playEvents(replay_data) {
 
             for (let j = 0; j < replay_data["entity_starts"].length; j++) {
                 player = replay_data["entity_starts"][j];
-                if (player["team"] != nuker["team"] && player["type"] == "player") {
+                if (player["team_index"] != nuker["team_index"] && player["type"] == "player") {
                     player["downed"] = true;
                     setTimeout(function() {
                         player["downed"] = false;
@@ -648,7 +648,7 @@ function playEvents(replay_data) {
 
             for (let j = 0; j < replay_data["entity_starts"].length; j++) {
                 player = replay_data["entity_starts"][j];
-                if (player["team"] == booster["team"] && player["type"] == "player" && !player["downed"]) {
+                if (player["team_index"] == booster["team_index"] && player["type"] == "player" && !player["downed"]) {
                     defaults = getDefaults(player["role"])
                     player["shots"] += defaults["shots_resupply"];
                     if (player["shots"] > defaults["shots_max"]) {
@@ -667,7 +667,7 @@ function playEvents(replay_data) {
 
             for (let j = 0; j < replay_data["entity_starts"].length; j++) {
                 player = replay_data["entity_starts"][j];
-                if (player["team"] == booster["team"] && player["type"] == "player" && !player["downed"]) {
+                if (player["team_index"] == booster["team_index"] && player["type"] == "player" && !player["downed"]) {
                     defaults = getDefaults(player["role"])
                     player["lives"] += defaults["lives_resupply"];
                     if (player["lives"] > defaults["lives_max"]) {
@@ -767,7 +767,7 @@ function playEvents(replay_data) {
                 continue;
             }
 
-            if (player["team"] == 0) {
+            if (player["team_index"] == 0) {
                 fireScore += player["score"];
             }
             else {

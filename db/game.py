@@ -38,6 +38,7 @@ class Teams(Model):
         final["name"] = self.name
         final["color_enum"] = int(self.color_enum)
         final["color_name"] = self.color_name
+        final["real_color_name"] = self.real_color_name
 
         return final
 
@@ -75,7 +76,8 @@ class EntityStarts(Model):
         final["entity_id"] = self.entity_id
         final["type"] = self.type
         final["name"] = self.name
-        final["team"] = (await self.team).index
+        final["team"] = (await self.team).real_color_name
+        final["team_index"] = (await self.team).index
         final["level"] = self.level
         final["role"] = int(self.role)
         final["battlesuit"] = self.battlesuit
@@ -185,6 +187,10 @@ class EntityEnds(Model):
         final["score"] = self.score
         final["current_rating_mu"] = self.current_rating_mu
         final["current_rating_sigma"] = self.current_rating_sigma
+        final["current_rating"] = self.current_rating_mu - 3 * self.current_rating_sigma
+        final["previous_rating_mu"] = self.previous_rating_mu
+        final["previous_rating_sigma"] = self.previous_rating_sigma
+        final["previous_rating"] = self.previous_rating_mu - 3 * self.previous_rating_sigma
 
         return final
     

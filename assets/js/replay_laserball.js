@@ -109,7 +109,7 @@ function setupGame(replay_data) {
             continue;
         }
 
-        team = getTeamFromId(replay_data, player["team"]);
+        team = getTeamFromId(replay_data, player["team_index"]);
 
         if (team["color_name"] == "Fire") {
             table = fireTable;
@@ -182,7 +182,7 @@ function playEvents(replay_data) {
             if (events[i]["arguments"][j].startsWith("@") || events[i]["arguments"][j].startsWith("#")) {
                 entity = getEntityFromId(replay_data, events[i]["arguments"][j])["name"]
 
-                team = getTeamFromId(replay_data, getEntityFromId(replay_data, events[i]["arguments"][j])["team"]);
+                team = getTeamFromId(replay_data, getEntityFromId(replay_data, events[i]["arguments"][j])["team_index"]);
 
                 if (team["color_name"] == "Fire") {
                     entity = `<span style="color: orangered;">${entity}</span>`;
@@ -301,7 +301,7 @@ function playEvents(replay_data) {
                 continue;
             }
 
-            if (player["team"] == 0) {
+            if (player["team_index"] == 0) {
                 fireScore += player["goals"];
             }
             else {
