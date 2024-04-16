@@ -8,8 +8,11 @@ from sanic import response
 from sanic.log import logger
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
+from sanic.log import logger
 
-@app.get("/api/<type_:str>/win_chances")
+# this api is only used for internal purposes (matchmake page)
+
+@app.get("/api/internal/win_chances/<type_:str>")
 @sentry_trace
 async def api_win_chances(request: Request, type_: str) -> str:
     # 2-4 teams (team1, team2, ...)

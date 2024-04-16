@@ -6,7 +6,8 @@ from db.types import Team, EventType, BallPossessionEvent
 from helpers.datehelper import strftime_ordinal
 from helpers.cachehelper import cache
 from tortoise import Model, fields
-from typing import List
+from typing import List, Optional
+from db.game import EntityStarts, EntityEnds
 import sys
 
 class LaserballGame(Model):
@@ -38,6 +39,21 @@ class LaserballGame(Model):
     
     def __repr__(self) -> str:
         return f"<LaserballGame ({self.tdf_name})>"
+    
+    async def get_entity_start_from_token(self, token: str) -> Optional[EntityStarts]:
+        return await self.entity_starts.filter(entity_id=token).first()
+    
+    async def get_entity_end_from_token(self, token: str) -> Optional[EntityEnds]:
+        return await self.entity_ends.filter(entity_id=token).first()
+    
+    async def get_entity_start_from_name(self, name: str) -> Optional[EntityStarts]:
+        return await self.entity_starts.filter(name=name).first()
+    
+    async def get_entity_end_from_name(self, name: str) -> Optional[EntityEnds]:
+        return await self.entity_ends.filter(entity__name=name).first()
+    
+    async def get_laserball_stat_from_name(self, name: str) -> Optional["LaserballStats"]:
+        return await self.laserball_stats.filter(entity__name=name).first()
     
     async def get_team_score(self, team: Team) -> int:
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element, entity__type="player").values_list("score")))
@@ -212,7 +228,7 @@ class LaserballGame(Model):
                 elos_red.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
-                elos_red.append(Rating(player.sm5_mu, player.sm5_sigma))
+                elos_red.append(Rating(player.laserball_mu, player.laserball_sigma))
 
         # get all the entity_ends for the green team
 
@@ -227,7 +243,7 @@ class LaserballGame(Model):
                 elos_blue.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
-                elos_blue.append(Rating(player.sm5_mu, player.sm5_sigma))
+                elos_blue.append(Rating(player.laserball_mu, player.laserball_sigma))
 
         # get the win chance
 
@@ -261,7 +277,8 @@ class LaserballGame(Model):
 
         return await self.entity_starts.filter(type="player")
     
-    async def to_dict(self) -> dict:
+    @cache()
+    async def to_dict(self, full: bool=True, player_stats=None) -> dict:
         # convert the entire game to a dict
         # this is used for the api
         final = {}
@@ -277,12 +294,19 @@ class LaserballGame(Model):
         final["start_time"] = str(self.start_time)
         final["mission_duration"] = self.mission_duration
         final["log_time"] = str(self.log_time)
-        final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
-        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in await self.entity_starts.all()]
-        final["events"] = [await (await event).to_dict() for event in await self.events.all()]
-        final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
-        final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
-        final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in await self.laserball_stats.all()]
+
+        if full:
+            final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
+            final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in await self.entity_starts.all()]
+            final["events"] = [await (await event).to_dict() for event in await self.events.all()]
+            final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
+            final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
+            final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in await self.laserball_stats.all()]
+
+        if player_stats is not None:
+            final["player_entity_start"] = await (await self.get_entity_start_from_name(player_stats.codename)).to_dict()
+            final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
+            final["player_sm5_stats"] = await (await self.get_laserball_stat_from_name(player_stats.codename)).to_dict()
 
         return final
     

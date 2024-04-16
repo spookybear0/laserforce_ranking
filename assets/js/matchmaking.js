@@ -216,7 +216,7 @@ function updateWinChances() {
     }
 
     let xhr = new XMLHttpRequest();
-    let url = "/api/" + currentMode + "/win_chances";
+    let url = "/api/internal/win_chances/" + currentMode;
     let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4;
     xhr.open("GET", url + "?" + params, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -274,7 +274,7 @@ function matchmakePlayers() {
     }
 
     let xhr = new XMLHttpRequest();
-    let url = "/api/" + currentMode + "/matchmake";
+    let url = "/api/internal/matchmake/" + currentMode;
     let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4 + "&num_teams=" + numTeams;
     xhr.open("GET", url + "?" + params, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

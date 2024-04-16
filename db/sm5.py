@@ -49,14 +49,8 @@ class SM5Game(Model):
     async def get_team_score(self, team: Team) -> int:
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element).values_list("score")))
     
-    async def get_entity_start_from_player(self, player: "Player") -> Optional["EntityStarts"]:
-        return await self.entity_starts.filter(player=player).first()
-    
     async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(entity_id=token).first()
-    
-    async def get_entity_end_from_player(self, player: "Player") -> Optional["EntityEnds"]:
-        return await self.entity_ends.filter(player=player).first()
     
     async def get_entity_end_from_token(self, token: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity_id=token).first()
@@ -66,6 +60,9 @@ class SM5Game(Model):
     
     async def get_entity_end_from_name(self, name: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity__name=name).first()
+    
+    async def get_sm5_stat_from_name(self, name: str) -> Optional["SM5Stats"]:
+        return await self.sm5_stats.filter(entity__name=name).first()
 
     async def get_entity_score_at_time(self, entity_id: int, time_seconds: int) -> int:
         scores = await self.scores.filter(time__lte=time_seconds, entity=entity_id).all()
@@ -299,7 +296,7 @@ class SM5Game(Model):
         
         return players_alive_on_team == 0
 
-    async def to_dict(self) -> dict:
+    async def to_dict(self, full: bool=True, player_stats=None) -> dict:
         # convert the entire game to a dict
         # this is used for the api
 
@@ -317,16 +314,24 @@ class SM5Game(Model):
         final["mission_type"] = self.mission_type
         final["mission_name"] = self.mission_name
         final["ranked"] = self.ranked
+        final["ended_early"] = self.ended_early
         final["start_time"] = str(self.start_time)
         final["mission_duration"] = self.mission_duration
         final["log_time"] = str(self.log_time)
-        final["teams"] = [await team.to_dict() for team in self.teams]
-        final["entity_starts"] = [await entity_start.to_dict() for entity_start in self.entity_starts]
-        final["events"] = [await event.to_dict() for event in self.events]
-        final["player_states"] = [await player_state.to_dict() for player_state in self.player_states]
-        final["scores"] = [await score.to_dict() for score in self.scores]
-        final["entity_ends"] = [await entity_end.to_dict() for entity_end in self.entity_ends]
-        final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
+        
+        if full:
+            final["teams"] = [await team.to_dict() for team in self.teams]
+            final["entity_starts"] = [await entity_start.to_dict() for entity_start in self.entity_starts]
+            final["events"] = [await event.to_dict() for event in self.events]
+            final["player_states"] = [await player_state.to_dict() for player_state in self.player_states]
+            final["scores"] = [await score.to_dict() for score in self.scores]
+            final["entity_ends"] = [await entity_end.to_dict() for entity_end in self.entity_ends]
+            final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
+
+        if player_stats is not None:
+            final["player_entity_start"] = await (await self.get_entity_start_from_name(player_stats.codename)).to_dict()
+            final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
+            final["player_sm5_stats"] = await (await self.get_sm5_stat_from_name(player_stats.codename)).to_dict()
 
         return final
     
@@ -478,6 +483,7 @@ class SM5Stats(Model):
 
         return total_points
 
+    @cache()
     async def to_dict(self) -> dict:
         final = {}
 

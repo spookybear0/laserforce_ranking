@@ -3,8 +3,8 @@ try:
 except ImportError:
     from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating
 from db.game import EntityStarts, EntityEnds, Events
-from db.laserball import LaserballStats
-from db.sm5 import SM5Stats
+from db.laserball import LaserballStats, LaserballGame
+from db.sm5 import SM5Stats, SM5Game
 from db.types import Permission, GameType, Role, Team, IntRole
 from tortoise import Model, fields, functions
 from tortoise.expressions import F, Q
@@ -282,6 +282,47 @@ class Player(Model):
                 scores.append(0)
 
         return scores
+    
+    async def get_recent_sm5_games(self, limit: int=5) -> List[SM5Game]:
+        return await SM5Game.filter(entity_starts__entity_id=self.entity_id).order_by("-start_time").limit(limit)
+    
+    async def get_recent_laserball_games(self, limit: int=5) -> List[LaserballGame]:
+        return await LaserballGame.filter(entity_starts__entity_id=self.entity_id).order_by("-start_time").limit(limit)
+        
+    async def to_dict(self, include_stats: bool=False, include_recent_games: bool=False) -> dict:
+        player_dict = {
+            "player_id": self.player_id,
+            "codename": self.codename,
+            "sm5_mu": self.sm5_mu,
+            "sm5_sigma": self.sm5_sigma,
+            "laserball_mu": self.laserball_mu,
+            "laserball_sigma": self.laserball_sigma,
+            "sm5_ordinal": self.sm5_ordinal,
+            "laserball_ordinal": self.laserball_ordinal,
+            "permissions": self.permissions,
+            "entity_id": self.entity_id,
+        }
+
+        if include_stats:
+            player_dict.update({
+                "favorite_role": await self.get_favorite_role(),
+                "favorite_battlesuit": await self.get_favorite_battlesuit(),
+                "sean_hits": await self.get_sean_hits(),
+                "shots_fired": await self.get_shots_fired(),
+                "shots_hit": await self.get_shots_hit(),
+                "win_percent": await self.get_win_percent(),
+                "sm5_win_percent": await self.get_win_percent(GameType.SM5),
+                "laserball_win_percent": await self.get_win_percent(GameType.LASERBALL),
+                "median_role_score": await self.get_median_role_score(),
+            })
+
+        if include_recent_games:
+            player_dict.update({
+                "recent_sm5_games": [await game.to_dict(full=False, player_stats=self) for game in await self.get_recent_sm5_games()],
+                "recent_laserball_games": [await game.to_dict(full=False, player_stats=self) for game in await self.get_recent_laserball_games()],
+            })
+
+        return player_dict
 
     def __str__(self) -> str:
         return f"{self.codename} ({self.player_id})"

@@ -55,6 +55,15 @@ medic_defaults = {
     missiles: 0
 };
 
+// audio files
+// TODO: make it so the same audio file can be played multiple times at once
+
+start_audio = [new Audio("/assets/sm5/audio/Start.0.wav"), new Audio("/assets/sm5/audio/Start.1.wav"), new Audio("/assets/sm5/audio/Start.2.wav"), new Audio("/assets/sm5/audio/Start.3.wav")];
+alarm_start_audio = new Audio("/assets/sm5/audio/Effect/General Quarters.wav");
+resupply_audio = [new Audio("/assets/sm5/audio/Effect/Resupply.0.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.1.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.2.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.3.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.4.wav")];
+downed_audio = [new Audio("/assets/sm5/audio/Effect/Scream.0.wav"), new Audio("/assets/sm5/audio/Effect/Scream.1.wav"), new Audio("/assets/sm5/audio/Effect/Scream.2.wav"), new Audio("/assets/sm5/audio/Effect/Shot.0.wav"), new Audio("/assets/sm5/audio/Effect/Shot.1.wav")];
+base_destroyed_audio = new Audio("/assets/sm5/audio/Effect/Boom.wav");
+
 // Event codes
 
 var MISSION_START = 100;
@@ -98,13 +107,30 @@ var ROUND_END = 1106;
 var GETS_BALL = 1107;
 var CLEAR = 1108;
 
+function playAudio(audio) {
+    audio.volume = 0.5;
+    if (!recalculating) {
+        audio.play();
+    }
+    return audio;
+}
+
+function playDownedAudio() {
+    // audio is random between Scream.0.wav Scream.1.wav Scream.2.wav Shot.0.wav Shot.1.wav
+    sfx = Math.floor(Math.random() * 5);
+    return playAudio(downed_audio[sfx]);
+}
+
 replay_data = undefined;
 
-current_sound_playing = undefined;
+current_starting_sound_playing = undefined;
 
 started = false;
+cancelled_starting_sound = false;
 restarted = false;
 play = false;
+scrub = false; // for when going back in time
+recalculating = false; // for when we're mass recalculating and don't want to play audio
 playback_speed = 1.0;
 
 // The timestamp (wall clock) when we last started to play back or change the playback settings.
@@ -128,23 +154,46 @@ function getCurrentGameTimeMillis() {
     return base_game_time_millis + (now - base_timestamp) * get_playback_speed();
 }
 
+function finishedPlayingIntro() {
+    console
+    if (current_starting_sound_playing != audio || restarted || cancelled_starting_sound) {
+        return;
+    }
+    play = true;
+    restarted = false;
+    playButton.innerHTML = "Pause";
+    started = true;
+    base_timestamp = new Date().getTime();
+
+    // play the game start sfx
+    playAudio(alarm_start_audio);
+
+    playEvents(replay_data);
+}
+
 function playPause() {
     if (replay_data == undefined) {
         return;
     }
 
-    if (play) {
+    if (play) { // pause the game
         // Lock the game time at what it currently is.
         base_game_time_millis = getCurrentGameTimeMillis();
         base_timestamp = new Date().getTime();
 
         play = false;
         playButton.innerHTML = "Play";
-    } else {
+    } else { // play the game
         base_timestamp = new Date().getTime();
 
         restarted = false;
-        if (!started) {
+        if (current_starting_sound_playing != undefined) {
+            restartReplay();
+            restarted = false;
+            finishedPlayingIntro();
+            cancelled_starting_sound = true; // cancel the callback for the starting sound
+        }
+        else if (!started) {
             base_game_time_millis = 0
             // starting the game for the first time
             
@@ -153,21 +202,14 @@ function playPause() {
             sfx = Math.floor(Math.random() * 4);
 
             audio = new Audio(`/assets/sm5/audio/Start.${sfx}.wav`);
-            current_sound_playing = audio;
+            audio.volume = 0.5;
+            current_starting_sound_playing = audio;
             audio.play();
 
             audio.addEventListener("loadeddata", () => {
                 // wait for the sfx to finish
                 setTimeout(function() {
-                    if (current_sound_playing != audio || restarted) {
-                        return;
-                    }
-                    play = true;
-                    restarted = false;
-                    playButton.innerHTML = "Pause";
-                    started = true;
-                    base_timestamp = new Date().getTime();
-                    playEvents(replay_data);
+                    finishedPlayingIntro();
                 }, audio.duration*1000);
             });
             return;
@@ -306,6 +348,13 @@ function playEvents(replay_data) {
             return;
         }
 
+        // check if the event way behind the current time so we don't play audio
+        if (events[i]["time"] < getCurrentGameTimeMillis() - 1000) {
+            recalculating = true;
+        } else {
+            recalculating = false;
+        }
+
         events[i]["type"] = parseInt(events[i]["type"]);
 
         // check if event is in the future while accounting for speed
@@ -376,6 +425,8 @@ function playEvents(replay_data) {
                 shooter["special_points"] += 5;
             }
             shooter["score"] += 1001;
+
+            playAudio(base_destroyed_audio);
         }
         else if (events[i]["type"] == DAMAGED_OPPONENT) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -392,6 +443,8 @@ function playEvents(replay_data) {
             victim = getEntityFromId(replay_data, events[i]["arguments"][2]);
             victim["score"] -= 20;
             victim["times_shot"] += 1;
+
+            playDownedAudio();
         }
         else if (events[i]["type"] == DOWNED_OPPONENT) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -415,6 +468,8 @@ function playEvents(replay_data) {
             setTimeout(function() {
                 victim["downed"] = false;
             }, 8000 * get_playback_speed());
+
+            playDownedAudio();
         }
         else if (events[i]["type"] == DAMANGED_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -428,6 +483,8 @@ function playEvents(replay_data) {
             victim = getEntityFromId(replay_data, events[i]["arguments"][2]);
             victim["score"] -= 20;
             victim["times_shot"] += 1;
+
+            playDownedAudio(); // TODO: find the sound for shooting a teammate
         }
         else if (events[i]["type"] == DOWNED_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -450,6 +507,8 @@ function playEvents(replay_data) {
             setTimeout(function() {
                 victim["downed"] = false;
             }, 8000 * get_playback_speed());
+
+            playDownedAudio(); // TODO: find the sound for shooting a teammate
         }
         else if (events[i]["type"] == MISSILE_BASE_MISS || events[i]["type"] == MISSILE_MISS) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -462,6 +521,8 @@ function playEvents(replay_data) {
                 shooter["special_points"] += 5;
             }
             shooter["score"] += 1001;
+
+            playAudio(base_destroyed_audio);
         }
         else if (events[i]["type"] == MISSILE_DOWN_OPPONENT || events[i]["type"] == MISSILE_DAMAGE_OPPONENT) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -478,6 +539,8 @@ function playEvents(replay_data) {
             setTimeout(function() {
                 victim["downed"] = false;
             }, 8000 * get_playback_speed());
+
+            playDownedAudio(); // TODO: find the sound for missiling a player
         }
         else if (events[i]["type"] == MISSILE_DOWN_TEAM || events[i]["type"] == MISSILE_DAMAGE_TEAM) {
             shooter = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -491,11 +554,17 @@ function playEvents(replay_data) {
             setTimeout(function() {
                 victim["downed"] = false;
             }, 8000 * get_playback_speed());
+
+            playDownedAudio(); // TODO: find the sound for missiling a teammate/missiling a player
         }
         else if (events[i]["type"] == ACTIVATE_RAPID_FIRE) {
             player = getEntityFromId(replay_data, events[i]["arguments"][0]);
             player["special_points"] -= 10;
             player["rapid_fire"] = true;
+
+            eventBox.innerHTML += `<p class="event">${player["name"]} activates rapid fire</p>\n`;
+
+            // TODO: find the sound for activating rapid fire
         }
         else if (events[i]["type"] == DEACTIVATE_RAPID_FIRE) {
             player = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -505,6 +574,8 @@ function playEvents(replay_data) {
         else if (events[i]["type"] == ACTIVATE_NUKE) {
             nuker = getEntityFromId(replay_data, events[i]["arguments"][0]);
             nuker["special_points"] -= 20;
+
+            // TODO: find the sound for activating nuke
         }
         else if (events[i]["type"] == DETONATE_NUKE) {
             nuker = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -527,6 +598,8 @@ function playEvents(replay_data) {
             }
 
             nuker["score"] += 500;
+
+            // TODO: find the sound for detonating nuke
         }
         else if (events[i]["type"] == RESUPPLY_AMMO) {
             resupplyee = getEntityFromId(replay_data, events[i]["arguments"][2]);
@@ -543,6 +616,11 @@ function playEvents(replay_data) {
             }, 8000 * get_playback_speed());
             
             resupplyee["rapid_fire"] = false;
+
+            // get random sound for resupplying Resupply.0-4.wav
+
+            sfx = Math.floor(Math.random() * 5);
+            playAudio(resupply_audio[sfx]);
         }
         else if (events[i]["type"] == RESUPPLY_LIVES) {
             resupplyee = getEntityFromId(replay_data, events[i]["arguments"][2]);
@@ -559,6 +637,11 @@ function playEvents(replay_data) {
             }, 8000 * get_playback_speed());
             
             resupplyee["rapid_fire"] = false;
+
+            // get random sound for resupplying Resupply.0-4.wav
+
+            sfx = Math.floor(Math.random() * 5);
+            playAudio(resupply_audio[sfx]);
         }
         else if (events[i]["type"] == AMMO_BOOST) {
             booster = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -573,6 +656,11 @@ function playEvents(replay_data) {
                     }
                 }
             }
+
+            // get random sound for resupplying Resupply.0-4.wav
+
+            sfx = Math.floor(Math.random() * 5);
+            playAudio(resupply_audio[sfx]);
         }
         else if (events[i]["type"] == LIFE_BOOST) {
             booster = getEntityFromId(replay_data, events[i]["arguments"][0]);
@@ -587,6 +675,11 @@ function playEvents(replay_data) {
                     }
                 }
             }
+
+            // get random sound for resupplying Resupply.0-4.wav
+
+            sfx = Math.floor(Math.random() * 5);
+            playAudio(resupply_audio[sfx]);
         }
         else if (events[i]["type"] == PENALTY) {
             penaltyee = getEntityFromId(replay_data, events[i]["arguments"][2]);
@@ -688,8 +781,6 @@ function playEvents(replay_data) {
 }
 
 function startReplay(replay_data) {
-    console.log("Starting replay");
-    
     teamsLoadingPlaceholder.style.display = "none";
     timeSlider.style.display = "block";
     replayViewer.style.display = "flex";
@@ -704,8 +795,8 @@ function restartReplay() {
         return;
     }
 
-    if (current_sound_playing != undefined) {
-        current_sound_playing.pause();
+    if (current_starting_sound_playing != undefined) {
+        current_starting_sound_playing.pause();
     }
 
     play = false;
@@ -723,8 +814,8 @@ function restartReplay() {
 function resetGame() {
     eventBox.innerHTML = "";
     event_iteration = 0;
-    fireTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";
-    earthTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p></th></tr>";
+    fireTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p><th><p>K/D</p></th></tr>";
+    earthTable.innerHTML = "<tr><th><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p><th><p>K/D</p></th></tr>";
 }
 
 function onLoad() {
