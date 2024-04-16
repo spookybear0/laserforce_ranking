@@ -96,7 +96,8 @@ class _Team:
 
 async def create_sm5_replay(game: SM5Game) -> Replay:
     game_duration = await game.get_actual_game_duration()
-    team_rosters = await get_team_rosters(await game.entity_starts.all(),
+    entity_starts = await game.entity_starts.all()
+    team_rosters = await get_team_rosters(entity_starts,
                                           await game.entity_ends.all())
 
     # Set up the teams and players.
@@ -106,6 +107,9 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
     row_index = 1
 
     teams = {}
+    entity_id_to_nonplayer_name = {
+        entity.entity_id: entity.name for entity in entity_starts if entity.entity_id[0] == "@"
+    }
 
     for team, players in team_rosters.items():
         replay_player_list = []
@@ -164,7 +168,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             for reup_timestamp in players_reup_timestamps:
                 # Find the first player with this particular timestamp. There may be multiple after a nuke. But who
                 # cares. We'll eventually get them one by one.
-                for player, player_reup_timestamp in player_reup_times:
+                for player, player_reup_timestamp in player_reup_times.items():
                     if player_reup_timestamp == reup_timestamp:
                         player_reup_times.pop(player)
                         row_changes.append(ReplayRowChange(player.row_id, player.team.css_class))
@@ -180,9 +184,9 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
         if event.type != EventType.MISS:
             for argument in event.arguments:
                 if argument[0] == "@":
-                    message += _create_entity_reference(argument, entity_id_to_player)
+                    message += _create_entity_reference(argument, entity_id_to_player, entity_id_to_nonplayer_name)
                 elif argument[0] == '#':
-                    message += _create_entity_reference(argument, entity_id_to_player)
+                    message += _create_entity_reference(argument, entity_id_to_player, entity_id_to_nonplayer_name)
                 else:
                     message += argument
 
@@ -311,7 +315,8 @@ def _add_lives(player: _Player, lives_to_add: int, cell_changes: List[ReplayCell
         row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class='eliminated_player'))
 
         # This player ain't coming back up.
-        player_reup_times.pop(player)
+        if player in player_reup_times:
+            player_reup_times.pop(player)
         return
 
 
@@ -343,7 +348,10 @@ def _create_role_image(role: IntRole) -> str:
     return f'<img src="/assets/sm5/roles/{str(role).lower()}.png" alt="{role}" width="30" height="30">'
 
 
-def _create_entity_reference(argument: str, entity_id_to_player: dict) -> str:
+def _create_entity_reference(argument: str, entity_id_to_player: dict, entity_id_to_nonplayer_name: dict) -> str:
+    if argument in entity_id_to_nonplayer_name:
+        return entity_id_to_nonplayer_name[argument]
+
     player = entity_id_to_player[argument]
     css_class = player.team.css_class
     return f'<span class="{css_class}">{player.name}</span>'

@@ -1,5 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import List
+
+
+def _escape_string(text: str) -> str:
+    return text.replace("'", "\\'")
 
 
 @dataclass
@@ -12,6 +16,9 @@ class ReplayCellChange:
     # The new value for this particular cell.
     new_value: str
 
+    def to_js_string(self):
+        return f'["{self.row_id}",{self.column},"{self.new_value}"]'
+
 
 @dataclass
 class ReplayRowChange:
@@ -20,6 +27,9 @@ class ReplayRowChange:
 
     # The new CSS class for this row.
     new_css_class: str
+
+    def to_js_string(self):
+        return f'["{self.row_id}","{self.new_css_class}"]'
 
 
 @dataclass
@@ -79,7 +89,17 @@ class Replay:
                 result += f"add_player({player.cells});\n"
 
         result += "events = [\n"
-        for events in self.events:
-            result += f"  {events.timestamp_millis},'{events.message}'"
+        for event in self.events:
+            cell_changes = [cell_change.to_js_string() for cell_change in event.cell_changes]
+            row_changes = [row_change.to_js_string() for row_change in event.row_changes]
+            result += f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{cell_changes}],[{row_changes}]],\n"
+
+        result += "];\n\n"
+
+        result += """
+            document.addEventListener("DOMContentLoaded", function() {
+                onLoad();
+            });
+            """
 
         return result
