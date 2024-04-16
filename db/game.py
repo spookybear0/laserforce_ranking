@@ -187,10 +187,16 @@ class EntityEnds(Model):
         final["score"] = self.score
         final["current_rating_mu"] = self.current_rating_mu
         final["current_rating_sigma"] = self.current_rating_sigma
-        final["current_rating"] = self.current_rating_mu - 3 * self.current_rating_sigma
+        if self.current_rating_mu and self.current_rating sigma:
+            final["current_rating"] = self.current_rating_mu - 3 * self.current_rating_sigma
+        else:
+            final["current_rating"] = None
         final["previous_rating_mu"] = self.previous_rating_mu
         final["previous_rating_sigma"] = self.previous_rating_sigma
-        final["previous_rating"] = self.previous_rating_mu - 3 * self.previous_rating_sigma
+        if self.previous_rating_mu and self.previous_rating_sigma:
+            final["previous_rating"] = self.previous_rating_mu - 3 * self.previous_rating_sigma
+        else:
+            final["previous_rating"] = None
 
         return final
     
