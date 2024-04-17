@@ -124,7 +124,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             role_details = SM5_ROLE_DETAILS[role]
 
             cells = [_create_role_image(player_info.entity_start.role), player_info.display_name, "0",
-                     str(role_details.initial_lives), str(role_details.missiles), "0", "", ""]
+                     str(role_details.initial_lives), str(role_details.missiles), "0", "0", "", ""]
             row_id = f"r{row_index}"
 
             player = _Player(lives=role_details.initial_lives, shots=role_details.shots, row_index=row_index,
@@ -137,7 +137,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             entity_id_to_player[player_info.entity_start.entity_id] = player
             players_in_team.append(player)
 
-        replay_team = ReplayTeam(name=team.name, css_class=team.css_class, players=replay_player_list)
+        replay_team = ReplayTeam(name=team.name, css_class=team.css_class, id=f"{team.element.lower()}_team", players=replay_player_list)
         replay_teams.append(replay_team)
         teams[team] = players_in_team
 
@@ -249,11 +249,13 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
 
                 _add_score(player1, 100, cell_changes)
                 _add_score(player2, -20, cell_changes)
+                _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
 
             case EventType.DAMANGED_TEAM | EventType.DOWNED_TEAM:
                 _add_score(player1, -100, cell_changes)
                 _add_score(player2, -20, cell_changes)
+                _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
 
             case EventType.ACTIVATE_RAPID_FIRE:
@@ -326,9 +328,18 @@ def _add_shots(player: _Player, shots_to_add: int, cell_changes: List[ReplayCell
     cell_changes.append(ReplayCellChange(row_id=player.row_id, column=_SHOTS_COLUMN, new_value=str(player.shots)))
 
 
+def _increase_times_shot_others(player: _Player, cell_changes: List[ReplayCellChange]):
+    player.times_shot_others += 1
+    _update_kd(player, cell_changes)
+
+
 def _increase_times_got_shot(player: _Player, cell_changes: List[ReplayCellChange]):
     player.times_got_shot += 1
-    kd_ratio = player.times_shot_others / player.times_got_shot
+    _update_kd(player, cell_changes)
+
+
+def _update_kd(player: _Player, cell_changes: List[ReplayCellChange]):
+    kd_ratio = player.times_shot_others / player.times_got_shot if player.times_got_shot > 0 else 0.0
     cell_changes.append(ReplayCellChange(row_id=player.row_id, column=_KD_COLUMN, new_value="%.02f" % kd_ratio))
 
 

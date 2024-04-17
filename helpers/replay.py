@@ -62,6 +62,9 @@ class ReplayTeam:
     # CSS class to use for the team.
     css_class: str
 
+    # ID for the table.
+    id: str
+
     # A list of all players.
     players: List[ReplayPlayer]
 
@@ -83,22 +86,23 @@ class Replay:
             result += f"add_column('{column}');\n"
 
         for team in self.teams:
-            result += f"add_team('{team.name}');\n"
+            result += f"add_team('{team.name}', '{team.id}', '{team.css_class}');\n"
 
             for player in team.players:
-                result += f"add_player({player.cells});\n"
+                cells = [_escape_string(cell) for cell in player.cells]
+                result += f"add_player('{team.id}', '{player.row_id}', {cells});\n"
 
         result += "events = [\n"
         for event in self.events:
             cell_changes = [cell_change.to_js_string() for cell_change in event.cell_changes]
             row_changes = [row_change.to_js_string() for row_change in event.row_changes]
-            result += f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{cell_changes}],[{row_changes}]],\n"
+            result += f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{','.join(cell_changes)}],[{','.join(row_changes)}]],\n"
 
         result += "];\n\n"
 
         result += """
             document.addEventListener("DOMContentLoaded", function() {
-                onLoad();
+                startReplay();
             });
             """
 

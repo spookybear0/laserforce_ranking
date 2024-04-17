@@ -15,6 +15,13 @@ function playDownedAudio() {
     return playAudio(downed_audio[sfx]);
 }
 
+
+start_audio = [new Audio("/assets/sm5/audio/Start.0.wav"), new Audio("/assets/sm5/audio/Start.1.wav"), new Audio("/assets/sm5/audio/Start.2.wav"), new Audio("/assets/sm5/audio/Start.3.wav")];
+alarm_start_audio = new Audio("/assets/sm5/audio/Effect/General Quarters.wav");
+resupply_audio = [new Audio("/assets/sm5/audio/Effect/Resupply.0.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.1.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.2.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.3.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.4.wav")];
+downed_audio = [new Audio("/assets/sm5/audio/Effect/Scream.0.wav"), new Audio("/assets/sm5/audio/Effect/Scream.1.wav"), new Audio("/assets/sm5/audio/Effect/Scream.2.wav"), new Audio("/assets/sm5/audio/Effect/Shot.0.wav"), new Audio("/assets/sm5/audio/Effect/Shot.1.wav")];
+base_destroyed_audio = new Audio("/assets/sm5/audio/Effect/Boom.wav");
+
 current_starting_sound_playing = undefined;
 
 started = false;
@@ -49,7 +56,6 @@ function getCurrentGameTimeMillis() {
 }
 
 function finishedPlayingIntro() {
-    console
     if (current_starting_sound_playing != audio || restarted || cancelled_starting_sound) {
         return;
     }
@@ -118,56 +124,46 @@ function add_column(column_name) {
 }
 
 function add_team(team_name, team_id, team_css_class) {
-    teams.innerHTML +=
-        "<table>" +
-        "<tr><th ><p>Role</p></th><th><p>Codename</p></th><th><p>Score</p></th><th><p>Lives</p></th><th><p>Shots</p></th><th><p>Missiles</p></th><th><p>Spec</p></th><th><p>Accuracy</p><th><p>K/D</p></th></tr>" +
-        "</table>";
+
+    let team_div = document.createElement("div");
+    team_div.id = team_id;
+    team_div.className = "team";
+
+    let team_score = document.createElement("h2");
+    team_score.style = "font-size: 20px;";
+    team_score.className = `team_score ${team_css_class}`;
+    team_score.id = `${team_id}_score`;
+    team_score.innerHTML = `${team_name}: 0`;
+    team_div.appendChild(team_score);
+
+    let team_table = document.createElement("table");
+    team_table.id = `${team_id}_table`;
+
+    let header_row = document.createElement("tr");
+
+    columns.forEach((column) => {
+        let header = document.createElement("th");
+        header.innerHTML += `<th><p>${column}</p></th>`;
+        header_row.appendChild(header);
+    });
+
+    team_table.appendChild(header_row);
+    team_div.appendChild(team_table);
+    teams.appendChild(team_div);
 }
 
-function add_player(player_name) {
-    row = document.createElement("tr");
+function add_player(team_id, row_id, cells) {
+    let row = document.createElement("tr");
+    row.id = row_id;
 
-    row.innerHTML =
-    `
-    `;
+    cells.forEach((column, index) => {
+        let cell = document.createElement("td");
+        cell.id = `${row_id}_${index}`;
+        cell.innerHTML = column;
+        row.appendChild(cell);
+    });
 
-//    table.appendChild(row);
-
-}
-
-function setupGame() {
-    // loop over all players in enitity_start
-    return;
-
-    row = document.createElement("tr");
-
-    row.innerHTML =
-    `
-    <td><img src="/assets/sm5/roles/${defaults["name"]}.png" alt="role image" width="30" height="30"></td>
-    <td><p class="player_codename" style="color: ${team_color_name};">${player["name"]}</p></td>
-    <td><p class="player_score">0</p></td>
-    <td><p class="player_lives">${defaults["lives"]}</p></td>
-    <td><p class="player_shots">${defaults["shots"]}</p></td>
-    <td><p class="player_missiles">${defaults["missiles"]}</p></td>
-    <td><p class="player_special_points">0</p></td>
-    <td><p class="player_accuracy">0.00%</p></td>
-    <td><p class="player_kd">0.00</p></td>
-    `;
-
-    table.appendChild(row);
-
-    player["lives"] = defaults["lives"];
-    player["shots"] = defaults["shots"];
-    player["missiles"] = defaults["missiles"];
-    player["downed"] = false;
-    player["special_points"] = 0;
-    player["shots_hit"] = 0;
-    player["shots_fired"] = 0;
-    player["score"] = 0;
-    player["rapid_fire"] = false;
-    player["times_shot"] = 0;
-    player["row"] = row;
-    player["table"] = table;
+    document.getElementById(`${team_id}_table`).appendChild(row);
 }
 
 function sleep(ms) {
@@ -232,6 +228,23 @@ function playEvents() {
             eventBox.innerHTML += `<div class="event">${message}</div>\n`;
         }
 
+        // Handle all cell changes.
+        event[2].forEach((cell_change) => {
+            row_id = cell_change[0];
+            column = cell_change[1];
+            new_value = cell_change[2];
+
+            document.getElementById(`${row_id}_${column}`).innerHTML = new_value;
+        });
+
+        // Handle all row changes.
+        event[3].forEach((row_change) => {
+            row_id = row_change[0];
+            css_class = row_change[1];
+
+            document.getElementById(row_id).className = css_class;
+        });
+
         eventBox.scrollTop = eventBox.scrollHeight;
     }
 }
@@ -240,8 +253,6 @@ function startReplay() {
     teamsLoadingPlaceholder.style.display = "none";
     timeSlider.style.display = "block";
     replayViewer.style.display = "flex";
-
-    setupGame();
 }
 
 function restartReplay() {
@@ -287,7 +298,6 @@ function onTimeChange(seconds) {
     // If the new time is earlier than before, we need to reevaluate everything.
     if (seconds * 1000 < base_game_time_millis) {
         resetGame();
-        setupGame();
     }
 
     base_game_time_millis = seconds * 1000
