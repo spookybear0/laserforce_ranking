@@ -5,7 +5,7 @@ from db.sm5 import SM5Game
 from db.types import IntRole, EventType, Team
 from helpers.gamehelper import get_team_rosters
 from helpers.replay import Replay, ReplayTeam, ReplayPlayer, ReplayEvent, ReplayCellChange, \
-    ReplayRowChange
+    ReplayRowChange, ReplaySound
 from helpers.sm5helper import SM5_ROLE_DETAILS, Sm5RoleDetails
 
 
@@ -88,6 +88,14 @@ _EVENTS_DOWNING_PLAYER = {
     EventType.RESUPPLY_AMMO,
 }
 
+_START_AUDIO = 0
+_ALARM_START_AUDIO = 1
+_RESUPPLY_AUDIO = 2
+_DOWNED_AUDIO = 3
+_BASE_DESTROYED_AUDIO = 4
+
+_AUDIO_PREFIX = "/assets/sm5/audio/"
+
 
 @dataclass
 class _Team:
@@ -107,6 +115,8 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
     row_index = 1
 
     teams = {}
+    team_scores = {}
+
     entity_id_to_nonplayer_name = {
         entity.entity_id: entity.name for entity in entity_starts if entity.entity_id[0] == "@"
     }
@@ -114,6 +124,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
     for team, players in team_rosters.items():
         replay_player_list = []
         players_in_team = []
+        team_scores[team] = 0
 
         for player_info in players:
             if player_info.entity_start.role not in SM5_ROLE_DETAILS:
@@ -137,7 +148,8 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             entity_id_to_player[player_info.entity_start.entity_id] = player
             players_in_team.append(player)
 
-        replay_team = ReplayTeam(name=team.name, css_class=team.css_class, id=f"{team.element.lower()}_team", players=replay_player_list)
+        replay_team = ReplayTeam(name=team.name, css_class=team.css_class, id=f"{team.element.lower()}_team",
+                                 players=replay_player_list)
         replay_teams.append(replay_team)
         teams[team] = players_in_team
 
@@ -146,10 +158,32 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
     # Map from a player and the timestamp at which the player will be back up. The key is the _Player object.
     player_reup_times = {}
 
+    start_audio = ReplaySound(
+        [f"{_AUDIO_PREFIX}Start.0.wav", f"{_AUDIO_PREFIX}Start.1.wav", f"{_AUDIO_PREFIX}Start.2.wav",
+         f"{_AUDIO_PREFIX}Start.3.wav"])
+    alarm_start_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/General Quarters.wav"])
+    resupply_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Resupply.0.wav", f"{_AUDIO_PREFIX}Effect/Resupply.1.wav",
+                                  f"{_AUDIO_PREFIX}Effect/Resupply.2.wav", f"{_AUDIO_PREFIX}Effect/Resupply.3.wav",
+                                  f"{_AUDIO_PREFIX}Effect/Resupply.4.wav"])
+    downed_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Scream.0.wav", f"{_AUDIO_PREFIX}Effect/Scream.1.wav",
+                                f"{_AUDIO_PREFIX}Effect/Scream.2.wav", f"{_AUDIO_PREFIX}Effect/Shot.0.wav",
+                                f"{_AUDIO_PREFIX}Effect/Shot.1.wav"])
+    base_destroyed_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Boom.wav"])
+
+    sound_assets = [
+        start_audio,
+        alarm_start_audio,
+        resupply_audio,
+        downed_audio,
+        base_destroyed_audio,
+    ]
+
     # Now let's walk through the events one by one and translate them into UI events.
     for event in await game.events.all():
 
         timestamp = event.time
+        old_team_scores = team_scores.copy()
+        sounds = []
 
         # Before we process the event, let's see if there's a player coming back up. Look up all the timestamps when
         # someone is coming back up.
@@ -175,7 +209,8 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                         break
 
                 # Create a dummy event to update the UI.
-                events.append(ReplayEvent(reup_timestamp, "", cell_changes=[], row_changes=row_changes))
+                events.append(ReplayEvent(reup_timestamp, "", cell_changes=[], row_changes=row_changes, team_scores=[],
+                                          sounds=[]))
 
         # Translate the arguments of the event into HTML if they reference entities.
         message = ""
@@ -230,33 +265,38 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
         match event.type:
             case EventType.RESUPPLY_LIVES:
                 _add_lives(player2, player2.role_details.lives_resupply, cell_changes, row_changes, player_reup_times)
+                sounds.append(resupply_audio)
 
             case EventType.RESUPPLY_AMMO:
                 _add_shots(player2, player2.role_details.shots_resupply, cell_changes)
+                sounds.append(resupply_audio)
 
             case EventType.ACTIVATE_RAPID_FIRE:
                 _add_special_points(player1, -10, cell_changes)
 
-            case EventType.DESTROY_BASE:
-                _add_score(player1, 1001, cell_changes)
+            case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY:
+                _add_score(player1, 1001, cell_changes, team_scores)
 
                 if player1.role != IntRole.HEAVY and not player1.rapid_fire:
                     _add_special_points(player1, 5, cell_changes)
+                sounds.append(base_destroyed_audio)
 
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
                 if player1.role != IntRole.HEAVY and not player1.rapid_fire:
                     _add_special_points(player1, 1, cell_changes)
 
-                _add_score(player1, 100, cell_changes)
-                _add_score(player2, -20, cell_changes)
+                _add_score(player1, 100, cell_changes, team_scores)
+                _add_score(player2, -20, cell_changes, team_scores)
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
+                sounds.append(downed_audio)
 
             case EventType.DAMANGED_TEAM | EventType.DOWNED_TEAM:
-                _add_score(player1, -100, cell_changes)
-                _add_score(player2, -20, cell_changes)
+                _add_score(player1, -100, cell_changes, team_scores)
+                _add_score(player2, -20, cell_changes, team_scores)
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
+                sounds.append(downed_audio)
 
             case EventType.ACTIVATE_RAPID_FIRE:
                 player1.rapid_fire = True
@@ -272,27 +312,37 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 for player in teams[player1.team]:
                     if not player.downed:
                         _add_shots(player, player.role_details.shots_resupply, cell_changes)
+                sounds.append(resupply_audio)
 
             case EventType.LIFE_BOOST:
                 for player in teams[player1.team]:
                     if not player.downed:
                         _add_lives(player, player.role_details.lives_resupply, cell_changes, row_changes,
                                    player_reup_times)
+                sounds.append(resupply_audio)
 
             case EventType.PENALTY:
-                _add_score(player1, -1000, cell_changes)
+                _add_score(player1, -1000, cell_changes, team_scores)
 
         # Handle a player being down.
         if event.type in _EVENTS_DOWNING_PLAYER:
             _down_player(player2, row_changes, event.time, player_reup_times)
 
+        if team_scores == old_team_scores:
+            new_team_scores = []
+        else:
+            new_team_scores = [
+                team_scores[team] for team in team_rosters.keys()
+            ]
+
         events.append(ReplayEvent(timestamp_millis=timestamp, message=message, cell_changes=cell_changes,
-                                  row_changes=row_changes))
+                                  row_changes=row_changes, team_scores=new_team_scores, sounds=sounds))
 
     return Replay(
         events=events,
         teams=replay_teams,
-        column_headers=column_headers
+        column_headers=column_headers,
+        sounds=sound_assets,
     )
 
 
@@ -349,10 +399,12 @@ def _add_special_points(player: _Player, points_to_add: int, cell_changes: List[
         ReplayCellChange(row_id=player.row_id, column=_SPEC_COLUMN, new_value=str(player.special_points)))
 
 
-def _add_score(player: _Player, points_to_add: int, cell_changes: List[ReplayCellChange]):
+def _add_score(player: _Player, points_to_add: int, cell_changes: List[ReplayCellChange], team_scores: Dict[Team, int]):
     player.score += points_to_add
     cell_changes.append(
         ReplayCellChange(row_id=player.row_id, column=_SCORE_COLUMN, new_value=str(player.score)))
+
+    team_scores[player.team] += points_to_add
 
 
 def _create_role_image(role: IntRole) -> str:

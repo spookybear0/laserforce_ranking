@@ -33,6 +33,15 @@ class ReplayRowChange:
 
 
 @dataclass
+class ReplaySound:
+    # List of possible assets to use for this sound.
+    asset_urls: List[str]
+
+    # ID to identify this sound.
+    id: int = 0
+
+
+@dataclass
 class ReplayEvent:
     # The time at which this event happened.
     timestamp_millis: int
@@ -40,9 +49,14 @@ class ReplayEvent:
     # The message to show in the scrolling event box. With HTML formatting.
     message: str
 
+    # Scores for all teams, or empty if nothing has changed.
+    team_scores: List[int]
+
     cell_changes: List[ReplayCellChange]
 
     row_changes: List[ReplayRowChange]
+
+    sounds: List[ReplaySound]
 
 
 @dataclass
@@ -75,6 +89,8 @@ class Replay:
 
     teams: List[ReplayTeam]
 
+    sounds: List[ReplaySound]
+
     # Names of the columns in each team table.
     column_headers: List[str]
 
@@ -84,6 +100,9 @@ class Replay:
 
         for column in self.column_headers:
             result += f"add_column('{column}');\n"
+
+        for sound in self.sounds:
+            result += f"register_sound({sound.id}, {sound.asset_urls});\n"
 
         for team in self.teams:
             result += f"add_team('{team.name}', '{team.id}', '{team.css_class}');\n"
@@ -96,7 +115,8 @@ class Replay:
         for event in self.events:
             cell_changes = [cell_change.to_js_string() for cell_change in event.cell_changes]
             row_changes = [row_change.to_js_string() for row_change in event.row_changes]
-            result += f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{','.join(cell_changes)}],[{','.join(row_changes)}]],\n"
+            sound_ids = [sound.id for sound in event.sounds]
+            result += f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{','.join(cell_changes)}],[{','.join(row_changes)}],{event.team_scores},{sound_ids}],\n"
 
         result += "];\n\n"
 

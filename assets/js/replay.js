@@ -33,6 +33,8 @@ recalculating = false; // for when we're mass recalculating and don't want to pl
 playback_speed = 1.0;
 
 columns = [];
+team_names = [];
+team_ids = [];
 
 // The timestamp (wall clock) when we last started to play back or change the playback settings.
 base_timestamp = 0;
@@ -42,6 +44,9 @@ base_game_time_millis = 0;
 
 // The current time being shown in the time label, in seconds.
 time_label_seconds = 0;
+
+// Sound IDs and all Audio objects for them.
+sounds = {};
 
 /* Returns the time in the game (in milliseconds) that's currently active. */
 function getCurrentGameTimeMillis() {
@@ -136,6 +141,9 @@ function add_team(team_name, team_id, team_css_class) {
     team_score.innerHTML = `${team_name}: 0`;
     team_div.appendChild(team_score);
 
+    team_names.push(team_name);
+    team_ids.push(team_id);
+
     let team_table = document.createElement("table");
     team_table.id = `${team_id}_table`;
 
@@ -150,6 +158,27 @@ function add_team(team_name, team_id, team_css_class) {
     team_table.appendChild(header_row);
     team_div.appendChild(team_table);
     teams.appendChild(team_div);
+}
+
+function register_sound(sound_id, asset_urls) {
+    sound_objects = [];
+
+    asset_urls.forEach((asset_url) => {
+        sound_objects.push(new Audio(asset_url));
+    });
+
+    sounds[sound_id] = sound_objects;
+}
+
+function play_sound(sound_id) {
+    sound_assets = sounds[sound_id];
+    index = Math.floor(Math.random() * sound_assets.length);
+    audio = sound_assets[index];
+
+    audio.volume = 0.5;
+    if (!recalculating) {
+        audio.play();
+    }
 }
 
 function add_player(team_id, row_id, cells) {
@@ -243,6 +272,14 @@ function playEvents() {
             css_class = row_change[1];
 
             document.getElementById(row_id).className = css_class;
+        });
+
+        event[4].forEach((team_score, index) => {
+            document.getElementById(`${team_ids[index]}_score`).innerHTML = `${team_names[index]} ${team_score}`;
+        });
+
+        event[5].forEach((sound_id) => {
+            play_sound(sound_id);
         });
 
         eventBox.scrollTop = eventBox.scrollHeight;
