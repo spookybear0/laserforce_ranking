@@ -111,6 +111,21 @@ class Replay:
                 cells = [_escape_string(cell) for cell in player.cells]
                 result += f"add_player('{team.id}', '{player.row_id}', {cells});\n"
 
+        result += "function reset_players() {\n"
+        result += "  player_values = {\n"
+
+        for team in self.teams:
+            for player in team.players:
+                for index, cell in enumerate(player.cells):
+                    result += f"    '{player.row_id}_{index}': '{_escape_string(cell)}',\n"
+        result += """
+          };
+          Object.entries(player_values).forEach(([cell, value]) => {
+            document.getElementById(cell).innerHTML = value;
+          });
+        }
+        """
+
         result += "events = [\n"
         for event in self.events:
             cell_changes = [cell_change.to_js_string() for cell_change in event.cell_changes]
