@@ -69,6 +69,7 @@ function finishedPlayingIntro() {
     playButton.innerHTML = "Pause";
     started = true;
     base_timestamp = new Date().getTime();
+    current_starting_sound_playing = undefined;
 
     // play the game start sfx
     playAudio(alarm_start_audio);
@@ -89,7 +90,7 @@ function playPause() {
 
         restarted = false;
         if (current_starting_sound_playing != undefined) {
-            restartReplay();
+            resetGame();
             restarted = false;
             finishedPlayingIntro();
             cancelled_starting_sound = true; // cancel the callback for the starting sound
@@ -275,7 +276,7 @@ function playEvents() {
         });
 
         event[4].forEach((team_score, index) => {
-            document.getElementById(`${team_ids[index]}_score`).innerHTML = `${team_names[index]} ${team_score}`;
+            document.getElementById(`${team_ids[index]}_score`).innerHTML = `${team_names[index]}: ${team_score}`;
         });
 
         event[5].forEach((sound_id) => {
