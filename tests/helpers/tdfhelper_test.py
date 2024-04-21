@@ -35,18 +35,21 @@ class TestTdfHelper(unittest.IsolatedAsyncioTestCase):
                 "name": "Fire Team",
                 "color_enum": 11,
                 "color_name": "Fire",
+                "real_color_name": "Red",
             },
             {
                 "index": 1,
                 "name": "Earth Team",
                 "color_enum": 13,
                 "color_name": "Earth",
+                "real_color_name": "Green",
             },
             {
                 "index": 2,
                 "name": "Neutral",
                 "color_enum": 0,
                 "color_name": "None",
+                "real_color_name": "None",
             },
         ], teams)
 

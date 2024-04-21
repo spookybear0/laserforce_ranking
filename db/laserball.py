@@ -291,9 +291,9 @@ class LaserballGame(Model):
         final["arena"] = self.arena
         final["mission_type"] = self.mission_type
         final["mission_name"] = self.mission_name
-        final["start_time"] = str(self.start_time)
+        final["start_time"] = self.start_time.timestamp()
         final["mission_duration"] = self.mission_duration
-        final["log_time"] = str(self.log_time)
+        final["log_time"] = self.log_time.timestamp()
 
         if full:
             final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
@@ -306,7 +306,7 @@ class LaserballGame(Model):
         if player_stats is not None:
             final["player_entity_start"] = await (await self.get_entity_start_from_name(player_stats.codename)).to_dict()
             final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
-            final["player_sm5_stats"] = await (await self.get_laserball_stat_from_name(player_stats.codename)).to_dict()
+            final["player_laserball_stats"] = await (await self.get_laserball_stat_from_name(player_stats.codename)).to_dict()
 
         return final
     
@@ -361,5 +361,7 @@ class LaserballStats(Model):
         final["times_stolen"] = self.times_stolen
         final["times_blocked"] = self.times_blocked
         final["passes_received"] = self.passes_received
+        final["mvp_points"] = self.mvp_points
+        final["score"] = self.score
 
         return final
