@@ -34,7 +34,8 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
 
         expected = Replay(events=[ReplayEvent(timestamp_millis=2000, message='Indy zaps Miles', team_scores=[100, -20],
                                               cell_changes=[ReplayCellChange(row_id='r1', column=4, new_value='29'),
-                                                            ReplayCellChange(row_id='r1', column=7, new_value='100.00'),
+                                                            ReplayCellChange(row_id='r1', column=7,
+                                                                             new_value='100.00%'),
                                                             ReplayCellChange(row_id='r3', column=3, new_value='14'),
                                                             ReplayCellChange(row_id='r1', column=6, new_value='1'),
                                                             ReplayCellChange(row_id='r1', column=2, new_value='100'),
@@ -48,7 +49,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                                               '/assets/sm5/audio/Effect/Scream.2.wav',
                                                                               '/assets/sm5/audio/Effect/Shot.0.wav',
                                                                               '/assets/sm5/audio/Effect/Shot.1.wav'],
-                                                                  id=0)]),
+                                                                  id=3)]),
                                   ReplayEvent(timestamp_millis=2500, message='LoggedIn resupplies Indy', team_scores=[],
                                               cell_changes=[ReplayCellChange(row_id='r1', column=3, new_value='19')],
                                               row_changes=[ReplayRowChange(row_id='r1', new_css_class='fire-team-dim')],
@@ -57,7 +58,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                                               '/assets/sm5/audio/Effect/Resupply.2.wav',
                                                                               '/assets/sm5/audio/Effect/Resupply.3.wav',
                                                                               '/assets/sm5/audio/Effect/Resupply.4.wav'],
-                                                                  id=0)])], teams=[
+                                                                  id=2)])], teams=[
             ReplayTeam(name='Fire Team', css_class='fire-team', id='fire_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/commander.png" alt="Commander" width="30" height="30">', 'Indy',
                        '0', '15', '5', '0', '0', '', ''], row_id='r1'), ReplayPlayer(
@@ -68,14 +69,14 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                        '0', '0', '0', '', ''], row_id='r3')])], sounds=[ReplaySound(
             asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
                         '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0), ReplaySound(
-            asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=0), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1), ReplaySound(
             asset_urls=['/assets/sm5/audio/Effect/Resupply.0.wav', '/assets/sm5/audio/Effect/Resupply.1.wav',
                         '/assets/sm5/audio/Effect/Resupply.2.wav', '/assets/sm5/audio/Effect/Resupply.3.wav',
-                        '/assets/sm5/audio/Effect/Resupply.4.wav'], id=0), ReplaySound(
+                        '/assets/sm5/audio/Effect/Resupply.4.wav'], id=2), ReplaySound(
             asset_urls=['/assets/sm5/audio/Effect/Scream.0.wav', '/assets/sm5/audio/Effect/Scream.1.wav',
                         '/assets/sm5/audio/Effect/Scream.2.wav', '/assets/sm5/audio/Effect/Shot.0.wav',
-                        '/assets/sm5/audio/Effect/Shot.1.wav'], id=0), ReplaySound(
-            asset_urls=['/assets/sm5/audio/Effect/Boom.wav'], id=0)],
+                        '/assets/sm5/audio/Effect/Shot.1.wav'], id=3), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Effect/Boom.wav'], id=4)],
                           column_headers=['Role', 'Codename', 'Score', 'Lives', 'Shots', 'Missiles', 'Spec', 'Accuracy',
                                           'K/D'])
 

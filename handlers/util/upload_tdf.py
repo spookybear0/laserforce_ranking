@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from sanic import Request, exceptions, response
 from shared import app
 from utils import get_post
@@ -25,14 +27,35 @@ async def auto_upload(request: Request) -> str:
         raise exceptions.BadRequest()
 
     if type == "sm5":
-        open("./sm5_tdf/" + file.name, "wb").write(file.body)
-        await parse_sm5_game("./sm5_tdf/" + file.name)
+        target_path = "./sm5_tdf/" + file.name
+        _create_file_from_request(file, target_path)
+        await parse_sm5_game(target_path)
     elif type == "laserball":
-        open("./laserball_tdf/" + file.name, "wb").write(file.body)
-        await parse_laserball_game("./laserball_tdf/" + file.name)
+        target_path = "./laserball_tdf/" + file.name
+        _create_file_from_request(file, target_path)
+        await parse_laserball_game(target_path)
     else:
         raise exceptions.BadRequest()
     
     logger.info("Uploaded TDF successfully!")
 
     return response.text("Uploaded!")
+
+
+def _create_file_from_request(request_file, target_path: str):
+    """Reads the data from a request's file and stores it a local file.
+
+    Creates the path structure leading up to the target path if it doesn't
+    exist already.
+
+    Args:
+        request_file: The file from the HTTP request.
+        target_path: The path to store this file in. Can be relative.
+    """
+    filepath = Path(target_path)
+
+    # Create the directory if it doesn't exist already.
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
+    # Copy the entire contents of the request file into the target file.
+    open(target_path, "wb").write(request_file.body)

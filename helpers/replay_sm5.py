@@ -160,15 +160,15 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
 
     start_audio = ReplaySound(
         [f"{_AUDIO_PREFIX}Start.0.wav", f"{_AUDIO_PREFIX}Start.1.wav", f"{_AUDIO_PREFIX}Start.2.wav",
-         f"{_AUDIO_PREFIX}Start.3.wav"])
-    alarm_start_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/General Quarters.wav"])
+         f"{_AUDIO_PREFIX}Start.3.wav"], _START_AUDIO)
+    alarm_start_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/General Quarters.wav"], _ALARM_START_AUDIO)
     resupply_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Resupply.0.wav", f"{_AUDIO_PREFIX}Effect/Resupply.1.wav",
                                   f"{_AUDIO_PREFIX}Effect/Resupply.2.wav", f"{_AUDIO_PREFIX}Effect/Resupply.3.wav",
-                                  f"{_AUDIO_PREFIX}Effect/Resupply.4.wav"])
+                                  f"{_AUDIO_PREFIX}Effect/Resupply.4.wav"], _RESUPPLY_AUDIO)
     downed_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Scream.0.wav", f"{_AUDIO_PREFIX}Effect/Scream.1.wav",
                                 f"{_AUDIO_PREFIX}Effect/Scream.2.wav", f"{_AUDIO_PREFIX}Effect/Shot.0.wav",
-                                f"{_AUDIO_PREFIX}Effect/Shot.1.wav"])
-    base_destroyed_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Boom.wav"])
+                                f"{_AUDIO_PREFIX}Effect/Shot.1.wav"], _DOWNED_AUDIO)
+    base_destroyed_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Boom.wav"], _BASE_DESTROYED_AUDIO)
 
     sound_assets = [
         start_audio,
@@ -249,7 +249,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
 
             # Recompute accuracy.
             cell_changes.append(ReplayCellChange(row_id=player1.row_id, column=_ACCURACY_COLUMN,
-                                                 new_value="%.2f" % (
+                                                 new_value="%.2f%%" % (
                                                          player1.total_shots_hit * 100 / player1.total_shots_fired)))
 
         # Handle losing lives.
