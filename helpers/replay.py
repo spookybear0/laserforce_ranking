@@ -111,7 +111,7 @@ class Replay:
                 cells = [_escape_string(cell) for cell in player.cells]
                 result += f"add_player('{team.id}', '{player.row_id}', {cells});\n"
 
-        result += "function reset_players() {\n"
+        result += "function resetPlayers() {\n"
         result += "  player_values = {\n"
 
         for team in self.teams:

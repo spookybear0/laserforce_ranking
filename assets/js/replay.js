@@ -307,9 +307,7 @@ function restartReplay() {
     // If true, we're not playing back, but we're paused and just want to evaluate the game at a different time.
     scrub = false;
 
-    eventBox.innerHTML = "";
-    event_iteration = 0;
-    teams.innerHTML = "";
+    resetGame();
     playButton.innerHTML = "Play";
     startReplay();
 }
@@ -317,7 +315,7 @@ function restartReplay() {
 function resetGame() {
     eventBox.innerHTML = "";
     event_iteration = 0;
-    reset_players();
+    resetPlayers();
 }
 
 function onLoad() {
