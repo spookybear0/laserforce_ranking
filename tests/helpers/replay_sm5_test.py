@@ -49,7 +49,8 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                                               '/assets/sm5/audio/Effect/Scream.2.wav',
                                                                               '/assets/sm5/audio/Effect/Shot.0.wav',
                                                                               '/assets/sm5/audio/Effect/Shot.1.wav'],
-                                                                  id=3)]),
+                                                                  id=3, priority=0, required=False)],
+                                              sound_stereo_balance=0.5),
                                   ReplayEvent(timestamp_millis=2500, message='LoggedIn resupplies Indy', team_scores=[],
                                               cell_changes=[ReplayCellChange(row_id='r1', column=3, new_value='19')],
                                               row_changes=[ReplayRowChange(row_id='r1', new_css_class='fire-team-dim')],
@@ -58,7 +59,8 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                                               '/assets/sm5/audio/Effect/Resupply.2.wav',
                                                                               '/assets/sm5/audio/Effect/Resupply.3.wav',
                                                                               '/assets/sm5/audio/Effect/Resupply.4.wav'],
-                                                                  id=2)])], teams=[
+                                                                  id=2, priority=0, required=False)],
+                                              sound_stereo_balance=-0.5)], teams=[
             ReplayTeam(name='Fire Team', css_class='fire-team', id='fire_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/commander.png" alt="Commander" width="30" height="30">', 'Indy',
                        '0', '15', '5', '0', '0', '', ''], row_id='r1'), ReplayPlayer(
@@ -68,15 +70,22 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                 cells=['<img src="/assets/sm5/roles/scout.png" alt="Scout" width="30" height="30">', 'Miles', '0', '15',
                        '0', '0', '0', '', ''], row_id='r3')])], sounds=[ReplaySound(
             asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
-                        '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0), ReplaySound(
-            asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1), ReplaySound(
+                        '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0, priority=2,
+            required=True), ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1, priority=1,
+                                        required=False), ReplaySound(
             asset_urls=['/assets/sm5/audio/Effect/Resupply.0.wav', '/assets/sm5/audio/Effect/Resupply.1.wav',
                         '/assets/sm5/audio/Effect/Resupply.2.wav', '/assets/sm5/audio/Effect/Resupply.3.wav',
-                        '/assets/sm5/audio/Effect/Resupply.4.wav'], id=2), ReplaySound(
+                        '/assets/sm5/audio/Effect/Resupply.4.wav'], id=2, priority=0, required=False), ReplaySound(
             asset_urls=['/assets/sm5/audio/Effect/Scream.0.wav', '/assets/sm5/audio/Effect/Scream.1.wav',
                         '/assets/sm5/audio/Effect/Scream.2.wav', '/assets/sm5/audio/Effect/Shot.0.wav',
-                        '/assets/sm5/audio/Effect/Shot.1.wav'], id=3), ReplaySound(
-            asset_urls=['/assets/sm5/audio/Effect/Boom.wav'], id=4)],
+                        '/assets/sm5/audio/Effect/Shot.1.wav'], id=3, priority=0, required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Effect/Boom.wav'], id=4, priority=0, required=False)],
+                          intro_sound=ReplaySound(
+                              asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
+                                          '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0,
+                              priority=2, required=True),
+                          start_sound=ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1,
+                                                  priority=1, required=False),
                           column_headers=['Role', 'Codename', 'Score', 'Lives', 'Shots', 'Missiles', 'Spec', 'Accuracy',
                                           'K/D'])
 

@@ -116,15 +116,23 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
 
     teams = {}
     team_scores = {}
+    team_sound_balance = {}
 
     entity_id_to_nonplayer_name = {
         entity.entity_id: entity.name for entity in entity_starts if entity.entity_id[0] == "@"
     }
 
+    sound_balance = -0.5
+
     for team, players in team_rosters.items():
         replay_player_list = []
         players_in_team = []
         team_scores[team] = 0
+        team_sound_balance[team] = sound_balance
+        sound_balance += 1.0
+
+        if sound_balance > 1.0:
+            sound_balance -= 2.0
 
         for player_info in players:
             if player_info.entity_start.role not in SM5_ROLE_DETAILS:
@@ -160,8 +168,8 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
 
     start_audio = ReplaySound(
         [f"{_AUDIO_PREFIX}Start.0.wav", f"{_AUDIO_PREFIX}Start.1.wav", f"{_AUDIO_PREFIX}Start.2.wav",
-         f"{_AUDIO_PREFIX}Start.3.wav"], _START_AUDIO)
-    alarm_start_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/General Quarters.wav"], _ALARM_START_AUDIO)
+         f"{_AUDIO_PREFIX}Start.3.wav"], _START_AUDIO, priority=2, required=True)
+    alarm_start_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/General Quarters.wav"], _ALARM_START_AUDIO, priority=1)
     resupply_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Resupply.0.wav", f"{_AUDIO_PREFIX}Effect/Resupply.1.wav",
                                   f"{_AUDIO_PREFIX}Effect/Resupply.2.wav", f"{_AUDIO_PREFIX}Effect/Resupply.3.wav",
                                   f"{_AUDIO_PREFIX}Effect/Resupply.4.wav"], _RESUPPLY_AUDIO)
@@ -184,6 +192,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
         timestamp = event.time
         old_team_scores = team_scores.copy()
         sounds = []
+        stereo_balance = 0.0
 
         # Before we process the event, let's see if there's a player coming back up. Look up all the timestamps when
         # someone is coming back up.
@@ -266,13 +275,17 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             case EventType.RESUPPLY_LIVES:
                 _add_lives(player2, player2.role_details.lives_resupply, cell_changes, row_changes, player_reup_times)
                 sounds.append(resupply_audio)
+                stereo_balance = team_sound_balance[player2.team]
 
             case EventType.RESUPPLY_AMMO:
                 _add_shots(player2, player2.role_details.shots_resupply, cell_changes)
                 sounds.append(resupply_audio)
+                stereo_balance = team_sound_balance[player2.team]
 
             case EventType.ACTIVATE_RAPID_FIRE:
+                player1.rapid_fire = True
                 _add_special_points(player1, -10, cell_changes)
+                stereo_balance = team_sound_balance[player1.team]
 
             case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY:
                 _add_score(player1, 1001, cell_changes, team_scores)
@@ -280,6 +293,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 if player1.role != IntRole.HEAVY and not player1.rapid_fire:
                     _add_special_points(player1, 5, cell_changes)
                 sounds.append(base_destroyed_audio)
+                stereo_balance = team_sound_balance[player1.team]
 
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
                 if player1.role != IntRole.HEAVY and not player1.rapid_fire:
@@ -289,6 +303,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 _add_score(player2, -20, cell_changes, team_scores)
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
+                stereo_balance = team_sound_balance[player2.team]
                 sounds.append(downed_audio)
 
             case EventType.DAMANGED_TEAM | EventType.DOWNED_TEAM:
@@ -296,23 +311,22 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 _add_score(player2, -20, cell_changes, team_scores)
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
+                stereo_balance = team_sound_balance[player2.team]
                 sounds.append(downed_audio)
-
-            case EventType.ACTIVATE_RAPID_FIRE:
-                player1.rapid_fire = True
-                _add_special_points(player1, -10, cell_changes)
 
             case EventType.DEACTIVATE_RAPID_FIRE:
                 player1.rapid_fire = False
 
             case EventType.ACTIVATE_NUKE:
                 _add_special_points(player1, -20, cell_changes)
+                stereo_balance = team_sound_balance[player1.team]
 
             case EventType.AMMO_BOOST:
                 for player in teams[player1.team]:
                     if not player.downed:
                         _add_shots(player, player.role_details.shots_resupply, cell_changes)
                 sounds.append(resupply_audio)
+                stereo_balance = team_sound_balance[player1.team]
 
             case EventType.LIFE_BOOST:
                 for player in teams[player1.team]:
@@ -320,6 +334,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                         _add_lives(player, player.role_details.lives_resupply, cell_changes, row_changes,
                                    player_reup_times)
                 sounds.append(resupply_audio)
+                stereo_balance = team_sound_balance[player1.team]
 
             case EventType.PENALTY:
                 _add_score(player1, -1000, cell_changes, team_scores)
@@ -336,13 +351,16 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             ]
 
         events.append(ReplayEvent(timestamp_millis=timestamp, message=message, cell_changes=cell_changes,
-                                  row_changes=row_changes, team_scores=new_team_scores, sounds=sounds))
+                                  row_changes=row_changes, team_scores=new_team_scores, sounds=sounds,
+                                  sound_stereo_balance=stereo_balance))
 
     return Replay(
         events=events,
         teams=replay_teams,
         column_headers=column_headers,
         sounds=sound_assets,
+        intro_sound=start_audio,
+        start_sound=alarm_start_audio,
     )
 
 

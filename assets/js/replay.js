@@ -1,36 +1,85 @@
 
 
+function isSoundLoaded(audio) {
+    return audio["data"] != undefined;
+}
 
-function playAudio(audio) {
-    audio.volume = 0.5;
-    if (!recalculating) {
-        audio.play();
+function getAudioDurationSeconds(audio) {
+    return audio["buffer"].duration;
+}
+
+async function playAudio(audio, stereo_balance) {
+    // If this is the very first time we're playing a sound, create
+    // the context. This must be done after the user clicked somewhere.
+    if (audioContext == undefined) {
+        audioContext = new AudioContext();
     }
+
+    if (!isSoundLoaded(audio)) {
+        // We haven't started loading this sound yet.
+        return audio;
+    }
+
+    // If we loaded the sound but haven't decoded it yet, do that now.
+    // TODO: This can cause race conditions if the same sound is played twice.
+    if (audio["buffer"] == undefined) {
+        audio["buffer"] = await audioContext.decodeAudioData(audio["data"]);
+    }
+
+    if (!recalculating) {
+        const source = audioContext.createBufferSource();
+        source.buffer = audio["buffer"];
+
+        stereoPanner = audioContext.createStereoPanner();
+        stereoPanner.pan.value = stereo_balance;
+
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.5;
+
+        source.connect(gainNode);
+        gainNode.connect(stereoPanner);
+        stereoPanner.connect(audioContext.destination);
+
+        source.start();
+        audio["source"] = source;
+    }
+
     return audio;
 }
 
-function playDownedAudio() {
-    // audio is random between Scream.0.wav Scream.1.wav Scream.2.wav Shot.0.wav Shot.1.wav
-    sfx = Math.floor(Math.random() * 5);
-    return playAudio(downed_audio[sfx]);
+function stopAudio(audio) {
+    if (audio["source"] != undefined) {
+        audio["source"].stop();
+        audio["source"] = undefined;
+    }
 }
 
+// We are not allowed to create an AudioContext until there is a user
+// interaction.
+audioContext = undefined;
 
-start_audio = [new Audio("/assets/sm5/audio/Start.0.wav"), new Audio("/assets/sm5/audio/Start.1.wav"), new Audio("/assets/sm5/audio/Start.2.wav"), new Audio("/assets/sm5/audio/Start.3.wav")];
-alarm_start_audio = new Audio("/assets/sm5/audio/Effect/General Quarters.wav");
-resupply_audio = [new Audio("/assets/sm5/audio/Effect/Resupply.0.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.1.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.2.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.3.wav"), new Audio("/assets/sm5/audio/Effect/Resupply.4.wav")];
-downed_audio = [new Audio("/assets/sm5/audio/Effect/Scream.0.wav"), new Audio("/assets/sm5/audio/Effect/Scream.1.wav"), new Audio("/assets/sm5/audio/Effect/Scream.2.wav"), new Audio("/assets/sm5/audio/Effect/Shot.0.wav"), new Audio("/assets/sm5/audio/Effect/Shot.1.wav")];
-base_destroyed_audio = new Audio("/assets/sm5/audio/Effect/Boom.wav");
+// Keep the loading screen up until all these sounds have been loaded.
+missing_sounds = [];
+
+// Is everything we need loaded?
+assets_loaded = false;
 
 current_starting_sound_playing = undefined;
 
 started = false;
+
+// This value increases with every restart or start skip so we know
+// whether or not the current start sound is relevant.
+playback_key = 1
+
 cancelled_starting_sound = false;
-restarted = false;
-play = false;
+restarted = false; // True if the playback had been restarted
+play = false; // Playback is currently in progress
 scrub = false; // for when going back in time
 recalculating = false; // for when we're mass recalculating and don't want to play audio
 playback_speed = 1.0;
+intro_sound = undefined;
+start_sound = undefined;
 
 columns = [];
 team_names = [];
@@ -60,10 +109,7 @@ function getCurrentGameTimeMillis() {
     return base_game_time_millis + (now - base_timestamp) * get_playback_speed();
 }
 
-function finishedPlayingIntro() {
-    if (current_starting_sound_playing != audio || restarted || cancelled_starting_sound) {
-        return;
-    }
+function beginPlayback() {
     play = true;
     restarted = false;
     playButton.innerHTML = "Pause";
@@ -72,12 +118,14 @@ function finishedPlayingIntro() {
     current_starting_sound_playing = undefined;
 
     // play the game start sfx
-    playAudio(alarm_start_audio);
+    if (start_sound != undefined) {
+        playSound(start_sound, 0.0);
+    }
 
     playEvents();
 }
 
-function playPause() {
+async function playPause() {
     if (play) { // pause the game
         // Lock the game time at what it currently is.
         base_game_time_millis = getCurrentGameTimeMillis();
@@ -90,46 +138,50 @@ function playPause() {
 
         restarted = false;
         if (current_starting_sound_playing != undefined) {
+            playback_key++; // cancel the callback for the starting sound
+            // Cancel the intro sound.
+            stopAudio(current_starting_sound_playing);
+            current_starting_sound_playing = undefined;
+
             resetGame();
-            restarted = false;
-            finishedPlayingIntro();
-            cancelled_starting_sound = true; // cancel the callback for the starting sound
+            beginPlayback();
         }
         else if (!started) {
             base_game_time_millis = 0
             // starting the game for the first time
 
-            // choose a random sfx 0-3
+            if (intro_sound != undefined) {
+                audio = await playSound(intro_sound, 0.0);
+                current_starting_sound_playing = audio;
+                playback_key++;
 
-            sfx = Math.floor(Math.random() * 4);
-
-            audio = new Audio(`/assets/sm5/audio/Start.${sfx}.wav`);
-            audio.volume = 0.5;
-            current_starting_sound_playing = audio;
-            audio.play();
-
-            audio.addEventListener("loadeddata", () => {
                 // wait for the sfx to finish
-                setTimeout(function() {
-                    finishedPlayingIntro();
-                }, audio.duration*1000);
-            });
+                setTimeout(function(key) {
+                    // The intro sound is over, start the actual playback - but only
+                    // if nothing has happened in the meantime (restart or pause).
+                    if (key == playback_key) {
+                        beginPlayback();
+                    }
+                }, getAudioDurationSeconds(audio)*1000, playback_key);
+            } else {
+                // No intro sound, start playing right away.
+                beginPlayback();
+            }
             return;
         }
 
         play = true;
         playButton.innerHTML = "Pause";
-        started = true;
         restarted = false;
         playEvents();
     }
 }
 
-function add_column(column_name) {
+function addColumn(column_name) {
     columns.push(column_name);
 }
 
-function add_team(team_name, team_id, team_css_class) {
+function addTeam(team_name, team_id, team_css_class) {
 
     let team_div = document.createElement("div");
     team_div.id = team_id;
@@ -161,25 +213,51 @@ function add_team(team_name, team_id, team_css_class) {
     teams.appendChild(team_div);
 }
 
-function register_sound(sound_id, asset_urls) {
+function registerSound(sound_id, asset_urls, priority, required) {
     sound_objects = [];
 
     asset_urls.forEach((asset_url) => {
-        sound_objects.push(new Audio(asset_url));
+        sound_objects.push({
+            "asset_url": asset_url});
     });
 
     sounds[sound_id] = sound_objects;
+
+    if (required) {
+        missing_sounds.push(sound_id);
+    }
 }
 
-function play_sound(sound_id) {
-    sound_assets = sounds[sound_id];
-    index = Math.floor(Math.random() * sound_assets.length);
-    audio = sound_assets[index];
+async function loadAudioBuffer(audio) {
+  const response = await fetch(audio["asset_url"]);
+  if (!response.ok) {
+    console.log(`Failed to fetch audio file: ${url}`);
+  }
 
-    audio.volume = 0.5;
-    if (!recalculating) {
-        audio.play();
-    }
+  audio["data"] = await response.arrayBuffer();
+
+  // Once we have loaded the sound, see if that was the last one missing
+  // and we can get rid of the loading screen.
+  checkPendingAssets();
+}
+
+// Loads all sounds that were previously registered with registerSound.
+function loadSound(sound_id) {
+    sound_objects = sounds[sound_id];
+    sounds_left = sound_objects.length;
+
+    sound_objects.forEach((sound) => {
+        loadAudioBuffer(sound);
+    });
+}
+
+async function playSound(sound_id, stereo_balance) {
+    const sound_assets = sounds[sound_id];
+
+    const index = Math.floor(Math.random() * sound_assets.length);
+    const audio = sound_assets[index];
+
+    return await playAudio(audio, stereo_balance);
 }
 
 function add_player(team_id, row_id, cells) {
@@ -279,15 +357,50 @@ function playEvents() {
             document.getElementById(`${team_ids[index]}_score`).innerHTML = `${team_names[index]}: ${team_score}`;
         });
 
-        event[5].forEach((sound_id) => {
-            play_sound(sound_id);
+        const stereo_balance = event[5];
+
+        event[6].forEach((sound_id) => {
+            playSound(sound_id, stereo_balance);
         });
 
         eventBox.scrollTop = eventBox.scrollHeight;
     }
 }
 
-function startReplay() {
+// See if there are any pending assets, otherwise start the main UI.
+function checkPendingAssets() {
+    if (assets_loaded) {
+        // We're already all done.
+        return;
+    }
+
+    missing_assets = false;
+
+    while (missing_sounds.length > 0) {
+        const sound_id = missing_sounds[0];
+        sounds[sound_id].forEach((sound) => {
+            if (!isSoundLoaded(sound)) {
+                // Not done yet.
+                missing_assets = true;
+                return;
+            }
+        });
+
+        if (missing_assets) {
+            // Something still missing. Let's wait.
+            return;
+        }
+
+        // Everything in this sound is loaded, we can remove it.
+        missing_sounds.shift();
+    };
+
+    // Everything is loaded. We're good.
+    assets_loaded = true;
+    enableReplayUi();
+}
+
+function enableReplayUi() {
     teamsLoadingPlaceholder.style.display = "none";
     timeSlider.style.display = "block";
     replayViewer.style.display = "flex";
@@ -297,19 +410,21 @@ function restartReplay() {
     console.log("Restarting replay");
 
     if (current_starting_sound_playing != undefined) {
-        current_starting_sound_playing.pause();
+        stopAudio(current_starting_sound_playing);
+        current_starting_sound_playing = undefined;
     }
 
     play = false;
     started = false;
     restarted = true;
+    playback_key++;
 
     // If true, we're not playing back, but we're paused and just want to evaluate the game at a different time.
     scrub = false;
 
     resetGame();
     playButton.innerHTML = "Play";
-    startReplay();
+    enableReplayUi();
 }
 
 function resetGame() {
@@ -371,6 +486,14 @@ function setTimeLabel(seconds) {
 
     document.getElementById("timestamp").innerHTML = `${formattedMinutes}:${formattedSeconds}`;
     time_label_seconds = totalSeconds;
+}
+
+function setIntroSound(soundId) {
+    intro_sound = soundId;
+}
+
+function setStartSound(soundId) {
+    start_sound = soundId;
 }
 
 document.addEventListener("DOMContentLoaded", function() {
