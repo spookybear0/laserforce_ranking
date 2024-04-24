@@ -14,6 +14,9 @@ from helpers.cachehelper import cache
 # stats helpers
 
 
+# The frequency for ticks in time series graphs, in milliseconds.
+_DEFAULT_TICKS_DURATION_MILLIS = 30000
+
 @dataclass
 class PlayerCoreGameStats:
     """The stats for a player for one game that apply to most game formats (at least both SM5 and LB)."""
@@ -145,6 +148,15 @@ def millis_to_time(milliseconds: Optional[int]) -> str:
         return "00:00"
 
     return "%02d:%02d" % (milliseconds / 60000, milliseconds % 60000 / 1000)
+
+
+def get_ticks_for_time_graph(game_duration_millis: int) -> range:
+    """Returns a list of timestamps for ticks for a time series graph.
+
+    The list will be one tick every 30 seconds, until 30 seconds after the duration
+    of the game.
+    """
+    return range(0, game_duration_millis + _DEFAULT_TICKS_DURATION_MILLIS, _DEFAULT_TICKS_DURATION_MILLIS)
 
 
 async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start: EntityStarts) -> dict[str, int]:
