@@ -1,21 +1,19 @@
 from numpy import arange
 from sanic import Request
+from sanic import exceptions
 
-from helpers.gamehelper import SM5_STATE_COLORS, get_players_from_team
+from db.game import EntityEnds
+from db.laserball import LaserballGame
+from db.sm5 import SM5Game
+from db.types import IntRole, Team, LineChartData, RgbColor
+from helpers.cachehelper import cache_template
+from helpers.gamehelper import SM5_STATE_COLORS
+from helpers.laserballhelper import get_laserball_player_stats
 from helpers.sm5helper import get_sm5_player_stats
+from helpers.statshelper import sentry_trace, millis_to_time, get_sm5_single_player_score_graph_data
 from helpers.tooltips import TOOLTIP_INFO
 from shared import app
-from typing import List
 from utils import render_cached_template
-from db.types import IntRole, Team, LineChartData, RgbColor
-from db.sm5 import SM5Game
-from db.game import EntityEnds, EntityStarts
-from db.laserball import LaserballGame, LaserballStats
-from helpers.statshelper import sentry_trace, millis_to_time, count_blocks, \
-    get_sm5_single_player_score_graph_data
-from sanic import exceptions
-from helpers.cachehelper import cache_template
-
 
 # Modifiers for the score card colors of other players. One of these will be applied
 # to the color so it's ever so slightly different.
@@ -133,7 +131,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
         )
 
     if type == "laserball":
-        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
+        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
 
         if not game:
             raise exceptions.NotFound("Game not found")
@@ -144,79 +142,38 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             raise exceptions.NotFound("Scorecard not found")
 
         entity_start = await entity_end.entity
-        stats = await LaserballStats.filter(entity_id=entity_start.id).first()
 
-        if not stats:
+        if not entity_start:
+            raise exceptions.NotFound("Scorecard not found")
+
+        full_stats = await get_laserball_player_stats(game, entity_start)
+
+        if entity_end_id not in full_stats.all_players:
             raise exceptions.NotFound("Scorecard not found")
 
         possession_times = await game.get_possession_times()
 
-        accuracy = (stats.shots_hit / stats.shots_fired) if stats.shots_fired != 0 else 0
+        player_stats = full_stats.all_players[entity_end_id]
 
         main_stats = {
-            "Score": stats.score,
-            "Shots fired": stats.shots_fired,
-            "Accuracy": "%.2f%%" % (accuracy * 100),
+            "Score": player_stats.score,
+            "Shots fired": player_stats.shots_fired,
+            "Accuracy": player_stats.accuracy_str,
             "Possession": millis_to_time(possession_times.get(entity_start.entity_id)),
-            "Goals": stats.goals,
-            "Assists": stats.assists,
-            "Passes": stats.passes,
-            "Steals": stats.steals,
-            "Clears": stats.clears,
-            "Blocks": stats.blocks,
+            "Goals": player_stats.goals,
+            "Assists": player_stats.assists,
+            "Passes": player_stats.passes,
+            "Steals": player_stats.steals,
+            "Clears": player_stats.clears,
+            "Blocks": player_stats.blocks,
         }
-
-        entity_starts: List[EntityStarts] = game.entity_starts
-        player_entities = [
-            player for player in list(entity_starts) if player.type == "player"
-        ]
-
-        player_stats = {
-            player.id: await LaserballStats.filter(entity_id=player.id).first() for player in player_entities
-        }
-
-        all_players = ([
-            {
-                "name": player.name,
-                "team": (await player.team).index,
-                "entity_end_id": (await EntityEnds.filter(entity=player.id).first()).id,
-                "score": player_stats[player.id].score,
-                "ball_possession": millis_to_time(possession_times.get(player.entity_id, 0)),
-                "you_blocked": await count_blocks(game, entity_start.entity_id, player.entity_id),
-                "blocked_you": await count_blocks(game, player.entity_id, entity_start.entity_id),
-                "mvp_points": "%.2f" % player_stats[player.id].mvp_points,
-                "blocks": player_stats[player.id].blocks,
-                "goals": player_stats[player.id].goals,
-                "passes": player_stats[player.id].passes,
-                "clears": player_stats[player.id].clears,
-                "steals": player_stats[player.id].steals,
-                "assists": player_stats[player.id].assists,
-            } for player in player_entities
-        ])
-        all_players.sort(key=lambda x: x["score"], reverse=True)
-
-        teams = [
-            {
-                "name": "Ice Team",
-                "class_name": "ice",
-                "score": await game.get_team_score(Team.BLUE),
-                "players": get_players_from_team(all_players, 1)
-            },
-            {
-                "name": "Fire Team",
-                "class_name": "fire",
-                "score": await game.get_team_score(Team.RED),
-                "players": get_players_from_team(all_players, 0)
-            },
-        ]
 
         return await render_cached_template(
             request,
             "game/scorecard_laserball.html",
-            game=game,
             entity_start=entity_start,
-            entity_end=entity_end,
             main_stats=main_stats,
-            teams=teams,
+            game=game,
+            teams=full_stats.teams,
         )
     raise exceptions.BadRequest("Invalid game type")

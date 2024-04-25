@@ -65,6 +65,11 @@ class PlayerCoreGameStats:
         """How long this player was in the game (in milliseconds)."""
         return self.entity_end.time if self.entity_end else 0
 
+    @property
+    def time_in_game_str(self) -> str:
+        """How long this player was in the game (as MM:SS)."""
+        return millis_to_time(self.time_in_game_millis)
+
     # How many times the player spent in each state.
     #
     # The values are in milliseconds. The actual keys depend on the game type.
@@ -108,7 +113,7 @@ class TeamCoreGameStats:
 
     @property
     def name(self) -> str:
-        return self.team.display_name
+        return self.team.name
 
     @property
     def css_color_name(self) -> str:
