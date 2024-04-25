@@ -9,7 +9,7 @@ from db.types import Team
 from helpers.cachehelper import cache
 from helpers.gamehelper import get_team_rosters, SM5_STATE_LABEL_MAP
 from helpers.statshelper import PlayerCoreGameStats, get_player_state_distribution, TeamCoreGameStats, count_blocks, \
-    get_ticks_for_time_graph
+    get_ticks_for_time_graph, millis_to_time
 
 
 # TODO: A lot of stuff from statshelper.py should be moved here. But let's do that separately to keep the commit size
@@ -19,6 +19,9 @@ from helpers.statshelper import PlayerCoreGameStats, get_player_state_distributi
 class PlayerLaserballGameStats(PlayerCoreGameStats):
     """The stats for a player in one LB game."""
     stats: LaserballStats
+
+    # How long this player had ball possession for, in milliseconds.
+    possession_time_millis: int
 
     # How many times this player blocked the main player (for score cards). None if this wasn't computed.
     blocked_main_player: Optional[int]
@@ -60,6 +63,10 @@ class PlayerLaserballGameStats(PlayerCoreGameStats):
     @property
     def times_blocked(self) -> int:
         return self.stats.times_blocked
+
+    @property
+    def possession_time_str(self) -> str:
+        return millis_to_time(self.possession_time_millis)
 
     @property
     def score(self) -> int:
@@ -192,6 +199,8 @@ async def get_laserball_player_stats(game: LaserballGame,
 
     team_rosters = await get_team_rosters(game.entity_starts, game.entity_ends)
 
+    possession_times = await game.get_possession_times()
+
     for team in team_rosters.keys():
         players = []
         avg_state_distribution = {}
@@ -212,6 +221,7 @@ async def get_laserball_player_stats(game: LaserballGame,
         sum_clears = 0
         sum_passes = 0
         sum_times_blocked = 0
+        sum_possession_time_millis = 0
 
         for player in team_rosters[team]:
             stats = await LaserballStats.filter(entity_id=player.entity_start.id).first()
@@ -230,12 +240,16 @@ async def get_laserball_player_stats(game: LaserballGame,
             main_player_hit_ratio = None
             is_main_player = False
 
+            entity_id = player.entity_start.entity_id
+
             if main_player:
                 is_main_player = player.entity_start.id == main_player.id
-                blocked_main_player = await count_blocks(game, player.entity_start.entity_id, main_player.entity_id)
-                blocked_by_main_player = await count_blocks(game, main_player.entity_id, player.entity_start.entity_id)
+                blocked_main_player = await count_blocks(game, entity_id, main_player.entity_id)
+                blocked_by_main_player = await count_blocks(game, main_player.entity_id, entity_id)
 
                 main_player_hit_ratio = "%.2f" % _calc_ratio(blocked_by_main_player, blocked_main_player)
+
+            possession_time = possession_times[entity_id] if entity_id in possession_times else 0
 
             player = PlayerLaserballGameStats(
                 team=team,
@@ -252,6 +266,7 @@ async def get_laserball_player_stats(game: LaserballGame,
                 times_zapped=stats.times_blocked + stats.times_stolen,
                 score_components={},
                 mvp_points=stats.mvp_points,
+                possession_time_millis=possession_time,
             )
 
             players.append(player)
@@ -275,6 +290,7 @@ async def get_laserball_player_stats(game: LaserballGame,
             sum_passes += player.passes
             sum_times_stolen += player.times_stolen
             sum_times_blocked += player.times_blocked
+            sum_possession_time_millis += player.possession_time_millis
 
         player_count = len(players)
 
@@ -308,6 +324,7 @@ async def get_laserball_player_stats(game: LaserballGame,
             total_passes=sum_passes,
             total_times_blocked=sum_times_blocked,
             total_times_stolen=sum_times_stolen,
+            possession_time_millis=sum_possession_time_millis,
         )
 
         team_score_graph = [await game.get_team_score_at_time(team, time) for time in

@@ -115,6 +115,20 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
 
     average_shots_left: int
 
+    total_shot_team: int
+
+    total_missile_hits: int
+
+    total_times_missiled: int
+
+    total_missiled_team: int
+
+    total_missiled_opponent: int
+
+    total_medic_hits: int
+
+    average_time_alive_millis: int
+
     @property
     def name(self) -> str:
         return "Total"
@@ -137,6 +151,34 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
 
     def get_gross_positive_score(self) -> int:
         return self.total_gross_positive_score
+
+    @property
+    def shot_team(self) -> int:
+        return self.total_shot_team
+
+    @property
+    def missile_hits(self) -> int:
+        return self.total_missile_hits
+
+    @property
+    def times_missiled(self) -> int:
+        return self.total_times_missiled
+
+    @property
+    def missiled_team(self) -> int:
+        return self.total_missiled_team
+
+    @property
+    def missiled_opponent(self) -> int:
+        return self.total_missiled_opponent
+
+    @property
+    def medic_hits(self) -> int:
+        return self.total_medic_hits
+
+    @property
+    def time_in_game_millis(self) -> int:
+        return self.average_time_alive_millis
 
 
 @dataclass
@@ -249,6 +291,13 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
         sum_score = 0
         sum_points_per_minute = 0
         sum_gross_positive_score = 0
+        sum_shot_team = 0
+        sum_missile_hits = 0
+        sum_times_missiled = 0
+        sum_missiled_team = 0
+        sum_missiled_opponent = 0
+        sum_medic_hits = 0
+        sum_time_alive = 0
 
         for player in team_rosters[team]:
             stats = await SM5Stats.filter(entity_id=player.entity_start.id).first()
@@ -327,6 +376,13 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             sum_zapped_by_main_player += player.zapped_by_main_player if player.zapped_by_main_player else 0
             sum_missiled_main_player += player.missiled_main_player if player.missiled_main_player else 0
             sum_missiled_by_main_player += player.missiled_by_main_player if player.missiled_by_main_player else 0
+            sum_shot_team += player.shot_team
+            sum_missile_hits += player.missile_hits
+            sum_times_missiled += player.times_missiled
+            sum_missiled_team += player.missiled_team
+            sum_missiled_opponent += player.missiled_opponent
+            sum_medic_hits += player.medic_hits
+            sum_time_alive += player.time_in_game_millis
 
         # Create the lives-over-time average for the entire team.
         lives_over_time_team_average = []
@@ -370,7 +426,14 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             zapped_by_main_player=sum_zapped_by_main_player,
             missiled_main_player=sum_missiled_main_player,
             missiled_by_main_player=sum_missiled_by_main_player,
-            main_player_hit_ratio="%.2f" % _calc_ratio(sum_zapped_by_main_player, sum_zapped_main_player)
+            main_player_hit_ratio="%.2f" % _calc_ratio(sum_zapped_by_main_player, sum_zapped_main_player),
+            total_shot_team=sum_shot_team,
+            total_missiled_team=sum_missiled_team,
+            total_missiled_opponent=sum_missiled_opponent,
+            total_missile_hits=sum_missile_hits,
+            total_times_missiled=sum_times_missiled,
+            total_medic_hits=sum_medic_hits,
+            average_time_alive_millis=int(sum_time_alive / average_divider),
         )
 
         # Sort the roster by score.

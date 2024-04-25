@@ -278,6 +278,7 @@
                             {% if game.ranked %}
                                 <th><p>Current Rating</p></th>
                             {% endif %}
+                            <th><p>Ball Possession</p></th>
                             <th><p>Goals</p></th>
                             <th><p>Assists</p></th>
                             <th><p>Steals</p></th>
@@ -303,6 +304,7 @@
                                     {% else %}
                                         <td><p>&nbsp;</p></td>
                                     {% endif %}
+                                    <td><p>{{ player.possession_time_str }}</p></td>
                                     <td><p>{{ player.goals }}</p></td>
                                     <td><p>{{ player.assists }}</p></td>
                                     <td><p>{{ player.steals }}</p></td>
