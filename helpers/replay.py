@@ -76,6 +76,9 @@ class ReplayPlayer:
     # The row identifier, will be used in the ID of each row and cell.
     row_id: str
 
+    # CSS class to initially use for this player.
+    css_class: str
+
 
 @dataclass
 class ReplayTeam:
@@ -138,8 +141,7 @@ class Replay:
             result += f"addTeam('{team.name}', '{team.id}', '{team.css_class}');\n"
 
             for player in team.players:
-                cells = [_escape_string(cell) for cell in player.cells]
-                result += f"add_player('{team.id}', '{player.row_id}', {cells});\n"
+                result += f"addPlayer('{team.id}', '{player.row_id}', '{player.css_class}');\n"
 
         result += "function resetPlayers() {\n"
         result += "  player_values = {\n"
@@ -154,6 +156,8 @@ class Replay:
             document.getElementById(cell).innerHTML = value;
           });
         }
+        
+        resetPlayers();
         """
 
         if self.intro_sound:

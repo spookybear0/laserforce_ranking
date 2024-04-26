@@ -260,14 +260,14 @@ async function playSound(sound_id, stereo_balance) {
     return await playAudio(audio, stereo_balance);
 }
 
-function add_player(team_id, row_id, cells) {
+function addPlayer(team_id, row_id, css_class) {
     let row = document.createElement("tr");
     row.id = row_id;
+    row.className = css_class;
 
-    cells.forEach((column, index) => {
+    columns.forEach((column, index) => {
         let cell = document.createElement("td");
         cell.id = `${row_id}_${index}`;
-        cell.innerHTML = column;
         row.appendChild(cell);
     });
 
