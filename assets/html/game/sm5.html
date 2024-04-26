@@ -251,7 +251,7 @@
                                 {% endif %}
                                 <th {{ tooltip("sm5_score") }}><p>Score</p></th>
                                 <th {{ tooltip("sm5_positive_score") }}><p>Positive Score</p></th>
-                                <th {{ tooltip("sm5_points_minute") }}><p>Points/Minute</p></th>
+                                <th {{ tooltip("sm5_points_minute") }}><p>PPM</p></th>
                                 <th {{ tooltip("sm5_lives_left") }}><p>Lives Left</p></th>
                                 <th {{ tooltip("sm5_alive") }}><p>Alive</p></th>
                                 <th {{ tooltip("sm5_shots_left") }}><p>Shots Left</p></th>
@@ -269,8 +269,10 @@
                                     <tr class="{{ player.css_class }}">
                                         <td class="role fixed-column" style="width: 30px"><p>{{ sm5_role_icon(player) }}</p></td>
                                         <td class="second-fixed-column">{{ player_reference(player) }}</td>
-                                        {% if game.ranked %}
-                                            <td title="mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2) }}">{{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}</td>
+                                        {% if game.ranked and player.entity_end %}
+                                            <td title="mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2)}}">{{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}</td>
+                                        {% elif not player.entity_end %}
+                                            <td></td>
                                         {% endif %}
                                         {% if player.player_info.is_member %}
                                             <td title="Scorecard"><a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end.id}}">{{ player.score }}</a></td>
