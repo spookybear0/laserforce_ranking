@@ -1,5 +1,6 @@
 from sanic import Request
 
+from helpers.laserballhelper import get_laserball_player_stats
 from helpers.sm5helper import get_sm5_player_stats
 from helpers.tooltiphelper import TOOLTIP_INFO
 from shared import app
@@ -11,7 +12,7 @@ from helpers.gamehelper import get_team_rosters, get_matchmaking_teams
 from db.types import Team
 from sanic import exceptions
 from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
-    millis_to_time
+    millis_to_time, get_ticks_for_time_graph
 from numpy import arange
 from typing import Optional
 from sanic.log import logger
@@ -76,7 +77,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             is_admin=is_admin(request)
         )
     elif type == "laserball":
-        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
+        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
+        game_duration = game.mission_duration
 
         logger.debug(f"Fetching laserball game with ID {id}")
 
@@ -87,26 +89,14 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Fetching team rosters")
 
-        team_rosters = await get_team_rosters(await game.entity_starts.all(), await game.entity_ends.all())
+        full_stats = await get_laserball_player_stats(game)
 
-        logger.debug("Fetching team scores")
-
-        scores = {
-            team: await game.get_team_score(team) for team in team_rosters.keys()
-        }
-
-        logger.debug("Fetching team score graph data")
-
-        score_chart_data = await get_sm5_team_score_graph_data(game, list(team_rosters.keys()))
 
         logger.debug("Fetching matchmaking teams")
 
-        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(full_stats.get_team_rosters())
 
         logger.debug("Fetching win chances")
-
-        # Sort the teams in order of their score.
-        team_ranking = sorted(scores.keys(), key=lambda team: scores[team], reverse=True)
 
         if game.ranked:
             win_chance_after_game = await game.get_win_chance_after_game()
@@ -120,14 +110,10 @@ async def game_index(request: Request, type: str, id: int) -> str:
         return await render_cached_template(
             request, "game/laserball.html",
             game=game,
-            get_entity_end=get_entity_end,
-            get_laserballstats=get_laserballstats,
-            fire_score=await game.get_team_score(Team.RED),
-            ice_score=await game.get_team_score(Team.BLUE),
-            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_team_score_at_time(Team.RED, t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_blue=[await game.get_team_score_at_time(Team.BLUE, t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
+            teams=full_stats.teams,
+            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, game_duration//1000//60+0.5, 0.5)],
+            score_chart_data=full_stats.score_chart_data,
+            score_chart_data_rounds=full_stats.score_chart_data_rounds,
             win_chance_before_game=win_chance_before_game,
             win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,

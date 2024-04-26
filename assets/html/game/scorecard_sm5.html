@@ -308,7 +308,7 @@
                                 <td>{{ player.points_per_minute }}</td>
                                 <td>{{ player.lives_left }}</td>
                                 <td {{ tooltip("sm5_alive") }}><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
-                                    <span style="margin: auto">{{ player.time_in_game }}</span></div></td>
+                                    <span style="margin: auto">{{ player.time_in_game_str }}</span></div></td>
                                 <td>{{ player.shots_left }}</td>
                                 <td title="{{player.shots_hit}}/{{player.shots_fired}}">{{ player.accuracy_str }}</td>
                                 <td>{{ player.kd_ratio_str }}</td>

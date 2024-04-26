@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 def _escape_string(text: str) -> str:
@@ -38,7 +38,13 @@ class ReplaySound:
     asset_urls: List[str]
 
     # ID to identify this sound.
-    id: int = 0
+    id: int
+
+    # Preload priority. Sounds with the highest priority preload first.
+    priority: int = 0
+
+    # If true, this sound must be loaded before playback can begin.
+    required: bool = False
 
 
 @dataclass
@@ -57,6 +63,9 @@ class ReplayEvent:
     row_changes: List[ReplayRowChange]
 
     sounds: List[ReplaySound]
+
+    # If there are sounds, their stereo balance should be here (-1=left, 0=center, 1=right).
+    sound_stereo_balance: float = 0.0
 
 
 @dataclass
@@ -91,6 +100,12 @@ class Replay:
 
     sounds: List[ReplaySound]
 
+    # Sound to play before the replay starts
+    intro_sound: Optional[ReplaySound]
+
+    # Sound to play when the actual game starts, after the intro sound
+    start_sound: Optional[ReplaySound]
+
     # Names of the columns in each team table.
     column_headers: List[str]
 
@@ -99,13 +114,27 @@ class Replay:
         result = ""
 
         for column in self.column_headers:
-            result += f"add_column('{column}');\n"
+            result += f"addColumn('{column}');\n"
 
         for sound in self.sounds:
-            result += f"register_sound({sound.id}, {sound.asset_urls});\n"
+            result += f"registerSound({sound.id}, {sound.asset_urls}, {sound.priority}, {str(sound.required).lower()});\n"
+
+        # Load the sounds in order of priority.
+        highest_priority = max([sound.priority for sound in self.sounds])
+
+        result += "let sound_promise = Promise.resolve();\n"
+
+        while highest_priority >= 0:
+            sounds = [sound for sound in self.sounds if sound.priority == highest_priority]
+
+            if sounds:
+                for sound in sounds:
+                    result += f"loadSound({sound.id});\n"
+
+            highest_priority -= 1
 
         for team in self.teams:
-            result += f"add_team('{team.name}', '{team.id}', '{team.css_class}');\n"
+            result += f"addTeam('{team.name}', '{team.id}', '{team.css_class}');\n"
 
             for player in team.players:
                 cells = [_escape_string(cell) for cell in player.cells]
@@ -126,18 +155,25 @@ class Replay:
         }
         """
 
+        if self.intro_sound:
+            result += f"setIntroSound({self.intro_sound.id});\n"
+
+        if self.start_sound:
+            result += f"setStartSound({self.start_sound.id});\n"
+
         result += "events = [\n"
         for event in self.events:
             cell_changes = [cell_change.to_js_string() for cell_change in event.cell_changes]
             row_changes = [row_change.to_js_string() for row_change in event.row_changes]
             sound_ids = [sound.id for sound in event.sounds]
-            result += f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{','.join(cell_changes)}],[{','.join(row_changes)}],{event.team_scores},{sound_ids}],\n"
+            result += (f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{','.join(cell_changes)}],"
+                f"[{','.join(row_changes)}],{event.team_scores},{event.sound_stereo_balance},{sound_ids}],\n")
 
         result += "];\n\n"
 
         result += """
             document.addEventListener("DOMContentLoaded", function() {
-                startReplay();
+                checkPendingAssets();
             });
             """
 
