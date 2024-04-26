@@ -109,11 +109,6 @@
         border: 1px solid lightgray;
     }
 
-    td {
-        color: lightgray;
-        padding: 2px;
-    }
-
     tr:nth-child(even) {
         background-color: #252525;
     }
@@ -146,14 +141,22 @@
         height: calc(100% - 164px);
     }
 
-    #fire_team tr td .player_codename {
-        color: orangered;
+    @keyframes ball_owner_flash {
+        0% {
+            background-color: #443333;
+        }
+        50% {
+            background-color: #3333aa;
+        }
+        0% {
+            background-color: #443333;
+        }
     }
 
-    #earth_team tr td .player_codename {
-        color: greenyellow;
+    .ball-owner {
+        animation: 2s infinite normal ball_owner_flash;
+        font-weight: bold;
     }
-
 
     @media screen and (max-width: 991px) {
         .replay_viewer {

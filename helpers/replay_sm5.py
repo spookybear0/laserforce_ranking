@@ -75,8 +75,8 @@ _EVENTS_SUCCESSFUL_HITS = {
 _EVENTS_COSTING_LIVES = {
     EventType.DOWNED_OPPONENT: 1,
     EventType.DOWNED_TEAM: 1,
-    EventType.MISSILE_DOWN_OPPONENT: 3,
-    EventType.MISSILE_DOWN_TEAM: 3,
+    EventType.MISSILE_DOWN_OPPONENT: 2,
+    EventType.MISSILE_DOWN_TEAM: 2,
 }
 
 _EVENTS_DOWNING_PLAYER = {
@@ -150,7 +150,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                              role=role, row_id=row_id, missiles=role_details.missiles,
                              role_details=role_details, team=team, name=player_info.display_name)
 
-            replay_player_list.append(ReplayPlayer(cells=cells, row_id=row_id))
+            replay_player_list.append(ReplayPlayer(cells=cells, row_id=row_id, css_class=player.team.css_class))
             row_index += 1
 
             entity_id_to_player[player_info.entity_start.entity_id] = player
@@ -259,7 +259,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             # Recompute accuracy.
             cell_changes.append(ReplayCellChange(row_id=player1.row_id, column=_ACCURACY_COLUMN,
                                                  new_value="%.2f%%" % (
-                                                         player1.total_shots_hit * 100 / player1.total_shots_fired)))
+                                                     player1.total_shots_hit * 100 / player1.total_shots_fired)))
 
         # Handle losing lives.
         if event.type in _EVENTS_COSTING_LIVES:
@@ -321,6 +321,16 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 _add_special_points(player1, -20, cell_changes)
                 stereo_balance = team_sound_balance[player1.team]
 
+            case EventType.DETONATE_NUKE:
+                for team in teams:
+                    if team != player1.team:
+                        for player in teams[team]:
+                            _add_lives(player, -3, cell_changes, row_changes, player_reup_times)
+                            _down_player(player, row_changes, event.time, player_reup_times)
+
+                stereo_balance = team_sound_balance[player1.team]
+                sounds.append(base_destroyed_audio)
+
             case EventType.AMMO_BOOST:
                 for player in teams[player1.team]:
                     if not player.downed:
@@ -369,7 +379,7 @@ def _down_player(player: _Player, row_changes: List[ReplayRowChange], timestamp_
     if player.lives == 0:
         return
 
-    row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class=player.team.dim_css_class))
+    row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class=player.team.down_css_class))
 
     # The player will be back up 8 seconds from now.
     player_reup_times[player] = timestamp_millis + 8000
@@ -382,7 +392,7 @@ def _add_lives(player: _Player, lives_to_add: int, cell_changes: List[ReplayCell
     cell_changes.append(ReplayCellChange(row_id=player.row_id, column=_LIVES_COLUMN, new_value=str(player.lives)))
 
     if player.lives == 0:
-        row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class='eliminated_player'))
+        row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class="eliminated_player"))
 
         # This player ain't coming back up.
         if player in player_reup_times:

@@ -108,7 +108,7 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
             player = _Player(row_index=row_index,
                              row_id=row_id, team=team, name=player_info.display_name)
 
-            replay_player_list.append(ReplayPlayer(cells=cells, row_id=row_id))
+            replay_player_list.append(ReplayPlayer(cells=cells, row_id=row_id, css_class=player.team.css_class))
             row_index += 1
 
             entity_id_to_player[player_info.entity_start.entity_id] = player
@@ -123,12 +123,14 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
 
     # Map from a player and the timestamp at which the player will be back up. The key is the _Player object.
     player_reup_times = {}
+    ball_owner = None
 
     # Now let's walk through the events one by one and translate them into UI events.
     for event in await game.events.all():
 
         timestamp = event.time
         old_team_goals = team_goals.copy()
+        old_ball_owner = ball_owner
         sounds = []
         stereo_balance = 0.0
 
@@ -192,10 +194,13 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
             player1.total_shots_fired += 1
             cell_changes.append(ReplayCellChange(row_id=player1.row_id, column=_ACCURACY_COLUMN,
                                                  new_value="%.2f%%" % (
-                                                         player1.total_shots_hit * 100 / player1.total_shots_fired)))
+                                                     player1.total_shots_hit * 100 / player1.total_shots_fired)))
 
         # Handle each event.
         match event.type:
+            case EventType.GETS_BALL:
+                ball_owner = player1
+
             case EventType.BLOCK:
                 _add_score(player1, 1, cell_changes, team_scores)
                 _add_blocks(player1, 1, cell_changes)
@@ -205,12 +210,14 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
             case EventType.PASS:
                 _add_score(player1, 1, cell_changes, team_scores)
                 _add_passes(player1, 1, cell_changes)
+                ball_owner = player2
                 stereo_balance = team_sound_balance[player2.team]
                 # sounds.append(downed_audio)
 
             case EventType.STEAL:
                 _add_score(player1, 100, cell_changes, team_scores)
                 _add_steals(player1, 1, cell_changes)
+                ball_owner = player1
                 stereo_balance = team_sound_balance[player2.team]
                 # sounds.append(downed_audio)
 
@@ -219,21 +226,30 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
                 _add_goals(player1, 1, cell_changes)
                 stereo_balance = team_sound_balance[player1.team]
                 team_goals[player1.team] += 1
-                #sounds.append(downed_audio)
+                # sounds.append(downed_audio)
 
             case EventType.ASSIST:
                 _add_score(player1, 10000, cell_changes, team_scores)
                 _add_assists(player1, 1, cell_changes)
                 stereo_balance = team_sound_balance[player2.team]
-                #sounds.append(downed_audio)
+                # sounds.append(downed_audio)
 
             case EventType.CLEAR:
                 _add_clears(player1, 1, cell_changes)
                 stereo_balance = team_sound_balance[player2.team]
-                #sounds.append(downed_audio)
+                ball_owner = player2
+                # sounds.append(downed_audio)
 
             case EventType.PENALTY:
                 _add_score(player1, -1000, cell_changes, team_scores)
+
+        if ball_owner != old_ball_owner:
+            if old_ball_owner:
+                row_changes.append(
+                    ReplayRowChange(row_id=old_ball_owner.row_id, new_css_class=old_ball_owner.team.css_class))
+
+            if ball_owner:
+                row_changes.append(ReplayRowChange(row_id=ball_owner.row_id, new_css_class='ball-owner'))
 
         # Handle a player being down.
         if event.type in _EVENTS_DOWNING_PLAYER:
@@ -262,7 +278,7 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
 
 def _down_player(player: _Player, row_changes: List[ReplayRowChange], timestamp_millis: int,
                  player_reup_times: Dict[_Player, int]):
-    row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class=player.team.dim_css_class))
+    row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class=player.team.down_css_class))
 
     # The player will be back up 8 seconds from now.
     player_reup_times[player] = timestamp_millis + 8000
