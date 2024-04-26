@@ -9,7 +9,7 @@ from mysql import MySQLPool
 import jinja2
 from sanic import Sanic
 from sanic_jinja2 import SanicJinja2
-from sanic_session import Session, AIORedisSessionInterface
+from sanic_session import Session, AIORedisSessionInterface, InMemorySessionInterface
 from config import config
 from sanic_cors import CORS
 import aioredis
@@ -21,8 +21,12 @@ app.config.USE_UVLOOP = False
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()
-app.ctx.redis = aioredis.from_url(config["redis"], decode_responses=True)
-session.init_app(app, interface=AIORedisSessionInterface(app.ctx.redis))
+if config["redis"] not in ["", None, False]:
+    app.ctx.redis = aioredis.from_url(config["redis"], decode_responses=True)
+    interface = AIORedisSessionInterface(app.ctx.redis)
+else:
+    interface = InMemorySessionInterface()
+session.init_app(app, interface=interface)
 
 app.ctx.jinja = SanicJinja2(
     app,
