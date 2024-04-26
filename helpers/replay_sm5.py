@@ -143,7 +143,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             role_details = SM5_ROLE_DETAILS[role]
 
             cells = [_create_role_image(player_info.entity_start.role), player_info.display_name, "0",
-                     str(role_details.initial_lives), str(role_details.missiles), "0", "0", "", ""]
+                     str(role_details.initial_lives), "0", str(role_details.missiles), "0", "", ""]
             row_id = f"r{row_index}"
 
             player = _Player(lives=role_details.initial_lives, shots=role_details.shots, row_index=row_index,
