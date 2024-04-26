@@ -1,7 +1,7 @@
 from sanic import Request
 
 from helpers.sm5helper import get_sm5_player_stats
-from helpers.tooltips import TOOLTIP_INFO
+from helpers.tooltiphelper import TOOLTIP_INFO
 from shared import app
 from utils import is_admin, render_cached_template
 from db.game import EntityEnds, EntityStarts

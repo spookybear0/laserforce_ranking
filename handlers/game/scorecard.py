@@ -3,7 +3,7 @@ from sanic import Request
 
 from helpers.gamehelper import SM5_STATE_COLORS, get_players_from_team
 from helpers.sm5helper import get_sm5_player_stats
-from helpers.tooltips import TOOLTIP_INFO
+from helpers.tooltiphelper import TOOLTIP_INFO
 from shared import app
 from typing import List
 from utils import render_cached_template
