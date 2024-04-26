@@ -75,8 +75,8 @@ _EVENTS_SUCCESSFUL_HITS = {
 _EVENTS_COSTING_LIVES = {
     EventType.DOWNED_OPPONENT: 1,
     EventType.DOWNED_TEAM: 1,
-    EventType.MISSILE_DOWN_OPPONENT: 3,
-    EventType.MISSILE_DOWN_TEAM: 3,
+    EventType.MISSILE_DOWN_OPPONENT: 2,
+    EventType.MISSILE_DOWN_TEAM: 2,
 }
 
 _EVENTS_DOWNING_PLAYER = {
@@ -320,6 +320,16 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             case EventType.ACTIVATE_NUKE:
                 _add_special_points(player1, -20, cell_changes)
                 stereo_balance = team_sound_balance[player1.team]
+
+            case EventType.DETONATE_NUKE:
+                for team in teams:
+                    if team != player1.team:
+                        for player in teams[team]:
+                            _add_lives(player, -3, cell_changes, row_changes, player_reup_times)
+                            _down_player(player, row_changes, event.time, player_reup_times)
+
+                stereo_balance = team_sound_balance[player1.team]
+                sounds.append(base_destroyed_audio)
 
             case EventType.AMMO_BOOST:
                 for player in teams[player1.team]:

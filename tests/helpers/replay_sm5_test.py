@@ -43,7 +43,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                             ReplayCellChange(row_id='r1', column=8, new_value='0.00'),
                                                             ReplayCellChange(row_id='r3', column=8, new_value='0.00')],
                                               row_changes=[
-                                                  ReplayRowChange(row_id='r3', new_css_class='earth-team-dim')],
+                                                  ReplayRowChange(row_id='r3', new_css_class='earth-team-down')],
                                               sounds=[ReplaySound(asset_urls=['/assets/sm5/audio/Effect/Scream.0.wav',
                                                                               '/assets/sm5/audio/Effect/Scream.1.wav',
                                                                               '/assets/sm5/audio/Effect/Scream.2.wav',
@@ -53,7 +53,8 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                               sound_stereo_balance=0.5),
                                   ReplayEvent(timestamp_millis=2500, message='LoggedIn resupplies Indy', team_scores=[],
                                               cell_changes=[ReplayCellChange(row_id='r1', column=3, new_value='19')],
-                                              row_changes=[ReplayRowChange(row_id='r1', new_css_class='fire-team-dim')],
+                                              row_changes=[
+                                                  ReplayRowChange(row_id='r1', new_css_class='fire-team-down')],
                                               sounds=[ReplaySound(asset_urls=['/assets/sm5/audio/Effect/Resupply.0.wav',
                                                                               '/assets/sm5/audio/Effect/Resupply.1.wav',
                                                                               '/assets/sm5/audio/Effect/Resupply.2.wav',
@@ -63,12 +64,12 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                               sound_stereo_balance=-0.5)], teams=[
             ReplayTeam(name='Fire Team', css_class='fire-team', id='fire_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/commander.png" alt="Commander" width="30" height="30">', 'Indy',
-                       '0', '15', '0', '5', '0', '', ''], row_id='r1'), ReplayPlayer(
+                       '0', '15', '0', '5', '0', '', ''], row_id='r1', css_class='fire-team'), ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/medic.png" alt="Medic" width="30" height="30">', 'Bumblebee', '0',
-                       '20', '0', '0', '0', '', ''], row_id='r2')]),
+                       '20', '0', '0', '0', '', ''], row_id='r2', css_class='fire-team')]),
             ReplayTeam(name='Earth Team', css_class='earth-team', id='earth_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/scout.png" alt="Scout" width="30" height="30">', 'Miles', '0', '15',
-                       '0', '0', '0', '', ''], row_id='r3')])], sounds=[ReplaySound(
+                       '0', '0', '0', '', ''], row_id='r3', css_class='earth-team')])], sounds=[ReplaySound(
             asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
                         '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0, priority=2,
             required=True), ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1, priority=1,
