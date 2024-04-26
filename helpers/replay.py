@@ -120,18 +120,19 @@ class Replay:
             result += f"registerSound({sound.id}, {sound.asset_urls}, {sound.priority}, {str(sound.required).lower()});\n"
 
         # Load the sounds in order of priority.
-        highest_priority = max([sound.priority for sound in self.sounds])
+        if self.sounds:
+            highest_priority = max([sound.priority for sound in self.sounds])
 
-        result += "let sound_promise = Promise.resolve();\n"
+            result += "let sound_promise = Promise.resolve();\n"
 
-        while highest_priority >= 0:
-            sounds = [sound for sound in self.sounds if sound.priority == highest_priority]
+            while highest_priority >= 0:
+                sounds = [sound for sound in self.sounds if sound.priority == highest_priority]
 
-            if sounds:
-                for sound in sounds:
-                    result += f"loadSound({sound.id});\n"
+                if sounds:
+                    for sound in sounds:
+                        result += f"loadSound({sound.id});\n"
 
-            highest_priority -= 1
+                highest_priority -= 1
 
         for team in self.teams:
             result += f"addTeam('{team.name}', '{team.id}', '{team.css_class}');\n"

@@ -63,7 +63,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                               sound_stereo_balance=-0.5)], teams=[
             ReplayTeam(name='Fire Team', css_class='fire-team', id='fire_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/commander.png" alt="Commander" width="30" height="30">', 'Indy',
-                       '0', '15', '5', '0', '0', '', ''], row_id='r1'), ReplayPlayer(
+                       '0', '15', '0', '5', '0', '', ''], row_id='r1'), ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/medic.png" alt="Medic" width="30" height="30">', 'Bumblebee', '0',
                        '20', '0', '0', '0', '', ''], row_id='r2')]),
             ReplayTeam(name='Earth Team', css_class='earth-team', id='earth_team', players=[ReplayPlayer(
