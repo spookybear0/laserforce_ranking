@@ -12,9 +12,13 @@ from sanic import Request, response, HTTPResponse
 async def api_game_tdf(request: Request, type: str, id: int) -> HTTPResponse:
     if type.lower() == "sm5":
         game = await SM5Game.filter(id=id).first()
+        if game is None:
+            raise response.json({"error": "Game not found"}, status=404)
         replay = await create_sm5_replay(game)
     elif type.lower() == "laserball":
         game = await LaserballGame.filter(id=id).first()
+        if game is None:
+            raise response.json({"error": "Game not found"}, status=404)
         replay = await create_laserball_replay(game)
     else:
         raise ValueError("Invalid game type")

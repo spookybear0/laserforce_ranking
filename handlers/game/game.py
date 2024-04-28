@@ -78,12 +78,13 @@ async def game_index(request: Request, type: str, id: int) -> str:
         )
     elif type == "laserball":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
-        game_duration = game.mission_duration
 
         logger.debug(f"Fetching laserball game with ID {id}")
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
+        
+        game_duration = game.mission_duration
         
         logger.debug(f"Game found: {game}")
 
