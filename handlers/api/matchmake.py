@@ -70,8 +70,15 @@ async def api_matchmake(request: Request, type_: str) -> str:
             team4_players.append(await Player.filter(codename=codename).first())
 
     # calculate win chances
-        
-    matchmade_teams = ratinghelper.matchmake_teams(team1_players + team2_players + team3_players + team4_players, num_teams, mode)
+
+    all_players = team1_players + team2_players + team3_players + team4_players
+
+    # remove None objects
+
+    all_players = [player for player in all_players if player is not None]
+    
+    matchmade_teams = ratinghelper.matchmake_teams(all_players, num_teams, mode)
+    
 
     if not team3:
         matchmade_teams.append([])

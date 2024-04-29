@@ -311,39 +311,9 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 
     return True
 
+# deprecated
 def matchmake(players, mode: GameType=GameType.SM5) -> Tuple[List[Player], List[Player]]:
-    # use win chance to matchmake   
-
-    mode = mode.value
-
-    # get rating object for mode
-
-    # bruteforce sort
-
-    team1 = players[:len(players)//2]
-    team2 = players[len(players)//2:]
-
-    best1 = team1.copy()
-    best2 = team2.copy()
-
-    # gets most fair teams
-
-    for _ in range(1000):
-        shuffle(players)
-        team1 = players[:len(players)//2]
-        team2 = players[len(players)//2:]
-
-        func = lambda x: getattr(x, f"{mode}_rating")
-
-        # checks if teams are more fair then previous best
-        # use win chance to matchmake
-        # see which is closer to 0.5
-
-        if abs(model.predict_win([list(map(func, team1)), list(map(func, team2))])[0] - 0.5)\
-            < abs(model.predict_win([list(map(func, best1)), list(map(func, best2))])[0] - 0.5):
-            best1, best2 = team1, team2
-
-    return (best1, best2)
+    return matchmake_teams(players, 2, mode)
 
 def matchmake_teams(players, num_teams: int, mode: GameType=GameType.SM5) -> List[List[Player]]:
     """
@@ -368,12 +338,14 @@ def matchmake_teams(players, num_teams: int, mode: GameType=GameType.SM5) -> Lis
 
         # checks if teams are more fair then previous best
         # use win chance to matchmake
-        # see which is closer to 0.5
+        # see which is closer to 0.5, 0.33, 0.25
 
-        if abs(model.predict_win([list(map(func, team)) for team in teams])[0] - 0.5)\
-            < abs(model.predict_win([list(map(func, team)) for team in best_teams])[0] - 0.5):
-            best_teams = teams
+        ideal_win_chance = 1 / num_teams
 
+        for team in itertools.combinations(teams, 2):
+            if abs(model.predict_win([list(map(func, team[0])), list(map(func, team[1]))])[0] - ideal_win_chance)\
+                < abs(model.predict_win([list(map(func, best_teams[0])), list(map(func, best_teams[1]))])[0] - ideal_win_chance):
+                best_teams = teams
     return best_teams
 
 def get_win_chance(team1, team2, mode: GameType=GameType.SM5) -> float:
