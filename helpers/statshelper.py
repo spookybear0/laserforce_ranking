@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import List, Tuple, Optional, Callable, Any
 from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
@@ -16,6 +17,52 @@ from helpers.cachehelper import cache
 
 # The frequency for ticks in time series graphs, in milliseconds.
 _DEFAULT_TICKS_DURATION_MILLIS = 30000
+
+
+@dataclass
+class TimeSeriesDataPoint:
+    """A single data point in a time series."""
+    date: datetime
+
+    value: float
+
+
+@dataclass
+class TimeSeriesRawData:
+    """A collection of data points over a stretch of time.
+
+    This object defines the start and end time and the data points. The data points are in no particular frequency,
+    and there could be multiple points for the same date.
+    """
+    min_date: datetime
+
+    max_date: datetime
+
+    data_points: List[TimeSeriesDataPoint]
+
+
+@dataclass
+class TimeSeriesOrderedGraphData:
+    """Data points that can be used to plot a time series with ChartJS.
+
+    The object defines the time period and the data points in a specific interval.
+    """
+    min_date: datetime
+
+    max_date: datetime
+
+    interval: timedelta
+
+    # The actual data, starting at min_date, each point at "interval" away from each other.
+    data_points: List[float]
+
+    # Labels for the graph.
+    @property
+    def labels(self) -> List[str]:
+        return [
+            (self.min_date + self.interval * offset).strftime("%Y/%m/%d") for offset in range(0, len(self.data_points))
+        ]
+
 
 @dataclass
 class PlayerCoreGameStats:
@@ -162,6 +209,42 @@ def get_ticks_for_time_graph(game_duration_millis: int) -> range:
     of the game.
     """
     return range(0, game_duration_millis + _DEFAULT_TICKS_DURATION_MILLIS, _DEFAULT_TICKS_DURATION_MILLIS)
+
+
+def create_time_series_ordered_graph(raw_data: TimeSeriesRawData, tick_count: int) -> TimeSeriesOrderedGraphData:
+    # There must be at least one data point.
+    assert raw_data.data_points
+    assert tick_count > 1
+
+    if len(raw_data.data_points) == 1:
+        # If it's just one data point, we can't really do much here.
+        return TimeSeriesOrderedGraphData(raw_data.min_date, raw_data.max_date, interval=timedelta(0.0),
+                                          data_points=[raw_data.data_points[0].value for _ in range(tick_count)])
+
+    # Get the time delta between each tick.
+    tick_delta = (raw_data.max_date - raw_data.min_date) / (tick_count - 1)
+
+    # Get the time at each tick.
+    data_points = []
+    source_index = 0
+    output_index = 0
+    time = raw_data.min_date
+    data_point_count = len(raw_data.data_points)
+
+    while output_index < tick_count:
+        while time > raw_data.data_points[source_index].date and source_index < data_point_count - 1:
+            source_index += 1
+
+        data_points.append(raw_data.data_points[source_index].value)
+        output_index += 1
+        time += tick_delta
+
+    return TimeSeriesOrderedGraphData(
+        min_date=raw_data.min_date,
+        max_date=raw_data.max_date,
+        interval=tick_delta,
+        data_points=data_points,
+    )
 
 
 async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start: EntityStarts) -> dict[str, int]:

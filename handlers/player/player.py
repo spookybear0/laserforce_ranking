@@ -1,3 +1,5 @@
+from helpers.laserballhelper import get_laserball_rating_over_time
+from helpers.sm5helper import get_sm5_rating_over_time
 from helpers.userhelper import get_median_role_score
 from db.types import GameType, Team
 from utils import render_cached_template, get_post
@@ -10,7 +12,7 @@ from db.player import Player
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
 from db.game import EntityEnds, EntityStarts
-from helpers.statshelper import sentry_trace
+from helpers.statshelper import sentry_trace, create_time_series_ordered_graph
 from sanic.log import logger
 from helpers.cachehelper import cache_template
 
@@ -124,6 +126,18 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     shots_hit = sm5_shots_hit+laserball_shots_hit
     shots_fired = sm5_shots_fired+laserball_shots_fired
 
+    sm5_rating_raw_data = await get_sm5_rating_over_time(player.entity_id)
+    sm5_rating_graph_data = create_time_series_ordered_graph(sm5_rating_raw_data, 100)
+
+    sm5_rating_over_time_labels = sm5_rating_graph_data.labels
+    sm5_rating_over_time_data = sm5_rating_graph_data.data_points
+
+    laserball_rating_raw_data = await get_laserball_rating_over_time(player.entity_id)
+    laserball_rating_graph_data = create_time_series_ordered_graph(laserball_rating_raw_data, 100)
+
+    laserball_rating_over_time_labels = laserball_rating_graph_data.labels
+    laserball_rating_over_time_data = laserball_rating_graph_data.data_points
+
     logger.debug("Rendering player page")
 
     return await render_cached_template(
@@ -178,6 +192,11 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         sean_hits=sean_hits,
         shots_hit=shots_hit,
         shots_fired=shots_fired,
+        # rating over time
+        sm5_rating_over_time_labels=sm5_rating_over_time_labels,
+        sm5_rating_over_time_data=sm5_rating_over_time_data,
+        laserball_rating_over_time_labels=laserball_rating_over_time_labels,
+        laserball_rating_over_time_data=laserball_rating_over_time_data,
     )
 
 @app.post("/player")

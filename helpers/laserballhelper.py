@@ -1,19 +1,27 @@
 """Various helpers specifically for Laserball games.
 """
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional, List, Dict
 
-from db.game import EntityStarts, PlayerInfo
+import pytz
+
+from db.game import EntityStarts, PlayerInfo, EntityEnds
 from db.laserball import LaserballStats, LaserballGame
 from db.types import Team
 from helpers.cachehelper import cache
 from helpers.gamehelper import get_team_rosters, SM5_STATE_LABEL_MAP
 from helpers.statshelper import PlayerCoreGameStats, get_player_state_distribution, TeamCoreGameStats, count_blocks, \
-    get_ticks_for_time_graph, millis_to_time
-
+    get_ticks_for_time_graph, millis_to_time, TimeSeriesRawData, TimeSeriesDataPoint
 
 # TODO: A lot of stuff from statshelper.py should be moved here. But let's do that separately to keep the commit size
 #  reasonable.
+
+
+# Artificial timestamps for default values. We can't use datetime.min and datetime.max because they are naive.
+_MIN_DATETIME = datetime(1976, 1, 1, tzinfo=pytz.utc)
+_MAX_DATETIME = datetime(2035, 12, 31, tzinfo=pytz.utc)
+
 
 @dataclass
 class PlayerLaserballGameStats(PlayerCoreGameStats):
@@ -355,6 +363,68 @@ async def get_laserball_player_stats(game: LaserballGame,
         all_players=all_players,
         score_chart_data=score_chart_data,
         score_chart_data_rounds=score_chart_data_rounds,
+    )
+
+
+async def get_laserball_rating_over_time(entity_id: str, min_time: datetime = _MIN_DATETIME,
+                                   max_time: datetime = _MAX_DATETIME) -> \
+        Optional[TimeSeriesRawData]:
+    """Creates a time series of the SM5 rating for a specific player.
+
+    entity_id: Entity ID of the player to get the rating for.
+    min_time: Earliest timestamp to get data for (no lower bound if not set)
+    max_time: Latest timestamp to get data for (no upper bound if not set)
+    """
+    # TODO: A lot of this stuff is duplicated from the SM5 version. We can simplify this by creating a common Game
+    #  class that contains all the common things in a game definition.
+
+    # Get all the EntityEnds for this player.
+    entity_ends = await EntityEnds.filter(entity__entity_id=entity_id, laserballgames__ranked=True,
+                                          laserballgames__mission_name__icontains="laserball",
+                                          current_rating_mu__isnull="", current_rating_sigma__isnull="").all()
+
+    # Create a lookup map.
+    entity_end_lookup = {
+        entity.id: entity for entity in entity_ends
+    }
+
+    # We also need the actual Laserball games so we can get the date of each game.
+    entity_to_games = {
+        entity.id: await LaserballGame.filter(entity_ends__id=entity.id).first() for entity in entity_ends
+    }
+
+    # We need the reverse mapping, game ID to entity.
+    games_to_entity = {
+        entity_to_games[entity_id].id: entity_end_lookup[entity_id] for entity_id in entity_to_games.keys()
+    }
+
+    # Map the game IDs to the games for easier reference.
+    all_games = {
+        game.id: game for game in entity_to_games.values() if game
+    }
+
+    # Create a list of all game IDs, sorted by timestamp. Trim the ones outside the time range.
+    game_ids = [
+        game.id for game in all_games.values() if min_time <= game.start_time < max_time
+    ]
+
+    # There is no data.
+    if not game_ids:
+        return None
+
+    game_ids.sort(key=lambda game_id: all_games[game_id].start_time)
+    min_date = all_games[game_ids[0]].start_time
+    max_date = all_games[game_ids[-1]].start_time
+
+    # Go through each game and compute the MVP at that time.
+    data_points = [
+        TimeSeriesDataPoint(all_games[game_id].start_time,
+                            games_to_entity[game_id].current_rating_mu - 3 * games_to_entity[
+                                game_id].current_rating_sigma) for game_id in game_ids
+    ]
+
+    return TimeSeriesRawData(
+        min_date=min_date, max_date=max_date, data_points=data_points
     )
 
 
