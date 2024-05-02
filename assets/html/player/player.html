@@ -377,8 +377,12 @@
             </div>
 
             <div class="stats">
+                {% if sm5_rating_over_time_data %}
                 <canvas class="inline-block" id="sm5_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
-                <canvas class="inline-block" id="laserball_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                {% endif %}
+                {% if laserball_rating_over_time_data %}
+                    <canvas class="inline-block" id="laserball_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                {% endif %}
             </div>
 
             <div style="clear: both; padding-top: 2rem;"></div>
@@ -592,6 +596,7 @@
         }
     });
 
+    {% if sm5_rating_over_time_data %}
     new Chart("sm5_rating_over_time", {
         type: "line",
         data: {
@@ -656,7 +661,9 @@
             }
         }
     });
+    {% endif %}
 
+    {% if laserball_rating_over_time_data %}
     new Chart("laserball_rating_over_time", {
         type: "line",
         data: {
@@ -721,6 +728,7 @@
             }
         }
     });
+    {% endif %}
 
 </script>
 
