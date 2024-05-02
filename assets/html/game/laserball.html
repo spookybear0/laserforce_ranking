@@ -299,10 +299,12 @@
                                     {% else %}
                                             <td><p>{{ player.score }}</p></td>
                                     {% endif %}
-                                    {% if entity_end.current_rating_mu and game.ranked %}
-                                        <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
-                                    {% else %}
-                                        <td><p>&nbsp;</p></td>
+                                    {% if game.ranked %}
+                                        {% if entity_end.current_rating_mu %}
+                                            <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                        {% else %}
+                                            <td><p>&nbsp;</p></td>
+                                        {% endif %}
                                     {% endif %}
                                     <td><p>{{ player.possession_time_str }}</p></td>
                                     <td><p>{{ player.goals }}</p></td>
