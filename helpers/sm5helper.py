@@ -2,23 +2,28 @@
 """
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional, List, Dict
 
+import pytz
 from tortoise.expressions import Q
 
-from db.game import EntityStarts, PlayerInfo
+from db.game import EntityStarts, PlayerInfo, EntityEnds
 from db.sm5 import SM5Game, SM5Stats
 from db.types import Team, IntRole, PieChartData, EventType, LineChartData
-from helpers.formattinghelper import create_ratio_string
+from helpers.cachehelper import cache
 from helpers.gamehelper import get_team_rosters, SM5_STATE_LABEL_MAP, SM5_STATE_COLORS
 from helpers.statshelper import PlayerCoreGameStats, get_player_state_distribution, get_sm5_score_components, \
     count_zaps, count_missiles, TeamCoreGameStats, get_sm5_player_alive_times, get_sm5_player_alive_labels, \
-    get_player_state_distribution_pie_chart, get_sm5_player_alive_colors
-from helpers.cachehelper import cache
-
+    get_player_state_distribution_pie_chart, get_sm5_player_alive_colors, TimeSeriesRawData, TimeSeriesDataPoint
 
 # TODO: A lot of stuff from statshelper.py should be moved here. But let's do that separately to keep the commit size
 #  reasonable.
+
+# Artificial timestamps for default values. We can't use datetime.min and datetime.max because they are naive.
+_MIN_DATETIME = datetime(1976, 1, 1, tzinfo=pytz.utc)
+_MAX_DATETIME = datetime(2035, 12, 31, tzinfo=pytz.utc)
+
 
 @dataclass
 class PlayerSm5GameStats(PlayerCoreGameStats):
@@ -522,6 +527,65 @@ async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[Pl
         next_snapshot += granularity_millis
 
     return lives_timeline
+
+
+async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DATETIME,
+                                   max_time: datetime = _MAX_DATETIME) -> \
+        Optional[TimeSeriesRawData]:
+    """Creates a time series of the SM5 rating for a specific player.
+
+    entity_id: Entity ID of the player to get the rating for.
+    min_time: Earliest timestamp to get data for (no lower bound if not set)
+    max_time: Latest timestamp to get data for (no upper bound if not set)
+    """
+    # Get all the EntityEnds for this player.
+    entity_ends = await EntityEnds.filter(entity__entity_id=entity_id, sm5games__ranked=True,
+                                          sm5games__mission_name__icontains="space marines",
+                                          current_rating_mu__isnull="", current_rating_sigma__isnull="").all()
+
+    # Create a lookup map.
+    entity_end_lookup = {
+        entity.id: entity for entity in entity_ends
+    }
+
+    # We also need the actual SM5 games so we can get the date of each game.
+    entity_to_games = {
+        entity.id: await SM5Game.filter(entity_ends__id=entity.id).first() for entity in entity_ends
+    }
+
+    # We need the reverse mapping, game ID to entity.
+    games_to_entity = {
+        entity_to_games[entity_id].id: entity_end_lookup[entity_id] for entity_id in entity_to_games.keys()
+    }
+
+    # Map the game IDs to the games for easier reference.
+    all_games = {
+        game.id: game for game in entity_to_games.values() if game
+    }
+
+    # Create a list of all game IDs, sorted by timestamp. Trim the ones outside the time range.
+    game_ids = [
+        game.id for game in all_games.values() if min_time <= game.start_time < max_time
+    ]
+
+    # There is no data.
+    if not game_ids:
+        return None
+
+    game_ids.sort(key=lambda game_id: all_games[game_id].start_time)
+    min_date = all_games[game_ids[0]].start_time
+    max_date = all_games[game_ids[-1]].start_time
+
+    # Go through each game and compute the MVP at that time.
+    data_points = [
+        TimeSeriesDataPoint(all_games[game_id].start_time,
+                            games_to_entity[game_id].current_rating_mu - 3 * games_to_entity[
+                                game_id].current_rating_sigma) for game_id in game_ids
+    ]
+
+    return TimeSeriesRawData(
+        min_date=min_date, max_date=max_date, data_points=data_points
+    )
 
 
 def _create_lives_snapshot(lives_timeline: dict[int, list[int]], current_lives: dict[int, int]):
