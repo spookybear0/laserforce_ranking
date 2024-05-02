@@ -129,14 +129,14 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     sm5_rating_raw_data = await get_sm5_rating_over_time(player.entity_id)
     sm5_rating_graph_data = create_time_series_ordered_graph(sm5_rating_raw_data, 100)
 
-    sm5_rating_over_time_labels = sm5_rating_graph_data.labels
-    sm5_rating_over_time_data = sm5_rating_graph_data.data_points
+    sm5_rating_over_time_labels = sm5_rating_graph_data.labels if sm5_rating_graph_data else None
+    sm5_rating_over_time_data = sm5_rating_graph_data.data_points if sm5_rating_graph_data else None
 
     laserball_rating_raw_data = await get_laserball_rating_over_time(player.entity_id)
     laserball_rating_graph_data = create_time_series_ordered_graph(laserball_rating_raw_data, 100)
 
-    laserball_rating_over_time_labels = laserball_rating_graph_data.labels
-    laserball_rating_over_time_data = laserball_rating_graph_data.data_points
+    laserball_rating_over_time_labels = laserball_rating_graph_data.labels if laserball_rating_graph_data else None
+    laserball_rating_over_time_data = laserball_rating_graph_data.data_points if laserball_rating_graph_data else None
 
     logger.debug("Rendering player page")
 

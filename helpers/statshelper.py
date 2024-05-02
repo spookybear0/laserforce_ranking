@@ -211,7 +211,12 @@ def get_ticks_for_time_graph(game_duration_millis: int) -> range:
     return range(0, game_duration_millis + _DEFAULT_TICKS_DURATION_MILLIS, _DEFAULT_TICKS_DURATION_MILLIS)
 
 
-def create_time_series_ordered_graph(raw_data: TimeSeriesRawData, tick_count: int) -> TimeSeriesOrderedGraphData:
+def create_time_series_ordered_graph(raw_data: Optional[TimeSeriesRawData], tick_count: int) -> \
+        Optional[TimeSeriesOrderedGraphData]:
+    # If there was no data at all, then return no data.
+    if not raw_data:
+        return None
+
     # There must be at least one data point.
     assert raw_data.data_points
     assert tick_count > 1
