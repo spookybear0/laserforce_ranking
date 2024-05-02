@@ -104,8 +104,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     member_id = int(data[8])
                 except ValueError:
                     member_id = None
+
+                name = data[4].strip() # remove whitespace (some names have trailing whitespace for some reason)
                 
-                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=data[4],
+                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=name,
                                         team=team, level=int(data[6]), role=int(data[7]), battlesuit=data[8], member_id=member_id)
 
                 entity_starts.append(entity_start)
@@ -367,8 +369,10 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                     member_id = int(data[8])
                 except ValueError:
                     member_id = None
+
+                name = data[4].strip() # remove whitespace (some names have trailing whitespace for some reason)
                 
-                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=data[4],
+                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=name,
                                         team=team, level=int(data[6]), role=int(data[7]), battlesuit=data[8], member_id=member_id)
 
                 entity_starts.append(entity_start)
