@@ -367,7 +367,7 @@ async def get_laserball_player_stats(game: LaserballGame,
 
 
 async def get_laserball_rating_over_time(entity_id: str, min_time: datetime = _MIN_DATETIME,
-                                   max_time: datetime = _MAX_DATETIME) -> \
+                                         max_time: datetime = _MAX_DATETIME) -> \
         Optional[TimeSeriesRawData]:
     """Creates a time series of the SM5 rating for a specific player.
 

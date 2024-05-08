@@ -194,7 +194,7 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
             player1.total_shots_fired += 1
             cell_changes.append(ReplayCellChange(row_id=player1.row_id, column=_ACCURACY_COLUMN,
                                                  new_value="%.2f%%" % (
-                                                     player1.total_shots_hit * 100 / player1.total_shots_fired)))
+                                                         player1.total_shots_hit * 100 / player1.total_shots_fired)))
 
         # Handle each event.
         match event.type:

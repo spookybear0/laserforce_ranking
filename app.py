@@ -1,16 +1,19 @@
+import asyncio
 import os
 import sys
-import asyncio
-import router
-from shared import app
-from sanic.server.async_server import AsyncioServer
-from mysql import MySQLPool
 import threading
+
 import webview
+from sanic.server.async_server import AsyncioServer
+
+import router
+from mysql import MySQLPool
+from shared import app
 
 path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(path)
 sys.path.append(path)
+
 
 async def main():
     router.add_all_routes(app)

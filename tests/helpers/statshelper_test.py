@@ -224,7 +224,6 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(753753, total_points_scored)
 
-
     async def create_score_test_scenario(self) -> EntityStarts:
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
 

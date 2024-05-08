@@ -1,28 +1,31 @@
-from sanic import Request
+from typing import Optional
 
+from numpy import arange
+from sanic import Request
+from sanic import exceptions
+from sanic.log import logger
+
+from db.game import EntityEnds
+from db.laserball import LaserballGame, LaserballStats
+from db.sm5 import SM5Game
+from helpers.cachehelper import cache_template
+from helpers.gamehelper import get_matchmaking_teams
 from helpers.laserballhelper import get_laserball_player_stats
 from helpers.sm5helper import get_sm5_player_stats
+from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
+    millis_to_time
 from helpers.tooltiphelper import TOOLTIP_INFO
 from shared import app
 from utils import is_admin, render_cached_template
-from db.game import EntityEnds, EntityStarts
-from db.sm5 import SM5Game, SM5Stats
-from db.laserball import LaserballGame, LaserballStats
-from helpers.gamehelper import get_team_rosters, get_matchmaking_teams
-from db.types import Team
-from sanic import exceptions
-from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
-    millis_to_time, get_ticks_for_time_graph
-from numpy import arange
-from typing import Optional
-from sanic.log import logger
-from helpers.cachehelper import cache_template
+
 
 async def get_entity_end(entity) -> Optional[EntityEnds]:
     return await EntityEnds.filter(entity=entity).first()
 
+
 async def get_laserballstats(entity) -> Optional[LaserballStats]:
     return await LaserballStats.filter(entity=entity).first()
+
 
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
@@ -35,7 +38,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
-        
+
         logger.debug(f"Game found: {game}")
 
         logger.debug("Fetching player stats")
@@ -83,15 +86,14 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
-        
+
         game_duration = game.mission_duration
-        
+
         logger.debug(f"Game found: {game}")
 
         logger.debug("Fetching team rosters")
 
         full_stats = await get_laserball_player_stats(game)
-
 
         logger.debug("Fetching matchmaking teams")
 
@@ -112,7 +114,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             request, "game/laserball.html",
             game=game,
             teams=full_stats.teams,
-            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, game_duration//1000//60+0.5, 0.5)],
+            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t * 60 * 1000)} for t in
+                                arange(0, game_duration // 1000 // 60 + 0.5, 0.5)],
             score_chart_data=full_stats.score_chart_data,
             score_chart_data_rounds=full_stats.score_chart_data_rounds,
             win_chance_before_game=win_chance_before_game,

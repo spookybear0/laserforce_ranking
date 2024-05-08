@@ -1,10 +1,10 @@
 # made by realistikdash
-from typing import Union, Tuple
-import aiomysql
 import asyncio
-import os
+from typing import Union, Tuple
 
+import aiomysql
 import pymysql
+
 from config import config  # type: ignore
 
 """
@@ -58,13 +58,13 @@ class MySQLPool:
 
     @classmethod
     async def connect(
-        cls,
-        host: str,
-        user: str,
-        password: str,
-        database: str,
-        port: int = 3306,
-        loop: asyncio.AbstractEventLoop = None,
+            cls,
+            host: str,
+            user: str,
+            password: str,
+            database: str,
+            port: int = 3306,
+            loop: asyncio.AbstractEventLoop = None,
     ) -> "MySQLPool":
         """Creates the MySQL connecton pool. Handles authentication and the
         configuration of the object.
@@ -100,13 +100,13 @@ class MySQLPool:
         return cls
 
     async def connect_local(
-        self,
-        host: str,
-        user: str,
-        password: str,
-        database: str,
-        port: int = 3306,
-        loop: asyncio.AbstractEventLoop = None,
+            self,
+            host: str,
+            user: str,
+            password: str,
+            database: str,
+            port: int = 3306,
+            loop: asyncio.AbstractEventLoop = None,
     ) -> None:
         """Connects the current object to the pool without creating a new
         object.

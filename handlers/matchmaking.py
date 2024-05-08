@@ -1,10 +1,12 @@
-from sanic import Request, exceptions
-from shared import app
-from helpers import ratinghelper
-from utils import render_template
-from db.player import Player
-from sanic.log import logger
 from openskill.models import PlackettLuceRating as Rating
+from sanic import Request, exceptions
+from sanic.log import logger
+
+from db.player import Player
+from helpers import ratinghelper
+from shared import app
+from utils import render_template
+
 
 class FakePlayer:
     def __init__(self, codename: str) -> None:
@@ -18,9 +20,10 @@ class FakePlayer:
 
     def __str__(self) -> str:
         return f"{self.codename} (non member)"
-    
+
     def __repr__(self) -> str:
         return f"{self.codename} (non member)"
+
 
 @app.get("/matchmaking")
 async def matchmaking(request: Request) -> str:
@@ -28,7 +31,8 @@ async def matchmaking(request: Request) -> str:
 
     # all_players = {codename: (sm5_rating, lb_rating)
     logger.debug("Getting ratings for all players")
-    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
+    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in
+                   players}
 
     return await render_template(
         request,
@@ -39,6 +43,7 @@ async def matchmaking(request: Request) -> str:
         team1=[],
         team2=[],
     )
+
 
 @app.post("/matchmaking")
 async def matchmaking_post(request: Request) -> str:
@@ -56,7 +61,8 @@ async def matchmaking_post(request: Request) -> str:
 
     # all_players = {codename: (sm5_rating, lb_rating)
     logger.debug("Getting ratings for all players")
-    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
+    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in
+                   players}
 
     logger.debug("Getting players from team 1")
 
@@ -68,7 +74,7 @@ async def matchmaking_post(request: Request) -> str:
 
         if entity_id.startswith("#"):
             player = await Player.filter(entity_id=entity_id).first()
-        else: # non member
+        else:  # non member
             player = FakePlayer(entity_id)
             all_players[entity_id] = (player.sm5_rating.ordinal(), player.laserball_rating.ordinal())
 
@@ -87,7 +93,7 @@ async def matchmaking_post(request: Request) -> str:
 
         if entity_id.startswith("#"):
             player = await Player.filter(entity_id=entity_id).first()
-        else: # non member
+        else:  # non member
             player = FakePlayer(entity_id)
             all_players[entity_id] = (player.sm5_rating.ordinal(), player.laserball_rating.ordinal())
 

@@ -10,8 +10,8 @@ from helpers.cachehelper import cache_template
 from helpers.gamehelper import SM5_STATE_COLORS
 from helpers.laserballhelper import get_laserball_player_stats
 from helpers.sm5helper import get_sm5_player_stats
-from helpers.tooltiphelper import TOOLTIP_INFO
 from helpers.statshelper import sentry_trace, millis_to_time, get_sm5_single_player_score_graph_data
+from helpers.tooltiphelper import TOOLTIP_INFO
 from shared import app
 from utils import render_cached_template
 

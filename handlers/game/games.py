@@ -1,13 +1,14 @@
 from sanic import Request
+
+from db.laserball import LaserballGame
+from db.sm5 import SM5Game
+from helpers.cachehelper import cache_template
+from helpers.statshelper import sentry_trace
 from shared import app
 from utils import render_cached_template
-from db.sm5 import SM5Game
-from db.laserball import LaserballGame
-from tortoise.expressions import F
-from helpers.statshelper import sentry_trace
-from helpers.cachehelper import cache_template
 
 GAMES_PER_PAGE = 15
+
 
 @app.get("/games")
 @sentry_trace
@@ -24,11 +25,11 @@ async def index(request: Request) -> str:
 
     if sort == 0:
         order_by = "start_time"
-    elif sort == 1: # winner team
+    elif sort == 1:  # winner team
         order_by = "winner_color"
-    elif sort == 2: # ended early
+    elif sort == 2:  # ended early
         order_by = "ended_early"
-    elif sort == 3: # ranked
+    elif sort == 3:  # ranked
         order_by = "ranked"
 
     order_by = "-" + order_by if sort_direction == "desc" else order_by

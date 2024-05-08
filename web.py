@@ -46,7 +46,8 @@ from config import config
 from helpers import cachehelper
 
 TORTOISE_ORM = {
-    "connections": { "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce" },
+    "connections": {
+        "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce"},
     "apps": {
         "models": {
             "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "aerich.models"],
@@ -55,11 +56,13 @@ TORTOISE_ORM = {
     }
 }
 
+
 @app.exception(AttributeError)
 async def handle_attribute_error(request, exception):
     # check if the error is due to _sentry_hub
     if "_sentry_hub" not in str(exception):
         raise exception
+
 
 @app.listener("before_server_stop")
 async def close_db(app, loop) -> None:
@@ -68,6 +71,7 @@ async def close_db(app, loop) -> None:
     """
     await app.ctx.sql.close()
     await Tortoise.close_connections()
+
 
 @app.signal("server.init.before")
 async def setup_app(app, loop) -> None:
@@ -83,6 +87,7 @@ async def setup_app(app, loop) -> None:
     # use cache on production server
     cachehelper.use_cache()
 
+
 async def main() -> None:
     """
     Start the server in a development/nonprod environment.
@@ -93,7 +98,7 @@ async def main() -> None:
         config=TORTOISE_ORM
     )
 
-    #await adminhelper.repopulate_database()
+    # await adminhelper.repopulate_database()
 
     # no cache on dev server
 
@@ -102,6 +107,7 @@ async def main() -> None:
     await server.startup()
     await server.after_start()
     await server.serve_forever()
+
 
 router.add_all_routes(app)
 app.static("assets", "assets", name="assets")

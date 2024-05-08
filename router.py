@@ -1,10 +1,11 @@
+import importlib.util
 import os
 import sys
-from shared import app
-import importlib.util
+from types import ModuleType
+
 from sanic import Sanic
 from sanic.log import logger
-from types import ModuleType
+
 
 def import_from_dir(name, path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
@@ -13,8 +14,10 @@ def import_from_dir(name, path) -> ModuleType:
     spec.loader.exec_module(mod)
     return mod
 
+
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 routes = []
+
 
 def add_all_routes(app: Sanic) -> None:
     def import_dir(directory) -> None:
@@ -26,4 +29,5 @@ def add_all_routes(app: Sanic) -> None:
                 logger.info(f"Importing {directory}{f}")
                 mod = import_from_dir(f.rstrip(".py"), directory + f)
                 routes.append(mod)
+
     import_dir(path + "handlers/")

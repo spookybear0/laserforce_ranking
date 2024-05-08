@@ -1,13 +1,16 @@
-from tortoise import Tortoise
-from config import config
-from helpers import tdfhelper, userhelper, ratinghelper
-from db.player import Player, Permission
-from db.types import Permission
-from db.sm5 import SM5Stats, SM5Game
-from db.laserball import LaserballGame
 from typing import Union
+
 from sanic.log import logger
+from tortoise import Tortoise
+
+from config import config
+from db.laserball import LaserballGame
+from db.player import Player
+from db.sm5 import SM5Stats, SM5Game
+from db.types import Permission
+from helpers import tdfhelper, userhelper, ratinghelper
 from shared import app
+
 
 async def repopulate_database() -> None:
     await Tortoise.generate_schemas()
@@ -24,13 +27,17 @@ async def repopulate_database() -> None:
     # some fixes
 
     await Player.filter(codename="ëMîlÿ").update(entity_id="#RFSjNZ")
-    await Player.filter(codename="Survivor").update(permissions=Permission.ADMIN, password=userhelper.hash_password(config["root_password"]))
+    await Player.filter(codename="Survivor").update(permissions=Permission.ADMIN,
+                                                    password=userhelper.hash_password(config["root_password"]))
 
-    await Player.all().update(sm5_mu=ratinghelper.MU, sm5_sigma=ratinghelper.SIGMA, laserball_mu=ratinghelper.MU, laserball_sigma=ratinghelper.SIGMA)
+    await Player.all().update(sm5_mu=ratinghelper.MU, sm5_sigma=ratinghelper.SIGMA, laserball_mu=ratinghelper.MU,
+                              laserball_sigma=ratinghelper.SIGMA)
 
     await tdfhelper.parse_all_tdfs()
 
-async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battlesuit: str, codename: str, mode: str) -> None:
+
+async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battlesuit: str, codename: str,
+                                    mode: str) -> None:
     """
     Manually log in a player
 
@@ -43,7 +50,7 @@ async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battles
     logger.debug(f"Logging in player {battlesuit} as {codename}")
 
     player = await Player.filter(codename=codename).first()
-    
+
     entity_start = await game.entity_starts.filter(name=battlesuit).first()
 
     old_entity_id = entity_start.entity_id
@@ -92,6 +99,7 @@ async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battles
         f.write(contents)
 
     logger.debug("Wrote to file successfully")
+
 
 async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename: str, id: int, mode: str) -> None:
     """
@@ -159,7 +167,6 @@ async def delete_player_from_game(game: Union[SM5Game, LaserballGame], codename:
             logger.warning("Failed to delete laserballstats, continuing")
     else:
         raise ValueError("Invalid mode")
-        
 
     logger.debug("Deleting data on the tdf file")
 

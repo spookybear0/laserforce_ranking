@@ -1,2512 +1,2512 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset
-      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+    <!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
 
 
-<url>
-  <loc>https://laserforce.spoo.uk/</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>1.00</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/players</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/games</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/stats</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/matchmaking</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/about</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/login</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Commander</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Shadow%20%E2%98%BA</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/A%20Kodama</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Just%20Jay%20%E2%98%BA</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Anubis%20%E2%98%BA</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Survivor</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Nolandooo</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Halange</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Ender</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Shadow%20Dagger</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Bagel</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/SupremeKev</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Super%20Dave</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Green%20Ranger</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Imposter</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/EboMike</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Dave&#39;s%20Not%20Here</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/XCountry</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Paulie</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Son%20of%20Athena</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Little%20Bear</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/High%20Tower</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Stealth</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Loading.../</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/BreeDai</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/players?page=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/38</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/36</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/35</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/34</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/games?page=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/122</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/121</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/111</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Commander?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/31</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/18</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/17</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/16</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/15</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Commander?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Shadow%20%E2%98%BA?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Shadow%20%E2%98%BA?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/A%20Kodama?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/19</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/A%20Kodama?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Just%20Jay%20%E2%98%BA?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Just%20Jay%20%E2%98%BA?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Anubis%20%E2%98%BA?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Anubis%20%E2%98%BA?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Survivor?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/30</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/28</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Survivor?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Nolandooo?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/27</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Nolandooo?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Halange?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Halange?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Ender?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Ender?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Shadow%20Dagger?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Shadow%20Dagger?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/17</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/16</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/14</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/13</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/12</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Bagel?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/5</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/4</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/2</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Bagel?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/69</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/68</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/67</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/66</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/61</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/SupremeKev?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/10</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/9</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/SupremeKev?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Super%20Dave?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Super%20Dave?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Green%20Ranger?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/7</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/6</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Green%20Ranger?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/123</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Imposter?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Imposter?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/EboMike?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/EboMike?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/117</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/97</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Dave&#39;s%20Not%20Here?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/32</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/24</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Dave&#39;s%20Not%20Here?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/XCountry?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/XCountry?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Paulie?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Paulie?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/112</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Son%20of%20Athena?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Son%20of%20Athena?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/32</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/31</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/30</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/29</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Little%20Bear?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/118</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/116</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/114</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Stealth?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/8</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Stealth?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/64</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/60</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/59</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Loading...?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/BreeDai?sm5page=1&amp;lbpage=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/3</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/BreeDai?sm5page=0&amp;lbpage=1</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Anchovy</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Dill</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/CorgisRUs%E2%98%BA</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Junkrat%20%E2%99%A5</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/JitWallet</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Roadrunner</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Das</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Twix</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Lost%20My%20Wallet</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Hoof%20Hearted</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Queen%20B</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Scooby</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/LTPro</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/%C3%ABM%C3%AEl%C3%BF</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Radar</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/DJScottyC</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Pambrose</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Optimus%20Prime</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Seeker</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Sav</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Found%20My%20Wallet</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Yodieman</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Walter%20White</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/SkyGuy</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Xybolt</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/players?page=0</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/players?page=2</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3585</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3587</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3589</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3586</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3583</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3584</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3581</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3582</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3580</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3579</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3588</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3590</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3573</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3569</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3570</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3571</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3572</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3567</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3568</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3558</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3561</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3560</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3559</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3557</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3555</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3556</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3553</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3549</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3552</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3554</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3550</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3548</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3551</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3540</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3542</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3541</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3539</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3537</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3538</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3531</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3529</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3535</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3528</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3534</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3530</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3536</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3533</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3522</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3532</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3521</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3519</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3512</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3511</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3518</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3514</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3517</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3516</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3513</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3520</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3515</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3505</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3462</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3468</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3464</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3461</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3463</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3465</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3460</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3459</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3467</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3466</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3458</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3451</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3312</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3315</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3317</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3316</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3311</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3313</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3314</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3304</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3301</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3302</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3298</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/7-11</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3300</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3303</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3299</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3289</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3290</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3297</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3288</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3296</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3291</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3292</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3293</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3279</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3294</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3280</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3277</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Twix%20%E2%98%BA</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3295</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3276</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3272</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3273</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3270</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3269</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3271</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3275</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3268</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3266</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3274</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3267</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3249</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3247</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3246</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3248</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3243</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3245</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3257</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3258</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3255</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3259</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3256</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3244</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3242</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3237</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3238</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3235</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3239</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3236</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3241</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3240</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3227</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3229</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3228</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3224</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3226</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3225</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3222</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3223</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3217</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3221</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3219</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3218</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3220</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3210</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3211</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3209</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3208</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3207</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3206</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3074</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3070</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3071</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3072</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3069</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3075</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3063</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3061</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3073</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3062</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3060</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3059</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3056</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3053</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3052</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3054</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3055</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3044</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3046</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3058</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3045</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3042</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3057</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3043</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3037</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3039</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3041</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3040</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3036</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3038</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3030</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3026</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3029</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3028</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3025</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3027</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3432</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3427</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3430</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3429</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3431</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3428</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3424</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3423</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3426</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3422</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3425</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3433</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3400</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3404</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3402</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3403</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3405</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3411</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3401</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3408</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3407</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3406</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3409</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3410</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3383</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3384</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3385</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3382</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3386</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3387</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3381</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3380</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3364</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3369</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3363</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3370</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3365</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3366</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3368</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3367</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3346</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3347</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3345</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3353</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3348</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3349</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3351</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3350</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3352</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3330</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3329</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3327</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3335</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3328</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3332</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3334</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3333</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3331</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3191</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3189</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3190</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3197</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/player/Am/pm</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3188</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3195</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3194</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3196</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3193</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3192</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3153</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3159</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3152</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3151</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3150</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3154</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3158</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3156</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3155</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3157</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3135</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3138</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3137</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3136</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3134</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3140</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3133</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3139</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3104</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3105</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3106</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3103</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3108</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3107</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2933</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2935</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2936</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2934</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2937</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2938</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2932</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
-<url>
-  <loc>https://laserforce.spoo.uk/game/laserball/38/replay</loc>
-  <lastmod>2024-04-28T02:55:33+00:00</lastmod>
-  <priority>0.51</priority>
-</url>
+    <url>
+        <loc>https://laserforce.spoo.uk/</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>1.00</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/players</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/games</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/stats</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/matchmaking</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/about</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/login</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Commander</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Shadow%20%E2%98%BA</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/A%20Kodama</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Just%20Jay%20%E2%98%BA</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Anubis%20%E2%98%BA</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Survivor</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Nolandooo</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Halange</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Ender</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Shadow%20Dagger</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Bagel</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/SupremeKev</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Super%20Dave</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Green%20Ranger</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Imposter</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/EboMike</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Dave&#39;s%20Not%20Here</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/XCountry</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Paulie</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Son%20of%20Athena</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Little%20Bear</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/High%20Tower</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Stealth</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Loading.../</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/BreeDai</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/players?page=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/38</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/36</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/35</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/34</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/games?page=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.64</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/122</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/121</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/111</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Commander?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/31</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/18</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/17</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/16</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/15</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Commander?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Shadow%20%E2%98%BA?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Shadow%20%E2%98%BA?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/A%20Kodama?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/19</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/A%20Kodama?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Just%20Jay%20%E2%98%BA?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Just%20Jay%20%E2%98%BA?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Anubis%20%E2%98%BA?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Anubis%20%E2%98%BA?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Survivor?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/30</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/28</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Survivor?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Nolandooo?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/27</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Nolandooo?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Halange?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Halange?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Ender?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Ender?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Shadow%20Dagger?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Shadow%20Dagger?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/17</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/16</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/14</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/13</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/12</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Bagel?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/5</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/4</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/2</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Bagel?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/69</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/68</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/67</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/66</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/61</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/SupremeKev?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/10</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/9</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/SupremeKev?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Super%20Dave?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Super%20Dave?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Green%20Ranger?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/7</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/6</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Green%20Ranger?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/123</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Imposter?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Imposter?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/EboMike?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/EboMike?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/117</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/97</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Dave&#39;s%20Not%20Here?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/32</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/24</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Dave&#39;s%20Not%20Here?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/XCountry?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/XCountry?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Paulie?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Paulie?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/112</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Son%20of%20Athena?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Son%20of%20Athena?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/32</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/31</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/30</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/29</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Little%20Bear?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/118</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/116</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/114</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Stealth?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/8</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Stealth?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/64</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/60</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/59</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Loading...?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/BreeDai?sm5page=1&amp;lbpage=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/3</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/BreeDai?sm5page=0&amp;lbpage=1</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Anchovy</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Dill</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/CorgisRUs%E2%98%BA</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Junkrat%20%E2%99%A5</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/JitWallet</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Roadrunner</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Das</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Twix</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Lost%20My%20Wallet</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Hoof%20Hearted</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Queen%20B</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Scooby</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/LTPro</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/%C3%ABM%C3%AEl%C3%BF</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Radar</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/DJScottyC</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Pambrose</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Optimus%20Prime</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Seeker</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Sav</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Found%20My%20Wallet</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Yodieman</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Walter%20White</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/SkyGuy</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Xybolt</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/players?page=0</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/players?page=2</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3585</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3587</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3589</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3586</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3583</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3584</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3581</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3582</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3580</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3579</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3588</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3590</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/142/scorecard/3573</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3569</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3570</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3571</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3572</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3567</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3568</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3558</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3561</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3560</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3559</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3557</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3555</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/141/scorecard/3556</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3553</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3549</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3552</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3554</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3550</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3548</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3551</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3540</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3542</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3541</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3539</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3537</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/140/scorecard/3538</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3531</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3529</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3535</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3528</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3534</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3530</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3536</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3533</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3522</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3532</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/139/scorecard/3521</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3519</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3512</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3511</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3518</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3514</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3517</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3516</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3513</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3520</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3515</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/138/scorecard/3505</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3462</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3468</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3464</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3461</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3463</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3465</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3460</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3459</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3467</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3466</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3458</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/135/scorecard/3451</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3312</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3315</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3317</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3316</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3311</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3313</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3314</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3304</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3301</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3302</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3298</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/7-11</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3300</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3303</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/133/scorecard/3299</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3289</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3290</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3297</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3288</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3296</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3291</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3292</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3293</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3279</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3294</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3280</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3277</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Twix%20%E2%98%BA</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/132/scorecard/3295</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3276</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3272</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3273</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3270</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3269</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3271</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3275</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3268</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3266</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3274</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/131/scorecard/3267</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3249</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3247</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3246</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3248</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3243</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3245</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3257</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3258</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3255</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3259</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3256</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/130/scorecard/3244</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3242</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3237</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3238</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3235</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3239</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3236</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3241</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3240</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3227</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3229</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3228</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3224</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3226</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3225</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3222</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/129/scorecard/3223</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3217</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3221</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3219</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3218</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3220</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3210</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3211</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3209</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3208</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3207</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/128/scorecard/3206</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3074</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3070</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3071</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3072</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3069</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3075</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3063</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3061</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3073</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3062</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3060</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/126/scorecard/3059</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3056</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3053</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3052</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3054</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3055</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3044</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3046</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3058</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3045</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3042</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3057</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/125/scorecard/3043</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3037</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3039</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3041</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3040</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3036</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3038</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3030</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3026</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3029</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3028</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3025</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/sm5/124/scorecard/3027</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3432</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3427</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3430</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3429</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3431</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3428</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3424</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3423</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3426</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3422</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3425</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/52/scorecard/3433</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3400</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3404</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3402</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3403</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3405</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3411</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3401</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3408</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3407</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3406</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3409</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/51/scorecard/3410</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3383</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3384</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3385</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3382</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3386</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3387</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3381</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/50/scorecard/3380</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3364</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3369</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3363</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3370</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3365</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3366</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3368</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/49/scorecard/3367</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3346</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3347</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3345</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3353</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3348</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3349</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3351</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3350</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/48/scorecard/3352</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3330</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3329</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3327</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3335</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3328</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3332</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3334</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3333</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/47/scorecard/3331</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3191</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3189</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3190</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3197</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/player/Am/pm</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3188</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3195</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3194</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3196</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3193</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/46/scorecard/3192</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3153</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3159</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3152</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3151</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3150</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3154</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3158</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3156</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3155</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/44/scorecard/3157</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3135</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3138</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3137</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3136</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3134</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3140</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3133</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/43/scorecard/3139</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3104</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3105</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3106</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3103</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3108</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/41/scorecard/3107</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2933</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2935</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2936</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2934</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2937</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2938</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/39/scorecard/2932</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
+    <url>
+        <loc>https://laserforce.spoo.uk/game/laserball/38/replay</loc>
+        <lastmod>2024-04-28T02:55:33+00:00</lastmod>
+        <priority>0.51</priority>
+    </url>
 
 
 </urlset>

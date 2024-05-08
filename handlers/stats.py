@@ -1,15 +1,17 @@
 from sanic import Request
-from shared import app
-from utils import render_cached_template
-from helpers import statshelper
-from db.types import Team, IntRole
-from helpers.statshelper import sentry_trace
-from db.sm5 import SM5Game
+from sanic.log import logger
+
+from db.game import EntityEnds
 from db.laserball import LaserballGame
 from db.player import Player
-from db.game import EntityEnds
-from sanic.log import logger
+from db.sm5 import SM5Game
+from db.types import Team, IntRole
+from helpers import statshelper
 from helpers.cachehelper import cache_template
+from helpers.statshelper import sentry_trace
+from shared import app
+from utils import render_cached_template
+
 
 @app.get("/stats")
 @sentry_trace
@@ -57,43 +59,43 @@ async def stats(request: Request) -> str:
     logger.debug("Rendering stats page")
 
     return await render_cached_template(request,
-        "stats.html",
-        zip=zip,
+                                        "stats.html",
+                                        zip=zip,
 
-        # general stats
+                                        # general stats
 
-        total_players=total_players,
-        total_games=total_games,
-        ranked_games=ranked_games,
-        total_games_played=total_games_played,
-        ranking_accuracy=ranking_accuracy,
+                                        total_players=total_players,
+                                        total_games=total_games,
+                                        ranked_games=ranked_games,
+                                        total_games_played=total_games_played,
+                                        ranking_accuracy=ranking_accuracy,
 
-        # sm5 stats
-        
-        sm5_red_wins=sm5_red_wins,
-        sm5_green_wins=sm5_green_wins,
-        points_scored=points_scored,
-        nukes_launched=nukes_launched,
-        nukes_cancelled=nukes_cancelled,
-        medic_hits=medic_hits,
-        own_medic_hits=own_medic_hits,
+                                        # sm5 stats
 
-        # sm5 role stats
+                                        sm5_red_wins=sm5_red_wins,
+                                        sm5_green_wins=sm5_green_wins,
+                                        points_scored=points_scored,
+                                        nukes_launched=nukes_launched,
+                                        nukes_cancelled=nukes_cancelled,
+                                        medic_hits=medic_hits,
+                                        own_medic_hits=own_medic_hits,
 
-        top_commanders=top_commanders,
-        top_heavies=top_heavies,
-        top_scouts=top_scouts,
-        top_ammos=top_ammos,
-        top_medics=top_medics,
+                                        # sm5 role stats
 
-        # laserball stats
+                                        top_commanders=top_commanders,
+                                        top_heavies=top_heavies,
+                                        top_scouts=top_scouts,
+                                        top_ammos=top_ammos,
+                                        top_medics=top_medics,
 
-        laserball_red_wins=laserball_red_wins,
-        laserball_blue_wins=laserball_blue_wins,
-        goals_scored=goals_scored,
-        assists=assists,
-        passes=passes,
-        steals=steals,
-        clears=clears,
-        blocks=blocks
-    )
+                                        # laserball stats
+
+                                        laserball_red_wins=laserball_red_wins,
+                                        laserball_blue_wins=laserball_blue_wins,
+                                        goals_scored=goals_scored,
+                                        assists=assists,
+                                        passes=passes,
+                                        steals=steals,
+                                        clears=clears,
+                                        blocks=blocks
+                                        )

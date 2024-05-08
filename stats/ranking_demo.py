@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -15,17 +15,16 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)) + "\\..\\")
 from db.models import Player, SM5Game, EventType, Events, EntityStarts
 from db.types import Team
 import openskill
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
 import asyncio
 from tortoise import Tortoise
 from config import config
 from typing import List, Tuple
 import time
 
+
 async def player_from_token(game: SM5Game, token: str) -> EntityStarts:
     return await game.entity_starts.filter(entity_id=token).first()
+
 
 async def rate_encounter(player1, player2, weight: float, rank=None):
     if rank is None:
@@ -39,22 +38,24 @@ async def rate_encounter(player1, player2, weight: float, rank=None):
     player1_change = player1_new.mu - player1.mu
     player2_change = player2_new.mu - player2.mu
 
-    #print(player1_change, player2_change)
+    # print(player1_change, player2_change)
 
     player1_new.mu = player1_change * weight + player1.mu
     player2_new.mu = player2_change * weight + player2.mu
 
-    #print(player1_new.mu, player2_new.mu)
+    # print(player1_new.mu, player2_new.mu)
 
     return player1_new, player2_new
 
+
 # rate the game with weights
-async def rate_game(team1_rating: List[Tuple[openskill.Rating, openskill.Rating]], team2_rating: List[Tuple[openskill.Rating, openskill.Rating]], rank=None):
+async def rate_game(team1_rating: List[Tuple[openskill.Rating, openskill.Rating]],
+                    team2_rating: List[Tuple[openskill.Rating, openskill.Rating]], rank=None):
     if rank is None:
         rank = [0, 1]
 
     # players_rating: (rating, best_player_rating)
-    
+
     team1 = list(map(lambda x: x[0], team1_rating))
     team2 = list(map(lambda x: x[0], team2_rating))
 
@@ -73,22 +74,20 @@ async def rate_game(team1_rating: List[Tuple[openskill.Rating, openskill.Rating]
     if rank == [0, 1]:
         for i in range(len(team1_change)):
             print(team1_rating[i])
-            team1_change[i] *= team1_rating[i][0].mu/team1_rating[i][1].mu
+            team1_change[i] *= team1_rating[i][0].mu / team1_rating[i][1].mu
             team1_final.append(openskill.Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
         for i in range(len(team2_change)):
-            team2_change[i] *= team2_rating[i][1].mu/team2_rating[i][0].mu
+            team2_change[i] *= team2_rating[i][1].mu / team2_rating[i][0].mu
             team2_final.append(openskill.Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
     else:
         for i in range(len(team1_change)):
-            team1_change[i] *= team1_rating[i][1].mu/team1_rating[i][0].mu
+            team1_change[i] *= team1_rating[i][1].mu / team1_rating[i][0].mu
             team1_final.append(openskill.Rating(team1_rating[i][0].mu + team1_change[i], team1_rating[i][0].sigma))
         for i in range(len(team2_change)):
-            team2_change[i] *= team2_rating[i][0].mu/team2_rating[i][1].mu
+            team2_change[i] *= team2_rating[i][0].mu / team2_rating[i][1].mu
             team2_final.append(openskill.Rating(team2_rating[i][0].mu + team2_change[i], team2_rating[i][0].sigma))
-            
 
     return team1_final, team2_final
-    
 
 
 async def main():
@@ -98,7 +97,7 @@ async def main():
     )
 
     # reset mu and sigma for all players
-    await Player.all().update(sm5_mu=25, sm5_sigma=25/3)
+    await Player.all().update(sm5_mu=25, sm5_sigma=25 / 3)
 
     t1 = time.time()
 
@@ -134,7 +133,7 @@ async def main():
                     players_elo[target.entity_id] = target_elo
                 case EventType.MISSILE_DAMAGE_OPPONENT | EventType.MISSILE_DOWN_OPPONENT:
                     shooter = await player_from_token(game, event.arguments[0])
-                    shooter_elo =  players_elo[shooter.entity_id]
+                    shooter_elo = players_elo[shooter.entity_id]
                     target = await player_from_token(game, event.arguments[2])
                     target_elo = players_elo[target.entity_id]
 
@@ -159,34 +158,32 @@ async def main():
                         other_time = double[list(double.keys())[0]][0]
                         other_resubbe = double[list(double.keys())[0]][1]
 
-                        if abs(other_time - event.time) > 2000 or event.arguments[2] != other_resubbe: # 2 seconds
+                        if abs(other_time - event.time) > 2000 or event.arguments[2] != other_resubbe:  # 2 seconds
                             # not a double
                             doubles[(await resubber.team).index] = {}
                             continue
 
-                        boost = (-0.1*total_double_boost[event.arguments[0]]) + 0.5
+                        boost = (-0.1 * total_double_boost[event.arguments[0]]) + 0.5
 
                         players_elo[resubber.entity_id].mu += boost
                         players_elo[list(double.keys())[0]].mu += boost
 
                         total_double_boost[event.arguments[0]] += boost
-                        
-                        doubles[(await resubber.team).index] = {}
 
+                        doubles[(await resubber.team).index] = {}
 
         # display each player's elo
 
         players_t1 = []
         players_t2 = []
-        players_rating_t1 = [] # (rating, best_player_rating)
+        players_rating_t1 = []  # (rating, best_player_rating)
         players_rating_t2 = []
 
         for player in players:
             # get the next best player that isn't this player
 
-
             best_player = None
-            
+
             for other_player in players:
                 if (await other_player.team).index != (await player.team).index:
                     continue
@@ -195,14 +192,17 @@ async def main():
                     best_player = other_player
                     continue
 
-                other_player_rating = openskill.ordinal((players_elo[other_player.entity_id].mu, players_elo[other_player.entity_id].sigma))
-                best_player_rating = openskill.ordinal((players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma))
+                other_player_rating = openskill.ordinal(
+                    (players_elo[other_player.entity_id].mu, players_elo[other_player.entity_id].sigma))
+                best_player_rating = openskill.ordinal(
+                    (players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma))
 
                 if other_player_rating > best_player_rating:
                     best_player = other_player
 
             player_rating = openskill.ordinal((players_elo[player.entity_id].mu, players_elo[player.entity_id].sigma))
-            best_player_rating = openskill.ordinal((players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma))
+            best_player_rating = openskill.ordinal(
+                (players_elo[best_player.entity_id].mu, players_elo[best_player.entity_id].sigma))
 
             if (await player.team).color_name == "Fire":
                 players_t1.append(await Player.get(entity_id=player.entity_id))
@@ -220,8 +220,8 @@ async def main():
             print(
                 player.name,
                 player_rating,
-                "weight if win: " + str(player_rating/best_player_rating + 0.25),
-                "weight if lose: " + str(best_player_rating/player_rating - 0.25),
+                "weight if win: " + str(player_rating / best_player_rating + 0.25),
+                "weight if lose: " + str(best_player_rating / player_rating - 0.25),
             )
 
         # update player elo
