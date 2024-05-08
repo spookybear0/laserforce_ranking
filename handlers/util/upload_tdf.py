@@ -1,15 +1,18 @@
 from pathlib import Path
 
 from sanic import Request, exceptions, response
+from sanic.log import logger
+
+from helpers.statshelper import sentry_trace
+from helpers.tdfhelper import parse_sm5_game, parse_laserball_game
 from shared import app
 from utils import get_post
-from helpers.tdfhelper import parse_sm5_game, parse_laserball_game
-from helpers.statshelper import sentry_trace
-from sanic.log import logger
+
 
 @app.get("/util/auto_upload_dl")
 async def auto_upload_dl(request: Request) -> str:
     return response.file("./upload_scripts/upload.bat")
+
 
 @app.post("/util/upload_tdf")
 @sentry_trace
@@ -22,7 +25,7 @@ async def auto_upload(request: Request) -> str:
 
     logger.debug(f"Type: {type}")
     logger.debug(f"File: {file}")
-    
+
     if file is None:
         raise exceptions.BadRequest()
 
@@ -36,7 +39,7 @@ async def auto_upload(request: Request) -> str:
         await parse_laserball_game(target_path)
     else:
         raise exceptions.BadRequest()
-    
+
     logger.info("Uploaded TDF successfully!")
 
     return response.text("Uploaded!")

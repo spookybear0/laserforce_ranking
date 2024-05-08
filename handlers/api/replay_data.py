@@ -1,10 +1,11 @@
+from sanic import Request, response, HTTPResponse
+
 from db.laserball import LaserballGame
 from db.sm5 import SM5Game
 from helpers.replay_laserball import create_laserball_replay
 from helpers.replay_sm5 import create_sm5_replay
-from shared import app
 from helpers.statshelper import sentry_trace
-from sanic import Request, response, HTTPResponse
+from shared import app
 
 
 @app.get("/api/game/<type:str>/<id:int>/replay_data")

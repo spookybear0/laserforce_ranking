@@ -258,6 +258,7 @@ class FullSm5Stats:
             for team in self.teams
         ]
 
+
 @cache()
 async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts] = None,
                                compute_lives_over_time: bool = False) -> FullSm5Stats:
@@ -459,6 +460,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
         teams=teams,
         all_players=all_players,
     )
+
 
 @cache()
 async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[PlayerInfo]], granularity_millis: int) -> \

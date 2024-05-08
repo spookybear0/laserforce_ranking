@@ -11,8 +11,6 @@ from sanic import exceptions
 from db.game import EntityStarts, EntityEnds, PlayerInfo
 from db.types import PlayerStateDetailType, Team
 
-from helpers.cachehelper import cache
-
 """Map of every possible player state and the display name for it in SM5 games.
 
 Multiple player states map to the same name since they're intended to be lumped
@@ -51,7 +49,7 @@ def get_players_from_team(all_players: List[dict], team_index: int) -> List[dict
 
 
 async def get_team_rosters(entity_starts: List[EntityStarts], entity_ends: List[EntityEnds]) -> dict[
-        Team, List[PlayerInfo]]:
+    Team, List[PlayerInfo]]:
     """Returns a dict with each team and a list of players in each.
 
     Non-player entities will be ignored. The values will be a list of names, either the
@@ -87,7 +85,7 @@ def get_player_display_names(players: List[PlayerInfo]) -> List[str]:
 
 
 def get_matchmaking_teams(team_rosters: Dict[Team, List[PlayerInfo]]) -> (
-    List[str], List[str]):
+        List[str], List[str]):
     """Returns display names for each player in both teams.
 
     The first returned list will always be the red team unless there is no red

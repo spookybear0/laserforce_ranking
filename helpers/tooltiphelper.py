@@ -14,7 +14,7 @@ _PLAIN_TOOLTIPS = {
     "sm5_shots_left": "Number of shots left when the game finished",
     "sm5_accuracy": "Percentage of shots that hit something",
     "sm5_kd_ratio": "Ratio of how many times this player zapped someone vs. how many times they got zapped. " +
-            "The number is about zaps, <b>not</b> missiles, nukes, or downs.",
+                    "The number is about zaps, <b>not</b> missiles, nukes, or downs.",
     "sm5_missiled_other": "Number of times this player successfully missiled another player",
     "sm5_missiled": "Number of times this player got successfully missiled",
     "sm5_shot_team": "Number of times this player zapped a team mate",
@@ -42,6 +42,7 @@ _SM5_STATE_DESCRIPTIONS = {
     "Resettable": "Down but resettable (can be zapped again)",
 }
 
+
 def _insert_tooltip(tooltip_id: str) -> str:
     """Inserts an attribute into a HTML element that adds a Tippy tooltip.
 
@@ -57,7 +58,6 @@ def _insert_tooltip(tooltip_id: str) -> str:
         return "data-template=\"%s\"" % _COMPLEX_TOOLTIPS[tooltip_id]
 
     raise ValueError("Unknown tooltip ID %s" % tooltip_id)
-
 
 
 # This is the main blob that can be passed down to HTML templates. It contains

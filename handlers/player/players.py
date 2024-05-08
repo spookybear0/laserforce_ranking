@@ -1,10 +1,12 @@
 from sanic import Request
+from tortoise.expressions import F
+
+from db.player import Player
+from helpers.cachehelper import cache_template
+from helpers.statshelper import sentry_trace
 from shared import app
 from utils import render_cached_template
-from db.player import Player
-from tortoise.expressions import F
-from helpers.statshelper import sentry_trace
-from helpers.cachehelper import cache_template
+
 
 @app.get("/players")
 @sentry_trace
@@ -33,12 +35,12 @@ async def index(request: Request) -> str:
     order_by = "-" + order_by if sort_direction == "desc" else order_by
 
     return await render_cached_template(request,
-                                "player/players.html",
-                                players=await Player.filter().limit(25).offset(25 * page)
-                                    .annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma"),
-                                              laserball_ord=F("laserball_mu") - 3 * F("laserball_sigma")
-                                            ).order_by(order_by),
-                                page=page,
-                                sort=sort,
-                                sort_dir=sort_direction
-                                )
+                                        "player/players.html",
+                                        players=await Player.filter().limit(25).offset(25 * page)
+                                        .annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma"),
+                                                  laserball_ord=F("laserball_mu") - 3 * F("laserball_sigma")
+                                                  ).order_by(order_by),
+                                        page=page,
+                                        sort=sort,
+                                        sort_dir=sort_direction
+                                        )

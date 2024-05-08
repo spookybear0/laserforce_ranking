@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, List
 from enum import Enum, IntEnum
+from typing import Optional, List
 
 
 @dataclass
@@ -147,10 +147,12 @@ class Role(Enum):
     COMMANDER = "commander"
     MEDIC = "medic"
     AMMO = "ammo"
-    
+
+
 class GameType(Enum):
     SM5 = "sm5"
     LASERBALL = "laserball"
+
 
 class EventType(Enum):
     # basic and sm5 events
@@ -200,10 +202,10 @@ class EventType(Enum):
     TIME_VIOLATION = "1108"
     CLEAR = "1109"  # Arguments: "(entity 1)", " clears to ", "(entity 2)"
     FAIL_CLEAR = "110A"  # Arguments: "(entity 1)", " fails to clear"
-    
+
 
 class IntRole(IntEnum):
-    OTHER = 0 # or no role
+    OTHER = 0  # or no role
     COMMANDER = 1
     HEAVY = 2
     SCOUT = 3
@@ -220,17 +222,17 @@ class IntRole(IntEnum):
             5: "Medic"
         }
         return names.get(self.value, "Base")
-    
+
     @classmethod
     def from_role(cls, role: Role) -> int:
         return cls({
-            Role.COMMANDER: 1,
-            Role.HEAVY: 2,
-            Role.SCOUT: 3,
-            Role.AMMO: 4,
-            Role.MEDIC: 5
-        }.get(role, 0))
-    
+                       Role.COMMANDER: 1,
+                       Role.HEAVY: 2,
+                       Role.SCOUT: 3,
+                       Role.AMMO: 4,
+                       Role.MEDIC: 5
+                   }.get(role, 0))
+
     def to_role(self) -> Role:
         return {
             1: Role.COMMANDER,
@@ -239,17 +241,19 @@ class IntRole(IntEnum):
             4: Role.AMMO,
             5: Role.MEDIC
         }.get(self.value)
-    
+
 
 class PlayerStateType(IntEnum):
     ACTIVE = 0
-    UNKNOWN = 1 # unused?
+    UNKNOWN = 1  # unused?
     RESETTABLE = 2
     DOWN = 3
+
 
 class Permission(IntEnum):
     USER = 0
     ADMIN = 1
+
 
 @dataclass
 class BallPossessionEvent:

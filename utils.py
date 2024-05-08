@@ -1,8 +1,11 @@
-from sanic import Request, response
-from db.types import Permission
 from typing import Callable, Any, Union
-from shared import app
+
+from sanic import Request, response
+
 from db.player import Player
+from db.types import Permission
+from shared import app
+
 
 def get_post(request: Request) -> dict:
     """
@@ -12,6 +15,7 @@ def get_post(request: Request) -> dict:
     for key in data:
         data[key] = data[key]
     return data
+
 
 # listen before request
 @app.middleware("request")
@@ -26,6 +30,7 @@ async def add_session_to_request(request: Request) -> None:
                 "permissions": player.permissions
             })
 
+
 async def render_template(r, template, *args, **kwargs) -> str:
     additional_kwargs = {
         "session": r.ctx.session,
@@ -38,8 +43,10 @@ async def render_template(r, template, *args, **kwargs) -> str:
     text = await app.ctx.jinja.render_async(template, r, *args, **kwargs)
     return text
 
+
 async def render_cached_template(r, template, *args, **kwargs) -> str:
     return r, template, args, kwargs
+
 
 def admin_only(f) -> Callable:
     async def wrapper(request: Request, *args, **kwargs) -> Union[response.HTTPResponse, Any]:
@@ -47,7 +54,9 @@ def admin_only(f) -> Callable:
             request.ctx.session["previous_page"] = request.path
             return response.redirect("/login")
         return await f(request, *args, **kwargs)
+
     return wrapper
+
 
 def is_admin(request: Request) -> bool:
     return request.ctx.session.get("permissions", 0) == Permission.ADMIN

@@ -172,7 +172,7 @@ class Replay:
             row_changes = [row_change.to_js_string() for row_change in event.row_changes]
             sound_ids = [sound.id for sound in event.sounds]
             result += (f"  [{event.timestamp_millis},'{_escape_string(event.message)}',[{','.join(cell_changes)}],"
-                f"[{','.join(row_changes)}],{event.team_scores},{event.sound_stereo_balance},{sound_ids}],\n")
+                       f"[{','.join(row_changes)}],{event.team_scores},{event.sound_stereo_balance},{sound_ids}],\n")
 
         result += "];\n\n"
 

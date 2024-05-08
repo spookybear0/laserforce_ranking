@@ -1,13 +1,13 @@
-
-
 from sanic import Request
-from shared import app
-from db.types import GameType
-from db.player import Player
 from sanic import response
 from sanic.log import logger
+
+from db.player import Player
+from db.types import GameType
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
+from shared import app
+
 
 # this api is only used for internal purposes (matchmake page)
 
@@ -38,7 +38,7 @@ async def api_matchmake(request: Request, type_: str) -> str:
         team4 = []
 
     # get ratings from codenames
-        
+
     team1_players = []
     team2_players = []
     team3_players = []
@@ -48,6 +48,7 @@ async def api_matchmake(request: Request, type_: str) -> str:
         if codename == "Unrated Player":
             # dummy class to represent unrated player
             class _: pass
+
             p = _()
             p.codename = "Unrated Player"
             p.sm5_rating = ratinghelper.Rating(25, 8.333)
@@ -76,9 +77,8 @@ async def api_matchmake(request: Request, type_: str) -> str:
     # remove None objects
 
     all_players = [player for player in all_players if player is not None]
-    
+
     matchmade_teams = ratinghelper.matchmake_teams(all_players, num_teams, mode)
-    
 
     if not team3:
         matchmade_teams.append([])

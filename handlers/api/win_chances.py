@@ -1,14 +1,13 @@
-
-
 from sanic import Request
-from shared import app
-from db.player import Player
-from db.types import GameType
 from sanic import response
 from sanic.log import logger
+
+from db.player import Player
+from db.types import GameType
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
-from sanic.log import logger
+from shared import app
+
 
 # this api is only used for internal purposes (matchmake page)
 
@@ -38,7 +37,7 @@ async def api_win_chances(request: Request, type_: str) -> str:
         team4 = []
 
     # get ratings from codenames
-        
+
     team1_players = []
     team2_players = []
     team3_players = []
@@ -48,6 +47,7 @@ async def api_win_chances(request: Request, type_: str) -> str:
         if codename == "Unrated Player" or await Player.filter(codename=codename).first() is None:
             # dummy class to represent unrated player
             class _: pass
+
             p = _()
             p.codename = "Unrated Player"
             p.sm5_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
@@ -70,7 +70,7 @@ async def api_win_chances(request: Request, type_: str) -> str:
             team4_players.append(await Player.filter(codename=codename).first())
 
     # calculate win chances
-        
+
     win_chances = ratinghelper.get_win_chances(team1_players, team2_players, team3_players, team4_players, mode)
 
     if not team3:

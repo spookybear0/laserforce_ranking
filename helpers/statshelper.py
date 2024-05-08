@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List, Tuple, Optional, Callable, Any
+
 from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
 from tortoise.fields import ManyToManyRelation
-
-from db.sm5 import SM5Game, SM5Stats
-from db.laserball import LaserballGame, LaserballStats
-from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
-from db.game import EntityEnds, EntityStarts, PlayerInfo
 from tortoise.functions import Sum
+
+from db.game import EntityEnds, EntityStarts, PlayerInfo
+from db.laserball import LaserballGame, LaserballStats
+from db.sm5 import SM5Game, SM5Stats
+from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
 from helpers.cachehelper import cache
 
 # stats helpers
@@ -362,6 +363,7 @@ Average score at time
 
 """
 
+
 async def get_average_team_score_at_time_sm5(team: Team, time: int) -> int:
     """
     Gets the average score for one team at a given time
@@ -376,18 +378,20 @@ async def get_average_team_score_at_time_sm5(team: Team, time: int) -> int:
 
     return sum(scores) // len(scores)
 
+
 """
 
 More specific stats
 
 """
 
+
 async def count_zaps(game: SM5Game, zapping_entity_id: str, zapped_entity_id: str) -> int:
     """Returns the number of times one entity zapped another."""
     return await (game.events.filter(entity1=zapping_entity_id,
                                      action=" zaps ",
                                      entity2=zapped_entity_id
-    ).count())
+                                     ).count())
 
 
 async def count_blocks(game: LaserballGame, zapping_entity_id: str, zapped_entity_id: str) -> int:
@@ -395,7 +399,7 @@ async def count_blocks(game: LaserballGame, zapping_entity_id: str, zapped_entit
     return await (game.events.filter(entity1=zapping_entity_id,
                                      action=" blocks ",
                                      entity2=zapped_entity_id
-    ).count())
+                                     ).count())
 
 
 async def count_missiles(game: SM5Game, missiling_entity_id: str, missiled_entity_id: str) -> int:
@@ -403,13 +407,15 @@ async def count_missiles(game: SM5Game, missiling_entity_id: str, missiled_entit
     return await (game.events.filter(entity1=missiling_entity_id,
                                      action=" missiles ",
                                      entity2=missiled_entity_id
-    ).count())
+                                     ).count())
+
 
 """
 
 Very general stats
 
 """
+
 
 async def get_points_scored() -> int:
     """
@@ -421,10 +427,12 @@ async def get_points_scored() -> int:
 
     points = 0
 
-    for entity in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines").all():
+    for entity in await EntityEnds.filter(sm5games__ranked=True,
+                                          sm5games__mission_name__icontains="space marines").all():
         points += entity.score
 
     return points
+
 
 async def get_nukes_launched() -> int:
     """
@@ -439,6 +447,7 @@ async def get_nukes_launched() -> int:
 
     return nukes
 
+
 async def get_nukes_cancelled() -> int:
     """
     Gets the total nukes cancelled by going through
@@ -451,6 +460,7 @@ async def get_nukes_cancelled() -> int:
         nukes += stats.nuke_cancels
 
     return nukes
+
 
 async def get_medic_hits() -> int:
     """
@@ -465,6 +475,7 @@ async def get_medic_hits() -> int:
 
     return hits
 
+
 async def get_own_medic_hits() -> int:
     """
     Gets the total own medic hits by going through
@@ -478,6 +489,7 @@ async def get_own_medic_hits() -> int:
 
     return hits
 
+
 # laserball totals
 
 async def get_goals_scored() -> int:
@@ -488,7 +500,9 @@ async def get_goals_scored() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("goals")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("goals")).values_list("sum",
+                                                                                                               flat=True))
+
 
 async def get_assists() -> int:
     """
@@ -498,7 +512,9 @@ async def get_assists() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("assists")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("assists")).values_list("sum",
+                                                                                                                 flat=True))
+
 
 async def get_passes() -> int:
     """
@@ -508,7 +524,9 @@ async def get_passes() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("passes")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("passes")).values_list("sum",
+                                                                                                                flat=True))
+
 
 async def get_steals() -> int:
     """
@@ -518,7 +536,9 @@ async def get_steals() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("steals")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("steals")).values_list("sum",
+                                                                                                                flat=True))
+
 
 async def get_clears() -> int:
     """
@@ -528,7 +548,9 @@ async def get_clears() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("clears")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("clears")).values_list("sum",
+                                                                                                                flat=True))
+
 
 async def get_blocks() -> int:
     """
@@ -538,13 +560,15 @@ async def get_blocks() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("blocks")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("blocks")).values_list("sum",
+                                                                                                                flat=True))
+
 
 # top roles
 # could be improved by accounting for the amount of games played
 # could be combined into one function
 
-async def get_top_role_players(amount=5, role: IntRole=IntRole.COMMANDER) -> List[Tuple[str, int, int]]:
+async def get_top_role_players(amount=5, role: IntRole = IntRole.COMMANDER) -> List[Tuple[str, int, int]]:
     """
     Gets the top players of a given role by going through
     all games and getting the average score
@@ -553,13 +577,16 @@ async def get_top_role_players(amount=5, role: IntRole=IntRole.COMMANDER) -> Lis
 
     players = {}
 
-    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=role).all():
+    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines",
+                                              entity__role=role).all():
         name = (await entity_end.entity).name
         if name not in players:
             players[name] = (0, 0)
-        players[name] = (players[name][0]+entity_end.score, players[name][1]+1)
+        players[name] = (players[name][0] + entity_end.score, players[name][1] + 1)
 
-    return sorted([(name, score//games, games) for name, (score, games) in players.items()], key=lambda x: x[1], reverse=True)[:amount]
+    return sorted([(name, score // games, games) for name, (score, games) in players.items()], key=lambda x: x[1],
+                  reverse=True)[:amount]
+
 
 # get ranking accuracy
 
@@ -593,12 +620,14 @@ async def get_ranking_accuracy() -> float:
 
     return correct / total if total != 0 else 0
 
+
 # performance helpers
 
 def sentry_trace(func) -> Callable:
     """
     Async sentry tracing decorator
     """
+
     async def wrapper(*args, **kwargs) -> Any:
         transaction = Hub.current.scope.transaction
         if transaction:
@@ -609,6 +638,7 @@ def sentry_trace(func) -> Callable:
                 return await func(*args, **kwargs)
 
     return wrapper
+
 
 async def get_player_state_timeline(entity_start: EntityStarts,
                                     entity_end: EntityEnds,
