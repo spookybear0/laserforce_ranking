@@ -273,6 +273,7 @@ async def create_laserball_replay(game: LaserballGame) -> Replay:
         sounds=[],
         intro_sound=None,
         start_sound=None,
+        sort_columns_index=[_GOALS_COLUMN, _ASSISTS_COLUMN, _STEALS_COLUMN, _BLOCKS_COLUMN],
     )
 
 
@@ -323,12 +324,6 @@ def _add_steals(player: _Player, steals_to_add: int, cell_changes: List[ReplayCe
     player.steals += steals_to_add
     cell_changes.append(
         ReplayCellChange(row_id=player.row_id, column=_STEALS_COLUMN, new_value=str(player.steals)))
-
-
-def _add_assists(player: _Player, assists_to_add: int, cell_changes: List[ReplayCellChange]):
-    player.assists += assists_to_add
-    cell_changes.append(
-        ReplayCellChange(row_id=player.row_id, column=_ASSISTS_COLUMN, new_value=str(player.assists)))
 
 
 def _add_assists(player: _Player, assists_to_add: int, cell_changes: List[ReplayCellChange]):
