@@ -88,7 +88,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                           start_sound=ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1,
                                                   priority=1, required=False),
                           column_headers=['Role', 'Codename', 'Score', 'Lives', 'Shots', 'Missiles', 'Spec', 'Accuracy',
-                                          'K/D'])
+                                          'K/D'], sort_columns_index=[2])
 
         self.assertEqual(expected, replay)
 

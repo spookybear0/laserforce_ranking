@@ -68,6 +68,12 @@ current_starting_sound_playing = undefined;
 
 started = false;
 
+// Index of the columns to sort by, in order of significance.
+sort_columns = [];
+
+// All team <table> elements.
+team_tables = [];
+
 // This value increases with every restart or start skip so we know
 // whether or not the current start sound is relevant.
 playback_key = 1
@@ -107,6 +113,55 @@ function getCurrentGameTimeMillis() {
     const now = new Date().getTime();
 
     return base_game_time_millis + (now - base_timestamp) * get_playback_speed();
+}
+
+function setSortColumns(new_sort_columns) {
+    sort_columns = new_sort_columns;
+}
+
+// Compares two lists of values, in order of significance. 0 if they're both identical.
+function compareValueList(a, b) {
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] > b[i]) {
+            return -1;
+        }
+
+        if (a[i] < b[i]) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+function sortTable(table) {
+    if (sort_columns.length == 0) {
+        return;
+    }
+
+    let rows = Array.from(table.querySelectorAll("tr"));
+
+    rows = rows.slice(1);
+
+    rows.sort( (r1,r2) => {
+        let row_id1 = r1.id;
+        let row_id2 = r2.id;
+        let values1 = [];
+        let values2 = [];
+
+        sort_columns.forEach((column) => {
+            values1.push(parseInt(document.getElementById(`${row_id1}_${column}`).innerHTML));
+            values2.push(parseInt(document.getElementById(`${row_id2}_${column}`).innerHTML));
+        });
+
+        return compareValueList(values1, values2);
+    });
+
+    rows.forEach(row => table.appendChild(row));
+}
+
+function sortTables() {
+    team_tables.forEach((table) => sortTable(table));
 }
 
 function beginPlayback() {
@@ -211,6 +266,8 @@ function addTeam(team_name, team_id, team_css_class) {
     team_table.appendChild(header_row);
     team_div.appendChild(team_table);
     teams.appendChild(team_div);
+
+    team_tables.push(team_table);
 }
 
 function registerSound(sound_id, asset_urls, priority, required) {
@@ -336,6 +393,8 @@ function playEvents() {
             eventBox.innerHTML += `<div class="event">${message}</div>\n`;
         }
 
+        let sortable_column_changed = false;
+
         // Handle all cell changes.
         event[2].forEach((cell_change) => {
             row_id = cell_change[0];
@@ -343,7 +402,15 @@ function playEvents() {
             new_value = cell_change[2];
 
             document.getElementById(`${row_id}_${column}`).innerHTML = new_value;
+
+            if (sort_columns.includes(parseInt(column))) {
+                sortable_column_changed = true;
+            }
         });
+
+        if (sortable_column_changed) {
+            sortTables();
+        }
 
         // Handle all row changes.
         event[3].forEach((row_change) => {

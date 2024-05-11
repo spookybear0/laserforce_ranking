@@ -371,6 +371,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
         sounds=sound_assets,
         intro_sound=start_audio,
         start_sound=alarm_start_audio,
+        sort_columns_index=[_SCORE_COLUMN]
     )
 
 

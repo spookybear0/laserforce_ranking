@@ -112,6 +112,9 @@ class Replay:
     # Names of the columns in each team table.
     column_headers: List[str]
 
+    # If not empty, the tables should be sorted by these column, in order of significance.
+    sort_columns_index: List[int]
+
     # Export this entire replay to JavaScript code.
     def export_to_js(self) -> str:
         result = ""
@@ -159,6 +162,8 @@ class Replay:
         
         resetPlayers();
         """
+
+        result += f"setSortColumns({self.sort_columns_index});\n"
 
         if self.intro_sound:
             result += f"setIntroSound({self.intro_sound.id});\n"
