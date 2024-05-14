@@ -652,3 +652,11 @@ dropdown menu
 a {
   color: #2fa4e7;
 }
+
+.banner {
+    background-color: #4da6ff;
+    color: #fff;
+    padding: 0.01rem;
+    text-align: center;
+    font-size: 0.5rem;
+}

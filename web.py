@@ -44,6 +44,7 @@ from mysql import MySQLPool
 from tortoise import Tortoise
 from config import config
 from helpers import cachehelper
+import utils
 
 TORTOISE_ORM = {
     "connections": {
@@ -79,6 +80,8 @@ async def setup_app(app, loop) -> None:
     Start the server in a production environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
+    app.ctx.banner = {"text": None, "type": None}
+    app.ctx.banner_type_to_color = utils.banner_type_to_color
 
     await Tortoise.init(
         config=TORTOISE_ORM
@@ -93,6 +96,8 @@ async def main() -> None:
     Start the server in a development/nonprod environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
+    app.ctx.banner = {"text": "Rating recalculation in progress, stats may be inaccurate", "type": None}
+    app.ctx.banner_type_to_color = utils.banner_type_to_color
 
     await Tortoise.init(
         config=TORTOISE_ORM

@@ -11,7 +11,7 @@ from db.game import Events
 from db.laserball import LaserballGame
 from db.player import Player
 from db.sm5 import SM5Game
-from db.types import EventType, GameType, Team
+from db.types import EventType, GameType, Team, IntRole
 from helpers import userhelper
 
 # CONSTANTS
@@ -118,10 +118,15 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
-                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * 0.1
+                weight_mu = 0.1 # default for damage and downed events
+                if target.role == IntRole.MEDIC:
+                    weight_mu = 0.2 # medic events are weighted more heavily
+
+
+                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * weight_mu
                 shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
-                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * 0.1
+                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * weight_mu
                 target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
                 await shooter_player.save()
@@ -137,10 +142,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
 
                 out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
 
-                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * 0.15
+                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * 0.25
                 shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
-                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * 0.15
+                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * 0.25
                 target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
                 await shooter_player.save()

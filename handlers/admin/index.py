@@ -20,7 +20,9 @@ async def admin_index(request: Request) -> str:
 @app.post("/admin/recalculate_ratings")
 @admin_only
 async def admin_recalculate_ratings(request: Request) -> str:
+    request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate"
     asyncio.create_task(recalculate_ratings(), name="Recalculate Ratings")
+    request.app.ctx.banner["text"] = None
 
     return response.json({"status": "ok"})
 
@@ -28,7 +30,9 @@ async def admin_recalculate_ratings(request: Request) -> str:
 @app.post("/admin/recalculate_sm5_ratings")
 @admin_only
 async def admin_recalculate_sm5_ratings(request: Request) -> str:
+    request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate"
     asyncio.create_task(recalculate_sm5_ratings(), name="Recalculate SM5 Ratings")
+    request.app.ctx.banner["text"] = None
 
     return response.json({"status": "ok"})
 
@@ -36,7 +40,9 @@ async def admin_recalculate_sm5_ratings(request: Request) -> str:
 @app.post("/admin/recalculate_laserball_ratings")
 @admin_only
 async def admin_recalculate_lb_ratings(request: Request) -> str:
+    request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate"
     asyncio.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings")
+    request.app.ctx.banner["text"] = None
 
     return response.json({"status": "ok"})
 
@@ -47,5 +53,13 @@ async def admin_flush_cache(request: Request) -> str:
     logger.info("Flushing cache")
     flush_cache()
     logger.info("Cache flushed")
+
+    return response.json({"status": "ok"})
+
+@app.post("/admin/set_banner")
+@admin_only
+async def admin_set_banner(request: Request) -> str:
+    request.app.ctx.banner["text"] = request.json.get("text") or None
+    request.app.ctx.banner["type"] = request.json.get("type") or None
 
     return response.json({"status": "ok"})

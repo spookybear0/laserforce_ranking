@@ -283,6 +283,14 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
         href="/logout">Logout</a></li>
     {% endif %}
 </ul>
+
+<!--banner that can be chnaged in ctx.banner-->
+{% if app.ctx.banner.text %}
+<div class="banner" style="background-color: {{ app.ctx.banner_type_to_color(app.ctx.banner.type)}};">
+    <h1>{{ app.ctx.banner.text }}</h1>
+</div>
+{% endif %}
+
 <div id="content">
     {% block content %}{% endblock %}
 </div>

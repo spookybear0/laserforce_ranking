@@ -60,3 +60,10 @@ def admin_only(f) -> Callable:
 
 def is_admin(request: Request) -> bool:
     return request.ctx.session.get("permissions", 0) == Permission.ADMIN
+
+def banner_type_to_color(type: str) -> str:
+    return {
+        "info": "#4da6ff",
+        "warning": "#cfa602",
+        "danger": "#ff4d4d",
+    }.get(type, "#4da6ff")
