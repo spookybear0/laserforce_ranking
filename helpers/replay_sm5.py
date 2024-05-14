@@ -120,6 +120,12 @@ _ALARM_START_AUDIO = 1
 _RESUPPLY_AUDIO = 2
 _DOWNED_AUDIO = 3
 _BASE_DESTROYED_AUDIO = 4
+_RAPID_FIRE_AUDIO = 5
+_MISSILE_AUDIO = 6
+_ZAP_OWN_AUDIO = 7
+_NUKE_AUDIO = 8
+_ELIMINATION_AUDIO = 9
+_BOOST_AUDIO = 10
 
 _AUDIO_PREFIX = "/assets/sm5/audio/"
 
@@ -144,6 +150,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
     teams = {}
     team_scores = {}
     team_sound_balance = {}
+    team_players_alive = {}
 
     entity_id_to_nonplayer_name = {
         entity.entity_id: entity.name for entity in entity_starts if entity.entity_id[0] == "@"
@@ -187,6 +194,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                                  players=replay_player_list)
         replay_teams.append(replay_team)
         teams[team] = players_in_team
+        team_players_alive[team] = len(players_in_team)
 
     events = []
 
@@ -204,6 +212,42 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                                 f"{_AUDIO_PREFIX}Effect/Scream.2.wav", f"{_AUDIO_PREFIX}Effect/Shot.0.wav",
                                 f"{_AUDIO_PREFIX}Effect/Shot.1.wav"], _DOWNED_AUDIO)
     base_destroyed_audio = ReplaySound([f"{_AUDIO_PREFIX}Effect/Boom.wav"], _BASE_DESTROYED_AUDIO)
+    rapid_fire_audio = ReplaySound([
+        f"{_AUDIO_PREFIX}Rapid Fire.0.wav",
+        f"{_AUDIO_PREFIX}Rapid Fire.1.wav",
+        f"{_AUDIO_PREFIX}Rapid Fire.2.wav",
+        f"{_AUDIO_PREFIX}Rapid Fire.3.wav",
+    ],
+        _RAPID_FIRE_AUDIO)
+    missile_audio = ReplaySound([
+        f"{_AUDIO_PREFIX}Missile.0.wav",
+        f"{_AUDIO_PREFIX}Missile.1.wav",
+        f"{_AUDIO_PREFIX}Missile.2.wav",
+    ],
+        _MISSILE_AUDIO)
+    zap_own_audio = ReplaySound([
+        f"{_AUDIO_PREFIX}Zap Own.0.wav",
+        f"{_AUDIO_PREFIX}Zap Own.1.wav",
+        f"{_AUDIO_PREFIX}Zap Own.2.wav",
+        f"{_AUDIO_PREFIX}Zap Own.3.wav",
+    ],
+        _ZAP_OWN_AUDIO)
+    nuke_audio = ReplaySound([
+        f"{_AUDIO_PREFIX}Nuke.0.wav",
+        f"{_AUDIO_PREFIX}Nuke.1.wav",
+        f"{_AUDIO_PREFIX}Nuke.2.wav",
+    ],
+        _NUKE_AUDIO)
+    elimination_audio = ReplaySound([
+        f"{_AUDIO_PREFIX}Elimination.wav",
+    ],
+        _ELIMINATION_AUDIO)
+    boost_audio = ReplaySound([
+        f"{_AUDIO_PREFIX}Boost.0.wav",
+        f"{_AUDIO_PREFIX}Boost.1.wav",
+        f"{_AUDIO_PREFIX}Boost.2.wav",
+    ],
+        _BOOST_AUDIO)
 
     sound_assets = [
         start_audio,
@@ -211,6 +255,12 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
         resupply_audio,
         downed_audio,
         base_destroyed_audio,
+        rapid_fire_audio,
+        missile_audio,
+        zap_own_audio,
+        nuke_audio,
+        elimination_audio,
+        boost_audio,
     ]
 
     # Now let's walk through the events one by one and translate them into UI events.
@@ -286,7 +336,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             # Recompute accuracy.
             cell_changes.append(ReplayCellChange(row_id=player1.row_id, column=_ACCURACY_COLUMN,
                                                  new_value="%.2f%%" % (
-                                                         player1.total_shots_hit * 100 / player1.total_shots_fired)))
+                                                     player1.total_shots_hit * 100 / player1.total_shots_fired)))
 
         # Handle losing lives.
         if event.type in _EVENTS_COSTING_LIVES:
@@ -321,6 +371,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 player1.rapid_fire = True
                 _add_special_points(player1, -10, cell_changes)
                 stereo_balance = team_sound_balance[player1.team]
+                sounds.append(rapid_fire_audio)
 
             case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY | EventType.MISSILE_BASE_DAMAGE:
                 sounds.append(base_destroyed_audio)
@@ -338,13 +389,12 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
                 stereo_balance = team_sound_balance[player2.team]
-                sounds.append(downed_audio)
+                sounds.append(zap_own_audio)
 
             case EventType.MISSILE_DOWN_OPPONENT | EventType.MISSILE_DAMAGE_OPPONENT | EventType.MISSILE_DOWN_TEAM | EventType.MISSILE_DAMAGE_TEAM:
                 _add_score(player2, -100, cell_changes, team_scores)
                 stereo_balance = team_sound_balance[player2.team]
-                # TODO: Use missile sound once we have it
-                sounds.append(downed_audio)
+                sounds.append(missile_audio)
 
             case EventType.DEACTIVATE_RAPID_FIRE:
                 player1.rapid_fire = False
@@ -361,13 +411,13 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                             _down_player(player, row_changes, event.time, player_reup_times)
 
                 stereo_balance = team_sound_balance[player1.team]
-                sounds.append(base_destroyed_audio)
+                sounds.append(nuke_audio)
 
             case EventType.AMMO_BOOST:
                 for player in teams[player1.team]:
                     if not player.downed:
                         _add_shots(player, player.role_details.shots_resupply, cell_changes)
-                sounds.append(resupply_audio)
+                sounds.append(boost_audio)
                 stereo_balance = team_sound_balance[player1.team]
 
             case EventType.LIFE_BOOST:
@@ -375,7 +425,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                     if not player.downed:
                         _add_lives(player, player.role_details.lives_resupply, cell_changes, row_changes,
                                    player_reup_times)
-                sounds.append(resupply_audio)
+                sounds.append(boost_audio)
                 stereo_balance = team_sound_balance[player1.team]
 
             case EventType.PENALTY:
@@ -421,11 +471,13 @@ def _down_player(player: _Player, row_changes: List[ReplayRowChange], timestamp_
 
 def _add_lives(player: _Player, lives_to_add: int, cell_changes: List[ReplayCellChange],
                row_changes: List[ReplayRowChange], player_reup_times: Dict[_Player, int]):
+    previous_lives = player.lives
+
     player.lives = max(min(player.lives + lives_to_add, player.role_details.lives_max), 0)
 
     cell_changes.append(ReplayCellChange(row_id=player.row_id, column=_LIVES_COLUMN, new_value=str(player.lives)))
 
-    if player.lives == 0:
+    if player.lives == 0 and previous_lives > 0:
         row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class="eliminated_player"))
 
         # This player ain't coming back up.
