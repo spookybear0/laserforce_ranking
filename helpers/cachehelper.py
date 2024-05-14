@@ -80,9 +80,19 @@ def cache(ttl: Union[float, int] = refresh_time_function, refresh_in_background:
                 request: Request = args[0]
                 request_args = request.args
 
+            request = None
+            request_args = None
+            request_json = None
+            if len(args) > 0 and isinstance(args[0], Request):
+                request: Request = args[0]
+                request_args = request.args
+                request_json = request.json
+
             key = f"{f.__name__}_{args}_{kwargs}"
             if request_args:
                 key += f"_{request_args}"
+            if request_json:
+                key += f"_{request_json}"
             result = None
 
             if key in function_cache:
@@ -120,8 +130,21 @@ def cache_template(ttl: Union[float, int] = refresh_time_function, refresh_in_ba
                 args = await f(*args, **kwargs)
                 from utils import render_template
                 return await render_template(args[0], args[1], *args[2], **args[3])
+            
+            request = None
+            request_args = None
+            request_json = None
+            if len(args) > 0 and isinstance(args[0], Request):
+                request: Request = args[0]
+                request_args = request.args
+                request_json = request.json
 
             key = f"{f.__name__}_{args}_{kwargs}"
+            if request_args:
+                key += f"_{request_args}"
+            if request_json:
+                key += f"_{request_json}"
+            
             result = None
 
             if key in function_cache:
