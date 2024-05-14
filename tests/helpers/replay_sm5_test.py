@@ -80,13 +80,24 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
             asset_urls=['/assets/sm5/audio/Effect/Scream.0.wav', '/assets/sm5/audio/Effect/Scream.1.wav',
                         '/assets/sm5/audio/Effect/Scream.2.wav', '/assets/sm5/audio/Effect/Shot.0.wav',
                         '/assets/sm5/audio/Effect/Shot.1.wav'], id=3, priority=0, required=False), ReplaySound(
-            asset_urls=['/assets/sm5/audio/Effect/Boom.wav'], id=4, priority=0, required=False)],
-                          intro_sound=ReplaySound(
-                              asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
-                                          '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0,
-                              priority=2, required=True),
-                          start_sound=ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1,
-                                                  priority=1, required=False),
+            asset_urls=['/assets/sm5/audio/Effect/Boom.wav'], id=4, priority=0, required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Rapid Fire.0.wav', '/assets/sm5/audio/Rapid Fire.1.wav',
+                        '/assets/sm5/audio/Rapid Fire.2.wav', '/assets/sm5/audio/Rapid Fire.3.wav'], id=5, priority=0,
+            required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Missile.0.wav', '/assets/sm5/audio/Missile.1.wav',
+                        '/assets/sm5/audio/Missile.2.wav'], id=6, priority=0, required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Zap Own.0.wav', '/assets/sm5/audio/Zap Own.1.wav',
+                        '/assets/sm5/audio/Zap Own.2.wav', '/assets/sm5/audio/Zap Own.3.wav'], id=7, priority=0,
+            required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Nuke.0.wav', '/assets/sm5/audio/Nuke.1.wav', '/assets/sm5/audio/Nuke.2.wav'],
+            id=8, priority=0, required=False), ReplaySound(asset_urls=['/assets/sm5/audio/Elimination.wav'], id=9,
+                                                           priority=0, required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Boost.0.wav', '/assets/sm5/audio/Boost.1.wav',
+                        '/assets/sm5/audio/Boost.2.wav'], id=10, priority=0, required=False)], intro_sound=ReplaySound(
+            asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
+                        '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0, priority=2,
+            required=True), start_sound=ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1,
+                                                    priority=1, required=False),
                           column_headers=['Role', 'Codename', 'Score', 'Lives', 'Shots', 'Missiles', 'Spec', 'Accuracy',
                                           'K/D'], sort_columns_index=[2])
 
