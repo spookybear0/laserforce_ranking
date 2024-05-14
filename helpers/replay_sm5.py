@@ -79,6 +79,33 @@ _EVENTS_COSTING_LIVES = {
     EventType.MISSILE_DOWN_TEAM: 2,
 }
 
+_EVENTS_GIVING_SPECIAL_POINTS = {
+    EventType.DAMAGED_OPPONENT: 1,
+    EventType.DESTROY_BASE: 5,
+    EventType.DOWNED_OPPONENT: 1,
+    EventType.MISSILE_BASE_DAMAGE: 5,
+    EventType.MISISLE_BASE_DESTROY: 5,
+    EventType.MISSILE_DAMAGE_OPPONENT: 2,
+    EventType.MISSILE_DOWN_OPPONENT: 2,
+}
+
+# Points awarded to player1 in an event.
+_EVENTS_ADDING_TO_SCORE = {
+    EventType.BASE_AWARDED: 1001,
+    EventType.DAMAGED_OPPONENT: 100,
+    EventType.DAMANGED_TEAM: -100,
+    EventType.DESTROY_BASE: 1001,
+    EventType.DETONATE_NUKE: 500,
+    EventType.DOWNED_OPPONENT: 100,
+    EventType.DOWNED_TEAM: -100,
+    EventType.MISSILE_BASE_DAMAGE: 1001,
+    EventType.MISISLE_BASE_DESTROY: 1001,
+    EventType.MISSILE_DAMAGE_OPPONENT: 500,
+    EventType.MISSILE_DAMAGE_TEAM: -500,
+    EventType.MISSILE_DOWN_OPPONENT: 500,
+    EventType.MISSILE_DOWN_TEAM: -500,
+}
+
 _EVENTS_DOWNING_PLAYER = {
     EventType.DOWNED_OPPONENT,
     EventType.DOWNED_TEAM,
@@ -270,6 +297,14 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
             cell_changes.append(
                 ReplayCellChange(row_id=player1.row_id, column=_MISSILES_COLUMN, new_value=str(player1.missiles)))
 
+        if event.type in _EVENTS_GIVING_SPECIAL_POINTS:
+            # Heavy doesn't get special points, and neither do scouts with rapid fire.
+            if player1.role != IntRole.HEAVY and not player1.rapid_fire:
+                _add_special_points(player1, _EVENTS_GIVING_SPECIAL_POINTS[event.type], cell_changes)
+
+        if event.type in _EVENTS_ADDING_TO_SCORE:
+            _add_score(player1, _EVENTS_ADDING_TO_SCORE[event.type], cell_changes, team_scores)
+
         # Handle each event.
         match event.type:
             case EventType.RESUPPLY_LIVES:
@@ -287,19 +322,11 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 _add_special_points(player1, -10, cell_changes)
                 stereo_balance = team_sound_balance[player1.team]
 
-            case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY:
-                _add_score(player1, 1001, cell_changes, team_scores)
-
-                if player1.role != IntRole.HEAVY and not player1.rapid_fire:
-                    _add_special_points(player1, 5, cell_changes)
+            case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY | EventType.MISSILE_BASE_DAMAGE:
                 sounds.append(base_destroyed_audio)
                 stereo_balance = team_sound_balance[player1.team]
 
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
-                if player1.role != IntRole.HEAVY and not player1.rapid_fire:
-                    _add_special_points(player1, 1, cell_changes)
-
-                _add_score(player1, 100, cell_changes, team_scores)
                 _add_score(player2, -20, cell_changes, team_scores)
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
@@ -307,11 +334,16 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 sounds.append(downed_audio)
 
             case EventType.DAMANGED_TEAM | EventType.DOWNED_TEAM:
-                _add_score(player1, -100, cell_changes, team_scores)
                 _add_score(player2, -20, cell_changes, team_scores)
                 _increase_times_shot_others(player1, cell_changes)
                 _increase_times_got_shot(player2, cell_changes)
                 stereo_balance = team_sound_balance[player2.team]
+                sounds.append(downed_audio)
+
+            case EventType.MISSILE_DOWN_OPPONENT | EventType.MISSILE_DAMAGE_OPPONENT | EventType.MISSILE_DOWN_TEAM | EventType.MISSILE_DAMAGE_TEAM:
+                _add_score(player2, -100, cell_changes, team_scores)
+                stereo_balance = team_sound_balance[player2.team]
+                # TODO: Use missile sound once we have it
                 sounds.append(downed_audio)
 
             case EventType.DEACTIVATE_RAPID_FIRE:
@@ -347,7 +379,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                 stereo_balance = team_sound_balance[player1.team]
 
             case EventType.PENALTY:
-                _add_score(player1, -1000, cell_changes, team_scores)
+                _add_score(player2, -1000, cell_changes, team_scores)
 
         # Handle a player being down.
         if event.type in _EVENTS_DOWNING_PLAYER:
@@ -384,6 +416,7 @@ def _down_player(player: _Player, row_changes: List[ReplayRowChange], timestamp_
 
     # The player will be back up 8 seconds from now.
     player_reup_times[player] = timestamp_millis + 8000
+    player.rapid_fire = False
 
 
 def _add_lives(player: _Player, lives_to_add: int, cell_changes: List[ReplayCellChange],
@@ -424,6 +457,10 @@ def _update_kd(player: _Player, cell_changes: List[ReplayCellChange]):
 
 def _add_special_points(player: _Player, points_to_add: int, cell_changes: List[ReplayCellChange]):
     player.special_points += points_to_add
+
+    # 99 special points are the cap.
+    player.special_points = min(player.special_points, 99)
+
     cell_changes.append(
         ReplayCellChange(row_id=player.row_id, column=_SPEC_COLUMN, new_value=str(player.special_points)))
 
