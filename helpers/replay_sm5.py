@@ -292,6 +292,7 @@ async def create_sm5_replay(game: SM5Game) -> Replay:
                     if player_reup_timestamp == reup_timestamp:
                         player_reup_times.pop(player)
                         row_changes.append(ReplayRowChange(player.row_id, player.team.css_class))
+                        player.downed = False
                         break
 
                 # Create a dummy event to update the UI.
@@ -467,6 +468,7 @@ def _down_player(player: _Player, row_changes: List[ReplayRowChange], timestamp_
     # The player will be back up 8 seconds from now.
     player_reup_times[player] = timestamp_millis + 8000
     player.rapid_fire = False
+    player.downed = True
 
 
 def _add_lives(player: _Player, lives_to_add: int, cell_changes: List[ReplayCellChange],
@@ -478,6 +480,7 @@ def _add_lives(player: _Player, lives_to_add: int, cell_changes: List[ReplayCell
     cell_changes.append(ReplayCellChange(row_id=player.row_id, column=_LIVES_COLUMN, new_value=str(player.lives)))
 
     if player.lives == 0 and previous_lives > 0:
+        player.downed = True
         row_changes.append(ReplayRowChange(row_id=player.row_id, new_css_class="eliminated_player"))
 
         # This player ain't coming back up.
