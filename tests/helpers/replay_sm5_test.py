@@ -237,5 +237,6 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected_events, replay.events)
 
+
 if __name__ == '__main__':
     unittest.main()
