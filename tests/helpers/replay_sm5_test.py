@@ -41,7 +41,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                             ReplayCellChange(row_id='r1', column=6, new_value='1'),
                                                             ReplayCellChange(row_id='r1', column=2, new_value='100'),
                                                             ReplayCellChange(row_id='r3', column=2, new_value='-20'),
-                                                            ReplayCellChange(row_id='r1', column=8, new_value='0.00'),
+                                                            ReplayCellChange(row_id='r1', column=8, new_value=''),
                                                             ReplayCellChange(row_id='r3', column=8, new_value='0.00')],
                                               row_changes=[
                                                   ReplayRowChange(row_id='r3', new_css_class='earth-team-down')],
