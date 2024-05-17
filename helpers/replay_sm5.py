@@ -206,8 +206,8 @@ class ReplayGeneratorSm5(ReplayGenerator):
 
     async def generate(self, game: SM5Game) -> Replay:
         self.entity_starts = await game.entity_starts.all()
-        team_rosters = await get_team_rosters(self.entity_starts,
-                                              await game.entity_ends.all())
+        self.team_rosters = await get_team_rosters(self.entity_starts,
+                                                   await game.entity_ends.all())
 
         # Set up the teams and players.
         column_headers = ["Role", "Codename", "Score", "Lives", "Shots", "Missiles", "Spec", "Accuracy", "K/D"]
@@ -216,7 +216,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
 
         sound_balance = -0.5
 
-        for team, players in team_rosters.items():
+        for team, players in self.team_rosters.items():
             replay_player_list = []
             players_in_team = []
             self.team_scores[team] = 0
@@ -418,9 +418,13 @@ class ReplayGeneratorSm5(ReplayGenerator):
         self._update_kd(player)
 
     def _update_kd(self, player: _Player):
-        kd_ratio = player.times_shot_others / player.times_got_shot if player.times_got_shot > 0 else 0.0
+        kd_str = ''
+
+        if player.times_got_shot > 0:
+            kd_str = "%0.2f" % (player.times_shot_others / player.times_got_shot)
+
         self.cell_changes.append(
-            ReplayCellChange(row_id=player.row_id, column=_KD_COLUMN, new_value="%.02f" % kd_ratio))
+            ReplayCellChange(row_id=player.row_id, column=_KD_COLUMN, new_value=kd_str))
 
     def _add_special_points(self, player: _Player, points_to_add: int):
         player.special_points += points_to_add
