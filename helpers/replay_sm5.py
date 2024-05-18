@@ -10,7 +10,7 @@ from helpers.replay import Replay, ReplayTeam, ReplayPlayer, ReplayCellChange, \
 from helpers.sm5helper import SM5_ROLE_DETAILS, Sm5RoleDetails
 
 
-@dataclass
+@dataclass(kw_only=True)
 class _Player(PlayerState):
     lives: int
     shots: int
@@ -20,10 +20,7 @@ class _Player(PlayerState):
     times_got_shot: int = 0
     times_shot_others: int = 0
     rapid_fire: bool = False
-    score: int = 0
     special_points: int = 0
-    total_shots_fired: int = 0
-    total_shots_hit: int = 0
 
     def __hash__(self):
         return self.row_index
@@ -240,7 +237,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
 
                 player = _Player(lives=role_details.initial_lives, shots=role_details.shots, row_index=row_index,
                                  role=role, row_id=row_id, missiles=role_details.missiles,
-                                 role_details=role_details, team=team, name=player_info.display_name, downed=False)
+                                 role_details=role_details, team=team, name=player_info.display_name)
 
                 replay_player_list.append(ReplayPlayer(cells=cells, row_id=row_id, css_class=player.team.css_class))
                 row_index += 1
@@ -283,7 +280,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
             # Recompute accuracy.
             self.cell_changes.append(ReplayCellChange(row_id=player1.row_id, column=_ACCURACY_COLUMN,
                                                       new_value="%.2f%%" % (
-                                                              player1.total_shots_hit * 100 / player1.total_shots_fired)))
+                                                          player1.total_shots_hit * 100 / player1.total_shots_fired)))
 
         # Handle losing lives.
         if event.type in _EVENTS_COSTING_LIVES:
