@@ -201,14 +201,17 @@ class Replay:
         return result
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PlayerState:
     """Representation of the current state of a player as the replay events are being generated."""
     row_index: int
     row_id: str
     team: Team
     name: str
-    downed: bool
+    downed: bool = False
+    score: int = 0
+    total_shots_fired: int = 0
+    total_shots_hit: int = 0
 
     def __hash__(self):
         return self.row_index
