@@ -124,6 +124,40 @@
         float: left;
     }
 
+    .chart_container {
+        width: 100%;
+    }
+
+    .chart {
+        max-width: 90%;
+        display: flex;
+        padding: 1rem;
+    }
+
+    /*
+     * Balance the left and right sections based on screen width.
+     * The score card is complex and needs more space, so we may need to redistribute screen space
+     * based on that.
+     */
+    @media screen and (max-width: 2599px) {
+        .scorecard_main_stats {
+            width: 30%;
+            float: left;
+        }
+
+        .scorecard_player_stats {
+            width: 65%;
+            float: left;
+        }
+    }
+
+    /* Once the screen is really wide, the charts can go side by side. */
+    @media screen and (min-width: 2600px) {
+        .chart_container {
+            display: flex;
+        }
+    }
+
     .player {
     }
 
@@ -223,13 +257,8 @@
         align-items: center;
     }
 
-    .chart {
-        max-width: 50%;
-        display: flex;
-    }
-
     .mini-chart {
-        max-width: 64px;
+        max-width: 48px;
         display: flex;
     }
 </style>
@@ -265,11 +294,13 @@
                     {% endfor %}
                 </table>
             </div>
-            <div class="scorecard_graphs">
-                <canvas class="chart" id="score_composition"></canvas>
-            </div>
-            <div class="scorecard_graphs">
-                <canvas class="chart" id="state_distribution"></canvas>
+            <div class="chart_container">
+                <div class="scorecard_graphs">
+                    <canvas class="chart" id="score_composition"></canvas>
+                </div>
+                <div class="scorecard_graphs">
+                    <canvas class="chart" id="state_distribution"></canvas>
+                </div>
             </div>
         </div>
 
@@ -285,7 +316,7 @@
                                 <th class="second-fixed-column" {{ tooltip("sm5_codename") }}><p>Codename</p></th>
                                 <th {{ tooltip("sm5_score") }}><p>Score</p></th>
                                 <th {{ tooltip("sm5_positive_score") }}><p>Positive Score</p></th>
-                                <th {{ tooltip("sm5_points_minute") }}><p>Points/Minute</p></th>
+                                <th {{ tooltip("sm5_points_minute") }}><p>Points / Minute</p></th>
                                 <th {{ tooltip("sm5_lives_left") }}><p>Lives Left</p></th>
                                 <th {{ tooltip("sm5_alive") }}><p>Alive</p></th>
                                 <th {{ tooltip("sm5_shots_left") }}><p>Shots Left</p></th>
