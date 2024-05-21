@@ -609,7 +609,7 @@ def _remove_lives(current_lives: dict[int, int], entity_id_to_end_id: dict[str, 
 
 def _add_lives(current_lives: dict[int, int], entity_id_to_end_id: dict[str, int], entity_id: str,
                lives_to_add: int, max_lives: int):
-    if not entity_id in entity_id_to_end_id:
+    if entity_id not in entity_id_to_end_id:
         return
 
     entity_end_id = entity_id_to_end_id[entity_id]
