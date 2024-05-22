@@ -119,6 +119,7 @@ _ZAP_OWN_AUDIO = 7
 _NUKE_AUDIO = 8
 _ELIMINATION_AUDIO = 9
 _BOOST_AUDIO = 10
+_DO_IT_AUDIO = 11
 
 _AUDIO_PREFIX = "/assets/sm5/audio/"
 
@@ -186,6 +187,10 @@ class ReplayGeneratorSm5(ReplayGenerator):
             f"{_AUDIO_PREFIX}Boost.2.wav",
         ],
             _BOOST_AUDIO)
+        self.do_it_audio = ReplaySound([
+            f"{_AUDIO_PREFIX}Do It.wav",
+        ],
+            _DO_IT_AUDIO)
 
         self.sound_assets = [
             self.start_audio,
@@ -199,6 +204,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
             self.nuke_audio,
             self.elimination_audio,
             self.boost_audio,
+            self.do_it_audio,
         ]
 
     async def generate(self, game: SM5Game) -> Replay:
@@ -313,6 +319,9 @@ class ReplayGeneratorSm5(ReplayGenerator):
                 player1.rapid_fire = True
                 self._add_special_points(player1, -10)
                 self.add_sound(self.rapid_fire_audio, player1.team)
+
+            case EventType.HIT_BASE:
+                self.add_sound(self.do_it_audio, player1.team)
 
             case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY | EventType.MISSILE_BASE_DAMAGE:
                 self.add_sound(self.base_destroyed_audio, player1.team)
