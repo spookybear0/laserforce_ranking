@@ -94,7 +94,8 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
             id=8, priority=0, required=False), ReplaySound(asset_urls=['/assets/sm5/audio/Elimination.wav'], id=9,
                                                            priority=0, required=False), ReplaySound(
             asset_urls=['/assets/sm5/audio/Boost.0.wav', '/assets/sm5/audio/Boost.1.wav',
-                        '/assets/sm5/audio/Boost.2.wav'], id=10, priority=0, required=False)], intro_sound=ReplaySound(
+                        '/assets/sm5/audio/Boost.2.wav'], id=10, priority=0, required=False), ReplaySound(
+            asset_urls=['/assets/sm5/audio/Do It.wav'], id=11, priority=0, required=False)], intro_sound=ReplaySound(
             asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
                         '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0, priority=2,
             required=True), start_sound=ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1,
