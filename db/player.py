@@ -4,7 +4,7 @@ except ImportError:
     from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating
 import statistics
 from collections import Counter
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import bcrypt
 from tortoise import Model, fields, functions
@@ -21,10 +21,31 @@ class Player(Model):
     player_id = fields.CharField(20)
     codename = fields.CharField(255)
     entity_id = fields.CharField(50, default="")
+
+    # ratings
+
+    # general ratings
+
     sm5_mu = fields.FloatField(default=25)
     sm5_sigma = fields.FloatField(default=8.333)
     laserball_mu = fields.FloatField(default=25)
     laserball_sigma = fields.FloatField(default=8.333)
+
+    # role specific ratings for SM5
+
+    commander_mu = fields.FloatField(default=25)
+    commander_sigma = fields.FloatField(default=8.333)
+    heavy_mu = fields.FloatField(default=25)
+    heavy_sigma = fields.FloatField(default=8.333)
+    scout_mu = fields.FloatField(default=25)
+    scout_sigma = fields.FloatField(default=8.333)
+    ammo_mu = fields.FloatField(default=25)
+    ammo_sigma = fields.FloatField(default=8.333)
+    medic_mu = fields.FloatField(default=25)
+    medic_sigma = fields.FloatField(default=8.333)
+
+    # general db stuff
+
     timestamp = fields.DatetimeField(auto_now=True)
 
     # account stuff
@@ -50,6 +71,27 @@ class Player(Model):
     @property
     def laserball_rating(self) -> Rating:
         return Rating(self.laserball_mu, self.laserball_sigma)
+    
+    def get_role_rating(self, role: Union[Role, IntRole]) -> Rating:
+        if type(role) == IntRole:
+            role = Role(str(role).lower())
+
+        if role == Role.COMMANDER:
+            return Rating(self.commander_mu, self.commander_sigma)
+        elif role == Role.HEAVY:
+            return Rating(self.heavy_mu, self.heavy_sigma)
+        elif role == Role.SCOUT:
+            return Rating(self.scout_mu, self.scout_sigma)
+        elif role == Role.AMMO:
+            return Rating(self.ammo_mu, self.ammo_sigma)
+        elif role == Role.MEDIC:
+            return Rating(self.medic_mu, self.medic_sigma)
+        else:
+            raise ValueError(f"Invalid role: {role}")
+    
+    def get_role_ordinal(self, role: Union[Role, IntRole]) -> float:
+        rating = self.get_role_rating(role)
+        return rating.mu - 3 * rating.sigma
 
     # account stuff
 

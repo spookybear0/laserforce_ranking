@@ -8,6 +8,12 @@ from helpers.ratinghelper import recalculate_ratings, recalculate_laserball_rati
 from shared import app
 from utils import render_template, admin_only
 
+def reset_banner() -> None:
+    app.ctx.banner = {
+        "text": None,
+        "type": None,
+    }
+    
 
 @app.get("/admin")
 @admin_only
@@ -21,8 +27,7 @@ async def admin_index(request: Request) -> str:
 @admin_only
 async def admin_recalculate_ratings(request: Request) -> str:
     request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate"
-    asyncio.create_task(recalculate_ratings(), name="Recalculate Ratings")
-    request.app.ctx.banner["text"] = None
+    asyncio.create_task(recalculate_ratings(), name="Recalculate Ratings").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 
@@ -31,8 +36,7 @@ async def admin_recalculate_ratings(request: Request) -> str:
 @admin_only
 async def admin_recalculate_sm5_ratings(request: Request) -> str:
     request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate"
-    asyncio.create_task(recalculate_sm5_ratings(), name="Recalculate SM5 Ratings")
-    request.app.ctx.banner["text"] = None
+    asyncio.create_task(recalculate_sm5_ratings(), name="Recalculate SM5 Ratings").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 
@@ -41,8 +45,7 @@ async def admin_recalculate_sm5_ratings(request: Request) -> str:
 @admin_only
 async def admin_recalculate_lb_ratings(request: Request) -> str:
     request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate"
-    asyncio.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings")
-    request.app.ctx.banner["text"] = None
+    asyncio.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 

@@ -15,6 +15,7 @@
     
     currentMode = "{{ mode }}"; // sm5 or laserall
     numTeams = 2;
+    matchmakeRoles = false;
     all_players = {{ all_players|tojson }};
 </script>
 
@@ -140,6 +141,16 @@
         color: lightgray;
     }
 
+    .role-cell-hidden {
+        padding: 0;
+        display: none;
+    }
+
+    .role-cell {
+        padding: 0;
+        padding-top: 0.15rem;
+    }
+
     @media screen and (max-width: 991px) {
         #content {
             width: 100%;
@@ -196,6 +207,7 @@
                 <button onclick="matchmakePlayers()" class="btn"><h3>Matchmake Players</h3></button>
                 <button onclick="addUnratedPlayer()" class="btn"><h3>Add Unrated Player</h3></button>
                 <button onclick="switchMode()" class="btn" id="modeBtn"><h3>Switch Mode to Laserball</h3></button>
+                <button onclick="switchMatchmakingRoles()" class="btn" id="matchmakeRolesBtn"><h3>Matchmake Roles/Players</h3></button>
             </div>
         </div>
         <div class="sub-container">
@@ -204,11 +216,13 @@
                 <table>
                     <tbody>
                         <tr>
+                            <th class="role-cell-hidden"></th> <!--empty cell for role-->
                             <th>Player</th>
                             <th>Rating</th>
                         </tr>
                         {% for player in players %}
                         <tr draggable="true" ondragend="dragEnd(event)">
+                            <td class="role-cell-hidden"></td>
                             <td>{{ player.codename }}</td>
                             <td>{{ player.sm5_ordinal|round(2) }}</td>
                         </tr>
@@ -224,6 +238,7 @@
                     <table>
                         <tbody>
                             <tr>
+                                <th class="role-cell-hidden"></th> <!--empty cell for role-->
                                 <th>Player</th>
                                 <th>Rating</th>
                             </tr>
@@ -235,6 +250,7 @@
                     <table>
                         <tbody>
                             <tr>
+                                <th class="role-cell-hidden"></th> <!--empty cell for role-->
                                 <th>Player</th>
                                 <th>Rating</th>
                             </tr>
@@ -246,6 +262,7 @@
                     <table>
                         <tbody>
                             <tr>
+                                <th class="role-cell-hidden"></th> <!--empty cell for role-->
                                 <th>Player</th>
                                 <th>Rating</th>
                             </tr>
@@ -257,6 +274,7 @@
                     <table>
                         <tbody>
                             <tr>
+                                <th class="role-cell-hidden"></th> <!--empty cell for role-->
                                 <th>Player</th>
                                 <th>Rating</th>
                             </tr>

@@ -112,23 +112,35 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
                 shooter = await userhelper.player_from_token(game, event.arguments[0])
                 shooter_player = await Player.filter(entity_id=shooter.entity_id).first()
-                shooter_elo = Rating(shooter_player.sm5_mu, shooter_player.sm5_sigma)
+                shooter_elo = shooter_player.sm5_rating
+                shooter_elo_role = shooter_player.get_role_rating(shooter.role)
 
                 target = await userhelper.player_from_token(game, event.arguments[2])
                 target_player = await Player.filter(entity_id=target.entity_id).first()
-                target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
-                out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
+                target_elo = target_player.sm5_rating
+                target_elo_role = target_player.get_role_rating(target.role)
+
+                general_out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
+                role_out = model.rate([[shooter_elo_role], [target_elo_role]], ranks=[0, 1])
 
                 weight_mu = 0.1 # default for damage and downed events
                 if target.role == IntRole.MEDIC:
                     weight_mu = 0.2 # medic events are weighted more heavily
 
+                # update general ratings with weights
+                shooter_player.sm5_mu += (general_out[0][0].mu - shooter_player.sm5_mu) * weight_mu
+                shooter_player.sm5_sigma += (general_out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
 
-                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * weight_mu
-                shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
+                target_player.sm5_mu += (general_out[1][0].mu - target_player.sm5_mu) * weight_mu
+                target_player.sm5_sigma += (general_out[1][0].sigma - target_player.sm5_sigma) * 0.1
 
-                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * weight_mu
-                target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
+                # update role ratings with weights
+
+                setattr(shooter_player, f"{str(shooter.role).lower()}_mu", getattr(shooter_player, f"{str(shooter.role).lower()}_mu") + (role_out[0][0].mu - getattr(shooter_player, f"{str(shooter.role).lower()}_mu")) * 0.1)
+                setattr(shooter_player, f"{str(shooter.role).lower()}_sigma", getattr(shooter_player, f"{str(shooter.role).lower()}_sigma") + (role_out[0][0].sigma - getattr(shooter_player, f"{str(shooter.role).lower()}_sigma")) * 0.1)
+
+                setattr(target_player, f"{str(target.role).lower()}_mu", getattr(target_player, f"{str(target.role).lower()}_mu") + (role_out[1][0].mu - getattr(target_player, f"{str(target.role).lower()}_mu")) * 0.1)
+                setattr(target_player, f"{str(target.role).lower()}_sigma", getattr(target_player, f"{str(target.role).lower()}_sigma") + (role_out[1][0].sigma - getattr(target_player, f"{str(target.role).lower()}_sigma")) * 0.1)
 
                 await shooter_player.save()
                 await target_player.save()
@@ -136,18 +148,36 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
             case EventType.MISSILE_DAMAGE_OPPONENT | EventType.MISSILE_DOWN_OPPONENT:
                 shooter = await userhelper.player_from_token(game, event.arguments[0])
                 shooter_player = await Player.filter(entity_id=shooter.entity_id).first()
-                shooter_elo = Rating(shooter_player.sm5_mu, shooter_player.sm5_sigma)
+                shooter_elo = shooter_player.sm5_rating
+                shooter_elo_role = shooter_player.get_role_rating(shooter.role)
+
                 target = await userhelper.player_from_token(game, event.arguments[2])
                 target_player = await Player.filter(entity_id=target.entity_id).first()
-                target_elo = Rating(target_player.sm5_mu, target_player.sm5_sigma)
+                target_elo = target_player.sm5_rating
+                target_elo_role = target_player.get_role_rating(target.role)
 
-                out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
+                general_out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
+                role_out = model.rate([[shooter_elo_role], [target_elo_role]], ranks=[0, 1])
 
-                shooter_player.sm5_mu += (out[0][0].mu - shooter_player.sm5_mu) * 0.25
-                shooter_player.sm5_sigma += (out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
+                weight_mu = 0.25 # default for missile event
+                if target.role == IntRole.MEDIC:
+                    weight_mu = 0.5 # medic events are weighted more heavily
 
-                target_player.sm5_mu += (out[1][0].mu - target_player.sm5_mu) * 0.25
-                target_player.sm5_sigma += (out[1][0].sigma - target_player.sm5_sigma) * 0.1
+                # update general ratings with weights
+
+                shooter_player.sm5_mu += (general_out[0][0].mu - shooter_player.sm5_mu) * weight_mu
+                shooter_player.sm5_sigma += (general_out[0][0].sigma - shooter_player.sm5_sigma) * 0.1
+
+                target_player.sm5_mu += (general_out[1][0].mu - target_player.sm5_mu) * weight_mu
+                target_player.sm5_sigma += (general_out[1][0].sigma - target_player.sm5_sigma) * 0.1
+
+                # update role ratings with weights
+                
+                setattr(shooter_player, f"{str(shooter.role).lower()}_mu", getattr(shooter_player, f"{str(shooter.role).lower()}_mu") + (role_out[0][0].mu - getattr(shooter_player, f"{str(shooter.role).lower()}_mu")) * 0.1)
+                setattr(shooter_player, f"{str(shooter.role).lower()}_sigma", getattr(shooter_player, f"{str(shooter.role).lower()}_sigma") + (role_out[0][0].sigma - getattr(shooter_player, f"{str(shooter.role).lower()}_sigma")) * 0.1)
+
+                setattr(target_player, f"{str(target.role).lower()}_mu", getattr(target_player, f"{str(target.role).lower()}_mu") + (role_out[1][0].mu - getattr(target_player, f"{str(target.role).lower()}_mu")) * 0.1)
+                setattr(target_player, f"{str(target.role).lower()}_sigma", getattr(target_player, f"{str(target.role).lower()}_sigma") + (role_out[1][0].sigma - getattr(target_player, f"{str(target.role).lower()}_sigma")) * 0.1)
 
                 await shooter_player.save()
                 await target_player.save()
@@ -357,6 +387,73 @@ def matchmake_teams(players: List[Player], num_teams: int, mode: str = GameType.
 
     return best_teams
 
+def get_best_roles_for_teams(teams: List[List[Player]]) -> List[List[IntRole]]:
+    best_roles = []
+    roles = [IntRole.COMMANDER, IntRole.HEAVY, IntRole.AMMO, IntRole.MEDIC, IntRole.SCOUT]
+
+    for team in teams:
+        team_roles = [None] * len(team)
+        assigned_roles = {role: False for role in roles if role != IntRole.SCOUT}
+        remaining_players = list(range(len(team)))
+        random.shuffle(remaining_players)
+
+        # first, assign unique roles (commander, heavy, ammo, medic)
+        for role in assigned_roles:
+            best_rating = None
+            best_player_idx = -1
+            for i in remaining_players:
+                player = team[i]
+                rating = player.get_role_rating(role)
+                if not best_rating or rating > best_rating:
+                    best_rating = rating
+                    best_player_idx = i
+            team_roles[best_player_idx] = role
+            assigned_roles[role] = True
+            remaining_players.remove(best_player_idx)
+
+        # assign remaining players as scouts
+        for i in remaining_players:
+            team_roles[i] = IntRole.SCOUT
+
+        best_roles.append(team_roles)
+    
+    return best_roles
+
+def matchmake_teams_with_roles(players: List[Player], num_teams: int, mode: str = GameType.SM5) -> List[List[Player]]:
+    mode = mode.value.lower()
+
+    if not 2 <= num_teams <= 4:
+        raise ValueError("num_teams must be between 2 and 4")
+
+    def get_team_rating(team, roles):
+        return [player.get_role_rating(role) for player, role in zip(team, roles)]
+    
+    def evaluate_teams(teams, roles):
+        ideal_win_chance = 0.5
+        win_chances = []
+        for team1, team2 in itertools.combinations(teams, 2):
+            team1_rating = get_team_rating(team1, roles[teams.index(team1)])
+            team2_rating = get_team_rating(team2, roles[teams.index(team2)])
+            win_chance = model.predict_win([team1_rating, team2_rating])[0]
+            win_chances.append(abs(win_chance - ideal_win_chance))
+        return sum(win_chances)
+    
+    best_teams = [players[i::num_teams] for i in range(num_teams)]
+    best_roles = get_best_roles_for_teams(best_teams)
+    best_fairness = evaluate_teams(best_teams, best_roles)
+
+    for _ in range(1000):
+        random.shuffle(players)
+        current_teams = [players[i::num_teams] for i in range(num_teams)]
+        current_roles = get_best_roles_for_teams(current_teams)
+        current_fairness = evaluate_teams(current_teams, current_roles)
+        if current_fairness < best_fairness:
+            best_teams = current_teams
+            best_roles = current_roles
+            best_fairness = current_fairness
+
+
+    return best_teams, best_roles
 
 def get_win_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
     """

@@ -19,6 +19,7 @@ async def api_matchmake(request: Request, type_: str) -> str:
     logger.info(f"Matchmaking requested for {type_}")
 
     mode = GameType("laserball" if type_ == "laserball" else "sm5")
+    matchmake_roles = request.args.get("matchmake_roles") == "true"
 
     # get the teams
 
@@ -75,7 +76,12 @@ async def api_matchmake(request: Request, type_: str) -> str:
 
     all_players = [player for player in all_players if player is not None]
 
-    matchmade_teams = ratinghelper.matchmake_teams(all_players, num_teams, mode)
+    matchmade_roles = None
+
+    if matchmake_roles:
+        matchmade_teams, matchmade_roles = ratinghelper.matchmake_teams_with_roles(all_players, num_teams, mode)
+    else:
+        matchmade_teams = ratinghelper.matchmake_teams(all_players, num_teams, mode)
 
     if not team3:
         matchmade_teams.append([])
@@ -85,4 +91,4 @@ async def api_matchmake(request: Request, type_: str) -> str:
     for i, team in enumerate(matchmade_teams):
         matchmade_teams[i] = {player.codename: (player.sm5_ordinal, player.laserball_ordinal) for player in team}
 
-    return response.json(matchmade_teams)
+    return response.json({"teams": matchmade_teams, "roles": matchmade_roles})

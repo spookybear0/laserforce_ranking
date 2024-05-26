@@ -1,4 +1,5 @@
 
+const roleImgs = ["assets/sm5/roles/commander.png", "assets/sm5/roles/heavy.png", "assets/sm5/roles/scout.png", "assets/sm5/roles/ammo.png", "assets/sm5/roles/medic.png"];
 
 function addTeam() {
     if (numTeams < 4) {
@@ -152,25 +153,25 @@ function formatTeamLists() {
         if (i != 1) {
             team1 += ', ';
         }
-        team1 += '"' + team1Table.children[i].children[0].innerHTML + '"';
+        team1 += '"' + team1Table.children[i].children[1].innerHTML + '"';
     }
     for (let i = 1; i < team2Table.children.length; i++) {
         if (i != 1) {
             team2 += ', ';
         }
-        team2 += '"' + team2Table.children[i].children[0].innerHTML + '"';
+        team2 += '"' + team2Table.children[i].children[1].innerHTML + '"';
     }
     for (let i = 1; i < team3Table.children.length; i++) {
         if (i != 1) {
             team3 += ', ';
         }
-        team3 += '"' + team3Table.children[i].children[0].innerHTML + '"';
+        team3 += '"' + team3Table.children[i].children[1].innerHTML + '"';
     }
     for (let i = 1; i < team4Table.children.length; i++) {
         if (i != 1) {
             team4 += ', ';
         }
-        team4 += '"' + team4Table.children[i].children[0].innerHTML + '"';
+        team4 += '"' + team4Table.children[i].children[1].innerHTML + '"';
     }
 
     team1 += "]";
@@ -238,8 +239,6 @@ function updateWinChances() {
             }
 
             if (numTeams == 3) {
-                console.log(winChances);
-
                 let team1VsTeam2WinChance = Math.round(winChances[0][0] * 100 * 100) / 100;
                 let team2VsTeam1WinChance = Math.round(winChances[0][1] * 100 * 100) / 100;
                 let team1VsTeam3WinChance = Math.round(winChances[1][0] * 100 * 100) / 100;
@@ -283,25 +282,25 @@ function updateWinChances() {
             
             for (let i = 1; i < team1Table.children.length; i++) {
                 try {
-                    team1Table.children[i].children[1].innerHTML = Math.round(all_players[team1Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                    team1Table.children[i].children[2].innerHTML = Math.round(all_players[team1Table.children[i].children[1].innerHTML][mode_index] * 100) / 100;
                 }
                 catch (e) {}
             }
             for (let i = 1; i < team2Table.children.length; i++) {
                 try {
-                    team2Table.children[i].children[1].innerHTML = Math.round(all_players[team2Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                    team2Table.children[i].children[2].innerHTML = Math.round(all_players[team2Table.children[i].children[1].innerHTML][mode_index] * 100) / 100;
                 }
                 catch (e) {}
             }
             for (let i = 1; i < team3Table.children.length; i++) {
                 try {
-                    team3Table.children[i].children[1].innerHTML = Math.round(all_players[team3Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                    team3Table.children[i].children[2].innerHTML = Math.round(all_players[team3Table.children[i].children[1].innerHTML][mode_index] * 100) / 100;
                 }
                 catch (e) {}
             }
             for (let i = 1; i < team4Table.children.length; i++) {
                 try {
-                    team4Table.children[i].children[1].innerHTML = Math.round(all_players[team4Table.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+                    team4Table.children[i].children[2].innerHTML = Math.round(all_players[team4Table.children[i].children[1].innerHTML][mode_index] * 100) / 100;
                 }
                 catch (e) {}
             }
@@ -326,21 +325,30 @@ function matchmakePlayers() {
 
     let xhr = new XMLHttpRequest();
     let url = "/api/internal/matchmake/" + currentMode;
-    let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4 + "&num_teams=" + numTeams;
+    let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4 + "&num_teams=" + numTeams + "&matchmake_roles=" + matchmakeRoles;
     xhr.open("GET", url + "?" + params, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4 && xhr.status == 200) {
-            let matchmadeTeams = JSON.parse(xhr.responseText);
+            let jsonData = JSON.parse(xhr.responseText);
+
+            let matchmadeTeams = jsonData["teams"];
+            let matchmadeRoles = jsonData["roles"];
+
+            let className = "role-cell-hidden";
+            if (matchmakeRoles) {
+                className = "role-cell";
+            }
+
             let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
             let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
             let team3Table = document.getElementById("team3-div").querySelector("table").querySelector("tbody");
             let team4Table = document.getElementById("team4-div").querySelector("table").querySelector("tbody");
 
-            team1Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
-            team2Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
-            team3Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
-            team4Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+            team1Table.innerHTML = `<tr><th class="${className}"></th><th>Player</th><th>Rating</th></tr>`;
+            team2Table.innerHTML = `<tr><th class="${className}"></th><th>Player</th><th>Rating</th></tr>`;
+            team3Table.innerHTML = `<tr><th class="${className}"></th><th>Player</th><th>Rating</th></tr>`;
+            team4Table.innerHTML = `<tr><th class="${className}"></th><th>Player</th><th>Rating</th></tr>`;
 
             let mode_index;
 
@@ -351,19 +359,43 @@ function matchmakePlayers() {
                 mode_index = 1;
             }
 
-            console.log(matchmadeTeams);
+            // this could easily be a for loop, but I'm too lazy to change it
 
+            let i = 0;
             for (var key in matchmadeTeams[0]) {
-                team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + key + "</td><td>" + Math.round(matchmadeTeams[0][key][mode_index] * 100) / 100 + "</td></tr>";
+                roleImg = "";
+                if (matchmakeRoles) {
+                    roleImg = `<img src="${roleImgs[matchmadeRoles[0][i]-1]}" width="25" height="25">`;
+                }
+                team1Table.innerHTML += `<tr draggable='true' ondragend='dragEnd(event)'><td class="${className}">${roleImg}</td><td>${key}</td><td>${Math.round(matchmadeTeams[0][key][mode_index] * 100) / 100}</td></tr>`;
+                i++;
             }
+            i = 0;
             for (var key in matchmadeTeams[1]) {
-                team2Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + key + "</td><td>" + Math.round(matchmadeTeams[1][key][mode_index] * 100) / 100 + "</td></tr>";
+                roleImg = "";
+                if (matchmakeRoles) {
+                    roleImg = `<img src="${roleImgs[matchmadeRoles[1][i]-1]}" width="25" height="25">`
+                }
+                team2Table.innerHTML += `<tr draggable='true' ondragend='dragEnd(event)'><td class="${className}">${roleImg}</td><td>${key}</td><td>${Math.round(matchmadeTeams[1][key][mode_index] * 100) / 100}</td></tr>`;
+                i++
             }
+            i = 0;
             for (var key in matchmadeTeams[2]) {
-                team3Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + key + "</td><td>" + Math.round(matchmadeTeams[2][key][mode_index] * 100) / 100 + "</td></tr>";
+                roleImg = "";
+                if (matchmakeRoles) {
+                    roleImg = `<img src="${roleImgs[matchmadeRoles[2][i]-1]}" width="25" height="25">`
+                }
+                team3Table.innerHTML += `<tr draggable='true' ondragend='dragEnd(event)'><td class="${className}">${roleImg}</td><td>${key}</td><td>${Math.round(matchmadeTeams[2][key][mode_index] * 100) / 100}</td></tr>`;
+                i++
             }
+            i = 0;
             for (var key in matchmadeTeams[3]) {
-                team4Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + key + "</td><td>" + Math.round(matchmadeTeams[3][key][mode_index] * 100) / 100 + "</td></tr>";
+                roleImg = "";
+                if (matchmakeRoles) {
+                    roleImg = `<img src="${roleImgs[matchmadeRoles[3][i]-1]}" width="25" height="25">`
+                }
+                team4Table.innerHTML += `<tr draggable='true' ondragend='dragEnd(event)'><td class="${className}">${roleImg}</td><td>${key}</td><td>${Math.round(matchmadeTeams[3][key][mode_index] * 100) / 100}</td></tr>`;
+                i++
             }
 
             updateWinChances();
@@ -377,7 +409,7 @@ function addUnratedPlayer() {
     let rating = 0;
 
     let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
-    team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + codename + "</td><td>" + rating + "</td></tr>";
+    team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td class=\"role-cell-hidden\"></td><td>" + codename + "</td><td>" + rating + "</td></tr>";
 
     all_players[codename] = [0, 0];
 
@@ -410,14 +442,56 @@ function switchMode() {
     updateWinChances();
 }
 
+function switchMatchmakingRoles() {
+    var newClass = "role-cell-hidden";
+
+    if (matchmakeRoles) {
+        matchmakeRoles = false;
+        document.getElementById("matchmakeRolesBtn").innerHTML = "<h3>Matchmake Roles/Players</h3>";
+    }
+    else {
+        matchmakeRoles = true;
+        document.getElementById("matchmakeRolesBtn").innerHTML = "<h3>Matchmake Players Only</h3>";
+        newClass = "role-cell";
+    }
+
+    // show/hide role cells
+
+    let playersTable = document.getElementById("players-div").querySelector("table").querySelector("tbody");
+
+    for (let i = 0; i < playersTable.children.length; i++) {
+        playersTable.children[i].children[0].className = newClass;
+    }
+
+    let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
+    let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
+    let team3Table = document.getElementById("team3-div").querySelector("table").querySelector("tbody");
+    let team4Table = document.getElementById("team4-div").querySelector("table").querySelector("tbody");
+
+    for (let i = 0; i < team1Table.children.length; i++) {
+        team1Table.children[i].children[0].className = newClass;
+    }
+    for (let i = 0; i < team2Table.children.length; i++) {
+        team2Table.children[i].children[0].className = newClass;
+    }
+    for (let i = 0; i < team3Table.children.length; i++) {
+        team3Table.children[i].children[0].className = newClass;
+    }
+    for (let i = 0; i < team4Table.children.length; i++) {
+        team4Table.children[i].children[0].className = newClass;
+    }
+
+    updateWinChances();
+}
+
 // url args from game page when hitting rematchmake
 function interpretUrlArgs() {
     if (team1 || team2) {
         let team1Table = document.getElementById("team1-div").querySelector("table").querySelector("tbody");
         let team2Table = document.getElementById("team2-div").querySelector("table").querySelector("tbody");
 
-        team1Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
-        team2Table.innerHTML = "<tr><th>Player</th><th>Rating</th></tr>";
+        team1Table.innerHTML = "<tr><th class=\"role-cell-hidden\"></th><th>Player</th><th>Rating</th></tr>";
+        team2Table.innerHTML = "<tr><th class=\"role-cell-hidden\"></th><th>Player</th><th>Rating</th></tr>";
 
         let mode_index;
 
@@ -430,11 +504,11 @@ function interpretUrlArgs() {
 
         for (let i = 0; i < team1.length; i++) {
             let player = team1[i];
-            team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + player[0] + "</td><td>" + Math.round(player[mode_index+1] * 100) / 100 + "</td></tr>";
+            team1Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td class=\"role-cell-hidden\"></td><td>" + player[0] + "</td><td>" + Math.round(player[mode_index+1] * 100) / 100 + "</td></tr>";
         }
         for (let i = 0; i < team2.length; i++) {
             let player = team2[i];
-            team2Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td>" + player[0] + "</td><td>" + Math.round(player[mode_index+1] * 100) / 100 + "</td></tr>";
+            team2Table.innerHTML += "<tr draggable='true' ondragend='dragEnd(event)'><td class=\"role-cell-hidden\"></td><td>" + player[0] + "</td><td>" + Math.round(player[mode_index+1] * 100) / 100 + "</td></tr>";
         }
     }
 }
@@ -443,9 +517,7 @@ window.onload = function() {
     interpretUrlArgs();
 
     // default mode is sm5, if urlargs say it's laserball, switch to laserball
-    console.log(currentMode);
     if (currentMode == "laserball") {
-        console.log("switching to laserball");
         switchModeToLaserball();
     }
 
