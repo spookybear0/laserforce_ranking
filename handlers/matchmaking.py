@@ -67,40 +67,42 @@ async def matchmaking_post(request: Request) -> str:
     logger.debug("Getting players from team 1")
 
     for i in range(16):
-        entity_id = data.get(f"1player{i}")
-        if not entity_id:
+        codename = data.get(f"1player{i}")
+        if not codename:
             continue
-        entity_id = entity_id.strip()
+        codename = codename.strip()
 
-        if entity_id.startswith("#"):
-            player = await Player.filter(entity_id=entity_id).first()
+        player = await Player.filter(codename=codename).first()
+        if player: # member
+            all_players.pop(player.codename, None)
+            players.remove(player)
         else:  # non member
-            player = FakePlayer(entity_id)
-            all_players[entity_id] = (player.sm5_rating.ordinal(), player.laserball_rating.ordinal())
+            player = FakePlayer(codename)
 
         if not player:
-            return exceptions.BadRequest(f"Player {entity_id} not found")
+            return exceptions.BadRequest(f"Player {codename} not found")
 
-        team1.append(player.codename)
+        team1.append((player.codename, player.sm5_ordinal, player.laserball_ordinal))
 
     logger.debug("Getting players from team 2")
 
     for i in range(16):
-        entity_id = data.get(f"2player{i}")
-        if not entity_id:
+        codename = data.get(f"2player{i}")
+        if not codename:
             continue
-        entity_id = entity_id.strip()
+        codename = codename.strip()
 
-        if entity_id.startswith("#"):
-            player = await Player.filter(entity_id=entity_id).first()
+        player = await Player.filter(codename=codename).first()
+        if player:
+            all_players.pop(player.codename, None)
+            players.remove(player)
         else:  # non member
-            player = FakePlayer(entity_id)
-            all_players[entity_id] = (player.sm5_rating.ordinal(), player.laserball_rating.ordinal())
+            player = FakePlayer(codename)
 
         if not player:
-            return exceptions.BadRequest(f"Player {entity_id} not found")
+            return exceptions.BadRequest(f"Player {codename} not found")
 
-        team2.append(player.codename)
+        team2.append((player.codename, player.sm5_ordinal, player.laserball_ordinal))
 
     return await render_template(
         request,

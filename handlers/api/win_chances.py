@@ -69,13 +69,15 @@ async def api_win_chances(request: Request, type_: str) -> str:
         if not await add_unrated_player(team4_players):
             team4_players.append(await Player.filter(codename=codename).first())
 
-    # calculate win chances
+    all_teams = [team1_players, team2_players]
 
-    win_chances = ratinghelper.get_win_chances(team1_players, team2_players, team3_players, team4_players, mode)
+    if team3:
+        all_teams.append(team3_players)
+    if team4:
+        all_teams.append(team4_players)
 
-    if not team3:
-        win_chances.append(0)
-    if not team4:
-        win_chances.append(0)
+    # get win chances with ratinghelper.get_win_chance for 2 teams at a time
+        
+    win_chances = ratinghelper.get_win_chances(all_teams, mode)
 
     return response.json(win_chances)

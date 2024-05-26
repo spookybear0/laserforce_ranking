@@ -28,13 +28,10 @@ async def api_matchmake(request: Request, type_: str) -> str:
     team4 = request.args.get("team4").strip('][').replace('"', "").split(', ')
     num_teams = int(request.args.get("num_teams", 2))
 
-    if not team1 or team1[0] == "":
-        team1 = []
-    if not team2 or team2[0] == "":
-        team2 = []
-    if not team3 or team3[0] == "":
+    if num_teams == 2:
         team3 = []
-    if not team4 or team4[0] == "":
+        team4 = []
+    elif num_teams == 3:
         team4 = []
 
     # get ratings from codenames
@@ -86,6 +83,6 @@ async def api_matchmake(request: Request, type_: str) -> str:
         matchmade_teams.append([])
 
     for i, team in enumerate(matchmade_teams):
-        matchmade_teams[i] = [player.codename for player in team]
+        matchmade_teams[i] = {player.codename: (player.sm5_ordinal, player.laserball_ordinal) for player in team}
 
     return response.json(matchmade_teams)

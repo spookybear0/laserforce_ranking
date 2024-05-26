@@ -1,6 +1,6 @@
 import itertools
 import math
-from random import shuffle
+import random
 from typing import List, Tuple, Union
 
 from openskill.models import PlackettLuceRating, PlackettLuce
@@ -65,6 +65,7 @@ class CustomPlackettLuce(PlackettLuce):
 
             return [result, 1 - result]
 
+        # TODO: Implement uneven team adjustment for 3 and 4 teams
         return PlackettLuce.predict_win(self, teams)
 
 
@@ -324,39 +325,36 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
 def matchmake(players, mode: GameType = GameType.SM5) -> Tuple[List[Player], List[Player]]:
     return matchmake_teams(players, 2, mode)
 
+def matchmake_teams(players: List[Player], num_teams: int, mode: str = GameType.SM5) -> List[List[Player]]:
+    mode = mode.value.lower()
 
-def matchmake_teams(players, num_teams: int, mode: GameType = GameType.SM5) -> List[List[Player]]:
-    """
-    Matchmakes 2-4 teams
-    """
+    if not 2 <= num_teams <= 4:
+        raise ValueError("num_teams must be between 2 and 4")
 
-    mode = mode.value
-
-    # get rating object for mode
-
-    # bruteforce sort
+    def get_team_rating(team):
+        return [getattr(player, f"{mode}_rating") for player in team]
+    
+    def evaluate_teams(teams):
+        ideal_win_chance = 0.5
+        win_chances = []
+        for team1, team2 in itertools.combinations(teams, 2):
+            team1_rating = get_team_rating(team1)
+            team2_rating = get_team_rating(team2)
+            win_chance = model.predict_win([team1_rating, team2_rating])[0]
+            win_chances.append(abs(win_chance - ideal_win_chance))
+        return sum(win_chances)
 
     best_teams = [players[i::num_teams] for i in range(num_teams)]
-
-    # gets most fair teams
+    best_fairness = evaluate_teams(best_teams)
 
     for _ in range(1000):
-        shuffle(players)
-        teams = [players[i::num_teams] for i in range(num_teams)]
+        random.shuffle(players)
+        current_teams = [players[i::num_teams] for i in range(num_teams)]
+        current_fairness = evaluate_teams(current_teams)
+        if current_fairness < best_fairness:
+            best_teams = current_teams
+            best_fairness = current_fairness
 
-        func = lambda x: getattr(x, f"{mode}_rating")
-
-        # checks if teams are more fair then previous best
-        # use win chance to matchmake
-        # see which is closer to 0.5, 0.33, 0.25
-
-        ideal_win_chance = 1 / num_teams
-
-        for team in itertools.combinations(teams, 2):
-            if abs(model.predict_win([list(map(func, team[0])), list(map(func, team[1]))])[0] - ideal_win_chance) \
-                    < abs(model.predict_win([list(map(func, best_teams[0])), list(map(func, best_teams[1]))])[
-                              0] - ideal_win_chance):
-                best_teams = teams
     return best_teams
 
 
@@ -376,27 +374,24 @@ def get_win_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
     return model.predict_win([team1, team2])
 
 
-def get_win_chances(team1, team2, team3=None, team4=None, mode: GameType = GameType.SM5) -> List[float]:
-    """
-    Gets win chances for 2-4 teams
-    """
+def get_win_chances(all_teams: List[List[Player]], mode: GameType = GameType.SM5) -> List[float]:
+    win_chances = []
 
-    logger.debug(f"Getting win chances for {team1} vs {team2} vs {team3} vs {team4}")
+    for i in range(len(all_teams)):
+        for j in range(i + 1, len(all_teams)):
+            first_team = all_teams[i]
+            second_team = all_teams[j]
 
-    mode = mode.value
-    # get rating object for mode
-    team1 = list(map(lambda x: getattr(x, f"{mode}_rating"), team1))
-    team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
-    team3 = list(map(lambda x: getattr(x, f"{mode}_rating"), team3))
-    team4 = list(map(lambda x: getattr(x, f"{mode}_rating"), team4))
+            logger.info(f"Calculating win chance for teams {i + 1} and {j + 1}")
 
-    logger.debug("Predicting win chances")
+            win_chances.append(get_win_chance(first_team, second_team, mode))
 
-    if not team3:
-        return model.predict_win([team1, team2])
-    elif not team4:
-        return model.predict_win([team1, team2, team3])
-    return model.predict_win([team1, team2, team3, team4])
+    if len(all_teams) <= 3:
+        win_chances.append(0)
+    if len(all_teams) == 2:
+        win_chances.append(0)
+
+    return win_chances
 
 
 def get_draw_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
