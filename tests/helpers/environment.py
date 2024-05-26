@@ -129,9 +129,11 @@ async def add_sm5_event(event: Events):
     await _TEST_SM5_GAME.events.add(event)
 
 
-async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_entity_id: str) -> Events:
+async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_entity_id: str,
+                           opponent_down: bool = True) -> Events:
     return await create_event_from_data(
-        ["4", str(time_millis), EventType.DOWNED_OPPONENT, zapping_entity_id, " zaps ", zapped_entity_id])
+        ["4", str(time_millis), EventType.DOWNED_OPPONENT if opponent_down else EventType.DAMAGED_OPPONENT,
+         zapping_entity_id, " zaps ", zapped_entity_id])
 
 
 async def create_block_event(time_millis: int, blocking_entity_id: str, blocked_entity_id: str) -> Events:

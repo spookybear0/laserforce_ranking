@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from db.game import Events, Teams, PlayerInfo
+from db.types import EventType, Team
+
 
 def _escape_string(text: str) -> str:
     return text.replace("'", "\\'")
@@ -8,6 +11,7 @@ def _escape_string(text: str) -> str:
 
 @dataclass
 class ReplayCellChange:
+    """Describes a cell in a team table being changed."""
     # Name of the row this update is for.
     row_id: str
 
@@ -22,6 +26,7 @@ class ReplayCellChange:
 
 @dataclass
 class ReplayRowChange:
+    """Describes a row in a team table being changed (typically its CSS class)."""
     # Name of the row this update is for.
     row_id: str
 
@@ -34,6 +39,10 @@ class ReplayRowChange:
 
 @dataclass
 class ReplaySound:
+    """Describes a sound that may be used during a replay.
+
+    One sound may comprise multiple sound assets that are chosen randomly.
+    """
     # List of possible assets to use for this sound.
     asset_urls: List[str]
 
@@ -49,6 +58,7 @@ class ReplaySound:
 
 @dataclass
 class ReplayEvent:
+    """Describes a single event during the replay."""
     # The time at which this event happened.
     timestamp_millis: int
 
@@ -70,6 +80,7 @@ class ReplayEvent:
 
 @dataclass
 class ReplayPlayer:
+    """Describes a player """
     # The innerHTML for each column.
     cells: List[str]
 
@@ -188,3 +199,141 @@ class Replay:
             """
 
         return result
+
+
+@dataclass(kw_only=True)
+class PlayerState:
+    """Representation of the current state of a player as the replay events are being generated."""
+    row_index: int
+    row_id: str
+    team: Team
+    name: str
+    downed: bool = False
+    score: int = 0
+    total_shots_fired: int = 0
+    total_shots_hit: int = 0
+
+    def __hash__(self):
+        return self.row_index
+
+
+class ReplayGenerator:
+    """Base class for a gametype-specific replay generator."""
+
+    def __init__(self):
+        self.teams = {}
+        self.team_scores = dict[Team, int]()
+        self.team_sound_balance = dict[Team, float]()
+        self.team_rosters = dict[Team, List[PlayerInfo]]()
+
+        self.entity_id_to_player = dict[str, str]()
+        self.entity_id_to_nonplayer_name = dict[str, str]()
+
+        self.events = []
+        self.cell_changes = []
+        self.row_changes = []
+        self.entity_starts = []
+
+        # Map from a player and the timestamp at which the player will be back up. The key is the _Player object.
+        self.player_reup_times = dict[PlayerState, int]()
+
+        self.sounds = []
+        self.stereo_balance = 0.0
+
+    async def generate(self, game) -> Replay:
+        pass
+
+    def init_teams(self):
+        self.entity_id_to_nonplayer_name = {
+            entity.entity_id: entity.name for entity in self.entity_starts if entity.entity_id[0] == "@"
+        }
+
+    def process_events(self, events: List[Events], event_handler):
+        for event in events:
+            timestamp = event.time
+            old_team_scores = self.team_scores.copy()
+
+            # Before we process the event, let's see if there's a player coming back up. Look up all the timestamps when
+            # someone is coming back up.
+            players_reup_timestamps = [
+                reup_timestamp for reup_timestamp in self.player_reup_times.values() if reup_timestamp < timestamp
+            ]
+
+            if players_reup_timestamps:
+                # Create events for all the players coming back up one by one.
+                players_reup_timestamps.sort()
+
+                row_changes = []
+
+                # Walk through them in order. It's likely that there are multiple players with identical timestamps
+                # (like after a nuke in SM5), so we can't use a dict here.
+                for reup_timestamp in players_reup_timestamps:
+                    # Find the first player with this particular timestamp. There may be multiple after a nuke. But who
+                    # cares. We'll eventually get them one by one.
+                    for player, player_reup_timestamp in self.player_reup_times.items():
+                        if player_reup_timestamp == reup_timestamp:
+                            self.player_reup_times.pop(player)
+                            row_changes.append(ReplayRowChange(player.row_id, player.team.css_class))
+                            player.downed = False
+                            break
+
+                    # Create a dummy event to update the UI.
+                    self.events.append(
+                        ReplayEvent(reup_timestamp, "", cell_changes=[], row_changes=row_changes, team_scores=[],
+                                    sounds=[]))
+
+            # Translate the arguments of the event into HTML if they reference entities.
+            message = ""
+
+            # Note that we don't care about players missing.
+            if event.type != EventType.MISS:
+                for argument in event.arguments:
+                    if argument[0] == "@":
+                        message += self.create_entity_reference(argument)
+                    elif argument[0] == '#':
+                        message += self.create_entity_reference(argument)
+                    else:
+                        message += argument
+
+            player1 = None
+            player2 = None
+
+            if event.arguments[0] in self.entity_id_to_player:
+                player1 = self.entity_id_to_player[event.arguments[0]]
+
+            if len(event.arguments) > 2 and event.arguments[2] in self.entity_id_to_player:
+                player2 = self.entity_id_to_player[event.arguments[2]]
+
+            self.row_changes = []
+            self.cell_changes = []
+            self.sounds = []
+
+            self.handle_event(event, player1, player2)
+
+            if self.team_scores == old_team_scores:
+                new_team_scores = []
+            else:
+                new_team_scores = [
+                    self.team_scores[team] for team in self.team_rosters.keys()
+                ]
+
+            replay_event = ReplayEvent(timestamp_millis=timestamp, message=message, cell_changes=self.cell_changes,
+                                       row_changes=self.row_changes, team_scores=new_team_scores, sounds=self.sounds,
+                                       sound_stereo_balance=self.stereo_balance)
+
+            self.events.append(replay_event)
+
+    def add_sound(self, sound, team: Teams):
+        self.sounds.append(sound)
+        self.stereo_balance = self.team_sound_balance[team]
+
+    def handle_event(self, event: Events, player1, player2) -> ReplayEvent:
+        pass
+
+    def create_entity_reference(self, argument: str) -> str:
+        if argument in self.entity_id_to_nonplayer_name:
+            return self.entity_id_to_nonplayer_name[argument]
+
+        player = self.entity_id_to_player[argument]
+        css_class = player.team.css_class
+        return f'<span class="{css_class}">{player.name}</span>'
