@@ -399,8 +399,12 @@ def get_best_roles_for_teams(teams: List[List[Player]]) -> List[List[IntRole]]:
 
         # first, assign unique roles (commander, heavy, ammo, medic)
         for role in assigned_roles:
+            # check if there's enough players left to assign any more roles
+            if not remaining_players:
+                break
+
             best_rating = None
-            best_player_idx = -1
+            best_player_idx = None
             for i in remaining_players:
                 player = team[i]
                 rating = player.get_role_rating(role)
@@ -409,7 +413,8 @@ def get_best_roles_for_teams(teams: List[List[Player]]) -> List[List[IntRole]]:
                     best_player_idx = i
             team_roles[best_player_idx] = role
             assigned_roles[role] = True
-            remaining_players.remove(best_player_idx)
+            if best_player_idx is not None:
+                remaining_players.remove(best_player_idx)
 
         # assign remaining players as scouts
         for i in remaining_players:

@@ -25,6 +25,13 @@ class FakePlayer:
     @property
     def laserball_ordinal(self) -> int:
         return self.laserball_rating.ordinal()
+    
+    @property
+    def get_role_rating(self, _) -> Rating:
+        return Rating(ratinghelper.MU, ratinghelper.SIGMA)
+    
+    def get_role_rating_ordinal(self, _) -> int:
+        return self.get_role_rating(_).ordinal()
 
     def __str__(self) -> str:
         return f"{self.codename} (non member)"

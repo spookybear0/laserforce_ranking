@@ -58,6 +58,8 @@ async def api_win_chances(request: Request, type_: str) -> str:
             p.laserball_rating_sigma = ratinghelper.SIGMA
             p.sm5_ordinal = p.sm5_rating.ordinal()
             p.laserball_ordinal = p.laserball_rating.ordinal()
+            p.get_role_rating = lambda _: ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.get_role_rating_ordinal = lambda _: p.get_role_rating(_).ordinal()
             team.append(p)
             return True
         return False
