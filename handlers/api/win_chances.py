@@ -52,6 +52,12 @@ async def api_win_chances(request: Request, type_: str) -> str:
             p.codename = "Unrated Player"
             p.sm5_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
             p.laserball_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.sm5_rating_mu = ratinghelper.MU
+            p.sm5_rating_sigma = ratinghelper.SIGMA
+            p.laserball_rating_mu = ratinghelper.MU
+            p.laserball_rating_sigma = ratinghelper.SIGMA
+            p.sm5_ordinal = p.sm5_rating.ordinal()
+            p.laserball_ordinal = p.laserball_rating.ordinal()
             team.append(p)
             return True
         return False

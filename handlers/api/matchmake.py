@@ -49,8 +49,15 @@ async def api_matchmake(request: Request, type_: str) -> str:
 
             p = _()
             p.codename = "Unrated Player"
-            p.sm5_rating = ratinghelper.Rating(25, 8.333)
-            p.laserball_rating = ratinghelper.Rating(25, 8.333)
+            p.sm5_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.laserball_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.sm5_rating_mu = ratinghelper.MU
+            p.sm5_rating_sigma = ratinghelper.SIGMA
+            p.laserball_rating_mu = ratinghelper.MU
+            p.laserball_rating_sigma = ratinghelper.SIGMA
+            p.sm5_ordinal = p.sm5_rating.ordinal()
+            p.laserball_ordinal = p.laserball_rating.ordinal()
+
             team.append(p)
             return True
         return False
