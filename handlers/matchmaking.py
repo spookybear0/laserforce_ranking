@@ -18,6 +18,14 @@ class FakePlayer:
         self.laserball_rating_mu = ratinghelper.MU
         self.laserball_rating_sigma = ratinghelper.SIGMA
 
+    @property
+    def sm5_ordinal(self) -> int:
+        return self.sm5_rating.ordinal()
+    
+    @property
+    def laserball_ordinal(self) -> int:
+        return self.laserball_rating.ordinal()
+
     def __str__(self) -> str:
         return f"{self.codename} (non member)"
 
