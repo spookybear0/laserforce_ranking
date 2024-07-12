@@ -96,7 +96,7 @@ async def main() -> None:
     Start the server in a development/nonprod environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
-    app.ctx.banner = {"text": "Rating recalculation in progress, stats may be inaccurate", "type": None}
+    app.ctx.banner = {"text": "", "type": None}
     app.ctx.banner_type_to_color = utils.banner_type_to_color
 
     await Tortoise.init(

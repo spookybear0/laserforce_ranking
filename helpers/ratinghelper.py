@@ -388,6 +388,22 @@ def matchmake_teams(players: List[Player], num_teams: int, mode: str = GameType.
     return best_teams
 
 def get_best_roles_for_teams(teams: List[List[Player]]) -> List[List[IntRole]]:
+    """
+    Gets the best roles for a list of teams
+
+    Algorithm:
+
+    1. Assign unique roles (commander, heavy, ammo, medic) to the players with the highest rating for that role
+    2. Assign the remaining players as scouts
+    3. (if using the matchmaker) shuffle the players and repeat the process until the best combination is found
+
+
+    Possible improvements:
+    - Consider how well resupply combos work together
+    - Consider giving players their preferred roles
+    - Consider giving players roles that they haven't played often for variety
+    """
+
     best_roles = []
     roles = [IntRole.COMMANDER, IntRole.HEAVY, IntRole.AMMO, IntRole.MEDIC, IntRole.SCOUT]
 
@@ -447,7 +463,7 @@ def matchmake_teams_with_roles(players: List[Player], num_teams: int, mode: str 
     best_roles = get_best_roles_for_teams(best_teams)
     best_fairness = evaluate_teams(best_teams, best_roles)
 
-    for _ in range(1000):
+    for _ in range(5000):
         random.shuffle(players)
         current_teams = [players[i::num_teams] for i in range(num_teams)]
         current_roles = get_best_roles_for_teams(current_teams)

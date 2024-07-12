@@ -12,10 +12,11 @@ async def notfound(request: Request, exception: Exception) -> str:
     return await render_template(request, "errors/404.html", description=description)
 
 
-@app.exception(ServerError)
+@app.exception(ServerError, Exception)
 async def servererror(request: Request, exception: Exception) -> str:
-    description = exception.args[
-        0] if exception.args else "The server encountered an internal error and was unable to complete your request."
+    #description = exception.args[
+    #    0] if exception.args else "The server encountered an internal error and was unable to complete your request."
+    description = "The server encountered an internal error and was unable to complete your request.<br><br> Please contact the administrator if the problem persists."
 
     return await render_template(request, "errors/500.html", description=description)
 
