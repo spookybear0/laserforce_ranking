@@ -104,9 +104,9 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
 
-                # has index 8
+                # has index 9
                 try:
-                    member_id = int(data[8])
+                    member_id = int(data[9])
                 except ValueError:
                     member_id = None
 
