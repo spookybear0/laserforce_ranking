@@ -107,7 +107,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 # has index 9
                 try:
                     member_id = int(data[9])
-                except ValueError:
+                except (ValueError, IndexError):
                     member_id = None
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
@@ -395,8 +395,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
                 # has index 8
                 try:
-                    member_id = int(data[8])
-                except ValueError:
+                    member_id = int(data[9])
+                except (ValueError, IndexError):
                     member_id = None
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
