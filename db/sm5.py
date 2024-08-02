@@ -15,6 +15,10 @@ from helpers.cachehelper import cache
 import math
 import sys
 
+# The current version we expect in SM5Game.laserrank_version. If it doesn't match, that game should be recomputed
+# with the recompute_sm5_scores action.
+SM5_LASERRANK_VERSION = 2
+
 
 class SM5Game(Model):
     id = fields.IntField(pk=True)
@@ -39,6 +43,11 @@ class SM5Game(Model):
     scores = fields.ManyToManyField("models.Scores")
     entity_ends = fields.ManyToManyField("models.EntityEnds")
     sm5_stats = fields.ManyToManyField("models.SM5Stats")
+    # If not null, this is the team that eliminated the other.
+    last_team_standing = fields.CharEnumField(Team, null=True)
+    # Our internal SM5 game version when this game was imported. If it doesn't match SM5_LASERRANK_VERSION, it
+    # should be recomputed.
+    laserrank_version = fields.IntField(default=0)
 
     def __str__(self) -> str:
         return f"SM5Game ({self.start_time})"
@@ -47,8 +56,11 @@ class SM5Game(Model):
         return f"<SM5Game ({self.tdf_name})>"
 
     async def get_team_score(self, team: Team) -> int:
-        return sum(map(lambda x: x[0],
-                       await self.entity_ends.filter(entity__team__color_name=team.element).values_list("score")))
+        # Add 10,000 extra points if this team eliminated the opposition.
+        adjustment = 10000 if team == self.last_team_standing else 0
+        return adjustment + sum(map(lambda x: x[0],
+                                    await self.entity_ends.filter(entity__team__color_name=team.element).values_list(
+                                        "score")))
 
     async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(entity_id=token).first()

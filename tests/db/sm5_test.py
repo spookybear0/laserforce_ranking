@@ -38,6 +38,38 @@ class TestSm5(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(320, await game.get_team_score(Team.RED))
 
+    async def test_get_team_score_eliminating_team(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+        game.last_team_standing = Team.RED
+        await game.save()
+
+        # Shouldn't count, this entity isn't part of this game.
+        await add_entity(entity_id=ENTITY_ID_1, score=4000, team=get_red_team())
+        # Should count.
+        await add_entity(entity_id=ENTITY_ID_2, score=300, team=get_red_team(), sm5_game=game)
+        # Should count.
+        await add_entity(entity_id=ENTITY_ID_3, score=20, team=get_red_team(), sm5_game=game)
+        # Shouldn't count, this entity is on a different team.
+        await add_entity(entity_id=ENTITY_ID_4, score=1, team=get_green_team(), sm5_game=game)
+
+        self.assertEqual(10320, await game.get_team_score(Team.RED))
+
+    async def test_get_team_score_eliminated_team(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+        game.last_team_standing = Team.GREEN
+        await game.save()
+
+        # Shouldn't count, this entity isn't part of this game.
+        await add_entity(entity_id=ENTITY_ID_1, score=4000, team=get_red_team())
+        # Should count.
+        await add_entity(entity_id=ENTITY_ID_2, score=300, team=get_red_team(), sm5_game=game)
+        # Should count.
+        await add_entity(entity_id=ENTITY_ID_3, score=20, team=get_red_team(), sm5_game=game)
+        # Shouldn't count, this entity is on a different team.
+        await add_entity(entity_id=ENTITY_ID_4, score=1, team=get_green_team(), sm5_game=game)
+
+        self.assertEqual(320, await game.get_team_score(Team.RED))
+
 
 if __name__ == '__main__':
     unittest.main()
