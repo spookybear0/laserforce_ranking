@@ -393,7 +393,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
 
-                # has index 8
+                # has index 9 (member id, but is only available when the setting is enabled)
                 try:
                     member_id = int(data[9])
                 except (ValueError, IndexError):

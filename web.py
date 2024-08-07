@@ -17,7 +17,6 @@ import aioredis
 # we need to set up our app before we import anything else
 
 app = Sanic("laserforce_rankings")
-app.config.USE_UVLOOP = False
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()

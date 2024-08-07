@@ -6,8 +6,8 @@ from sanic import exceptions
 from sanic.log import logger
 
 from db.game import EntityEnds
-from db.laserball import LaserballGame, LaserballStats
-from db.sm5 import SM5Game
+from db.laserball import LaserballGame, LaserballStats, Team as LaserballTeam
+from db.sm5 import SM5Game, Team as SM5Team
 from helpers.cachehelper import cache_template
 from helpers.gamehelper import get_matchmaking_teams
 from helpers.laserballhelper import get_laserball_player_stats
@@ -77,6 +77,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
             tooltip_info=TOOLTIP_INFO,
+            fire_score=await game.get_team_score(SM5Team.RED),
+            earth_score=await game.get_team_score(SM5Team.GREEN),
             is_admin=is_admin(request)
         )
     elif type == "laserball":
@@ -122,6 +124,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
+            fire_score=await game.get_team_score(LaserballTeam.RED),
+            ice_score=await game.get_team_score(LaserballTeam.BLUE),
             is_admin=is_admin(request)
         )
     else:
