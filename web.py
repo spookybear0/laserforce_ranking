@@ -117,9 +117,20 @@ router.add_all_routes(app)
 app.static("assets", "assets", name="assets")
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
+    if sys.platform == "win32":
+        loop = asyncio.new_event_loop()
+    else:
+        import uvloop
+        loop = uvloop.new_event_loop()
+
     asyncio.set_event_loop(loop)
+
     try:
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         print("Exiting...")
+else:
+    if sys.platform == "win32":
+        app.config.USE_UVLOOP = False
+    else:
+        app.config.USE_UVLOOP = True
