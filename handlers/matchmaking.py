@@ -43,11 +43,13 @@ class FakePlayer:
 @app.get("/matchmaking")
 async def matchmaking(request: Request) -> str:
     players = await Player.all()
+    players = sorted(players, key=lambda x: x.codename)
 
     # all_players = {codename: (sm5_rating, lb_rating)
     logger.debug("Getting ratings for all players")
     all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in
                    players}
+    
 
     return await render_template(
         request,

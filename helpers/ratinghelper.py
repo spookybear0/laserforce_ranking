@@ -380,6 +380,21 @@ def matchmake_teams(players: List[Player], num_teams: int, mode: str = GameType.
     for _ in range(1000):
         random.shuffle(players)
         current_teams = [players[i::num_teams] for i in range(num_teams)]
+
+        # make sure all teams have the same number of players
+
+        # 2 teams
+        if num_teams == 2 and len(current_teams[0]) != len(current_teams[1]) and len(players) % 2 == 0:
+            continue
+
+        # 3 teams
+        if num_teams == 3 and len(current_teams[0]) != len(current_teams[1]) and len(current_teams[1]) != len(current_teams[2]) and len(players) % 3 == 0:
+            continue
+
+        # 4 teams
+        if num_teams == 4 and any(len(team) != len(players) // num_teams for team in current_teams) and len(players) % 4 == 0:
+            continue
+
         current_fairness = evaluate_teams(current_teams)
         if current_fairness < best_fairness:
             best_teams = current_teams
@@ -453,6 +468,8 @@ def matchmake_teams_with_roles(players: List[Player], num_teams: int, mode: str 
         ideal_win_chance = 0.5
         win_chances = []
         for team1, team2 in itertools.combinations(teams, 2):
+            if len(team1) != len(team2):
+                print("ERROR Teams must have the same number of players")
             team1_rating = get_team_rating(team1, roles[teams.index(team1)])
             team2_rating = get_team_rating(team2, roles[teams.index(team2)])
             win_chance = model.predict_win([team1_rating, team2_rating])[0]
