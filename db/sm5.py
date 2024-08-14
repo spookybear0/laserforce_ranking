@@ -35,7 +35,7 @@ class SM5Game(Model):
     start_time = fields.DatetimeField()
     mission_duration = fields.IntField()  # in milliseconds
     log_time = fields.DatetimeField(auto_now_add=True)
-    # there is a field in the tdf called "penalty", no idea what it is
+    # Field that is not currently stored: penalty (the amount of points deducted from when a player gets a penalty ex: 0, -1000)
     teams = fields.ManyToManyField("models.Teams")
     entity_starts = fields.ManyToManyField("models.EntityStarts")
     events = fields.ManyToManyField("models.Events")
