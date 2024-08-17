@@ -9,6 +9,9 @@
             src="https://js.sentry-cdn.com/562e9ab020654bedbc2a3db770dc07c2.min.js"
             crossorigin="anonymous"
     ></script>
+
+    <script src="/assets/js/rfid.js"></script>
+
     <title>Laserforce Ranking - {% block title %}{% endblock %}</title>
 
     <meta name="title" content="Laserforce Ranking - {{ self.title() }}">
@@ -167,6 +170,19 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             :root {
               --alternate-table-background-color: #1A1A1A;
             }
+
+            .rfid_button {
+                position: fixed;
+                width: 60px;
+                height: 60px;
+                bottom: 40px;
+                left: 40px;
+                background-color: #007BFF;
+                color: #FFF;
+                border-radius: 50px;
+                text-align: center;
+                border: none;
+            }
         }
 
         @media screen and (max-width: 991px) {
@@ -195,6 +211,10 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
                 position: sticky;
                 z-index: 1;
                 left: 75px;
+            }
+
+            .rfid_button {
+                display: none;
             }
         }
 
@@ -294,6 +314,11 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 <div id="content">
     {% block content %}{% endblock %}
 </div>
+
+<!--floating button for rfid-->
+<button onclick="readRfid()" class="rfid_button" id="rfid_button">
+    <i class="fa-brands fa-nfc-symbol fa-lg"></i>
+</button>
 
 <div id="footer">
     {% block footer %}
