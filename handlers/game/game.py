@@ -1,31 +1,35 @@
-from sanic import Request
+from typing import Optional
 
-from helpers.sm5helper import get_sm5_player_stats
-from helpers.tooltips import TOOLTIP_INFO
-from shared import app
-from utils import render_template, is_admin
-from db.game import EntityEnds, EntityStarts
-from db.sm5 import SM5Game, SM5Stats
-from db.laserball import LaserballGame, LaserballStats
-from helpers.gamehelper import get_team_rosters, get_matchmaking_teams
-from db.types import Team
+from numpy import arange
+from sanic import Request
 from sanic import exceptions
+from sanic.log import logger
+
+from db.game import EntityEnds
+from db.laserball import LaserballGame, LaserballStats, Team as LaserballTeam
+from db.sm5 import SM5Game, Team as SM5Team
+from helpers.cachehelper import cache_template
+from helpers.gamehelper import get_matchmaking_teams
+from helpers.laserballhelper import get_laserball_player_stats
+from helpers.sm5helper import get_sm5_player_stats
 from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
     millis_to_time
-from numpy import arange
-from typing import Optional
-from sanic.log import logger
-from helpers.cachehelper import cache
+from helpers.tooltiphelper import TOOLTIP_INFO
+from shared import app
+from utils import is_admin, render_cached_template
+
 
 async def get_entity_end(entity) -> Optional[EntityEnds]:
     return await EntityEnds.filter(entity=entity).first()
 
+
 async def get_laserballstats(entity) -> Optional[LaserballStats]:
     return await LaserballStats.filter(entity=entity).first()
 
+
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
-@cache()
+@cache_template()
 async def game_index(request: Request, type: str, id: int) -> str:
     if type == "sm5":
         logger.debug(f"Fetching sm5 game with ID {id}")
@@ -34,7 +38,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
-        
+
         logger.debug(f"Game found: {game}")
 
         logger.debug("Fetching player stats")
@@ -60,7 +64,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Rendering template")
 
-        return await render_template(
+        return await render_cached_template(
             request, "game/sm5.html",
             teams=full_stats.teams,
             game=game,
@@ -73,40 +77,31 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
             tooltip_info=TOOLTIP_INFO,
+            fire_score=await game.get_team_score(SM5Team.RED),
+            earth_score=await game.get_team_score(SM5Team.GREEN),
             is_admin=is_admin(request)
         )
     elif type == "laserball":
-        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts").first()
+        game = await LaserballGame.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
 
         logger.debug(f"Fetching laserball game with ID {id}")
 
         if not game:
             raise exceptions.NotFound("Not found: Invalid game ID")
-        
+
+        game_duration = game.mission_duration
+
         logger.debug(f"Game found: {game}")
 
         logger.debug("Fetching team rosters")
 
-        team_rosters = await get_team_rosters(await game.entity_starts.all(), await game.entity_ends.all())
-
-        logger.debug("Fetching team scores")
-
-        scores = {
-            team: await game.get_team_score(team) for team in team_rosters.keys()
-        }
-
-        logger.debug("Fetching team score graph data")
-
-        score_chart_data = await get_sm5_team_score_graph_data(game, list(team_rosters.keys()))
+        full_stats = await get_laserball_player_stats(game)
 
         logger.debug("Fetching matchmaking teams")
 
-        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(team_rosters)
+        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(full_stats.get_team_rosters())
 
         logger.debug("Fetching win chances")
-
-        # Sort the teams in order of their score.
-        team_ranking = sorted(scores.keys(), key=lambda team: scores[team], reverse=True)
 
         if game.ranked:
             win_chance_after_game = await game.get_win_chance_after_game()
@@ -117,22 +112,21 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Rendering template")
 
-        return await render_template(
+        return await render_cached_template(
             request, "game/laserball.html",
             game=game,
-            get_entity_end=get_entity_end,
-            get_laserballstats=get_laserballstats,
-            fire_score=await game.get_team_score(Team.RED),
-            ice_score=await game.get_team_score(Team.BLUE),
-            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t*60*1000)} for t in arange(0, 900000//1000//60+0.5, 0.5)],
-            score_chart_data_red=[await game.get_team_score_at_time(Team.RED, t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_blue=[await game.get_team_score_at_time(Team.BLUE, t) for t in range(0, 900000+30000, 30000)],
-            score_chart_data_rounds=[await game.get_rounds_at_time(t) for t in range(0, 900000+30000, 30000)],
+            teams=full_stats.teams,
+            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t * 60 * 1000)} for t in
+                                arange(0, game_duration // 1000 // 60 + 0.5, 0.5)],
+            score_chart_data=full_stats.score_chart_data,
+            score_chart_data_rounds=full_stats.score_chart_data_rounds,
             win_chance_before_game=win_chance_before_game,
             win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
+            fire_score=await game.get_team_score(LaserballTeam.RED),
+            ice_score=await game.get_team_score(LaserballTeam.BLUE),
             is_admin=is_admin(request)
         )
     else:
-        raise exceptions.NotFound("Not found: Invalid game type")
+        raise exceptions.BadRequest("Invalid game type")

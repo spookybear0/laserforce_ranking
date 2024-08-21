@@ -20,6 +20,5 @@ class TestFormattingHelper(unittest.TestCase):
         self.assertEqual("1:300", create_ratio_string(0.00333333))
 
 
-
 if __name__ == '__main__':
     unittest.main()

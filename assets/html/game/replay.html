@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Replay{% endblock %}
+
+
+{% block html_head %}
+
+<style>
+    .replay_viewer {
+        width: 100%;
+        height: 80%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 2.5rem;
+    }
+
+    .events_main {
+        width: 40%;
+    }
+
+    .event_box {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transform: perspective(1000px) rotateX(20deg);
+     }
+
+    .events {
+        display: inline-block;
+        width: 100%;
+        height: 60vh;
+        padding: 10px;
+        margin: 0;
+        border: 0;
+        text-align: center;
+
+        border: 0px;
+        overflow: hidden;
+    }
+
+    .player {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        vertical-align: top;
+        margin: 0.25em;
+        align-items: center;
+        border-radius: 8px;
+    }
+
+    .player-top {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+
+    }
+
+    .player-bottom {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .role {
+        margin-left: 0.25em;
+        margin-right: 0.25em;
+        max-height: 30px;
+    }
+
+    .team {
+        display: inline-block;
+        height: 35%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border: 0;
+        vertical-align: top;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .time-slider {
+        width: 90%;
+        margin: auto;
+        margin-top: 16px;
+        margin-bottom: 24px;
+    }
+
+    .time-slider-control {
+        width: 80%;
+    }
+
+    .timestamp {
+        font-size: xx-large;
+    }
+
+    table {
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td, tr {
+        text-align: center;
+        border: 1px solid lightgray;
+    }
+
+    tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    .controls {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        margin-top: 2rem;
+        width: 100%;
+    }
+
+    .control {
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        font-size: x-large;
+    }
+
+    #replay_viewer {
+        display: none;
+    }
+
+    #time_slider {
+        display: none;
+    }
+
+    #teams_loading_placeholder {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100% - 164px);
+    }
+
+    @keyframes ball_owner_flash {
+        0% {
+            background-color: #443333;
+        }
+        50% {
+            background-color: #3333aa;
+        }
+        0% {
+            background-color: #443333;
+        }
+    }
+
+    .ball-owner {
+        animation: 2s infinite normal ball_owner_flash;
+        font-weight: bold;
+    }
+
+    @media screen and (max-width: 991px) {
+        .replay_viewer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-top: 2.5rem;
+        }
+
+        .events_main {
+            width: 90%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event_box {
+            height: 100%;
+            margin: auto;
+        }
+
+        .events {
+            height: 20vh;
+        }
+
+        .control {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+            padding: 0.5rem;
+            font-size: xx-large;
+        }
+
+        table tr th:nth-child(n+7), table tr th:nth-child(n+7), table tr td:nth-child(n+7), table tr td:nth-child(n+7) {
+            display: none;
+        }
+
+        h2 {
+            zoom: 2;
+        }
+
+        .event {
+            zoom: 1.75;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="teams_loading_placeholder">
+    <h1>Loading Replay...</h1>
+</div>
+<div class="replay_viewer" id="replay_viewer">
+    <div id="teams" class="team_box">
+    </div>
+    <div class="events_main">
+        <div class="event_box">
+            <div class="events" id="events">
+            </div>
+        </div>
+        <div class="controls">
+            <button id="play" class="control">Play</button>
+            <select id="speed" class="control" onChange="onSpeedChange();">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2.0">2.0x</option>
+            </select>
+            <button id="restart" class="control">Restart</button>
+        </div>
+    </div>
+</div>
+
+<div class="time-slider" id="time_slider">
+    <input class="time-slider-control"
+           type="range" id="time-slider" name="time-slider" min="0"
+           max="900" value="0" onInput="onTimeChange(this.value);"/>
+    <label for="time-slider" id="timestamp" class="timestamp">00:00</label>
+</div>
+
+<script defer src="../../../assets/js/replay.js"></script>
+<script defer src="/api/game/{{ game_type }}/{{ game_id }}/replay_data"></script>
+
+{% endblock %}

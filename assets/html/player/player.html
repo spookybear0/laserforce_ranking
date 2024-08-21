@@ -376,6 +376,15 @@
                 </div>
             </div>
 
+            <div class="stats">
+                {% if sm5_rating_over_time_data %}
+                <canvas class="inline-block" id="sm5_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                {% endif %}
+                {% if laserball_rating_over_time_data %}
+                    <canvas class="inline-block" id="laserball_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                {% endif %}
+            </div>
+
             <div style="clear: both; padding-top: 2rem;"></div>
 
             <div style="margin: auto; text-align: center;">
@@ -586,6 +595,141 @@
             }
         }
     });
+
+    {% if sm5_rating_over_time_data %}
+    new Chart("sm5_rating_over_time", {
+        type: "line",
+        data: {
+            labels: {{ sm5_rating_over_time_labels }},
+            datasets: [
+            {
+                label: "SM5 Rating over time",
+                data: {{ sm5_rating_over_time_data }},
+                borderColor: "red",
+                borderWidth: 4.0,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHitRadius: 30
+            }
+            ]
+        },
+        options: {
+            responsive: true,
+            // change label colors to white
+            legend: {
+                labels: {
+                    fontColor: "white"
+                }
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        const index = tooltipItem["index"];
+                        const rating = data.datasets[0].data[index];
+
+                        return `${rating.toFixed(2)}`;
+                    }
+                }
+            },
+            title: {
+                display: true,
+                text: "SM5 Rating Over Time",
+                fontColor: "white"
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Time",
+                        fontColor: "white"
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Rating",
+                        fontColor: "white"
+                    }
+                }]
+            }
+        }
+    });
+    {% endif %}
+
+    {% if laserball_rating_over_time_data %}
+    new Chart("laserball_rating_over_time", {
+        type: "line",
+        data: {
+            labels: {{ laserball_rating_over_time_labels }},
+            datasets: [
+            {
+                label: "Laserball Rating over time",
+                data: {{ laserball_rating_over_time_data }},
+                borderColor: "#0047AB",
+                borderWidth: 4.0,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHitRadius: 30
+            }
+            ]
+        },
+        options: {
+            responsive: true,
+            // change label colors to white
+            legend: {
+                labels: {
+                    fontColor: "white"
+                }
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        const index = tooltipItem["index"];
+                        const rating = data.datasets[0].data[index];
+
+                        return `${rating.toFixed(2)}`;
+                    }
+                }
+            },
+            title: {
+                display: true,
+                text: "Laserball Rating Over Time",
+                fontColor: "white"
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Time",
+                        fontColor: "white"
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "white",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Rating",
+                        fontColor: "white"
+                    }
+                }]
+            }
+        }
+    });
+    {% endif %}
+
 </script>
 
 {% endblock %}

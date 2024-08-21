@@ -273,7 +273,6 @@
         })
         .then(response => response.json())
         .then(result => {
-            console.log(result);
             if (result.status == "ok") {
                 
                 window.location.reload();
@@ -316,8 +315,6 @@
 
     function delete_player() {
         let player = document.getElementById("player_dropdown_delete").value;
-
-        console.log(player);
 
         fetch("/admin/game/sm5/{{ game.id }}/delete_player", {
             method: "POST",

@@ -8,6 +8,7 @@ test. But there are function where every part of the game matters, so we'll have
 dataset.
 """
 import json
+import os
 from typing import Optional
 
 from tortoise import Tortoise
@@ -62,7 +63,7 @@ def get_blue_team() -> Teams:
     return _BLUE_TEAM
 
 
-async def setup_test_database():
+async def setup_test_database(basic_events: bool = True):
     """Creates a test in-memory database using SQLite, connects Tortoise to it, and generates the schema.
 
     It will also generate the test dataset."""
@@ -78,7 +79,7 @@ async def setup_test_database():
     _GREEN_TEAM = await create_team(1, Team.GREEN)
     _BLUE_TEAM = await create_team(2, Team.BLUE)
 
-    _TEST_SM5_GAME = await create_sm5_game_1()
+    _TEST_SM5_GAME = await create_sm5_game_1(basic_events=basic_events)
     _TEST_LASERBALL_GAME = await create_laserball_game_1()
 
 
@@ -86,17 +87,19 @@ async def teardown_test_database():
     await Tortoise.close_connections()
 
 
-async def create_sm5_game_1() -> SM5Game:
+async def create_sm5_game_1(basic_events: bool = True) -> SM5Game:
     events = []
-    events.extend([await create_zap_event(100, ENTITY_ID_1, ENTITY_ID_2),
-                   await create_zap_event(200, ENTITY_ID_1, ENTITY_ID_2),
-                   await create_zap_event(400, ENTITY_ID_2, ENTITY_ID_1),
-                   await create_zap_event(500, ENTITY_ID_1, ENTITY_ID_2),
-                   await Events.create(time=600, type=EventType.ACTIVATE_NUKE,
-                                       arguments=json.dumps([ENTITY_ID_2, " nukes ", ENTITY_ID_1])),
-                   await create_zap_event(700, ENTITY_ID_3, ENTITY_ID_1),
-                   await create_zap_event(800, ENTITY_ID_1, ENTITY_ID_3),
-                   ])
+
+    if basic_events:
+        events.extend([await create_zap_event(100, ENTITY_ID_1, ENTITY_ID_2),
+                       await create_zap_event(200, ENTITY_ID_1, ENTITY_ID_2),
+                       await create_zap_event(400, ENTITY_ID_2, ENTITY_ID_1),
+                       await create_zap_event(500, ENTITY_ID_1, ENTITY_ID_2),
+                       await Events.create(time=600, type=EventType.ACTIVATE_NUKE,
+                                           arguments=json.dumps([ENTITY_ID_2, " nukes ", ENTITY_ID_1])),
+                       await create_zap_event(700, ENTITY_ID_3, ENTITY_ID_1),
+                       await create_zap_event(800, ENTITY_ID_1, ENTITY_ID_3),
+                       ])
 
     game = await SM5Game.create(winner_color=Team.RED.value.color, tdf_name="in_memory_test", file_version="0.test.0",
                                 software_version="12.34.56", arena="Test Arena", mission_name="Space Marines 5",
@@ -126,9 +129,11 @@ async def add_sm5_event(event: Events):
     await _TEST_SM5_GAME.events.add(event)
 
 
-async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_entity_id: str) -> Events:
+async def create_zap_event(time_millis: int, zapping_entity_id: str, zapped_entity_id: str,
+                           opponent_down: bool = True) -> Events:
     return await create_event_from_data(
-        ["4", str(time_millis), EventType.DOWNED_OPPONENT, zapping_entity_id, " zaps ", zapped_entity_id])
+        ["4", str(time_millis), EventType.DOWNED_OPPONENT if opponent_down else EventType.DAMAGED_OPPONENT,
+         zapping_entity_id, " zaps ", zapped_entity_id])
 
 
 async def create_block_event(time_millis: int, blocking_entity_id: str, blocked_entity_id: str) -> Events:
@@ -153,6 +158,11 @@ async def create_award_base_event(time_millis: int, destroying_entity_id: str, b
 
 async def create_mission_end_event(time_millis) -> Events:
     return await create_event_from_data(["4", str(time_millis), EventType.MISSION_END, "* Mission End *"])
+
+
+async def create_resupply_lives_event(time_millis: int, supplier_entity_id: str, supplyee_entity_id: str) -> Events:
+    return await create_event_from_data(
+        ["4", str(time_millis), EventType.RESUPPLY_LIVES, supplier_entity_id, " resupplies ", supplyee_entity_id])
 
 
 async def add_entity(
@@ -241,3 +251,8 @@ async def add_sm5_score(game: SM5Game, entity: EntityStarts, time_millis: int, o
     score = await Scores.create(entity=entity, time=time_millis, old=old_score, delta=score - old_score, new=score)
 
     await game.scores.add(score)
+
+
+def get_test_data_path(filename: str) -> str:
+    """Returns the full path of a file within the tests/data folder."""
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", filename)

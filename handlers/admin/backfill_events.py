@@ -6,8 +6,8 @@ from helpers.tdfhelper import get_arguments_from_event
 from shared import app
 from utils import admin_only
 
-
 _BATCH_SIZE = 10000
+
 
 @app.get("/admin/backfill_events")
 @admin_only

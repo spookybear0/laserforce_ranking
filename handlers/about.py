@@ -1,7 +1,9 @@
 from sanic import Request
+from sanic.log import logger
+
 from shared import app
 from utils import render_template
-from sanic.log import logger
+
 
 @app.get("/about")
 async def about(request: Request) -> str:

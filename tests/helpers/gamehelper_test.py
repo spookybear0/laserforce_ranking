@@ -2,13 +2,11 @@ import unittest
 
 from sanic import exceptions
 
-from db.sm5 import SM5Game, SM5Stats
 from db.types import Team
 from helpers.gamehelper import get_players_from_team, get_team_rosters, PlayerInfo, get_player_display_names, \
     get_matchmaking_teams
-from helpers.statshelper import count_zaps, get_sm5_kd_ratio, get_sm5_score_components
-from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id, \
-    teardown_test_database, create_destroy_base_event, add_entity, get_red_team, get_green_team, get_blue_team
+from tests.helpers.environment import setup_test_database, teardown_test_database, add_entity, get_red_team, \
+    get_green_team, get_blue_team
 
 
 class TestGameHelper(unittest.IsolatedAsyncioTestCase):
@@ -38,10 +36,12 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_team_rosters(self):
         entity1, entity_end1 = await add_entity(entity_id="@NotLoggedIn", name="Indy", team=get_red_team())
-        entity2, entity_end2 = await add_entity(entity_id="@Red Base", name="Red Base", team=get_red_team(), type="base")
+        entity2, entity_end2 = await add_entity(entity_id="@Red Base", name="Red Base", team=get_red_team(),
+                                                type="base")
         entity3, entity_end3 = await add_entity(entity_id="@NotMember", name="Miles", team=get_green_team())
         entity4, entity_end4 = await add_entity(entity_id="LoggedIn", name="Bumblebee", team=get_red_team())
-        entity5, entity_end5 = await add_entity(entity_id="KickedPlayer", name="Removed", team=get_red_team(), omit_entity_end=True)
+        entity5, entity_end5 = await add_entity(entity_id="KickedPlayer", name="Removed", team=get_red_team(),
+                                                omit_entity_end=True)
 
         roster = await get_team_rosters([entity1, entity2, entity3, entity4, entity5],
                                         [entity_end1, entity_end2, entity_end3, entity_end4])
@@ -67,9 +67,12 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
         self.assertCountEqual(["Indy", "Miles"], get_player_display_names([player1, player2]))
 
     async def test_get_matchmaking_teams(self):
-        entity1, entity_end1 = await add_entity(entity_id="@NotLoggedIn", name="Indy", team=get_red_team(), type="player")
-        entity2, entity_end2 = await add_entity(entity_id="@NotMember", name="Miles", team=get_green_team(), type="player")
-        entity3, entity_end3 = await add_entity(entity_id="LoggedIn", name="Bumblebee", team=get_red_team(), type="player")
+        entity1, entity_end1 = await add_entity(entity_id="@NotLoggedIn", name="Indy", team=get_red_team(),
+                                                type="player")
+        entity2, entity_end2 = await add_entity(entity_id="@NotMember", name="Miles", team=get_green_team(),
+                                                type="player")
+        entity3, entity_end3 = await add_entity(entity_id="LoggedIn", name="Bumblebee", team=get_red_team(),
+                                                type="player")
 
         roster = await get_team_rosters([entity1, entity2, entity3],
                                         [entity_end1, entity_end2, entity_end3])
@@ -81,9 +84,12 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
         self.assertCountEqual(["Miles"], player_matchmaking_2)
 
     async def test_get_matchmaking_teams_no_red_team(self):
-        entity1, entity_end1 = await add_entity(entity_id="@NotLoggedIn", name="Indy", team=get_blue_team(), type="player")
-        entity2, entity_end2 = await add_entity(entity_id="@NotMember", name="Miles", team=get_green_team(), type="player")
-        entity3, entity_end3 = await add_entity(entity_id="LoggedIn", name="Bumblebee", team=get_blue_team(), type="player")
+        entity1, entity_end1 = await add_entity(entity_id="@NotLoggedIn", name="Indy", team=get_blue_team(),
+                                                type="player")
+        entity2, entity_end2 = await add_entity(entity_id="@NotMember", name="Miles", team=get_green_team(),
+                                                type="player")
+        entity3, entity_end3 = await add_entity(entity_id="LoggedIn", name="Bumblebee", team=get_blue_team(),
+                                                type="player")
 
         roster = await get_team_rosters([entity1, entity2, entity3],
                                         [entity_end1, entity_end2, entity_end3])

@@ -1,9 +1,11 @@
-from sanic import Sanic
-from sentry_sdk.integrations.sanic import SanicIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from config import config
-import sentry_sdk
 import logging
+
+import sentry_sdk
+from sanic import Sanic
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.sanic import SanicIntegration
+
+from config import config
 
 sentry_sdk.init(
     dsn=config["sentry_dsn"],

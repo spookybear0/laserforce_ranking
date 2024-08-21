@@ -25,7 +25,8 @@
         height: 100%;
         display: flex;
         flex-direction: column;
-    }
+        transform: perspective(1000px) rotateX(20deg);
+     }
 
     .events {
         display: inline-block;
@@ -34,10 +35,10 @@
         padding: 10px;
         margin: 0;
         border: 0;
+        text-align: center;
 
-        border: 2px solid gray;
-        border-radius: 10px;
-        overflow: auto;
+        border: 0px;
+        overflow: hidden;
     }
 
     .player {
@@ -82,6 +83,20 @@
         justify-content: space-around;
     }
 
+    .time-slider {
+        width: 90%;
+        margin: auto;
+        margin-top: 16px;
+    }
+
+    .time-slider-control {
+        width: 80%;
+    }
+
+    .timestamp {
+        font-size: xx-large;
+    }
+
     table {
         margin: auto;
         padding: 1rem;
@@ -118,6 +133,10 @@
     }
 
     #replay_viewer {
+        display: none;
+    }
+
+    #time_slider {
         display: none;
     }
 
@@ -208,11 +227,11 @@
     </div>
     <div class="event_box">
         <div class="events" id="events">
-            
+
         </div>
         <div class="controls">
             <button id="play" class="control">Play</button>
-            <select id="speed" class="control">
+            <select id="speed" class="control" onChange="onSpeedChange();">
                 <option value="0.25">0.25x</option>
                 <option value="0.5">0.5x</option>
                 <option value="1.0" selected>1.0x</option>
@@ -222,8 +241,15 @@
             <button id="restart" class="control">Restart</button>
         </div>
     </div>
+
 </div>
 
+<div class="time-slider" id="time_slider">
+    <input class="time-slider-control"
+           type="range" id="time-slider" name="time-slider" min="0"
+           max="900" value="0" onInput="onTimeChange(this.value);"/>
+    <label for="time-slider" id="timestamp" class="timestamp">00:00</label>
+</div>
 
 
 {% endblock %}

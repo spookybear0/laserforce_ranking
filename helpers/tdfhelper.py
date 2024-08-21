@@ -13,6 +13,17 @@ from helpers import ratinghelper
 import aiohttp
 import json
 import os
+from datetime import datetime
+from typing import List, Dict
+
+from sanic.log import logger
+
+from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
+from db.laserball import LaserballGame, LaserballStats
+from db.player import Player
+from db.sm5 import SM5Game, SM5Stats
+from db.types import EventType, PlayerStateType, Team
+from helpers import ratinghelper
 
 
 def element_to_color(element: str) -> str:
@@ -24,6 +35,7 @@ def element_to_color(element: str) -> str:
     }
 
     return conversion[element]
+
 
 async def parse_sm5_game(file_location: str) -> SM5Game:
     file = open(file_location, "r", encoding="utf-16")
@@ -50,7 +62,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # default values, will be changed later
 
     ranked = True
-    ended_early = False # will be changed to false if there's a mission end event
+    ended_early = False  # will be changed to false if there's a mission end event
 
     linenum = 0
     while True:
@@ -60,25 +72,27 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             break
 
         data = line.rstrip("\n").split("\t")
-        match data[0]: # switch on the first element of the line
+        match data[0]:  # switch on the first element of the line
             case ";":
-                continue # comment
-            case "0": # system info
+                continue  # comment
+            case "0":  # system info
                 file_version = data[1]
                 program_version = data[2]
                 arena = data[3]
-                logger.debug(f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
-            case "1": # game info
+                logger.debug(
+                    f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
+            case "1":  # game info
                 mission_type = int(data[1])
                 mission_name = data[2]
                 start_time = data[3]
                 mission_duration = int(data[4])
 
-                logger.debug(f"Game Info: mission type: {mission_type}, mission name: {mission_name}, start time: {start_time}, mission duration: {mission_duration}")
+                logger.debug(
+                    f"Game Info: mission type: {mission_type}, mission name: {mission_name}, start time: {start_time}, mission duration: {mission_duration}")
 
                 # check if game already exists
                 if game := await SM5Game.filter(start_time=start_time, arena=arena).first():
-                    
+
                     # triple check it because since the timestamp gets rounded, it's possible for
                     # games to start at nearly the same time
 
@@ -86,62 +100,77 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                         logger.warning(f"Game {game.id} already exists, skipping")
                         return game
 
-            case "2": # team info
-                teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))
-                logger.debug(f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
-            case "3": # entity start
+            case "2":  # team info
+                teams.append(
+                    await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4],
+                                       real_color_name=element_to_color(data[4])))
+                logger.debug(
+                    f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
+            case "3":  # entity start
                 team = None
 
                 for t in teams:
                     if t.index == int(data[5]):
                         team = t
                         break
-                
+
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
-                
-                # has index 8
+
+                # has index 9
                 try:
-                    member_id = int(data[8])
-                except ValueError:
+                    member_id = int(data[9])
+                except (ValueError, IndexError):
                     member_id = None
-                
-                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=data[4],
-                                        team=team, level=int(data[6]), role=int(data[7]), battlesuit=data[8], member_id=member_id)
+
+                name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
+
+                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=name,
+                                                         team=team, level=int(data[6]), role=int(data[7]),
+                                                         battlesuit=data[8], member_id=member_id)
 
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
-            case "4": # event
+            case "4":  # event
                 # okay but why is event type a string
                 events.append(await create_event_from_data(data))
 
-                if EventType(data[2]) == EventType.MISSION_END: # game ended naturally
+                if EventType(data[2]) == EventType.MISSION_END:  # game ended naturally
                     ended_early = False
 
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
-            case "5": # score
+            case "5":  # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
-                    delta=int(data[4]), new=int(data[5])))
-                logger.debug(f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
-            case "6": # entity end
+                                                  delta=int(data[4]), new=int(data[5])))
+                logger.debug(
+                    f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
+            case "6":  # entity end
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
-                    type=int(data[3]), score=int(data[4])))
-                logger.debug(f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
-            case "7": # sm5 stats
+                                                           type=int(data[3]), score=int(data[4])))
+                logger.debug(
+                    f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
+            case "7":  # sm5 stats
                 sm5_stats.append(await SM5Stats.create(entity=token_to_entity[data[1]],
-                    shots_hit=int(data[2]), shots_fired=int(data[3]), times_zapped=int(data[4]), times_missiled=int(data[5]),
-                    missile_hits=int(data[6]), nukes_detonated=int(data[7]), nukes_activated=int(data[8]), nuke_cancels=int(data[9]),
-                    medic_hits=int(data[10]), own_medic_hits=int(data[11]), medic_nukes=int(data[12]), scout_rapid_fires=int(data[13]),
-                    life_boosts=int(data[14]), ammo_boosts=int(data[15]), lives_left=int(data[16]), shots_left=int(data[17]),
-                    penalties=int(data[18]), shot_3_hits=int(data[19]), own_nuke_cancels=int(data[20]), shot_opponent=int(data[21]),
-                    shot_team=int(data[22]), missiled_opponent=int(data[23]), missiled_team=int(data[24])))
-            
-                logger.debug(f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
-            case "9": # player state
-                print(data)
-                player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]], state=PlayerStateType(int(data[3]))))
-                logger.debug(f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
-                
+                                                       shots_hit=int(data[2]), shots_fired=int(data[3]),
+                                                       times_zapped=int(data[4]), times_missiled=int(data[5]),
+                                                       missile_hits=int(data[6]), nukes_detonated=int(data[7]),
+                                                       nukes_activated=int(data[8]), nuke_cancels=int(data[9]),
+                                                       medic_hits=int(data[10]), own_medic_hits=int(data[11]),
+                                                       medic_nukes=int(data[12]), scout_rapid_fires=int(data[13]),
+                                                       life_boosts=int(data[14]), ammo_boosts=int(data[15]),
+                                                       lives_left=int(data[16]), shots_left=int(data[17]),
+                                                       penalties=int(data[18]), shot_3_hits=int(data[19]),
+                                                       own_nuke_cancels=int(data[20]), shot_opponent=int(data[21]),
+                                                       shot_team=int(data[22]), missiled_opponent=int(data[23]),
+                                                       missiled_team=int(data[24])))
+
+                logger.debug(
+                    f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
+            case "9":  # player state
+                player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]],
+                                                               state=PlayerStateType(int(data[3]))))
+                logger.debug(
+                    f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
 
     # getting the winner
 
@@ -153,25 +182,28 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     for t in teams:
         if not t.color_name or not t.color_enum or t.name == "Neutral":
             continue
-        
+
         if index == 1:
             team1 = t
-        else: # 2
+        else:  # 2
             team2 = t
 
         index += 1
 
     # before creating the game, we need to make sure this game wasn't a false start
     # which means that game ended early and it lasted less than 3 minutes
-    
+
     if ended_early and mission_duration < 3 * 60 * 1000:
         logger.warning("Game ended early and lasted less than 3 minutes, skipping")
         return None
 
-    game = await SM5Game.create(winner=None, winner_color="none", tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
-                                software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
-                                start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
-    
+    game = await SM5Game.create(winner=None, winner_color="none", tdf_name=os.path.basename(file_location),
+                                file_version=file_version, ranked=ranked,
+                                software_version=program_version, arena=arena, mission_type=mission_type,
+                                mission_name=mission_name,
+                                start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"),
+                                mission_duration=mission_duration, ended_early=ended_early)
+
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)
     await game.events.add(*events)
@@ -193,7 +225,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         winner = Team.RED
     elif red_score < green_score:
         winner = Team.GREEN
-    else: # tie or no winner or something crazy happened
+    else:  # tie or no winner or something crazy happened
         winner = None
 
     game.winner = winner
@@ -244,24 +276,28 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
         if e.type == "player":
             # update entity_id if it's empty
-            if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).entity_id == "":
+            if await Player.filter(codename=e.name).exists() and (
+            await Player.filter(codename=e.name).first()).entity_id == "":
                 player = await Player.filter(codename=e.name).first()
                 player.entity_id = e.entity_id
                 player.player_id = db_member_id
                 await player.save()
             # update player name if we have a new one and we have entity_id
-            elif await Player.filter(entity_id=e.entity_id).exists() and (await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
+            elif await Player.filter(entity_id=e.entity_id).exists() and (
+            await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.codename = e.name
                 player.player_id = db_member_id
                 await player.save()
             # update player_id if we have entity_id and don't have player_id
-            elif await Player.filter(entity_id=e.entity_id).exists() and (await Player.filter(entity_id=e.entity_id).first()).player_id == "":
+            elif await Player.filter(entity_id=e.entity_id).exists() and (
+            await Player.filter(entity_id=e.entity_id).first()).player_id == "":
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.player_id = db_member_id
                 await player.save()
             # create new player if we don't have a name or entity_id
-            elif not await Player.filter(codename=e.name).exists() and not await Player.filter(entity_id=e.entity_id).exists():
+            elif not await Player.filter(codename=e.name).exists() and not await Player.filter(
+                    entity_id=e.entity_id).exists():
                 await Player.create(player_id=db_member_id, codename=e.name, entity_id=e.entity_id)
 
     # update player rankings
@@ -273,7 +309,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             logger.info(f"Updated player rankings for game {game.id}")
         else:
             logger.error(f"Failed to update player rankings for game {game.id}")
-    else: # still need to add current_rating and previous_rating
+    else:  # still need to add current_rating and previous_rating
         for entity_end in await game.entity_ends.filter(entity__type="player"):
             entity_id = (await entity_end.entity).entity_id
             if entity_id.startswith("@"):
@@ -298,6 +334,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     logger.info(f"Finished parsing {file_location} (game {game.id})")
 
     return game
+
 
 async def parse_laserball_game(file_location: str) -> LaserballGame:
     file = open(file_location, "r", encoding="utf-16")
@@ -326,7 +363,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     # default values, will be changed later
 
     ranked = True
-    ended_early = True # will be changed to false if there's a mission end event
+    ended_early = True  # will be changed to false if there's a mission end event
 
     linenum = 0
     while True:
@@ -336,49 +373,57 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
             break
 
         data = line.rstrip("\n").split("\t")
-        match data[0]: # switch on the first element of the line
+        match data[0]:  # switch on the first element of the line
             case ";":
-                continue # comment
-            case "0": # system info
+                continue  # comment
+            case "0":  # system info
                 file_version = data[1]
                 program_version = data[2]
                 arena = data[3]
-                logger.debug(f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
-            case "1": # game info
+                logger.debug(
+                    f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
+            case "1":  # game info
                 mission_type = int(data[1])
                 mission_name = data[2]
                 start_time = data[3]
                 mission_duration = int(data[4])
 
-                logger.debug(f"Game Info: mission type: {mission_type}, mission name: {mission_name}, start time: {start_time}, mission duration: {mission_duration}")
+                logger.debug(
+                    f"Game Info: mission type: {mission_type}, mission name: {mission_name}, start time: {start_time}, mission duration: {mission_duration}")
 
                 # check if game already exists
                 if game := await LaserballGame.filter(start_time=start_time, arena=arena).first():
                     logger.warning(f"Game {game.id} already exists, skipping")
                     return game
 
-            case "2": # team info
-                teams.append(await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4], real_color_name=element_to_color(data[4])))
-                logger.debug(f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
-            case "3": # entity start
+            case "2":  # team info
+                teams.append(
+                    await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4],
+                                       real_color_name=element_to_color(data[4])))
+                logger.debug(
+                    f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
+            case "3":  # entity start
                 team = None
 
                 for t in teams:
                     if t.index == int(data[5]):
                         team = t
                         break
-                
+
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
 
-                # has index 8
+                # has index 9 (member id, but is only available when the setting is enabled)
                 try:
-                    member_id = int(data[8])
-                except ValueError:
+                    member_id = int(data[9])
+                except (ValueError, IndexError):
                     member_id = None
-                
-                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=data[4],
-                                        team=team, level=int(data[6]), role=int(data[7]), battlesuit=data[8], member_id=member_id)
+
+                name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
+
+                entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=name,
+                                                         team=team, level=int(data[6]), role=int(data[7]),
+                                                         battlesuit=data[8], member_id=member_id)
 
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
@@ -400,8 +445,9 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                         shots_hit=0
                     )
 
-                logger.debug(f"Entity Start: time: {data[1]}, entity id: {data[2]}, type: {data[3]}, name: {data[4]}, team: {data[5]}, level: {data[6]}, role: {data[7]}, battlesuit: {data[8]}")
-            case "4": # event
+                logger.debug(
+                    f"Entity Start: time: {data[1]}, entity id: {data[2]}, type: {data[3]}, name: {data[4]}, team: {data[5]}, level: {data[6]}, role: {data[7]}, battlesuit: {data[8]}")
+            case "4":  # event
                 # handle special laserball events
 
                 event_type = EventType(data[2])
@@ -445,24 +491,28 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 elif event_type == EventType.MISS:
                     laserball_stats[args[0]].shots_fired += 1
                     await laserball_stats[args[0]].save()
-                elif event_type == EventType.MISSION_END: # game ended naturally
+                elif event_type == EventType.MISSION_END:  # game ended naturally
                     ended_early = False
 
                 events.append(await Events.create(time=int(data[1]), type=event_type, arguments=json.dumps(data[3:])))
 
                 logger.debug(f"Event: time: {data[1]}, type: {event_type}, arguments: {data[3:]}")
-            case "5": # score
+            case "5":  # score
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
-                    delta=int(data[4]), new=int(data[5])))
-                logger.debug(f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
-            case "6": # entity end
+                                                  delta=int(data[4]), new=int(data[5])))
+                logger.debug(
+                    f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
+            case "6":  # entity end
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
-                    type=int(data[3]), score=int(data[4])))
-                logger.debug(f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
-            case "9": # player state
-                player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]], state=PlayerStateType(int(data[3]))))
-                logger.debug(f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
-                
+                                                           type=int(data[3]), score=int(data[4])))
+                logger.debug(
+                    f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
+            case "9":  # player state
+                player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]],
+                                                               state=PlayerStateType(int(data[3]))))
+                logger.debug(
+                    f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
+
     # calculate assists (when a player passes to a player who scores)
     # so we need to find all the goals, and then find the pass that happened before it
     # this probably isn't 100% accurate but it's the best we can do
@@ -474,7 +524,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     for e in events:
         if e.type == EventType.GOAL:
             # find the pass that happened before this goal
-            for e2 in events_reversed: # iterate backwards
+            for e2 in events_reversed:  # iterate backwards
                 if e2.type == EventType.ROUND_START and e2.time < e.time:
                     break
                 elif e2.type == EventType.PASS and e2.time < e.time:
@@ -485,7 +535,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                         # add event after the goal event
                         events.append(
                             await Events.create(
-                                time=e.time+1,
+                                time=e.time + 1,
                                 type=EventType.ASSIST,
                                 arguments=json.dumps([e2.arguments[0], "assists", e.arguments[0]])
                             )
@@ -497,7 +547,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 elif e2.type == EventType.STEAL and e2.time < e.time:
                     # if a steal happened before a valid pass, it can't be an assist
                     break
-                
+
     # get the winner (goals scored is the only factor)
 
     team1_score = 0
@@ -510,10 +560,10 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     for t in teams:
         if not t.color_name or not t.color_enum or t.name == "Neutral":
             continue
-        
+
         if index == 1:
             team1 = t
-        else: # 2
+        else:  # 2
             team2 = t
 
         entities = await EntityStarts.filter(team=t, type="player").all()
@@ -522,7 +572,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
             if index == 1:
                 team1_score += e_end.score
-            elif index == 2: # 2
+            elif index == 2:  # 2
                 team2_score += e_end.score
 
         index += 1
@@ -535,32 +585,36 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
         winner_model = None
 
     # may need to be adjusted for more team colors/names
-    
+
     red_colors = ["Solid Red", "Fire", "Red"]
     blue_colors = ["Solid Blue", "Ice", "Earth", "Blue", "Solid Green", "Green"]
 
     if winner_model is None:
-        winner = None # tie (draw)
+        winner = None  # tie (draw)
     elif winner_model.color_name in red_colors:
         winner = Team.RED
     elif winner_model.color_name in blue_colors:
         winner = Team.BLUE
     else:
-        raise Exception("Invalid team color") # or can't find correct team color
-    
+        raise Exception("Invalid team color")  # or can't find correct team color
+
     logger.debug(f"Winner: {winner}")
 
     # before creating the game, we need to make sure this game wasn't a false start
     # which means that game ended early and it lasted less than 3 minutes
-    
+
     if ended_early and mission_duration < 3 * 60 * 1000:
         logger.warning("Game ended early and lasted less than 3 minutes, skipping")
         return None
 
-    game = await LaserballGame.create(winner=winner, winner_color=winner.value if winner else "none", tdf_name=os.path.basename(file_location), file_version=file_version, ranked=ranked,
-                                software_version=program_version, arena=arena, mission_type=mission_type, mission_name=mission_name,
-                                start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"), mission_duration=mission_duration, ended_early=ended_early)
-    
+    game = await LaserballGame.create(winner=winner, winner_color=winner.value if winner else "none",
+                                      tdf_name=os.path.basename(file_location), file_version=file_version,
+                                      ranked=ranked,
+                                      software_version=program_version, arena=arena, mission_type=mission_type,
+                                      mission_name=mission_name,
+                                      start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"),
+                                      mission_duration=mission_duration, ended_early=ended_early)
+
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)
     await game.events.add(*events)
@@ -578,7 +632,6 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     # we don't have to check for exact team sizes because laserball is slightly more
     # flexible with team sizes
 
-
     team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").count()
     team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").count()
 
@@ -586,7 +639,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
     if team1_len < 1 or team2_len < 1:
         ranked = False
-        
+
     # check if there are any non-member players
 
     for e in entity_starts:
@@ -598,7 +651,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
     # ended_early = if there's a mission end event (natural end by time or elim)
     # value set in event parsing
-    
+
     game.ranked = ranked
     game.ended_early = ended_early
 
@@ -616,24 +669,28 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
         if e.type == "player":
             # update entity_id if it's empty
-            if await Player.filter(codename=e.name).exists() and (await Player.filter(codename=e.name).first()).entity_id == "":
+            if await Player.filter(codename=e.name).exists() and (
+            await Player.filter(codename=e.name).first()).entity_id == "":
                 player = await Player.filter(codename=e.name).first()
                 player.entity_id = e.entity_id
                 player.player_id = db_member_id
                 await player.save()
             # update player name if we have a new one and we have entity_id
-            elif await Player.filter(entity_id=e.entity_id).exists() and (await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
+            elif await Player.filter(entity_id=e.entity_id).exists() and (
+            await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.name = e.name
                 player.player_id = db_member_id
                 await player.save()
             # update player_id if we have entity_id and don't have player_id
-            elif await Player.filter(entity_id=e.entity_id).exists() and (await Player.filter(entity_id=e.entity_id).first()).player_id == "":
+            elif await Player.filter(entity_id=e.entity_id).exists() and (
+            await Player.filter(entity_id=e.entity_id).first()).player_id == "":
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.player_id = db_member_id
                 await player.save()
             # create new player if we don't have a name or entity_id
-            elif not await Player.filter(codename=e.name).exists() and not await Player.filter(entity_id=e.entity_id).exists():
+            elif not await Player.filter(codename=e.name).exists() and not await Player.filter(
+                    entity_id=e.entity_id).exists():
                 await Player.create(player_id=db_member_id, codename=e.name, entity_id=e.entity_id)
 
     # update player rankings
@@ -645,12 +702,12 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
             logger.info(f"Updated player rankings for game {game.id}")
         else:
             logger.error(f"Failed to update player rankings for game {game.id}")
-    else: # still need to add current_rating and previous_rating
+    else:  # still need to add current_rating and previous_rating
         for entity_end in await game.entity_ends.filter(entity__type="player"):
             entity_id = (await entity_end.entity).entity_id
 
             player = await Player.filter(entity_id=entity_id).first()
-            
+
             try:
                 entity_end.previous_rating_mu = player.laserball_mu
                 entity_end.previous_rating_sigma = player.laserball_sigma
@@ -668,24 +725,25 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
     return game
 
-async def parse_all_laserball_tdfs() -> None: # iterate through laserball_tdf folder
+
+async def parse_all_laserball_tdfs() -> None:  # iterate through laserball_tdf folder
     directory = os.listdir("laserball_tdf")
-    directory.sort() # first file is the oldest
+    directory.sort()  # first file is the oldest
 
     for file in directory:
         if file.endswith(".tdf"):
             logger.info(f"Parsing {file}")
             await parse_laserball_game(os.path.join("laserball_tdf", file))
 
+
 async def parse_all_sm5_tdfs() -> None:  # iterate through sm5_tdf folder
     directory = os.listdir("sm5_tdf")
-    directory.sort() # first file is the oldest
+    directory.sort()  # first file is the oldest
 
     for file in directory:
         if file.endswith(".tdf"):
             logger.info(f"Parsing {file}")
             await parse_sm5_game(os.path.join("sm5_tdf", file))
-
 
 
 async def parse_all_tdfs() -> None:

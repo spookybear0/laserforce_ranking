@@ -1,24 +1,25 @@
-
-
 from sanic import Request
-from shared import app
-from db.types import GameType
-from db.player import Player
 from sanic import response
 from sanic.log import logger
+
+from db.player import Player
+from db.types import GameType
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
-from helpers.cachehelper import cache
+from shared import app
 
-@app.get("/api/<type_:str>/matchmake")
+
+# this api is only used for internal purposes (matchmake page)
+
+@app.get("/api/internal/matchmake/<type_:str>")
 @sentry_trace
-@cache()
 async def api_matchmake(request: Request, type_: str) -> str:
     # 2-4 teams (team1, team2, ...)
 
     logger.info(f"Matchmaking requested for {type_}")
 
     mode = GameType("laserball" if type_ == "laserball" else "sm5")
+    matchmake_roles = request.args.get("matchmake_roles") == "true"
 
     # get the teams
 
@@ -28,17 +29,14 @@ async def api_matchmake(request: Request, type_: str) -> str:
     team4 = request.args.get("team4").strip('][').replace('"', "").split(', ')
     num_teams = int(request.args.get("num_teams", 2))
 
-    if not team1 or team1[0] == "":
-        team1 = []
-    if not team2 or team2[0] == "":
-        team2 = []
-    if not team3 or team3[0] == "":
+    if num_teams == 2:
         team3 = []
-    if not team4 or team4[0] == "":
+        team4 = []
+    elif num_teams == 3:
         team4 = []
 
     # get ratings from codenames
-        
+
     team1_players = []
     team2_players = []
     team3_players = []
@@ -48,10 +46,20 @@ async def api_matchmake(request: Request, type_: str) -> str:
         if codename == "Unrated Player":
             # dummy class to represent unrated player
             class _: pass
+
             p = _()
             p.codename = "Unrated Player"
-            p.sm5_rating = ratinghelper.Rating(25, 8.333)
-            p.laserball_rating = ratinghelper.Rating(25, 8.333)
+            p.sm5_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.laserball_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.sm5_rating_mu = ratinghelper.MU
+            p.sm5_rating_sigma = ratinghelper.SIGMA
+            p.laserball_rating_mu = ratinghelper.MU
+            p.laserball_rating_sigma = ratinghelper.SIGMA
+            p.sm5_ordinal = p.sm5_rating.ordinal()
+            p.laserball_ordinal = p.laserball_rating.ordinal()
+            p.get_role_rating = lambda _: ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.get_role_rating_ordinal = lambda _: p.get_role_rating(_).ordinal()
+
             team.append(p)
             return True
         return False
@@ -70,8 +78,19 @@ async def api_matchmake(request: Request, type_: str) -> str:
             team4_players.append(await Player.filter(codename=codename).first())
 
     # calculate win chances
-        
-    matchmade_teams = ratinghelper.matchmake_teams(team1_players + team2_players + team3_players + team4_players, num_teams, mode)
+
+    all_players = team1_players + team2_players + team3_players + team4_players
+
+    # remove None objects
+
+    all_players = [player for player in all_players if player is not None]
+
+    matchmade_roles = None
+
+    if matchmake_roles:
+        matchmade_teams, matchmade_roles = ratinghelper.matchmake_teams_with_roles(all_players, num_teams, mode)
+    else:
+        matchmade_teams = ratinghelper.matchmake_teams(all_players, num_teams, mode)
 
     if not team3:
         matchmade_teams.append([])
@@ -79,6 +98,6 @@ async def api_matchmake(request: Request, type_: str) -> str:
         matchmade_teams.append([])
 
     for i, team in enumerate(matchmade_teams):
-        matchmade_teams[i] = [player.codename for player in team]
+        matchmade_teams[i] = {player.codename: (player.sm5_ordinal, player.laserball_ordinal) for player in team}
 
-    return response.json(matchmade_teams)
+    return response.json({"teams": matchmade_teams, "roles": matchmade_roles})

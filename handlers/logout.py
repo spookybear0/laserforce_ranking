@@ -1,9 +1,9 @@
-from sanic import Request, exceptions, response
-from shared import app
-from utils import render_template
-from db.player import Player
+from sanic import Request, response
 from sanic.log import logger
+
 from helpers.cachehelper import flush_cache
+from shared import app
+
 
 @app.get("/logout")
 async def logout(request: Request) -> str:
