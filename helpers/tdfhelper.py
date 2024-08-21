@@ -5,6 +5,7 @@ from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Team
 from db.types import EventType, PlayerStateType, Team
 from db.sm5 import SM5Game, SM5Stats
 from db.laserball import LaserballGame, LaserballStats
+from helpers.ratinghelper import MU, SIGMA
 from typing import List, Dict
 from datetime import datetime
 from sanic.log import logger
@@ -280,10 +281,17 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
             player = await Player.filter(entity_id=entity_id).first()
             
-            entity_end.previous_rating_mu = player.sm5_mu
-            entity_end.previous_rating_sigma = player.sm5_sigma
-            entity_end.current_rating_mu = player.sm5_mu
-            entity_end.current_rating_sigma = player.sm5_sigma
+            try:
+                entity_end.previous_rating_mu = player.sm5_mu
+                entity_end.previous_rating_sigma = player.sm5_sigma
+                entity_end.current_rating_mu = player.sm5_mu
+                entity_end.current_rating_sigma = player.sm5_sigma
+            except AttributeError:
+                entity_end.previous_rating_mu = MU
+                entity_end.previous_rating_sigma = SIGMA
+                entity_end.current_rating_mu = MU
+                entity_end.current_rating_sigma = SIGMA
+            
 
             await entity_end.save()
 
@@ -649,10 +657,10 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 entity_end.current_rating_mu = player.laserball_mu
                 entity_end.current_rating_sigma = player.laserball_sigma
             except AttributeError:
-                entity_end.previous_rating_mu = 25
-                entity_end.previous_rating_sigma = 25/3
-                entity_end.current_rating_mu = 25
-                entity_end.current_rating_sigma = 25/3
+                entity_end.previous_rating_mu = MU
+                entity_end.previous_rating_sigma = SIGMA
+                entity_end.current_rating_mu = MU
+                entity_end.current_rating_sigma = SIGMA
 
             await entity_end.save()
 
