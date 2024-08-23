@@ -569,11 +569,13 @@ async def get_blocks() -> int:
 # could be improved by accounting for the amount of games played
 # could be combined into one function
 
-async def get_top_role_players(amount=5, role: IntRole = IntRole.COMMANDER) -> List[Tuple[str, int, int]]:
+async def get_top_role_players(amount: int=5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[Tuple[str, int, int]]:
     """
     Gets the top players of a given role by going through
     all games and getting the average score
     for each player
+
+    If min_games is 0 or None, it will return all players
     """
 
     players = {}
@@ -584,6 +586,11 @@ async def get_top_role_players(amount=5, role: IntRole = IntRole.COMMANDER) -> L
         if name not in players:
             players[name] = (0, 0)
         players[name] = (players[name][0] + entity_end.score, players[name][1] + 1)
+
+    # filter out players with less than min_games games
+    
+    if min_games: # if min_games is 0 or None, it will return all players
+        players = {name: (score, games) for name, (score, games) in players.items() if games >= min_games}
 
     return sorted([(name, score // games, games) for name, (score, games) in players.items()], key=lambda x: x[1],
                   reverse=True)[:amount]
