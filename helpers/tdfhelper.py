@@ -3,7 +3,7 @@ from asyncio import Event
 from db.player import Player
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
 from db.types import EventType, PlayerStateType, Team
-from db.sm5 import SM5Game, SM5Stats
+from db.sm5 import SM5Game, SM5Stats, IntRole
 from db.laserball import LaserballGame, LaserballStats
 from helpers.ratinghelper import MU, SIGMA
 from typing import List, Dict
@@ -243,6 +243,32 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
         ranked = False
+
+    # also check that our roles are correct
+    # ex: a standard sm5 team has 1 commander, 1 heavy, 1 scout, 1 medic, 1 ammo, and 1-3 scouts
+
+    commander_count = 0
+    heavy_count = 0
+    scout_count = 0
+    ammo_count = 0
+    medic_count = 0
+
+    for e in entity_starts:
+        if e.type == "player":
+            if e.role == IntRole.COMMANDER:
+                commander_count += 1
+            elif e.role == IntRole.HEAVY:
+                heavy_count += 1
+            elif e.role == IntRole.SCOUT:
+                scout_count += 1
+            elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
+                ammo_count += 1
+            elif e.role == IntRole.MEDIC:
+                medic_count += 1
+
+    if commander_count != 1 or heavy_count != 1  or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
+        ranked = False
+
 
     # check if there are any non-member players
 
