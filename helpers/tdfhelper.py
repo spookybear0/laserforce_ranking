@@ -247,27 +247,34 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # also check that our roles are correct
     # ex: a standard sm5 team has 1 commander, 1 heavy, 1 scout, 1 medic, 1 ammo, and 1-3 scouts
 
-    commander_count = 0
-    heavy_count = 0
-    scout_count = 0
-    ammo_count = 0
-    medic_count = 0
+    # for each team
+    for t in teams:
+        total_count = 0
+        commander_count = 0
+        heavy_count = 0
+        scout_count = 0
+        ammo_count = 0
+        medic_count = 0
 
-    for e in entity_starts:
-        if e.type == "player":
-            if e.role == IntRole.COMMANDER:
-                commander_count += 1
-            elif e.role == IntRole.HEAVY:
-                heavy_count += 1
-            elif e.role == IntRole.SCOUT:
-                scout_count += 1
-            elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
-                ammo_count += 1
-            elif e.role == IntRole.MEDIC:
-                medic_count += 1
+        for e in entity_starts:
+            if e.type == "player" and e.team == t:
+                total_count += 1
+                if e.role == IntRole.COMMANDER:
+                    commander_count += 1
+                elif e.role == IntRole.HEAVY:
+                    heavy_count += 1
+                elif e.role == IntRole.SCOUT:
+                    scout_count += 1
+                elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
+                    ammo_count += 1
+                elif e.role == IntRole.MEDIC:
+                    medic_count += 1
 
-    if commander_count != 1 or heavy_count != 1  or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
-        ranked = False
+        if total_count == 0: # probably a neutral team
+            continue
+
+        if commander_count != 1 or heavy_count != 1  or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
+            ranked = False
 
 
     # check if there are any non-member players
