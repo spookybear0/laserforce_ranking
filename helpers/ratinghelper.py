@@ -20,7 +20,7 @@ MU = 25
 SIGMA = 25 / 3
 BETA = 25 / 6
 KAPPA = 0.0001
-TAU = 25 / 200  # default: 25/300 (for rating volatility)
+TAU = 25 / 275  # default: 25/300 (for rating volatility)
 ZETA = 0.09  # default: 0 (custom addition for uneven team rating adjustment), higher value = more adjustment for uneven teams
 
 
