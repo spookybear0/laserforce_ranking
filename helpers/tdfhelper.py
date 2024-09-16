@@ -31,7 +31,15 @@ def element_to_color(element: str) -> str:
         "Fire": "Red",
         "Ice": "Blue",
         "Earth": "Green",
-        "None": "None"
+        "None": "None",
+
+        # extras for edge cases
+        "Green": "Green",
+        "Red": "Red",
+        "Blue": "Blue",
+        "Solid Red": "Red",
+        "Solid Blue": "Blue",
+        "Solid Green": "Green",
     }
 
     return conversion[element]
