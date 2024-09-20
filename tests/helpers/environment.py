@@ -15,7 +15,7 @@ from tortoise import Tortoise
 
 from db.game import Events, EntityStarts, Teams, EntityEnds, Scores
 from db.laserball import LaserballGame
-from db.sm5 import SM5Game
+from db.sm5 import SM5Game, SM5Stats
 from db.types import EventType, Team
 from helpers.tdfhelper import create_event_from_data
 
@@ -166,19 +166,19 @@ async def create_resupply_lives_event(time_millis: int, supplier_entity_id: str,
 
 
 async def add_entity(
-        entity_id: str,
-        team: Teams,
-        start_time_millis: int = 0,
-        end_time_millis: int = 900000,
-        type: str = "player",
-        name: str = "Some Player",
-        level: int = 0,
-        role: int = 0,
-        battlesuit: str = "Panther",
-        member_id: str = "4-43-000",
-        score: int = 0,
-        sm5_game: Optional[SM5Game] = None,
-        omit_entity_end: bool = False,
+    entity_id: str,
+    team: Teams,
+    start_time_millis: int = 0,
+    end_time_millis: int = 900000,
+    type: str = "player",
+    name: str = "Some Player",
+    level: int = 0,
+    role: int = 0,
+    battlesuit: str = "Panther",
+    member_id: str = "4-43-000",
+    score: int = 0,
+    sm5_game: Optional[SM5Game] = None,
+    omit_entity_end: bool = False,
 ) -> (EntityStarts, Optional[EntityEnds]):
     entity_start = await create_entity_start(
         entity_id=entity_id,
@@ -210,15 +210,15 @@ async def add_entity(
 
 
 async def create_entity_start(
-        entity_id: str,
-        team: Teams,
-        time_millis: int = 0,
-        type: str = "player",
-        name: str = "Some Player",
-        level: int = 0,
-        role: int = 0,
-        battlesuit: str = "Panther",
-        member_id: str = "4-43-000"
+    entity_id: str,
+    team: Teams,
+    time_millis: int = 0,
+    type: str = "player",
+    name: str = "Some Player",
+    level: int = 0,
+    role: int = 0,
+    battlesuit: str = "Panther",
+    member_id: str = "4-43-000"
 ) -> EntityStarts:
     return await EntityStarts.create(time=time_millis,
                                      entity_id=entity_id,
@@ -231,11 +231,64 @@ async def create_entity_start(
                                      member_id=member_id)
 
 
+async def add_sm5_stats(entity_start: EntityStarts,
+                        shots_hit: int = 0,
+                        shots_fired: int = 0,
+                        times_zapped: int = 0,
+                        times_missiled: int = 0,
+                        missile_hits: int = 0,
+                        nukes_detonated: int = 0,
+                        nukes_activated: int = 0,
+                        nuke_cancels: int = 0,
+                        medic_hits: int = 0,
+                        own_medic_hits: int = 0,
+                        medic_nukes: int = 0,
+                        scout_rapid_fires: int = 0,
+                        life_boosts: int = 0,
+                        ammo_boosts: int = 0,
+                        lives_left: int = 15,
+                        shots_left: int = 0,
+                        penalties: int = 0,
+                        shot_3_hits: int = 0,
+                        own_nuke_cancels: int = 0,
+                        shot_opponent: int = 0,
+                        shot_team: int = 0,
+                        missiled_opponent: int = 0,
+                        missiled_team: int = 0,
+                        ) -> SM5Stats:
+    return await SM5Stats.create(
+        entity=entity_start,
+        shots_hit=shots_hit,
+        shots_fired=shots_fired,
+        times_zapped=times_zapped,
+        times_missiled=times_missiled,
+        missile_hits=missile_hits,
+        nukes_detonated=nukes_detonated,
+        nukes_activated=nukes_activated,
+        nuke_cancels=nuke_cancels,
+        medic_hits=medic_hits,
+        own_medic_hits=own_medic_hits,
+        medic_nukes=medic_nukes,
+        scout_rapid_fires=scout_rapid_fires,
+        life_boosts=life_boosts,
+        ammo_boosts=ammo_boosts,
+        lives_left=lives_left,
+        shots_left=shots_left,
+        penalties=penalties,
+        shot_3_hits=shot_3_hits,
+        own_nuke_cancels=own_nuke_cancels,
+        shot_opponent=shot_opponent,
+        shot_team=shot_team,
+        missiled_opponent=missiled_opponent,
+        missiled_team=missiled_team,
+    )
+
+
 async def create_entity_ends(
-        entity_start: EntityStarts,
-        time_millis: int = 90000,
-        type: int = 1,
-        score: int = 0) -> EntityEnds:
+    entity_start: EntityStarts,
+    time_millis: int = 90000,
+    type: int = 1,
+    score: int = 0) -> EntityEnds:
     return await EntityEnds.create(time=time_millis,
                                    entity=entity_start,
                                    type=type,

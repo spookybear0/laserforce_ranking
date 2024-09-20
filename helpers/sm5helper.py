@@ -590,6 +590,52 @@ async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DAT
     )
 
 
+async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:
+    """Returns the team that eliminated the other team.
+
+    Returns an empty value if no team eliminated the other."""
+    alive_player_count = {}
+    entities = await game.entity_starts.all()
+
+    for entity in entities:
+        player = await SM5Stats.filter(entity__id=entity.id).first()
+
+        if player and player.lives_left > 0:
+            alive_player_count[(await entity.team).enum] = True
+
+    # If there isn't exactly one team with alive players at the end, this wasn't an elimination game.
+    if len(alive_player_count) != 1:
+        return None
+
+    return next(iter(alive_player_count.keys()))
+
+
+async def compute_sm5_elimination_bonus(game: SM5Game) -> SM5Game:
+    """Adds 10,000 points to the score of a team if it eliminated the others.
+
+    Will also recompute the winner of the game.
+
+    Will not do anything if the game ended early.
+
+    NOTE that this will update the database with the new values if a change was made! Don't call this twice on the same
+    game.
+    """
+    # Nop if the game ended early.
+    if game.ended_early:
+        return game
+
+    eliminating_team = await get_sm5_last_team_standing(game)
+
+    if not eliminating_team:
+        # No elimination. Do nothing.
+        return game
+
+    # Add the bonus.
+    game.scores
+
+
+
+
 def _create_lives_snapshot(lives_timeline: dict[int, list[int]], current_lives: dict[int, int]):
     for entity_end_id, lives in current_lives.items():
         lives_timeline[entity_end_id].append(lives)

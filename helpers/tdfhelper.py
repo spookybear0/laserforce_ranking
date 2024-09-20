@@ -1,16 +1,3 @@
-from asyncio import Event
-
-from db.player import Player
-from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
-from db.types import EventType, PlayerStateType, Team
-from db.sm5 import SM5Game, SM5Stats, IntRole
-from db.laserball import LaserballGame, LaserballStats
-from helpers.ratinghelper import MU, SIGMA
-from typing import List, Dict
-from datetime import datetime
-from sanic.log import logger
-from helpers import ratinghelper
-import aiohttp
 import json
 import os
 from datetime import datetime
@@ -21,9 +8,12 @@ from sanic.log import logger
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
 from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
+from db.sm5 import IntRole, SM5_LASERRANK_VERSION
 from db.sm5 import SM5Game, SM5Stats
 from db.types import EventType, PlayerStateType, Team
 from helpers import ratinghelper
+from helpers.ratinghelper import MU, SIGMA
+from helpers.sm5helper import get_sm5_last_team_standing
 
 
 def element_to_color(element: str) -> str:
@@ -224,20 +214,26 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     logger.debug("Inital game save complete")
 
+    # Determine whether one team eliminated the other.
+    game.last_team_standing = await get_sm5_last_team_standing(game)
+
     # winner determination
 
-    winner = None
-    red_score = await game.get_team_score(Team.RED)
-    green_score = await game.get_team_score(Team.GREEN)
-    if red_score > green_score:
-        winner = Team.RED
-    elif red_score < green_score:
-        winner = Team.GREEN
-    else:  # tie or no winner or something crazy happened
-        winner = None
+    winner = game.last_team_standing
+
+    if not winner:
+        red_score = await game.get_team_score(Team.RED)
+        green_score = await game.get_team_score(Team.GREEN)
+        if red_score > green_score:
+            winner = Team.RED
+        elif red_score < green_score:
+            winner = Team.GREEN
+        else:  # tie or no winner or something crazy happened
+            winner = None
 
     game.winner = winner
     game.winner_color = winner.value if winner else "none"
+    game.laserrank_version = SM5_LASERRANK_VERSION
     await game.save()
 
     logger.debug(f"Winner: {game.winner_color}")
