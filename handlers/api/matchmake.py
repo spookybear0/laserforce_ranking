@@ -85,6 +85,11 @@ async def api_matchmake(request: Request, type_: str) -> str:
 
     all_players = [player for player in all_players if player is not None]
 
+    # check if teams are valid
+
+    if len(all_players) < 2:
+        return response.json({"error": "Not enough players to matchmake"})
+
     matchmade_roles = None
 
     if matchmake_roles:

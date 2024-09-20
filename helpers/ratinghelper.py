@@ -469,7 +469,12 @@ def matchmake_teams_with_roles(players: List[Player], num_teams: int, mode: str 
         win_chances = []
         for team1, team2 in itertools.combinations(teams, 2):
             if len(team1) != len(team2):
-                print("ERROR Teams must have the same number of players")
+                logger.warning("Teams have different player counts!") # this should never happen
+                continue
+
+            if len(team1) == 0 or len(team2) == 0: # every team must have at least one player
+                continue
+
             team1_rating = get_team_rating(team1, roles[teams.index(team1)])
             team2_rating = get_team_rating(team2, roles[teams.index(team2)])
             win_chance = model.predict_win([team1_rating, team2_rating])[0]
