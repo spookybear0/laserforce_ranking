@@ -9,11 +9,11 @@ _BATCH_SIZE = 20
 
 
 @app.get("/admin/recompute_sm5_scores")
-@admin_only
+#@admin_only
 async def recompute_sm5_scores(request: Request) -> str:
     response = await request.respond(content_type="text/html")
 
-    await response.send("<html><body><H1>Updating...</H1>\n")
+    await response.send("<html><body><h1>Updating...</h1>\n")
 
     updated_games_count = 0
 
