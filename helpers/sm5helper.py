@@ -589,6 +589,33 @@ async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DAT
         min_date=min_date, max_date=max_date, data_points=data_points
     )
 
+async def update_winner(game: SM5Game):
+    """Updates the following fields in the game:
+
+    last_team_standing, winner, winner_color.
+
+    Will not call save() after the update is done.
+    """
+    # Determine whether one team eliminated the other.
+    game.last_team_standing = await get_sm5_last_team_standing(game)
+
+    # winner determination
+    winner = game.last_team_standing
+
+    if not winner:
+        red_score = await game.get_team_score(Team.RED)
+        green_score = await game.get_team_score(Team.GREEN)
+        if red_score > green_score:
+            winner = Team.RED
+        elif red_score < green_score:
+            winner = Team.GREEN
+        else:  # tie or no winner or something crazy happened
+            winner = None
+
+    game.winner = winner
+    game.winner_color = winner.value if winner else "none"
+
+
 
 async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:
     """Returns the team that eliminated the other team.
