@@ -35,7 +35,8 @@ async def render_template(r, template, *args, **kwargs) -> str:
     additional_kwargs = {
         "session": r.ctx.session,
         "config": r.app.ctx.config,
-        "Permission": Permission
+        "Permission": Permission,
+        "str": str,
     }
 
     kwargs = {**kwargs, **additional_kwargs}

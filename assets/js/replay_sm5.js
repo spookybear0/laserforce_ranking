@@ -682,8 +682,8 @@ function playEvents(replay_data) {
             playAudio(resupply_audio[sfx]);
         }
         else if (events[i]["type"] == PENALTY) {
-            penaltyee = getEntityFromId(replay_data, events[i]["arguments"][2]);
-            penaltyee["score"] -= 1000;
+            penaltyee = getEntityFromId(replay_data, events[i]["arguments"][0]);
+            penaltyee["score"] -= 1000; // TODO: change this to the actual penalty amount from the game info
         }
 
         for (let j = 0; j < replay_data["entity_starts"].length; j++) {

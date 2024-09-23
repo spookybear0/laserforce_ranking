@@ -248,3 +248,8 @@ class MySQLPool:
 
                 # Return it
                 return cur
+
+    async def close(self) -> None:
+        """Closes the connection to the MySQL server."""
+        self._pool.close()
+        await self._pool.wait_closed()

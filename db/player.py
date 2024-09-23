@@ -52,6 +52,10 @@ class Player(Model):
     password = fields.CharField(255, null=True)  # hashed password
     permissions = fields.IntEnumField(Permission, default=Permission.USER)
 
+    # rfid stuff
+
+    rfid_tags = fields.JSONField(default=[]) # List[int] stored as an int, not how LF does it
+
     @property
     def sm5_ordinal(self) -> float:
         return self.sm5_mu - 3 * self.sm5_sigma

@@ -8,9 +8,12 @@ from sanic.log import logger
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
 from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
+from db.sm5 import IntRole, SM5_LASERRANK_VERSION
 from db.sm5 import SM5Game, SM5Stats
 from db.types import EventType, PlayerStateType, Team
 from helpers import ratinghelper
+from helpers.ratinghelper import MU, SIGMA
+from helpers.sm5helper import update_winner
 
 
 def element_to_color(element: str) -> str:
@@ -18,7 +21,15 @@ def element_to_color(element: str) -> str:
         "Fire": "Red",
         "Ice": "Blue",
         "Earth": "Green",
-        "None": "None"
+        "None": "None",
+
+        # extras for edge cases
+        "Green": "Green",
+        "Red": "Red",
+        "Blue": "Blue",
+        "Solid Red": "Red",
+        "Solid Blue": "Blue",
+        "Solid Green": "Green",
     }
 
     return conversion[element]
@@ -104,10 +115,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
 
-                # has index 8
+                # has index 9
                 try:
-                    member_id = int(data[8])
-                except ValueError:
+                    member_id = int(data[9])
+                except (ValueError, IndexError):
                     member_id = None
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
@@ -202,21 +213,9 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.save()
 
     logger.debug("Inital game save complete")
+    await update_winner(game)
 
-    # winner determination
-
-    winner = None
-    red_score = await game.get_team_score(Team.RED)
-    green_score = await game.get_team_score(Team.GREEN)
-    if red_score > green_score:
-        winner = Team.RED
-    elif red_score < green_score:
-        winner = Team.GREEN
-    else:  # tie or no winner or something crazy happened
-        winner = None
-
-    game.winner = winner
-    game.winner_color = winner.value if winner else "none"
+    game.laserrank_version = SM5_LASERRANK_VERSION
     await game.save()
 
     logger.debug(f"Winner: {game.winner_color}")
@@ -230,6 +229,39 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
         ranked = False
+
+    # also check that our roles are correct
+    # ex: a standard sm5 team has 1 commander, 1 heavy, 1 scout, 1 medic, 1 ammo, and 1-3 scouts
+
+    # for each team
+    for t in teams:
+        total_count = 0
+        commander_count = 0
+        heavy_count = 0
+        scout_count = 0
+        ammo_count = 0
+        medic_count = 0
+
+        for e in entity_starts:
+            if e.type == "player" and e.team == t:
+                total_count += 1
+                if e.role == IntRole.COMMANDER:
+                    commander_count += 1
+                elif e.role == IntRole.HEAVY:
+                    heavy_count += 1
+                elif e.role == IntRole.SCOUT:
+                    scout_count += 1
+                elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
+                    ammo_count += 1
+                elif e.role == IntRole.MEDIC:
+                    medic_count += 1
+
+        if total_count == 0: # probably a neutral team
+            continue
+
+        if commander_count != 1 or heavy_count != 1  or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
+            ranked = False
+
 
     # check if there are any non-member players
 
@@ -303,11 +335,18 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 continue
 
             player = await Player.filter(entity_id=entity_id).first()
-
-            entity_end.previous_rating_mu = player.sm5_mu
-            entity_end.previous_rating_sigma = player.sm5_sigma
-            entity_end.current_rating_mu = player.sm5_mu
-            entity_end.current_rating_sigma = player.sm5_sigma
+            
+            try:
+                entity_end.previous_rating_mu = player.sm5_mu
+                entity_end.previous_rating_sigma = player.sm5_sigma
+                entity_end.current_rating_mu = player.sm5_mu
+                entity_end.current_rating_sigma = player.sm5_sigma
+            except AttributeError:
+                entity_end.previous_rating_mu = MU
+                entity_end.previous_rating_sigma = SIGMA
+                entity_end.current_rating_mu = MU
+                entity_end.current_rating_sigma = SIGMA
+            
 
             await entity_end.save()
 
@@ -393,10 +432,10 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 if team is None:
                     raise Exception("Team not found, invalid tdf file")
 
-                # has index 8
+                # has index 9 (member id, but is only available when the setting is enabled)
                 try:
-                    member_id = int(data[8])
-                except ValueError:
+                    member_id = int(data[9])
+                except (ValueError, IndexError):
                     member_id = None
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
@@ -694,10 +733,10 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 entity_end.current_rating_mu = player.laserball_mu
                 entity_end.current_rating_sigma = player.laserball_sigma
             except AttributeError:
-                entity_end.previous_rating_mu = 25
-                entity_end.previous_rating_sigma = 25 / 3
-                entity_end.current_rating_mu = 25
-                entity_end.current_rating_sigma = 25 / 3
+                entity_end.previous_rating_mu = MU
+                entity_end.previous_rating_sigma = SIGMA
+                entity_end.current_rating_mu = MU
+                entity_end.current_rating_sigma = SIGMA
 
             await entity_end.save()
 

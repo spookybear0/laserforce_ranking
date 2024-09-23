@@ -35,7 +35,7 @@ class SM5Game(Model):
     start_time = fields.DatetimeField()
     mission_duration = fields.IntField()  # in milliseconds
     log_time = fields.DatetimeField(auto_now_add=True)
-    # there is a field in the tdf called "penalty", no idea what it is
+    # Field that is not currently stored: penalty (the amount of points deducted from when a player gets a penalty ex: 0, -1000)
     teams = fields.ManyToManyField("models.Teams")
     entity_starts = fields.ManyToManyField("models.EntityStarts")
     events = fields.ManyToManyField("models.Events")
@@ -337,12 +337,12 @@ class SM5Game(Model):
 
         if full:
             final["teams"] = [await team.to_dict() for team in self.teams]
-            final["entity_starts"] = [await entity_start.to_dict() for entity_start in self.entity_starts]
             final["events"] = [await event.to_dict() for event in self.events]
             final["player_states"] = [await player_state.to_dict() for player_state in self.player_states]
             final["scores"] = [await score.to_dict() for score in self.scores]
-            final["entity_ends"] = [await entity_end.to_dict() for entity_end in self.entity_ends]
-            final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
+        final["entity_starts"] = [await entity_start.to_dict() for entity_start in self.entity_starts]
+        final["entity_ends"] = [await entity_end.to_dict() for entity_end in self.entity_ends]
+        final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
 
         if player_stats is not None:
             final["player_entity_start"] = await (

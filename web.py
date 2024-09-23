@@ -17,7 +17,6 @@ import aioredis
 # we need to set up our app before we import anything else
 
 app = Sanic("laserforce_rankings")
-app.config.USE_UVLOOP = False
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()
@@ -118,9 +117,27 @@ router.add_all_routes(app)
 app.static("assets", "assets", name="assets")
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
+    if os.name == "nt":
+        loop = asyncio.new_event_loop()
+    else:
+        try:
+            import uvloop
+        except ImportError:
+            loop = asyncio.new_event_loop()
+        loop = uvloop.new_event_loop()
+
     asyncio.set_event_loop(loop)
+
     try:
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         print("Exiting...")
+else:
+    if os.name == "nt":
+        app.config.USE_UVLOOP = False
+    else:
+        app.config.USE_UVLOOP = True
+        try:
+            import uvloop
+        except ImportError:
+            app.config.USE_UVLOOP = False

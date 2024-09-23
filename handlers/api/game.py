@@ -30,7 +30,10 @@ async def api_game_tdf(request: Request, type_: str, id: int) -> str:
     full_type_name = "sm5" if type_ == "sm5" else "laserball"
 
     # return the tdf file
-    return await response.file(f"{full_type_name}_tdf/{game.tdf_name}", filename=game.tdf_name)
+    try:
+        return await response.file(f"{full_type_name}_tdf/{game.tdf_name}", filename=game.tdf_name)
+    except FileNotFoundError:
+        raise exceptions.NotFound("TDF file not found on server!", status_code=404)
 
 
 @app.get("/api/game/<type_:str>/<id:int>/json")

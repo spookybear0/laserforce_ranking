@@ -305,18 +305,21 @@ class LaserballGame(Model):
 
         if full:
             final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
-            final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in
-                                      await self.entity_starts.all()]
             final["events"] = [await (await event).to_dict() for event in await self.events.all()]
             final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
-            final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
-            final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in
-                                        await self.laserball_stats.all()]
+        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in
+                                    await self.entity_starts.all()]
+        final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
+        final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in
+                                    await self.laserball_stats.all()]
 
         if player_stats is not None:
             final["player_entity_start"] = await (
                 await self.get_entity_start_from_name(player_stats.codename)).to_dict()
-            final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
+            try:
+                final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
+            except AttributeError:
+                final["player_entity_end"] = None # no idea why this is needed
             final["player_laserball_stats"] = await (
                 await self.get_laserball_stat_from_name(player_stats.codename)).to_dict()
 

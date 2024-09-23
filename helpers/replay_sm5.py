@@ -369,7 +369,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
                 self.add_sound(self.boost_audio, player1.team)
 
             case EventType.PENALTY:
-                self._add_score(player2, -1000)
+                self._add_score(player1, -1000) # TODO: replace this with the penalty amount from the game info
 
         # Handle a player being down.
         if event.type in _EVENTS_DOWNING_PLAYER:
