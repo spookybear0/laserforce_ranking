@@ -307,7 +307,7 @@
         <div class="scorecard_player_stats">
             {% for team in teams %}
             <div class="scorecard_team_stats">
-                <h2 class="{{ team.team.css_class }} team-header">{{ team.name }} ({{ team.score }})</h2>
+                <h2 class="{{ team.team.css_class }} team-header">{{ team.name }}: {{ team.score }}{{ team.score_adjustment_string }}</h2>
                 <div class="outer-scrolling-table">
                     <div class="inner-scrolling-table">
                         <table class="scorecard_player_stats_table">

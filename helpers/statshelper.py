@@ -157,6 +157,10 @@ class TeamCoreGameStats:
     """The stats for a team for one game that apply to most game formats (at least both SM5 and LB)."""
     # Final team score, including adjustments.
     score: int
+
+    # The score adjustment on top of the players' scores.
+    score_adjustment: int
+
     team: Team
 
     @property
@@ -178,6 +182,20 @@ class TeamCoreGameStats:
     @property
     def color(self) -> str:
         return self.team.value.color
+
+    @property
+    def score_adjustment_string(self):
+        """Returns the team score adjustment as a string. Empty string if there
+        was no adjustment, otherwise in the format of
+        " (+10000)"
+        " (-5000)"
+        """
+        if self.score_adjustment == 0:
+            return ""
+
+        sign = "+" if self.score_adjustment > 0 else ""
+
+        return f" ({sign}{self.score_adjustment})"
 
 
 """

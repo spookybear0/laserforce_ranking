@@ -239,7 +239,7 @@
         <div id="teams">
             {% for team in teams %}
                 <div id="{{ team.color }}_team" class="team">
-                    <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}</h2>
+                    <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}{{team.score_adjustment_string}}</h2>
 
                     <div class="outer-scrolling-table">
                         <div class="inner-scrolling-table">
