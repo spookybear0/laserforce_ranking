@@ -57,10 +57,16 @@ class SM5Game(Model):
 
     async def get_team_score(self, team: Team) -> int:
         # Add 10,000 extra points if this team eliminated the opposition.
-        adjustment = 10000 if team == self.last_team_standing else 0
+        adjustment = self.get_team_score_adjustment(team)
         return adjustment + sum(map(lambda x: x[0],
                                     await self.entity_ends.filter(entity__team__color_name=team.element).values_list(
                                         "score")))
+
+    def get_team_score_adjustment(self, team: Team) -> int:
+        """Returns how many points should be added to the team score in addition to the sum of the players' scores."""
+        # The only adjustment currently is the 10k bonus for a team that eliminates another team.
+        return 10000 if team == self.last_team_standing else 0
+
 
     async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(entity_id=token).first()

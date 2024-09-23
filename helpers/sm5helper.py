@@ -448,6 +448,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             TeamSm5GameStats(
                 team=team,
                 score=await game.get_team_score(team),
+                score_adjustment=game.get_team_score_adjustment(team),
                 players=players,
                 sum_player=sum_player,
                 lives_over_time=lives_over_time_team_average
