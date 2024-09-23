@@ -9,7 +9,7 @@ _BATCH_SIZE = 20
 
 
 @app.get("/admin/recompute_sm5_scores")
-#@admin_only
+@admin_only
 async def recompute_sm5_scores(request: Request) -> str:
     response = await request.respond(content_type="text/html")
 
