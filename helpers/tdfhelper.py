@@ -13,7 +13,7 @@ from db.sm5 import SM5Game, SM5Stats
 from db.types import EventType, PlayerStateType, Team
 from helpers import ratinghelper
 from helpers.ratinghelper import MU, SIGMA
-from helpers.sm5helper import get_sm5_last_team_standing
+from helpers.sm5helper import update_winner
 
 
 def element_to_color(element: str) -> str:
@@ -213,26 +213,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.save()
 
     logger.debug("Inital game save complete")
+    await update_winner(game)
 
-    # Determine whether one team eliminated the other.
-    game.last_team_standing = await get_sm5_last_team_standing(game)
-
-    # winner determination
-
-    winner = game.last_team_standing
-
-    if not winner:
-        red_score = await game.get_team_score(Team.RED)
-        green_score = await game.get_team_score(Team.GREEN)
-        if red_score > green_score:
-            winner = Team.RED
-        elif red_score < green_score:
-            winner = Team.GREEN
-        else:  # tie or no winner or something crazy happened
-            winner = None
-
-    game.winner = winner
-    game.winner_color = winner.value if winner else "none"
     game.laserrank_version = SM5_LASERRANK_VERSION
     await game.save()
 
