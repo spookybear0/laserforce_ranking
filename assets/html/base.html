@@ -71,18 +71,31 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
     {% macro player_reference(player) -%}
     {% if not player.player_info %}
-    <p>{{ player.name }}</p>
+    {{ player.name }}
     {% else %}
     {% if player.player_info.is_member %}
-    <a href="/player/{{player.player_info.entity_start.name}}"><p>{{ player.player_info.display_name }}</p></a>
+    <a href="/player/{{player.player_info.entity_start.name}}">{{ player.player_info.display_name }}</a>
     {% else %}
-    <p>{{ player.player_info.display_name }}</p>
+    {{ player.player_info.display_name }}
     {% endif %}
     {% endif %}
     {%- endmacro %}
 
     {% macro tooltip(tooltip_id) -%}
     {{ tooltip_info.insert_tooltip(tooltip_id) }}
+    {%- endmacro %}
+
+    {% macro player_penalties(player) -%}
+    {% if player.penalties > 0 %}
+        <div class="yellow-card" {{ tooltip("sm5_penalty") }}></div>
+    {% if player.penalties > 1 %}
+        x{{ player.penalties }}
+    {% endif %}
+    {% endif %}
+    {%- endmacro %}
+
+    {% macro player_with_penalties(player) -%}
+    <span style="white-space: nowrap;">{{ player_reference(player) }}&nbsp;{{ player_penalties(player) }}</span>
     {%- endmacro %}
 
     {% macro uptime_chart(entity_id, state_distribution) -%}
