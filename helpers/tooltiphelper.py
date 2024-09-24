@@ -25,6 +25,7 @@ _PLAIN_TOOLTIPS = {
     "sm5_hit_ratio": "The ratio between you zapping the player and they zapping you",
     "sm5_you_missiled": "How many times you missiled this particular player",
     "sm5_missiled_you": "How many times this particular player missiled you",
+    "sm5_penalty": "Penalty",
 }
 
 # Tooltips that are complex that they're implemented as separate DIV tags. The value is the ID of the tag.
