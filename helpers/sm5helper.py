@@ -191,6 +191,9 @@ class TeamSm5GameStats(TeamCoreGameStats):
     """The stats for a team for one SM5 game."""
     players: List[PlayerSm5GameStats]
 
+    # The score adjustment on top of the players' scores.
+    score_adjustment: int
+
     # The stats for every player in the game, plus a fake stat at the end with the sum (or average) of all players.
     @property
     def players_with_sum(self):

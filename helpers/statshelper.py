@@ -158,9 +158,6 @@ class TeamCoreGameStats:
     # Final team score, including adjustments.
     score: int
 
-    # The score adjustment on top of the players' scores.
-    score_adjustment: int
-
     team: Team
 
     @property

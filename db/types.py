@@ -184,7 +184,7 @@ class EventType(Enum):
     RESUPPLY_LIVES = "0502"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
     AMMO_BOOST = "0510"  # Arguments: "(entity 1)", " resupplies team"
     LIFE_BOOST = "0512"  # Arguments: "(entity 1)", " resupplies team"
-    PENALTY = "0600"
+    PENALTY = "0600" # Arguments: "(entity 1)", " is penalized"
     ACHIEVEMENT = "0900"  # Arguments: "(entity 1)", " completes an achievement!"
     REWARD = "0902"  # Arguments: "(entity 1)", " earns a reward!"
     BASE_AWARDED = "0B03"  # (technically #0B03 in hex) Arguments: "(entity 1)", " is awarded ", "(entity 2)"
