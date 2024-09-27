@@ -333,7 +333,7 @@
                             {% for player in team.players_with_sum %}
                             <tr class="{{ player.css_class }}">
                                 <td class="role fixed-column">{{ sm5_role_icon(player) }}</td>
-                                <td class="second-fixed-column">{{ player_reference(player) }}</td>
+                                <td class="second-fixed-column">{{ player_with_penalties(player) }}</td>
                                 <td>{{ player.score }}</td>
                                 <td>{{ player.get_gross_positive_score() }}</td>
                                 <td>{{ player.points_per_minute }}</td>

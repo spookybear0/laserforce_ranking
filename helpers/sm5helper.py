@@ -99,6 +99,10 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
         return self.stats.medic_hits
 
     @property
+    def penalties(self) -> int:
+        return self.stats.penalties
+
+    @property
     def role(self) -> Optional[IntRole]:
         return self.entity_start.role if self.entity_start else None
 
@@ -133,6 +137,8 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
     total_medic_hits: int
 
     average_time_alive_millis: int
+
+    total_penalties: int
 
     @property
     def name(self) -> str:
@@ -184,6 +190,10 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
     @property
     def time_in_game_millis(self) -> int:
         return self.average_time_alive_millis
+
+    @property
+    def penalties(self) -> int:
+        return self.total_penalties
 
 
 @dataclass
@@ -298,6 +308,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
         sum_missiled_main_player = 0
         sum_missiled_by_main_player = 0
         sum_score = 0
+        sum_penalties = 0
         sum_points_per_minute = 0
         sum_gross_positive_score = 0
         sum_shot_team = 0
@@ -371,6 +382,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
 
             # Run a tally so we can compute the sum/average for the team.
             sum_score += player.score
+            sum_penalties += player.penalties
             sum_gross_positive_score += player.get_gross_positive_score()
             sum_points_per_minute += player.points_per_minute
             sum_mvp_points += player.mvp_points
@@ -416,6 +428,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             css_class="team_totals",
             total_score=sum_score,
             total_gross_positive_score=sum_gross_positive_score,
+            total_penalties=sum_penalties,
             average_points_per_minute=int(sum_points_per_minute / average_divider),
             state_distribution=avg_state_distribution,
             score_components=avg_score_components,
