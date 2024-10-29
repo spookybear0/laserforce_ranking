@@ -26,6 +26,15 @@ class _Player(PlayerState):
         return self.row_index
 
 
+# Laserforce sometimes incorrectly stores friendly fire as _OPPONENT rather than _TEAM events. So we need to translate
+# them when we detect an event done on the same team.
+_FRIENDLY_FIRE_MAPPING = {
+    EventType.DAMAGED_OPPONENT: EventType.DAMANGED_TEAM,
+    EventType.DOWNED_OPPONENT: EventType.DOWNED_TEAM,
+    EventType.MISSILE_DAMAGE_OPPONENT: EventType.MISSILE_DAMAGE_TEAM,
+    EventType.MISSILE_DOWN_OPPONENT: EventType.MISSILE_DOWN_TEAM,
+}
+
 _SCORE_COLUMN = 2
 _LIVES_COLUMN = 3
 _SHOTS_COLUMN = 4
@@ -272,6 +281,12 @@ class ReplayGeneratorSm5(ReplayGenerator):
         )
 
     def handle_event(self, event: Events, player1, player2):
+        if player1 and player2 and player1.team == player2.team:
+            # If this is an action performed on players on the same team, it may be a _TEAM event but Laserforce
+            # incorrectly stores those as _OPPONENT events. So let's see if we need to translate them.
+            if event.type in _FRIENDLY_FIRE_MAPPING:
+                event.type = _FRIENDLY_FIRE_MAPPING[event.type]
+
         # Count successful hits. Must be done before removing the shot so the accuracy is correct.
         if event.type in _EVENTS_SUCCESSFUL_HITS:
             player1.total_shots_hit += 1
@@ -369,7 +384,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
                 self.add_sound(self.boost_audio, player1.team)
 
             case EventType.PENALTY:
-                self._add_score(player1, -1000) # TODO: replace this with the penalty amount from the game info
+                self._add_score(player1, -1000)  # TODO: replace this with the penalty amount from the game info
 
         # Handle a player being down.
         if event.type in _EVENTS_DOWNING_PLAYER:
