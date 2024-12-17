@@ -198,7 +198,7 @@ function updateWinChances() {
 
     for (let i = 1; i < playersTable.children.length; i++) {
         try {
-            playersTable.children[i].children[1].innerHTML = Math.round(all_players[playersTable.children[i].children[0].innerHTML][mode_index] * 100) / 100;
+            playersTable.children[i].children[2].innerHTML = Math.round(all_players[playersTable.children[i].children[1].innerHTML][mode_index] * 100) / 100;
         }
         catch (e) {}
     }
