@@ -14,6 +14,7 @@ from db.types import EventType, PlayerStateType, Team
 from helpers import ratinghelper
 from helpers.ratinghelper import MU, SIGMA
 from helpers.sm5helper import update_winner
+import sentry_sdk
 
 
 def element_to_color(element: str) -> str:
@@ -74,12 +75,16 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             case ";":
                 continue  # comment
             case "0":  # system info
+                sentry_sdk.set_context("system_info", {"file_version": data[1], "program_version": data[2], "arena": data[3]})
+
                 file_version = data[1]
                 program_version = data[2]
                 arena = data[3]
                 logger.debug(
                     f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
             case "1":  # game info
+                sentry_sdk.set_context("game_info", {"mission_type": data[1], "mission_name": data[2], "start_time": data[3], "mission_duration": data[4]})
+
                 mission_type = int(data[1])
                 mission_name = data[2]
                 start_time = data[3]
@@ -99,12 +104,28 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                         return game
 
             case "2":  # team info
+                sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3], "color_name": data[4]})
+
                 teams.append(
                     await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4],
                                        real_color_name=element_to_color(data[4])))
                 logger.debug(
                     f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
             case "3":  # entity start
+                sentry_sdk.set_context(
+                    "entity_start", {
+                        "time": data[1],
+                        "entity_id": data[2],
+                        "type": data[3],
+                        "name": data[4],
+                        "team": data[5],
+                        "level": data[6],
+                        "role": data[7],
+                        "battlesuit": data[8],
+                        "member_id": data[9]
+                    }
+                )
+
                 team = None
 
                 for t in teams:
@@ -130,6 +151,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
             case "4":  # event
+                sentry_sdk.set_context("event", {"time": data[1], "type": data[2], "arguments": data[3:]})
+
                 # okay but why is event type a string
                 events.append(await create_event_from_data(data))
 
@@ -138,16 +161,49 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
             case "5":  # score
+                sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4], "new": data[5]})
+
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                                                   delta=int(data[4]), new=int(data[5])))
                 logger.debug(
                     f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
             case "6":  # entity end
+                sentry_sdk.set_context("entity_end", {"time": data[1], "entity": data[2], "type": data[3], "score": data[4]})
+
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                                                            type=int(data[3]), score=int(data[4])))
                 logger.debug(
                     f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
             case "7":  # sm5 stats
+                sentry_sdk.set_context(
+                    "sm5_stats", {
+                        "entity": data[1],
+                        "shots_hit": data[2],
+                        "shots_fired": data[3],
+                        "times_zapped": data[4],
+                        "times_missiled": data[5],
+                        "missile_hits": data[6],
+                        "nukes_detonated": data[7],
+                        "nukes_activated": data[8],
+                        "nuke_cancels": data[9],
+                        "medic_hits": data[10],
+                        "own_medic_hits": data[11],
+                        "medic_nukes": data[12],
+                        "scout_rapid_fires": data[13],
+                        "life_boosts": data[14],
+                        "ammo_boosts": data[15],
+                        "lives_left": data[16],
+                        "shots_left": data[17],
+                        "penalties": data[18],
+                        "shot_3_hits": data[19],
+                        "own_nuke_cancels": data[20],
+                        "shot_opponent": data[21],
+                        "shot_team": data[22],
+                        "missiled_opponent": data[23],
+                        "missiled_team": data[24]
+                    }
+                )
+
                 sm5_stats.append(await SM5Stats.create(entity=token_to_entity[data[1]],
                                                        shots_hit=int(data[2]), shots_fired=int(data[3]),
                                                        times_zapped=int(data[4]), times_missiled=int(data[5]),
@@ -165,6 +221,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 logger.debug(
                     f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
             case "9":  # player state
+                sentry_sdk.set_context("player_state", {"time": data[1], "entity": data[2], "state": data[3]})
+
                 player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]],
                                                                state=PlayerStateType(int(data[3]))))
                 logger.debug(
@@ -194,6 +252,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     if ended_early and mission_duration < 3 * 60 * 1000:
         logger.warning("Game ended early and lasted less than 3 minutes, skipping")
         return None
+    
 
     game = await SM5Game.create(winner=None, winner_color="none", tdf_name=os.path.basename(file_location),
                                 file_version=file_version, ranked=ranked,
@@ -201,6 +260,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                                 mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"),
                                 mission_duration=mission_duration, ended_early=ended_early)
+    
+    sentry_sdk.set_context("game", {"id": game.id})
 
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)
@@ -274,6 +335,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     # ended_early = if there's a mission end event (natural end by time or elim)
     # value set in event parsing
+
+    sentry_sdk.set_context("game_info", {"ranked": ranked, "ended_early": ended_early})
 
     logger.debug(f"Ranked={ranked}, Ended Early={ended_early}")
 
@@ -396,12 +459,16 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
             case ";":
                 continue  # comment
             case "0":  # system info
+                sentry_sdk.set_context("system_info", {"file_version": data[1], "program_version": data[2], "arena": data[3]})
+
                 file_version = data[1]
                 program_version = data[2]
                 arena = data[3]
                 logger.debug(
                     f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
             case "1":  # game info
+                sentry_sdk.set_context("game_info", {"mission_type": data[1], "mission_name": data[2], "start_time": data[3], "mission_duration": data[4]})
+
                 mission_type = int(data[1])
                 mission_name = data[2]
                 start_time = data[3]
@@ -416,12 +483,28 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                     return game
 
             case "2":  # team info
+                sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3], "color_name": data[4]})
+
                 teams.append(
                     await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4],
                                        real_color_name=element_to_color(data[4])))
                 logger.debug(
                     f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
             case "3":  # entity start
+                sentry_sdk.set_context(
+                    "entity_start", {
+                        "time": data[1],
+                        "entity_id": data[2],
+                        "type": data[3],
+                        "name": data[4],
+                        "team": data[5],
+                        "level": data[6],
+                        "role": data[7],
+                        "battlesuit": data[8],
+                        "member_id": data[9]
+                    }
+                )
+
                 team = None
 
                 for t in teams:
@@ -467,6 +550,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 logger.debug(
                     f"Entity Start: time: {data[1]}, entity id: {data[2]}, type: {data[3]}, name: {data[4]}, team: {data[5]}, level: {data[6]}, role: {data[7]}, battlesuit: {data[8]}")
             case "4":  # event
+                sentry_sdk.set_context("event", {"time": data[1], "type": data[2], "arguments": data[3:]})
+
                 # handle special laserball events
 
                 event_type = EventType(data[2])
@@ -517,16 +602,22 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
                 logger.debug(f"Event: time: {data[1]}, type: {event_type}, arguments: {data[3:]}")
             case "5":  # score
+                sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4], "new": data[5]})
+
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                                                   delta=int(data[4]), new=int(data[5])))
                 logger.debug(
                     f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
             case "6":  # entity end
+                sentry_sdk.set_context("entity_end", {"time": data[1], "entity": data[2], "type": data[3], "score": data[4]})
+
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                                                            type=int(data[3]), score=int(data[4])))
                 logger.debug(
                     f"Entity End: time: {data[1]}, entity: {token_to_entity[data[2]]}, type: {data[3]}, score: {data[4]}")
             case "9":  # player state
+                sentry_sdk.set_context("player_state", {"time": data[1], "entity": data[2], "state": data[3]})
+
                 player_states.append(await PlayerStates.create(time=int(data[1]), entity=token_to_entity[data[2]],
                                                                state=PlayerStateType(int(data[3]))))
                 logger.debug(
@@ -634,6 +725,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                                       start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"),
                                       mission_duration=mission_duration, ended_early=ended_early)
 
+    sentry_sdk.set_context("game", {"id": game.id})
+
     await game.teams.add(*teams)
     await game.entity_starts.add(*entity_starts)
     await game.events.add(*events)
@@ -673,6 +766,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
     game.ranked = ranked
     game.ended_early = ended_early
+
+    sentry_sdk.set_context("game_info", {"ranked": ranked, "ended_early": ended_early})
 
     logger.debug(f"Ranked={ranked}, Ended Early={ended_early}")
 

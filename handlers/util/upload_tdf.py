@@ -7,6 +7,7 @@ from helpers.statshelper import sentry_trace
 from helpers.tdfhelper import parse_sm5_game, parse_laserball_game
 from shared import app
 from utils import get_post
+import sentry_sdk
 
 
 @app.get("/util/auto_upload_dl")
@@ -25,6 +26,8 @@ async def auto_upload(request: Request) -> str:
 
     logger.debug(f"Type: {type}")
     logger.debug(f"File: {file}")
+
+    sentry_sdk.set_context("upload_tdf", {"type": type, "file": file})
 
     if file is None:
         raise exceptions.BadRequest()
