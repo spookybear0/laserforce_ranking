@@ -112,20 +112,6 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 logger.debug(
                     f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
             case "3":  # entity start
-                sentry_sdk.set_context(
-                    "entity_start", {
-                        "time": data[1],
-                        "entity_id": data[2],
-                        "type": data[3],
-                        "name": data[4],
-                        "team": data[5],
-                        "level": data[6],
-                        "role": data[7],
-                        "battlesuit": data[8],
-                        "member_id": data[9]
-                    }
-                )
-
                 team = None
 
                 for t in teams:
@@ -141,6 +127,20 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     member_id = int(data[9])
                 except (ValueError, IndexError):
                     member_id = None
+
+                sentry_sdk.set_context(
+                    "entity_start", {
+                        "time": data[1],
+                        "entity_id": data[2],
+                        "type": data[3],
+                        "name": data[4],
+                        "team": data[5],
+                        "level": data[6],
+                        "role": data[7],
+                        "battlesuit": data[8],
+                        "member_id": member_id
+                    }
+                )
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
 
@@ -491,20 +491,6 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 logger.debug(
                     f"Team Info: index: {data[1]}, name: {data[2]}, color enum: {data[3]}, color name: {data[4]}")
             case "3":  # entity start
-                sentry_sdk.set_context(
-                    "entity_start", {
-                        "time": data[1],
-                        "entity_id": data[2],
-                        "type": data[3],
-                        "name": data[4],
-                        "team": data[5],
-                        "level": data[6],
-                        "role": data[7],
-                        "battlesuit": data[8],
-                        "member_id": data[9]
-                    }
-                )
-
                 team = None
 
                 for t in teams:
@@ -522,6 +508,20 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                     member_id = None
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
+                
+                sentry_sdk.set_context(
+                    "entity_start", {
+                        "time": data[1],
+                        "entity_id": data[2],
+                        "type": data[3],
+                        "name": data[4],
+                        "team": data[5],
+                        "level": data[6],
+                        "role": data[7],
+                        "battlesuit": data[8],
+                        "member_id": member_id
+                    }
+                )
 
                 entity_start = await EntityStarts.create(time=int(data[1]), entity_id=data[2], type=data[3], name=name,
                                                          team=team, level=int(data[6]), role=int(data[7]),
