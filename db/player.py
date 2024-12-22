@@ -15,6 +15,19 @@ from db.laserball import LaserballStats, LaserballGame
 from db.sm5 import SM5Stats, SM5Game
 from db.types import Permission, GameType, Role, Team, IntRole
 
+def setup_properties():
+    # This is a workaround for Tortoise-ORM not supporting properties
+    # specifically used for the codename field to handle blank codenames correctly
+    # when accessing the codename field, it will return the entity_id if blank
+
+    Player.__original__getattribute__ = Player.__getattribute__
+
+    def hook(self, name):
+        if name == "codename":
+            return self.get_codename()
+        return Player.__original__getattribute__(self, name)
+
+    Player.__getattribute__ = hook
 
 class Player(Model):
     id = fields.IntField(pk=True)
@@ -55,6 +68,15 @@ class Player(Model):
     # rfid stuff
 
     rfid_tags = fields.JSONField(default=[]) # List[int] stored as an int, not how LF does it
+
+    def get_codename(self) -> str:
+        # This is a property that repalces the codename field to handle blank codenames correctly.
+        # Tortoise-ORM doesn't support properties as far as i know, so this is a workaround
+
+        codename = self.__original__getattribute__("codename")
+        if codename == "":
+            return self.entity_id # handle blank codenames
+        return codename
 
     @property
     def sm5_ordinal(self) -> float:
@@ -407,3 +429,5 @@ class Player(Model):
 
     def __repr__(self) -> str:
         return f"<Player {self.codename} ({self.player_id})>"
+    
+setup_properties()

@@ -71,7 +71,9 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     if not player:
         try:
-            player = await Player.filter(codename=id).first()  # could be codename
+            player = await Player.filter(codename=id).get_or_none() # could be a codename
+            if not player:
+                player = await Player.filter(entity_id=id).get_or_none() # could be an entity_id
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
 
