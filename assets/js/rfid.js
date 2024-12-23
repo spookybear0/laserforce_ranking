@@ -120,8 +120,8 @@ async function checkSupport() {
     // check if we already have permission
     setInterval(checkPermission, 2000);
     checkPermission();
-
-    console.log();
 }
 
-document.addEventListener("DOMContentLoaded", checkSupport);
+if (document.getElementById("rfid_button") != null) {
+    document.addEventListener("DOMContentLoaded", checkSupport);
+}
