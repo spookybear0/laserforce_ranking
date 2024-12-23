@@ -11,25 +11,31 @@ from helpers.datehelper import strftime_ordinal
 from db.types import Team, IntRole, EventType, SM5_ENEMY_TEAM
 from typing import List, Optional
 from tortoise import Model, fields
+from helpers.cachehelper import cache
 import math
 import sys
 
+# The current version we expect in SM5Game.laserrank_version. If it doesn't match, that game should be recomputed
+# with the recompute_sm5_scores action.
+SM5_LASERRANK_VERSION = 2
+
+
 class SM5Game(Model):
     id = fields.IntField(pk=True)
-    winner = fields.CharEnumField(Team, null=True) # null if the game ended early
+    winner = fields.CharEnumField(Team, null=True)  # null if the game ended early
     winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
-    file_version = fields.CharField(20) # version is a decimal number, we can just store it as a string
-    software_version = fields.CharField(20) # ditto ^
-    arena = fields.CharField(20) # x-y, x=continent, y=arena (ex: 4-43)
-    mission_type = fields.IntField() # no idea what this enum is
+    file_version = fields.CharField(20)  # version is a decimal number, we can just store it as a string
+    software_version = fields.CharField(20)  # ditto ^
+    arena = fields.CharField(20)  # x-y, x=continent, y=arena (ex: 4-43)
+    mission_type = fields.IntField()  # no idea what this enum is
     mission_name = fields.CharField(100)
-    ranked = fields.BooleanField() # will this game affect player ratings and stats.
-    ended_early = fields.BooleanField() # did the game end early?
+    ranked = fields.BooleanField()  # will this game affect player ratings and stats.
+    ended_early = fields.BooleanField()  # did the game end early?
     start_time = fields.DatetimeField()
-    mission_duration = fields.IntField() # in milliseconds
+    mission_duration = fields.IntField()  # in milliseconds
     log_time = fields.DatetimeField(auto_now_add=True)
-    # there is a field in the tdf called "penalty", no idea what it is
+    # Field that is not currently stored: penalty (the amount of points deducted from when a player gets a penalty ex: 0, -1000)
     teams = fields.ManyToManyField("models.Teams")
     entity_starts = fields.ManyToManyField("models.EntityStarts")
     events = fields.ManyToManyField("models.Events")
@@ -37,34 +43,45 @@ class SM5Game(Model):
     scores = fields.ManyToManyField("models.Scores")
     entity_ends = fields.ManyToManyField("models.EntityEnds")
     sm5_stats = fields.ManyToManyField("models.SM5Stats")
-
+    # If not null, this is the team that eliminated the other.
+    last_team_standing = fields.CharEnumField(Team, null=True)
+    # Our internal SM5 game version when this game was imported. If it doesn't match SM5_LASERRANK_VERSION, it
+    # should be recomputed.
+    laserrank_version = fields.IntField(default=0)
 
     def __str__(self) -> str:
         return f"SM5Game ({self.start_time})"
-    
+
     def __repr__(self) -> str:
         return f"<SM5Game ({self.tdf_name})>"
-    
+
     async def get_team_score(self, team: Team) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element).values_list("score")))
-    
-    async def get_entity_start_from_player(self, player: "Player") -> Optional["EntityStarts"]:
-        return await self.entity_starts.filter(player=player).first()
-    
+        # Add 10,000 extra points if this team eliminated the opposition.
+        adjustment = self.get_team_score_adjustment(team)
+        return adjustment + sum(map(lambda x: x[0],
+                                    await self.entity_ends.filter(entity__team__color_name=team.element).values_list(
+                                        "score")))
+
+    def get_team_score_adjustment(self, team: Team) -> int:
+        """Returns how many points should be added to the team score in addition to the sum of the players' scores."""
+        # The only adjustment currently is the 10k bonus for a team that eliminates another team.
+        return 10000 if team == self.last_team_standing else 0
+
+
     async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(entity_id=token).first()
-    
-    async def get_entity_end_from_player(self, player: "Player") -> Optional["EntityEnds"]:
-        return await self.entity_ends.filter(player=player).first()
-    
+
     async def get_entity_end_from_token(self, token: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity_id=token).first()
-    
+
     async def get_entity_start_from_name(self, name: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(name=name).first()
-    
+
     async def get_entity_end_from_name(self, name: str) -> Optional["EntityEnds"]:
         return await self.entity_ends.filter(entity__name=name).first()
+
+    async def get_sm5_stat_from_name(self, name: str) -> Optional["SM5Stats"]:
+        return await self.sm5_stats.filter(entity__name=name).first()
 
     async def get_entity_score_at_time(self, entity_id: int, time_seconds: int) -> int:
         scores = await self.scores.filter(time__lte=time_seconds, entity=entity_id).all()
@@ -81,12 +98,15 @@ class SM5Game(Model):
         return end_event.time if end_event else self.mission_duration
 
     # funcs for getting total score at a certain time for a team
-    
-    async def get_team_score_at_time(self, team: Team, time: int) -> int: # time in seconds
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list("delta")))
+
+    async def get_team_score_at_time(self, team: Team, time: int) -> int:  # time in seconds
+        return sum(map(lambda x: x[0],
+                       await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list(
+                           "delta")))
 
     # funcs for getting win chance and draw chance
 
+    @cache()
     async def get_win_chance(self) -> List[float]:
         """
         Returns the win chance in the format [red, green]
@@ -131,7 +151,8 @@ class SM5Game(Model):
 
         from helpers.ratinghelper import model
         return model.predict_win([elos_red, elos_green])
-    
+
+    @cache()
     async def get_win_chance_before_game(self) -> List[float]:
         """
         Returns the win chance as guessed before the game happened in the format [red, green]
@@ -171,7 +192,7 @@ class SM5Game(Model):
                 previous_elos_green.append(Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma))
 
         # double check if elo is None or not
-                
+
         for i, elo in enumerate(previous_elos_red + previous_elos_green):
             if elo is None or elo.mu is None or elo.sigma is None:
                 if i < len(previous_elos_red):
@@ -183,7 +204,8 @@ class SM5Game(Model):
 
         from helpers.ratinghelper import model
         return model.predict_win([previous_elos_red, previous_elos_green])
-    
+
+    @cache()
     async def get_win_chance_after_game(self) -> List[float]:
         """
         Returns the win chance as guessed **directly** after the game happened in the format [red, green]
@@ -223,7 +245,7 @@ class SM5Game(Model):
                 current_elos_green.append(Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma))
 
         # double check if elo is None or not
-                
+
         for i, elo in enumerate(current_elos_red + current_elos_green):
             if elo is None or elo.mu is None or elo.sigma is None:
                 if i < len(current_elos_red):
@@ -235,8 +257,8 @@ class SM5Game(Model):
 
         from helpers.ratinghelper import model
         return model.predict_win([current_elos_red, current_elos_green])
-    
-    def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
+
+    def get_timestamp(self, time_zone: str = "America/Los_Angeles") -> str:
         """
         Returns the timestamp of the game in the specified time zone
         """
@@ -248,26 +270,26 @@ class SM5Game(Model):
             zero_pad = "-"
 
         return strftime_ordinal(f"%A, %B {'{S}'} at %{zero_pad}I:%M %p", self.start_time)
-    
-    async def get_battlesuits(self) -> List[str]: # only the non-member players
+
+    async def get_battlesuits(self) -> List[str]:  # only the non-member players
         """
         Returns a list of entity_starts of battlesuits used in the game
         """
 
         return await self.entity_starts.filter(type="player", entity_id__startswith="@")
-    
-    async def get_players(self) -> List[str]: # all players
+
+    async def get_players(self) -> List[str]:  # all players
         """
         Returns a list of entity_starts of players in the game
         """
 
         return await self.entity_starts.filter(type="player")
-    
+
     async def get_previous_game_id(self) -> Optional[int]:
         """
         Returns the game id of the previous game
         """
-        
+
         id_ = await SM5Game.filter(start_time__lt=self.start_time).order_by("-start_time").values_list("id", flat=True)
         if not id_:
             return None
@@ -282,7 +304,7 @@ class SM5Game(Model):
         if not id_:
             return None
         return id_[0]
-    
+
     async def get_team_eliminated(self, team: Team) -> bool:
         """
         Returns True if the other team was eliminated
@@ -291,15 +313,16 @@ class SM5Game(Model):
         players_alive_on_team = await self.entity_starts \
             .filter(team__color_name=team.element) \
             .filter(type="player", sm5statss__lives_left__gt=0) \
-            .count() # count the number of players on the red team that are still alive
-        
+            .count()  # count the number of players on the red team that are still alive
+
         return players_alive_on_team == 0
 
-    async def to_dict(self) -> dict:
+    async def to_dict(self, full: bool = True, player_stats=None) -> dict:
         # convert the entire game to a dict
         # this is used for the api
 
-        await self.fetch_related("teams", "entity_starts", "events", "player_states", "scores", "entity_ends", "sm5_stats")
+        await self.fetch_related("teams", "entity_starts", "events", "player_states", "scores", "entity_ends",
+                                 "sm5_stats")
 
         final = {}
 
@@ -313,19 +336,29 @@ class SM5Game(Model):
         final["mission_type"] = self.mission_type
         final["mission_name"] = self.mission_name
         final["ranked"] = self.ranked
-        final["start_time"] = str(self.start_time)
+        final["ended_early"] = self.ended_early
+        final["start_time"] = self.start_time.timestamp()
         final["mission_duration"] = self.mission_duration
-        final["log_time"] = str(self.log_time)
-        final["teams"] = [await team.to_dict() for team in self.teams]
+        final["log_time"] = self.log_time.timestamp()
+
+        if full:
+            final["teams"] = [await team.to_dict() for team in self.teams]
+            final["events"] = [await event.to_dict() for event in self.events]
+            final["player_states"] = [await player_state.to_dict() for player_state in self.player_states]
+            final["scores"] = [await score.to_dict() for score in self.scores]
         final["entity_starts"] = [await entity_start.to_dict() for entity_start in self.entity_starts]
-        final["events"] = [await event.to_dict() for event in self.events]
-        final["player_states"] = [await player_state.to_dict() for player_state in self.player_states]
-        final["scores"] = [await score.to_dict() for score in self.scores]
         final["entity_ends"] = [await entity_end.to_dict() for entity_end in self.entity_ends]
         final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
 
+        if player_stats is not None:
+            final["player_entity_start"] = await (
+                await self.get_entity_start_from_name(player_stats.codename)).to_dict()
+            final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
+            final["player_sm5_stats"] = await (await self.get_sm5_stat_from_name(player_stats.codename)).to_dict()
+
         return final
-    
+
+
 class SM5Stats(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     shots_hit = fields.IntField()
@@ -375,7 +408,7 @@ class SM5Stats(Model):
 
         # elims: minimum 4 points if your team eliminates the other team, increased by 1/60 for each of second of game time remaining above 3 minutes.
         # ^ UPDATE: changed by the committee to from 1 point for every 60 seconds of game time above 1 minute.
-        
+
         # check if team eliminated the other team
 
         mission_end = await game.events.filter(type=EventType.MISSION_END).first()
@@ -455,7 +488,7 @@ class SM5Stats(Model):
 
             if score > 3000:
                 total_points += (score - 3000) / 1000
-            
+
         # medic specific points:
         elif (await self.entity).role == IntRole.MEDIC:
             # life boosts: 3 points for every life boost
@@ -474,6 +507,7 @@ class SM5Stats(Model):
 
         return total_points
 
+    @cache()
     async def to_dict(self) -> dict:
         final = {}
 
@@ -503,5 +537,3 @@ class SM5Stats(Model):
         final["missiled_team"] = self.missiled_team
 
         return final
-
-    

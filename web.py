@@ -9,7 +9,7 @@ from mysql import MySQLPool
 import jinja2
 from sanic import Sanic
 from sanic_jinja2 import SanicJinja2
-from sanic_session import Session, AIORedisSessionInterface
+from sanic_session import Session, AIORedisSessionInterface, InMemorySessionInterface
 from config import config
 from sanic_cors import CORS
 import aioredis
@@ -17,12 +17,15 @@ import aioredis
 # we need to set up our app before we import anything else
 
 app = Sanic("laserforce_rankings")
-app.config.USE_UVLOOP = False
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()
-app.ctx.redis = aioredis.from_url(config["redis"], decode_responses=True)
-session.init_app(app, interface=AIORedisSessionInterface(app.ctx.redis))
+if config["redis"] not in ["", None, False]:
+    app.ctx.redis = aioredis.from_url(config["redis"], decode_responses=True)
+    interface = AIORedisSessionInterface(app.ctx.redis)
+else:
+    interface = InMemorySessionInterface()
+session.init_app(app, interface=interface)
 
 app.ctx.jinja = SanicJinja2(
     app,
@@ -40,9 +43,11 @@ from mysql import MySQLPool
 from tortoise import Tortoise
 from config import config
 from helpers import cachehelper
+import utils
 
 TORTOISE_ORM = {
-    "connections": { "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce" },
+    "connections": {
+        "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce"},
     "apps": {
         "models": {
             "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "aerich.models"],
@@ -50,6 +55,14 @@ TORTOISE_ORM = {
         }
     }
 }
+
+
+@app.exception(AttributeError)
+async def handle_attribute_error(request, exception):
+    # check if the error is due to _sentry_hub
+    if "_sentry_hub" not in str(exception):
+        raise exception
+
 
 @app.listener("before_server_stop")
 async def close_db(app, loop) -> None:
@@ -59,33 +72,37 @@ async def close_db(app, loop) -> None:
     await app.ctx.sql.close()
     await Tortoise.close_connections()
 
+
 @app.signal("server.init.before")
 async def setup_app(app, loop) -> None:
     """
     Start the server in a production environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
+    app.ctx.banner = {"text": None, "type": None}
+    app.ctx.banner_type_to_color = utils.banner_type_to_color
 
     await Tortoise.init(
         config=TORTOISE_ORM
     )
 
-    #await adminhelper.repopulate_database()
-
     # use cache on production server
     cachehelper.use_cache()
+
 
 async def main() -> None:
     """
     Start the server in a development/nonprod environment.
     """
     app.ctx.sql = await MySQLPool.connect_with_config()
+    app.ctx.banner = {"text": "", "type": None}
+    app.ctx.banner_type_to_color = utils.banner_type_to_color
 
     await Tortoise.init(
         config=TORTOISE_ORM
     )
 
-    #await adminhelper.repopulate_database()
+    # await adminhelper.repopulate_database()
 
     # no cache on dev server
 
@@ -95,13 +112,32 @@ async def main() -> None:
     await server.after_start()
     await server.serve_forever()
 
+
 router.add_all_routes(app)
 app.static("assets", "assets", name="assets")
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
+    if os.name == "nt":
+        loop = asyncio.new_event_loop()
+    else:
+        try:
+            import uvloop
+        except ImportError:
+            loop = asyncio.new_event_loop()
+        loop = uvloop.new_event_loop()
+
     asyncio.set_event_loop(loop)
+
     try:
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         print("Exiting...")
+else:
+    if os.name == "nt":
+        app.config.USE_UVLOOP = False
+    else:
+        app.config.USE_UVLOOP = True
+        try:
+            import uvloop
+        except ImportError:
+            app.config.USE_UVLOOP = False

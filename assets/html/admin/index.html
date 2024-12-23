@@ -3,6 +3,30 @@
 
 
 {% block html_head %}
+<style>
+    #banner_text {
+        width: 400px;
+        background: #262626;
+        border: 1px solid #999;
+        border-radius: 4px;
+        color: #fff;
+        height: 4em;
+        font-size: 1em;
+        padding: 0.5em;
+    }
+
+    #banner_type {
+        width: 200px;
+        background: #262626;
+        border: 1px solid #999;
+        border-radius: 4px;
+        color: #fff;
+        height: 4em;
+        font-size: 1em;
+        padding: 0.5em;
+    }
+</style>
+
 <script>
     function getCookie() {
         let cookieValue = null;
@@ -54,6 +78,36 @@
         });
     }
 
+    function flush_cache() {
+        alert("Flushing cache in background...");
+        fetch("/admin/flush_cache", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
+    function set_banner() {
+        let text = document.getElementById("banner_text").value;
+        let type = document.getElementById("banner_type").value;
+
+        fetch("/admin/set_banner", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({
+                "text": text,
+                "type": type
+            })
+        });
+
+        alert("Banner set!");
+    }
+
 </script>
 {% endblock %}
 
@@ -61,8 +115,22 @@
 
 <h1 style="text-align: center;">Dashboard</h1>
 
-<button onclick="recalculate_ratings()" class="button">Recalculate Ratings</button>
-<button onclick="recalculate_sm5_ratings()" class="button">Recalculate SM5 Ratings</button>
-<button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
+<div style="display: flex; flex-direction: row; gap: 10px;">
+    <button onclick="recalculate_ratings()" class="button">Recalculate Ratings</button>
+    <button onclick="recalculate_sm5_ratings()" class="button">Recalculate SM5 Ratings</button>
+    <button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
+    <button onclick="flush_cache()" class="button">Flush Cache</button>
+</div>
+
+<!-- Banner -->
+
+<div style="display: flex; flex-direction: row; gap: 10px; margin-top: 5rem;">
+    <input type="text" id="banner_text" placeholder="Banner Text" id="banner_text">
+    <select id="banner_type" id="banner_type">
+        <option value="info">Info</option>
+        <option value="warning">Warning</option>
+        <option value="danger">Danger</option>
+    </select>
+    <button onclick="set_banner()" class="button">Set Banner</button>
 
 {% endblock %}

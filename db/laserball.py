@@ -2,26 +2,31 @@ try:
     from openskill.models import PlackettLuceRating as Rating
 except ImportError:
     from openskill.models.weng_lin.plackett_luce import PlackettLuceRating as Rating
-from db.types import Team, EventType, BallPossessionEvent
-from helpers.datehelper import strftime_ordinal
-from tortoise import Model, fields
-from typing import List
 import sys
+from typing import List, Optional
+
+from tortoise import Model, fields
+
+from db.game import EntityStarts, EntityEnds
+from db.types import Team, EventType, BallPossessionEvent
+from helpers.cachehelper import cache
+from helpers.datehelper import strftime_ordinal
+
 
 class LaserballGame(Model):
     id = fields.IntField(pk=True)
     winner = fields.CharEnumField(Team)
     winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
-    file_version = fields.CharField(20) # version is a decimal number, we can just store it as a string
-    software_version = fields.CharField(20) # ditto ^
-    arena = fields.CharField(20) # x-y, x=continent, y=arena (ex: 4-43)
-    mission_type = fields.IntField() # no idea what this enum is
+    file_version = fields.CharField(20)  # version is a decimal number, we can just store it as a string
+    software_version = fields.CharField(20)  # ditto ^
+    arena = fields.CharField(20)  # x-y, x=continent, y=arena (ex: 4-43)
+    mission_type = fields.IntField()  # no idea what this enum is
     mission_name = fields.CharField(100)
-    ranked = fields.BooleanField() # will this game affect player ratings and stats.
-    ended_early = fields.BooleanField() # did the game end early?
+    ranked = fields.BooleanField()  # will this game affect player ratings and stats.
+    ended_early = fields.BooleanField()  # did the game end early?
     start_time = fields.DatetimeField()
-    mission_duration = fields.IntField() # in seconds
+    mission_duration = fields.IntField()  # in seconds
     log_time = fields.DatetimeField(auto_now_add=True)
     # there is a field in the tdf called "penatly", no idea what it is
     teams = fields.ManyToManyField("models.Teams")
@@ -34,19 +39,38 @@ class LaserballGame(Model):
 
     def __str__(self) -> str:
         return f"LaserballGame ({self.start_time})"
-    
+
     def __repr__(self) -> str:
         return f"<LaserballGame ({self.tdf_name})>"
-    
+
+    async def get_entity_start_from_token(self, token: str) -> Optional[EntityStarts]:
+        return await self.entity_starts.filter(entity_id=token).first()
+
+    async def get_entity_end_from_token(self, token: str) -> Optional[EntityEnds]:
+        return await self.entity_ends.filter(entity_id=token).first()
+
+    async def get_entity_start_from_name(self, name: str) -> Optional[EntityStarts]:
+        return await self.entity_starts.filter(name=name).first()
+
+    async def get_entity_end_from_name(self, name: str) -> Optional[EntityEnds]:
+        return await self.entity_ends.filter(entity__name=name).first()
+
+    async def get_laserball_stat_from_name(self, name: str) -> Optional["LaserballStats"]:
+        return await self.laserball_stats.filter(entity__name=name).first()
+
     async def get_team_score(self, team: Team) -> int:
-        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element, entity__type="player").values_list("score")))
+        return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element,
+                                                                     entity__type="player").values_list("score")))
 
     async def get_team_score_at_time(self, team: Team, time: int) -> int:
-        return sum(map(lambda x: x[0], await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list("delta")))
-    
+        return sum(map(lambda x: x[0],
+                       await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list(
+                           "delta")))
+
     async def get_rounds_at_time(self, time) -> int:
         return (await self.events.filter(time__lte=time, type=EventType.ROUND_END).count()) + 1
 
+    @cache()
     async def get_possession_timeline(self) -> list[BallPossessionEvent]:
         """Returns a timeline of who had the ball at what time.
 
@@ -54,8 +78,9 @@ class LaserballGame(Model):
         always be a sentinel: The timestamp is the end of the game, and the entity is None.
         """
         events = await self.events.filter(type__in=
-                         [EventType.GETS_BALL, EventType.CLEAR, EventType.MISSION_END, EventType.STEAL, EventType.PASS]
-                         ).order_by("time").all()
+                                          [EventType.GETS_BALL, EventType.CLEAR, EventType.MISSION_END, EventType.STEAL,
+                                           EventType.PASS]
+                                          ).order_by("time").all()
 
         result = []
 
@@ -88,7 +113,8 @@ class LaserballGame(Model):
 
         for event in possession_events:
             if last_owner and event.entity_id:
-                possession_times[event.entity_id] = possession_times.get(event.entity_id, 0) + event.timestamp_millis - last_timestamp
+                possession_times[event.entity_id] = possession_times.get(event.entity_id,
+                                                                         0) + event.timestamp_millis - last_timestamp
             last_owner = event.entity_id
             last_timestamp = event.timestamp_millis
 
@@ -96,6 +122,7 @@ class LaserballGame(Model):
 
     # funcs for getting win chance and draw chance
 
+    @cache()
     async def get_win_chance_before_game(self) -> List[float]:
         """
         Returns the win chance before the game happened in the format [red, blue]
@@ -139,8 +166,8 @@ class LaserballGame(Model):
 
         from helpers.ratinghelper import model
         return model.predict_win([previous_elos_red, previous_elos_blue])
-    
 
+    @cache()
     async def get_win_chance_after_game(self) -> List[float]:
         """
         Returns the win chance **directly** after the game happened in the format [red, blue]
@@ -185,6 +212,7 @@ class LaserballGame(Model):
         from helpers.ratinghelper import model
         return model.predict_win([current_elos_red, current_elos_blue])
 
+    @cache()
     async def get_win_chance(self) -> List[float]:
         """
         Returns the win chance in the format [red, green]
@@ -208,7 +236,7 @@ class LaserballGame(Model):
                 elos_red.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
-                elos_red.append(Rating(player.sm5_mu, player.sm5_sigma))
+                elos_red.append(Rating(player.laserball_mu, player.laserball_sigma))
 
         # get all the entity_ends for the green team
 
@@ -223,14 +251,14 @@ class LaserballGame(Model):
                 elos_blue.append(Rating(MU, SIGMA))
             else:
                 player = await entity_end.get_player()
-                elos_blue.append(Rating(player.sm5_mu, player.sm5_sigma))
+                elos_blue.append(Rating(player.laserball_mu, player.laserball_sigma))
 
         # get the win chance
 
         from helpers.ratinghelper import model
         return model.predict_win([elos_red, elos_blue])
-    
-    def get_timestamp(self, time_zone: str="America/Los_Angeles") -> str:
+
+    def get_timestamp(self, time_zone: str = "America/Los_Angeles") -> str:
         """
         Returns the timestamp of the game in the specified time zone
         """
@@ -242,22 +270,23 @@ class LaserballGame(Model):
             zero_pad = "-"
 
         return strftime_ordinal(f"%A, %B {'{S}'} at %{zero_pad}I:%M %p", self.start_time)
-    
-    async def get_battlesuits(self) -> List[str]: # only the non-member players
+
+    async def get_battlesuits(self) -> List[str]:  # only the non-member players
         """
         Returns a list of entity_starts of battlesuits used in the game
         """
 
         return await self.entity_starts.filter(type="player", entity_id__startswith="@")
-    
-    async def get_players(self) -> List[str]: # all players
+
+    async def get_players(self) -> List[str]:  # all players
         """
         Returns a list of entity_starts of players in the game
         """
 
         return await self.entity_starts.filter(type="player")
-    
-    async def to_dict(self) -> dict:
+
+    @cache()
+    async def to_dict(self, full: bool = True, player_stats=None) -> dict:
         # convert the entire game to a dict
         # this is used for the api
         final = {}
@@ -270,18 +299,33 @@ class LaserballGame(Model):
         final["arena"] = self.arena
         final["mission_type"] = self.mission_type
         final["mission_name"] = self.mission_name
-        final["start_time"] = str(self.start_time)
+        final["start_time"] = self.start_time.timestamp()
         final["mission_duration"] = self.mission_duration
-        final["log_time"] = str(self.log_time)
-        final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
-        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in await self.entity_starts.all()]
-        final["events"] = [await (await event).to_dict() for event in await self.events.all()]
-        final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
+        final["log_time"] = self.log_time.timestamp()
+
+        if full:
+            final["teams"] = [await (await team).to_dict() for team in await self.teams.all()]
+            final["events"] = [await (await event).to_dict() for event in await self.events.all()]
+            final["scores"] = [await (await score).to_dict() for score in await self.scores.all()]
+        final["entity_starts"] = [await (await entity_start).to_dict() for entity_start in
+                                    await self.entity_starts.all()]
         final["entity_ends"] = [await (await entity_end).to_dict() for entity_end in await self.entity_ends.all()]
-        final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in await self.laserball_stats.all()]
+        final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in
+                                    await self.laserball_stats.all()]
+
+        if player_stats is not None:
+            final["player_entity_start"] = await (
+                await self.get_entity_start_from_name(player_stats.codename)).to_dict()
+            try:
+                final["player_entity_end"] = await (await self.get_entity_end_from_name(player_stats.codename)).to_dict()
+            except AttributeError:
+                final["player_entity_end"] = None # no idea why this is needed
+            final["player_laserball_stats"] = await (
+                await self.get_laserball_stat_from_name(player_stats.codename)).to_dict()
 
         return final
-    
+
+
 class LaserballStats(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     goals = fields.IntField()
@@ -301,11 +345,11 @@ class LaserballStats(Model):
     def mvp_points(self) -> float:
         mvp_points = 0
 
-        mvp_points += self.goals   * 1
+        mvp_points += self.goals * 1
         mvp_points += self.assists * 0.75
-        mvp_points += self.steals  * 0.5
-        mvp_points += self.clears  * 0.25 # clear implies a steal so the total gained is 0.75
-        mvp_points += self.blocks  * 0.3
+        mvp_points += self.steals * 0.5
+        mvp_points += self.clears * 0.25  # clear implies a steal so the total gained is 0.75
+        mvp_points += self.blocks * 0.3
 
         return mvp_points
 
@@ -333,5 +377,7 @@ class LaserballStats(Model):
         final["times_stolen"] = self.times_stolen
         final["times_blocked"] = self.times_blocked
         final["passes_received"] = self.passes_received
+        final["mvp_points"] = self.mvp_points
+        final["score"] = self.score
 
         return final

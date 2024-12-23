@@ -1,29 +1,130 @@
+<!DOCTYPE html>
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <script src="https://js.sentry-cdn.com/562e9ab020654bedbc2a3db770dc07c2.min.js" crossorigin="anonymous"></script>
+    <script
+            src="https://js.sentry-cdn.com/562e9ab020654bedbc2a3db770dc07c2.min.js"
+            crossorigin="anonymous"
+    ></script>
+
+    <script src="/assets/js/rfid.js"></script>
+
     <title>Laserforce Ranking - {% block title %}{% endblock %}</title>
 
     <meta name="title" content="Laserforce Ranking - {{ self.title() }}">
     <meta name="description" content=
-"This site was made for Invasion Laser Tag members to track and compare their stats to others 
+            "This site was made for Invasion Laser Tag members to track and compare their stats to others
 while providing a more fairand balanced matchmaking system for SM5 and Laserball. 
 The project is made for fun but improvements will continue to be made. 
 If you have any comments or suggestions please contact me at collinmcarroll@gmail.com."
->
+    >
 
+    <meta name="google-site-verification" content="aij-Bj7LszQENPQW0pOGjDKu353N17fGaPQ5kdK8A2U"/>
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://laserforce.spoo.uk/">
     <meta property="og:title" content="Laserforce Ranking - {{ self.title() }}">
     <meta property="og:description" content=
-"This site was made for Invasion Laser Tag members to track and compare their stats to others 
-while providing a more fairand balanced matchmaking system for SM5 and Laserball. 
+            "This site was made for Invasion Laser Tag members to track and compare their stats to others while providing a more fairand balanced matchmaking system for SM5 and Laserball.
+
 The project is made for fun but improvements will continue to be made. 
 If you have any comments or suggestions please contact me at collinmcarroll@gmail.com."
->
+    >
     <meta property="og:image" content="">
+
+    {# --- Macros to use in player tables --- #}
+
+    {% macro sm5_role_icon(player) -%}
+    {% if player.role %}
+    <img src="/assets/sm5/roles/{{player.role|string|lower}}.png" alt="{{ player.role }}" width="30" height="30">
+    {% endif %}
+    {%- endmacro %}
+
+    {% macro alive_time_chart(player) -%}
+
+    new Chart("time_in_game_{{player.entity_end.id}}", {
+    type: "pie",
+    data: {
+    datasets: [{
+    backgroundColor: {{ player.alive_time_colors }},
+    data: {{ player.alive_time_values }},
+    borderWidth: 0
+    }]
+    },
+    options: {
+    legend: {
+    display: false,
+    fullSize: false
+    },
+    title: {
+    display: false,
+    },
+    tooltips: {
+    enabled: false
+    }
+    }
+    });
+
+    {%- endmacro %}
+
+    {% macro player_reference(player) -%}
+    {% if not player.player_info %}
+    {{ player.name }}
+    {% else %}
+    {% if player.player_info.is_member %}
+    <a href="/player/{{player.player_info.entity_start.name}}">{{ player.player_info.display_name }}</a>
+    {% else %}
+    {{ player.player_info.display_name }}
+    {% endif %}
+    {% endif %}
+    {%- endmacro %}
+
+    {% macro tooltip(tooltip_id) -%}
+    {{ tooltip_info.insert_tooltip(tooltip_id) }}
+    {%- endmacro %}
+
+    {% macro player_penalties(player) -%}
+    {% if player.penalties > 0 %}
+        <div class="yellow-card" {{ tooltip("sm5_penalty") }}></div>
+    {% if player.penalties > 1 %}
+        x{{ player.penalties }}
+    {% endif %}
+    {% endif %}
+    {%- endmacro %}
+
+    {% macro player_with_penalties(player) -%}
+    <span style="white-space: nowrap;">{{ player_reference(player) }}&nbsp;{{ player_penalties(player) }}</span>
+    {%- endmacro %}
+
+    {% macro uptime_chart(entity_id, state_distribution) -%}
+
+    new Chart("uptime_{{entity_id}}", {
+    type: "pie",
+    data: {
+    labels: {{ state_distribution.labels }},
+    datasets: [{
+    backgroundColor: {{ state_distribution.colors }},
+    data: {{ state_distribution.data }},
+    borderWidth: 0
+    }]
+    },
+    options: {
+    legend: {
+    display: false,
+    fullSize: false
+    },
+    title: {
+    display: false,
+    },
+    tooltips: {
+    enabled: false
+    }
+    }
+    });
+
+    {%- endmacro %}
 
     <script>
         function toggleNav() {
@@ -78,45 +179,189 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             .login-item {
                 float: right;
             }
+
+            :root {
+              --alternate-table-background-color: #1A1A1A;
+            }
+
+            .rfid_button {
+                position: fixed;
+                width: 60px;
+                height: 60px;
+                bottom: 40px;
+                left: 40px;
+                background-color: #007BFF;
+                color: #FFF;
+                border-radius: 50px;
+                text-align: center;
+                border: none;
+            }
+        }
+
+        @media screen and (max-width: 991px) {
+            :root {
+              --alternate-table-background-color: #000000;
+            }
+
+            .outer-scrolling-table {
+                width: 100%;
+            }
+
+            .inner-scrolling-table {
+                position: relative;
+                overflow: auto;
+                border: 1px solid black;
+                white-space: nowrap;
+            }
+
+            .fixed-column {
+                position: sticky;
+                z-index: 1;
+                left: 0px;
+            }
+
+            .second-fixed-column {
+                position: sticky;
+                z-index: 1;
+                left: 75px;
+            }
+
+            .rfid_button {
+                display: none;
+            }
+        }
+
+        .team-header {
+            font-size: 20px;
+        }
+
+        .fire-team {
+            color: orangered;
+        }
+
+        .earth-team {
+            color: greenyellow;
+        }
+
+        .ice-team {
+            color: #0096FF;
+        }
+
+        .fire-team-dim {
+            color: #441100;
+        }
+
+        .earth-team-dim {
+            color: #213C0C;
+        }
+
+        .ice-team-dim {
+            color: #002534;
+        }
+
+        .fire-team-down {
+            color: #882300;
+        }
+
+        .earth-team-down {
+            color: #428718;
+        }
+
+        .ice-team-down {
+            color: #004B88;
+        }
+
+        .active_player {
+            font-weight: bold;
+        }
+
+        .eliminated_player {
+            color: gray;
+        }
+
+        .team_totals {
+            font-weight: bold;
         }
     </style>
-    
+
     {% block html_head %}{% endblock %}
 </head>
 <body>
-    {% set navigation_bar = [
-        ("/", "Home"),
-        ("/players", "Players"),
-        ("/games", "Games"),
-        ("/stats", "Stats"),
-        ("/matchmaking", "Matchmaking"),
-        ("/about", "About")
-    ] -%}
-    <ul class="nav-bar">
-        <div class="nav-dropdown">
-            <i class="fa-solid fa-bars fa-lg" onclick="toggleNav()"></i>
-        </div>
-        {% for href, caption in navigation_bar %}
-            <li class="nav-item"><a {% if href == request.path %}class="active"{% endif %} href="{{ href|e }}">{{ caption|e }}</a></li>
-        {% endfor %}
-
-        {% if session.get("permissions") == Permission.ADMIN %}
-            <li class="nav-item"><a {% if request.path == "/admin" %}class="active"{% endif %} href="/admin">Admin</a></li>
-        {% endif %}
-
-        {% if not session.get("codename") %}
-            <li class="nav-item login-item"><a {% if request.path == "/login" %}class="active"{% endif %} href="/login">Login</a></li>
-        {% else %}
-            <li class="nav-item login-item"><a {% if request.path == "/logout" %}class="active"{% endif %} href="/logout">Logout</a></li>
-        {% endif %}
-    </ul>
-    <div id="content">
-        {% block content %}{% endblock %}
+{% set navigation_bar = [
+("/", "Home"),
+("/players", "Players"),
+("/games", "Games"),
+("/stats", "Stats"),
+("/matchmaking", "Matchmaking"),
+("/about", "About")
+] -%}
+<ul class="nav-bar">
+    <div class="nav-dropdown">
+        <i class="fa-solid fa-bars fa-lg" onclick="toggleNav()"></i>
     </div>
-  
-    <div id="footer">
-        {% block footer %}
-            
-        {% endblock %}
-    </div>
+    {% for href, caption in navigation_bar %}
+    <li class="nav-item"><a {% if href== request.path %}class="active" {% endif %} href="{{ href|e }}">{{ caption|e
+        }}</a></li>
+    {% endfor %}
+
+    {% if session.get("permissions") == Permission.ADMIN %}
+    <li class="nav-item"><a {% if request.path== "/admin" %}class="active"{% endif %} href="/admin">Admin</a></li>
+    {% endif %}
+
+    {% if not session.get("codename") %}
+    <li class="nav-item login-item"><a {% if request.path== "/login" %}class="active"{% endif %} href="/login">Login</a>
+    </li>
+    {% else %}
+    <li class="nav-item login-item"><a {% if request.path== "/logout" %}class="active"{% endif %}
+        href="/logout">Logout</a></li>
+    {% endif %}
+</ul>
+
+<!--banner that can be chnaged in ctx.banner-->
+{% if app.ctx.banner.text %}
+<div class="banner" style="background-color: {{ app.ctx.banner_type_to_color(app.ctx.banner.type)}};">
+    <h1>{{ app.ctx.banner.text }}</h1>
+</div>
+{% endif %}
+
+<div id="content">
+    {% block content %}{% endblock %}
+</div>
+
+<!--
+floating button for rfid
+
+it's disabled for now, but can be reenable by removing the if statement.
+maybe find some way to detect if the user has an rfid reader without asking
+-->
+{% if False %}
+<button onclick="readRfid()" class="rfid_button" id="rfid_button">
+    <i class="fa-brands fa-nfc-symbol fa-lg"></i>
+</button>
+{% endif %}
+
+<div id="footer">
+    {% block footer %}
+
+    {% endblock %}
+</div>
+
+{# --- Tooltip support - this must be at the bottom of the body --- #}
+
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+
+<script>
+    tippy('[data-tippy-content]', {
+        allowHTML: true,
+     });
+    tippy('[data-template]', {
+        content(reference) {
+            const id = reference.getAttribute('data-template');
+            const template = document.getElementById(id);
+            return template.innerHTML;
+        },
+        allowHTML: true,
+     });
+</script>
 </body>

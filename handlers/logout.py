@@ -1,8 +1,9 @@
-from sanic import Request, exceptions, response
-from shared import app
-from utils import render_template
-from db.player import Player
+from sanic import Request, response
 from sanic.log import logger
+
+from helpers.cachehelper import flush_cache
+from shared import app
+
 
 @app.get("/logout")
 async def logout(request: Request) -> str:
@@ -15,6 +16,8 @@ async def logout(request: Request) -> str:
     request.ctx.session["permissions"] = None
 
     logger.debug("Rendering logout page")
+
+    flush_cache(flush_queryset=False)
 
     # redirect to previous page
     return response.redirect(request.ctx.session.get("previous_page", "/"))

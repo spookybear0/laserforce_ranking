@@ -1,13 +1,16 @@
 from sanic import Request, exceptions, HTTPResponse
-from shared import app
-from utils import render_template, get_post
+
 from helpers import userhelper
+from shared import app
+from utils import render_template
+
 
 # hidden page, i don't really use this anymore
 
 @app.get("/rfid")
 async def rfid(request: Request) -> str:
     return await render_template(request, "rfid.html")
+
 
 @app.post("/rfid")
 async def rfid_post(request: Request) -> str:

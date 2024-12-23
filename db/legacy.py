@@ -1,5 +1,7 @@
 from tortoise import Model, fields
+
 from db.types import Team, Role
+
 
 class LegacySM5Game(Model):
     id = fields.IntField(pk=True)
@@ -9,20 +11,21 @@ class LegacySM5Game(Model):
 
     def __str__(self) -> str:
         return f"LegacySM5Game()"
-    
+
     def __repr__(self) -> str:
         return f"<LegacySM5Game>"
-    
+
     async def get_players_on_team(self, team: Team):
         return await self.players.filter(team=team)
 
-    
+
 class LegacySM5GamePlayer(Model):
     player_dbid = fields.IntField()
     game_dbid = fields.IntField()
     team = fields.CharEnumField(Team)
     role = fields.CharEnumField(Role)
     score = fields.IntField()
+
 
 class LegacyLaserballGame(Model):
     id = fields.IntField(pk=True)
@@ -32,12 +35,13 @@ class LegacyLaserballGame(Model):
 
     def __str__(self) -> str:
         return f"LegacyLaserballGame()"
-    
+
     def __repr__(self) -> str:
         return f"<LegacyLaserballGame>"
-    
+
     async def get_players_on_team(self, team: Team):
         return await self.players.filter(team=team)
+
 
 class LegacyLaserballGamePlayer(Model):
     player = fields.ForeignKeyField("models.Player")

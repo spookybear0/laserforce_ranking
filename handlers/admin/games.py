@@ -1,8 +1,10 @@
 from sanic import Request
+
+from db.laserball import LaserballGame
+from db.sm5 import SM5Game
 from shared import app
 from utils import render_template, admin_only
-from db.sm5 import SM5Game
-from db.laserball import LaserballGame
+
 
 @app.get("/admin/games")
 @admin_only
@@ -26,9 +28,9 @@ async def admin_games(request: Request) -> str:
     laserball_games = sorted(laserball_games, key=lambda x: x.start_time, reverse=True)
 
     return await render_template(request,
-        "admin/games.html",
-        sm5_games=sm5_games,
-        laserball_games=laserball_games,
-        page=page,
-        mode=mode,
-    )
+                                 "admin/games.html",
+                                 sm5_games=sm5_games,
+                                 laserball_games=laserball_games,
+                                 page=page,
+                                 mode=mode,
+                                 )

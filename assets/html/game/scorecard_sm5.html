@@ -48,16 +48,6 @@
         max-width: 30%;
     }
 
-    @media screen and (max-width: 1200px) {
-        table tr td:nth-child(n+11) {
-            display: none;
-        }
-        
-        table tr th:nth-child(n+11) {
-            display: none;
-        }
-    }
-
     @media screen and (max-width: 991px) {
         .userlist {
             background: none;
@@ -74,14 +64,6 @@
             table-layout: auto;
         }
 
-        table tr td:nth-child(n+6) {
-            display: none;
-        }
-        
-        table tr th:nth-child(n+6) {
-            display: none;
-        }
-
         .desktop_notif {
             display: block;
         }
@@ -92,6 +74,11 @@
 
         body {
             height: 85%;
+        }
+
+        .role {
+            width: 75px;
+            min-width: 75px;
         }
     }
 
@@ -121,20 +108,10 @@
         justify-content: center;
     }
 
-    .fire_team_header, .earth_team_header {
+    .team-header {
         font-size: 20px;
         float: none;
         margin-bottom: 16px;
-    }
-
-    .fire_team_header {
-        color: orangered;
-        font-size: 20px;
-    }
-
-    .earth_team_header {
-        color: greenyellow;
-        font-size: 20px;
     }
 
     .scorecard_main_stats {
@@ -147,15 +124,41 @@
         float: left;
     }
 
+    .chart_container {
+        width: 100%;
+    }
+
+    .chart {
+        max-width: 90%;
+        display: flex;
+        padding: 1rem;
+    }
+
+    /*
+     * Balance the left and right sections based on screen width.
+     * The score card is complex and needs more space, so we may need to redistribute screen space
+     * based on that.
+     */
+    @media screen and (max-width: 2599px) {
+        .scorecard_main_stats {
+            width: 30%;
+            float: left;
+        }
+
+        .scorecard_player_stats {
+            width: 65%;
+            float: left;
+        }
+    }
+
+    /* Once the screen is really wide, the charts can go side by side. */
+    @media screen and (min-width: 2600px) {
+        .chart_container {
+            display: flex;
+        }
+    }
+
     .player {
-    }
-
-    .active_player {
-        font-weight: bold;
-    }
-
-    .eliminated_player {
-        color: gray;
     }
 
     @media screen and (max-width: 991px) {
@@ -186,6 +189,30 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        tr:nth-child(even) > td:nth-child(1) {
+            background-color: #252525;
+        }
+
+        tr:nth-child(odd) > td:nth-child(1) {
+            background-color: var(--alternate-table-background-color);
+        }
+
+        tr:nth-child(even) > td:nth-child(2) {
+            background-color: #252525;
+        }
+
+        tr:nth-child(odd) > td:nth-child(2) {
+            background-color: var(--alternate-table-background-color);
+        }
+
+        tr > th:nth-child(1) {
+            background-color: var(--alternate-table-background-color);
+        }
+
+        tr > th:nth-child(2) {
+            background-color: var(--alternate-table-background-color);
         }
     }
 
@@ -230,16 +257,13 @@
         align-items: center;
     }
 
-    .chart {
-        max-width: 50%;
-        display: flex;
-    }
-
     .mini-chart {
-        max-width: 64px;
+        max-width: 48px;
         display: flex;
     }
 </style>
+
+{% include "game/sm5_tooltips_include.html" %}
 
 {% endblock %}
 
@@ -270,55 +294,68 @@
                     {% endfor %}
                 </table>
             </div>
-            <div class="scorecard_graphs">
-                <canvas class="chart" id="score_composition"></canvas>
-            </div>
-            <div class="scorecard_graphs">
-                <canvas class="chart" id="state_distribution"></canvas>
+            <div class="chart_container">
+                <div class="scorecard_graphs">
+                    <canvas class="chart" id="score_composition"></canvas>
+                </div>
+                <div class="scorecard_graphs">
+                    <canvas class="chart" id="state_distribution"></canvas>
+                </div>
             </div>
         </div>
 
         <div class="scorecard_player_stats">
             {% for team in teams %}
             <div class="scorecard_team_stats">
-                <h2 class="{{ team.class_name }}_team_header">{{ team.name }} ({{ team.score }})</h2>
-                <table class="scorecard_player_stats_table">
-                    <tr>
-                        <th>Player</th>
-                        <th>Role</th>
-                        <th>Score</th>
-                        <th>Uptime</th>
-                        <th>K/D</th>
-                        <th>Lives</th>
-                        <th>Time in game</th>
-                        <th>You zapped</th>
-                        <th>Zapped you</th>
-                        <th>You missiled</th>
-                        <th>Missiled you</th>
-                        <th><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank">MVP Points</a></th>
-                    </tr>
-                    {% for player in team.players %}
-                    <tr class="{{ player.css_class }}">
-                        <td class="scorecard_player_stat">
-                            <a href="/game/sm5/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a>
-                        </td>
-                        <td class="scorecard_player_stat"><img src="/assets/sm5/roles/{{player.role|string|lower}}.png"
-                                                               alt="role image" width="30"
-                                                               height="30"></td>
-                        <td class="scorecard_player_stat">{{ player.score }}</td>
-                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="uptime_{{player.entity_end_id}}"></canvas></td>
-                        <td class="scorecard_player_stat">{{ player.kd_ratio }}</td>
-                        <td class="scorecard_player_stat">{{ player.lives_left }}</td>
-                        <td class="scorecard_player_stat"><canvas class="mini-chart" id="time_in_game_{{player.entity_end_id}}"></canvas></td>
-                        <td class="scorecard_player_stat">{{ player.you_zapped }}</td>
-                        <td class="scorecard_player_stat">{{ player.zapped_you }}</td>
-                        <td class="scorecard_player_stat">{{ player.you_missiled }}</td>
-                        <td class="scorecard_player_stat">{{ player.missiled_you }}</td>
-                        <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
-                    </tr>
-                    {% endfor %}
+                <h2 class="{{ team.team.css_class }} team-header">{{ team.name }}: {{ team.score }}{{ team.score_adjustment_string }}</h2>
+                <div class="outer-scrolling-table">
+                    <div class="inner-scrolling-table">
+                        <table class="scorecard_player_stats_table">
+                            <tr>
+                                <th class="role fixed-column" {{ tooltip("sm5_role") }}><p>Role</p></th>
+                                <th class="second-fixed-column" {{ tooltip("sm5_codename") }}><p>Codename</p></th>
+                                <th {{ tooltip("sm5_score") }}><p>Score</p></th>
+                                <th {{ tooltip("sm5_positive_score") }}><p>Positive Score</p></th>
+                                <th {{ tooltip("sm5_points_minute") }}><p>Points / Minute</p></th>
+                                <th {{ tooltip("sm5_lives_left") }}><p>Lives Left</p></th>
+                                <th {{ tooltip("sm5_alive") }}><p>Alive</p></th>
+                                <th {{ tooltip("sm5_shots_left") }}><p>Shots Left</p></th>
+                                <th {{ tooltip("sm5_accuracy") }}><p>Accuracy</p></th>
+                                <th {{ tooltip("sm5_kd_ratio") }}><p>K/D Ratio</p></th>
+                                <th {{ tooltip("sm5_states") }}><p>States</p></th>
+                                <th {{ tooltip("sm5_you_zapped") }}><p>You zapped</p></th>
+                                <th {{ tooltip("sm5_zapped_you") }}><p>Zapped you</p></th>
+                                <th {{ tooltip("sm5_hit_ratio") }}><p>Hit ratio</p></th>
+                                <th {{ tooltip("sm5_you_missiled") }}><p>You missiled</p></th>
+                                <th {{ tooltip("sm5_missiled_you") }}><p>Missiled you</p></th>
+                                <th {{ tooltip("sm5_mvp_points") }}><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank"><p>MVP Points</p></a></th>
+                            </tr>
+                            {% for player in team.players_with_sum %}
+                            <tr class="{{ player.css_class }}">
+                                <td class="role fixed-column">{{ sm5_role_icon(player) }}</td>
+                                <td class="second-fixed-column">{{ player_with_penalties(player) }}</td>
+                                <td>{{ player.score }}</td>
+                                <td>{{ player.get_gross_positive_score() }}</td>
+                                <td>{{ player.points_per_minute }}</td>
+                                <td>{{ player.lives_left }}</td>
+                                <td {{ tooltip("sm5_alive") }}><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
+                                    <span style="margin: auto">{{ player.time_in_game_str }}</span></div></td>
+                                <td>{{ player.shots_left }}</td>
+                                <td title="{{player.shots_hit}}/{{player.shots_fired}}">{{ player.accuracy_str }}</td>
+                                <td>{{ player.kd_ratio_str }}</td>
+                                <td {{ tooltip("sm5_states") }}><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                                <td>{{ player.zapped_by_main_player }}</td>
+                                <td>{{ player.zapped_main_player }}</td>
+                                <td>{{ player.main_player_hit_ratio }}</td>
+                                <td>{{ player.missiled_by_main_player }}</td>
+                                <td>{{ player.missiled_main_player }}</td>
+                                <td>{{ "%.2f" % (player.mvp_points | round(2)) }}</td>
+                            </tr>
+                            {% endfor %}
 
-                </table>
+                        </table>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -377,7 +414,7 @@
         },
         options: {
             legend: {
-                display: false,
+                display: true,
                 fullSize: false
             },
             title: {
@@ -404,15 +441,18 @@
         data: {
             labels: {{score_chart_labels}},
             datasets: [
+            {% for player_score_chart in score_chart_data %}
             {
-                label: "{{entity_start.name}}'s Score",
-                data: {{score_chart_data}},
-                borderColor: "orangered",
+                label: "{{ player_score_chart.label }}",
+                data: {{ player_score_chart.data }},
+                borderColor: "{{ player_score_chart.color }}",
+                borderWidth: {{ player_score_chart.borderWidth }},
                 fill: false,
                 tension: 0.4,
                 pointRadius: 0,
-                pointHitRadius: 10
-            }
+                pointHitRadius: 30
+            }{{ "," if not loop.last }}
+            {% endfor %}
             ]
         },
         options: {
@@ -477,67 +517,8 @@
 
     {% for team in teams %}
             {% for player in team.players %}
-                new Chart("uptime_{{player.entity_end_id}}", {
-                type: "pie",
-                data: {
-                    labels: {{ state_distribution_labels }},
-                    datasets: [{
-                        backgroundColor: {{ state_distribution_colors }},
-                        data: {{ player.state_distribution_values }}
-                    }]
-                },
-                options: {
-                    legend: {
-                        display: false,
-                        fullSize: false
-                    },
-                    title: {
-                        display: false,
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function(tooltipItem, data) {
-                                const index = tooltipItem["index"];
-                                const label = data.labels[index];
-                                const milliseconds = data.datasets[0].data[index];
-
-                                return `${label}: ${ms_to_mmss(milliseconds)}`;
-                            }
-                        }
-                    },
-                }
-            });
-
-            new Chart("time_in_game_{{player.entity_end_id}}", {
-                type: "pie",
-                data: {
-                    labels: ["In game", "Eliminated"],
-                    datasets: [{
-                        backgroundColor: ["#00ff00", "#000000"],
-                        data: {{ player.time_in_game_values }}
-                    }]
-                },
-                options: {
-                    legend: {
-                        display: false,
-                        fullSize: false
-                    },
-                    title: {
-                        display: false,
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function(tooltipItem, data) {
-                                const index = tooltipItem["index"];
-                                const label = data.labels[index];
-                                const milliseconds = data.datasets[0].data[index];
-
-                                return `${label}: ${ms_to_mmss(milliseconds)}`;
-                            }
-                        }
-                    },
-                }
-            });
+                {{ uptime_chart(player.entity_end.id, player.state_distribution_pie_chart) }}
+                {{ alive_time_chart(player) }}
          {% endfor %}
     {% endfor %}
 

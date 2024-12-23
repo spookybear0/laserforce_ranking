@@ -121,22 +121,6 @@
         justify-content: center;
     }
 
-    .fire_team_header, .ice_team_header {
-        font-size: 20px;
-        float: none;
-        margin-bottom: 16px;
-    }
-
-    .fire_team_header {
-        color: orangered;
-        font-size: 20px;
-    }
-
-    .ice_team_header {
-        color: #0096FF;
-        font-size: 20px;
-    }
-
     .scorecard_main_stats {
         width: 45%;
         float: left;
@@ -244,7 +228,7 @@
         <div class="scorecard_player_stats">
             {% for team in teams %}
             <div class="scorecard_team_stats">
-                <h2 class="{{ team.class_name }}_team_header">{{ team.name }} ({{ team.score }})</h2>
+                <h2 class="{{ team.css_class }} team-header">{{ team.name }} ({{ team.score }})</h2>
                 <table class="scorecard_player_stats_table">
                     <tr>
                         <th>Player</th>
@@ -260,21 +244,20 @@
                         <th>Blocks</th>
                         <th><p title="Goal = 1, Assist = 0.75, Steal = 0.5, Clear = 0.25, Block = 0.3">MVP Points</p></th>
                     </tr>
-                    {% for player in team.players %}
-                    <tr>
-                        <td class="scorecard_player_stat">
-                            <a href="/game/laserball/{{game.id}}/scorecard/{{player.entity_end_id}}">{{ player.name }}</a></td>
-                        <td class="scorecard_player_stat">{{ player.score }}</td>
-                        <td class="scorecard_player_stat">{{ player.you_blocked }}</td>
-                        <td class="scorecard_player_stat">{{ player.blocked_you }}</td>
-                        <td class="scorecard_player_stat">{{ player.ball_possession }}</td>
-                        <td class="scorecard_player_stat">{{ player.goals }}</td>
-                        <td class="scorecard_player_stat">{{ player.assists }}</td>
-                        <td class="scorecard_player_stat">{{ player.passes }}</td>
-                        <td class="scorecard_player_stat">{{ player.steals }}</td>
-                        <td class="scorecard_player_stat">{{ player.clears }}</td>
-                        <td class="scorecard_player_stat">{{ player.blocks }}</td>
-                        <td class="scorecard_player_stat">{{ player.mvp_points }}</td>
+                    {% for player in team.players_with_sum %}
+                    <tr class="{{ player.css_class }}">
+                        <td class="second-fixed-column">{{ player_reference(player) }}</td>
+                        <td>{{ player.score }}</td>
+                        <td>{{ player.blocked_main_player }}</td>
+                        <td>{{ player.blocked_by_main_player }}</td>
+                        <td>{{ player.possession_time_str }}</td>
+                        <td>{{ player.goals }}</td>
+                        <td>{{ player.assists }}</td>
+                        <td>{{ player.passes }}</td>
+                        <td>{{ player.steals }}</td>
+                        <td>{{ player.clears }}</td>
+                        <td>{{ player.blocks }}</td>
+                        <td>{{ player.mvp_points | round(2) }}</td>
                     </tr>
                     {% endfor %}
 
@@ -284,7 +267,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
 </script>

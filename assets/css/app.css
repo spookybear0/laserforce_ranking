@@ -652,3 +652,21 @@ dropdown menu
 a {
   color: #2fa4e7;
 }
+
+.banner {
+    background-color: #4da6ff;
+    color: #fff;
+    padding: 0.01rem;
+    text-align: center;
+    font-size: 0.5rem;
+}
+
+.yellow-card {
+    background-color: yellow;
+    display: inline-block;
+    width: 0.75em;
+    height: 1.5em;
+    border-radius: 6px;
+    vertical-align: center;
+    margin-right: 0px;
+}

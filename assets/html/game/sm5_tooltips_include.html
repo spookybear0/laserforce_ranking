@@ -1,0 +1,42 @@
+<style>
+    .legend-color-header {
+        margin-bottom: 16px;
+    }
+
+    .legend-color-entry {
+        margin-bottom: 4px;
+        display: flex;
+    }
+
+    .legend-color-demo {
+        width: 3em;
+        min-width: 3em;
+        height: 16px;
+        display: inline-block;
+    }
+
+    .legend-color-description {
+        margin-left: 8px;
+    }
+
+</style>
+
+
+<div style="display: none;">
+    <div id="tooltip-sm5-states">
+        <div class="legend-color-header">The amount of time the player has spent in various states.</div>
+
+        {% for state in tooltip_info.sm5_state_legend %}
+        <div class="legend-color-entry">
+            <div class="legend-color-demo" style="background-color: {{ state.color }};"></div>
+            <div class="legend-color-description">{{ state.description }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="tooltip-sm5-mvp-points">
+        "Calculated MVP points for this player in this game. See the formula at
+        <a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players">LFStats</a>.
+    </div>
+</div>
+

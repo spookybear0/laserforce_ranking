@@ -9,10 +9,15 @@ from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
 from db.sm5 import SM5Game, SM5Stats
 from db.types import GameType, Team
-from helpers.statshelper import sentry_trace
-from helpers.userhelper import get_median_role_score, get_per_role_game_count
+from helpers.cachehelper import cache_template
+from helpers.laserballhelper import get_laserball_rating_over_time
+from helpers.sm5helper import get_sm5_rating_over_time
+from helpers.statshelper import sentry_trace, create_time_series_ordered_graph
+from helpers.userhelper import get_median_role_score
 from shared import app
-from utils import render_template, get_post
+from utils import render_cached_template, get_post
+
+_GAMES_PER_PAGE = 5
 
 sql = app.ctx.sql
 
@@ -72,14 +77,20 @@ def get_games_per_role_filtered(games_per_role: list[int]) -> list:
 
 @app.get("/player/<id>")
 @sentry_trace
+@cache_template()
 async def player_get(request: Request, id: Union[int, str]) -> str:
+    sm5page = int(request.args.get("sm5page", 0))
+    lbpage = int(request.args.get("lbpage", 0))
+
     id = unquote(id)
 
     player = await Player.get_or_none(player_id=id)
 
     if not player:
         try:
-            player = await Player.filter(codename=id).first()  # could be codename
+            player = await Player.filter(codename=id).get_or_none() # could be a codename
+            if not player:
+                player = await Player.filter(entity_id=id).get_or_none() # could be an entity_id
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
 
@@ -90,9 +101,10 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     logger.debug("Loading recent games")
 
-    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(5)
+    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(
+        5).offset(_GAMES_PER_PAGE * sm5page)
     recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.entity_id).order_by(
-        "-start_time").limit(5)
+        "-start_time").limit(5).offset(_GAMES_PER_PAGE * lbpage)
 
     median_role_score = await get_median_role_score(player)
     per_role_game_count = await get_per_role_game_count(player)
@@ -112,12 +124,12 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     blue_wins_laserball = await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL)
 
     sm5_win_percent = (red_wins_sm5 + green_wins_sm5) / (red_teams_sm5 + green_teams_sm5) if (
-                                                                                                     red_teams_sm5 + green_teams_sm5) != 0 else 0
+                                                                                                         red_teams_sm5 + green_teams_sm5) != 0 else 0
     laserball_win_percent = (red_wins_laserball + blue_wins_laserball) / (
-            red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
+                red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
     win_percent = (red_wins_sm5 + green_wins_sm5 + red_wins_laserball + blue_wins_laserball) / (
-            red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
-                                                                                                     red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
+                red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
+                                                                                                             red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
 
     logger.debug("Loading stat chart")
 
@@ -145,9 +157,21 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     shots_hit = sm5_shots_hit + laserball_shots_hit
     shots_fired = sm5_shots_fired + laserball_shots_fired
 
+    sm5_rating_raw_data = await get_sm5_rating_over_time(player.entity_id)
+    sm5_rating_graph_data = create_time_series_ordered_graph(sm5_rating_raw_data, 100)
+
+    sm5_rating_over_time_labels = sm5_rating_graph_data.labels if sm5_rating_graph_data else None
+    sm5_rating_over_time_data = sm5_rating_graph_data.data_points if sm5_rating_graph_data else None
+
+    laserball_rating_raw_data = await get_laserball_rating_over_time(player.entity_id)
+    laserball_rating_graph_data = create_time_series_ordered_graph(laserball_rating_raw_data, 100)
+
+    laserball_rating_over_time_labels = laserball_rating_graph_data.labels if laserball_rating_graph_data else None
+    laserball_rating_over_time_data = laserball_rating_graph_data.data_points if laserball_rating_graph_data else None
+
     logger.debug("Rendering player page")
 
-    return await render_template(
+    return await render_cached_template(
         request, "player/player.html",
         # general player info
         player=player,
@@ -157,6 +181,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         get_entity_end=get_entity_end,
         get_sm5_stat=get_sm5_stat,
         get_laserball_stat=get_laserball_stat,
+        sm5page=sm5page,
+        lbpage=lbpage,
         # team rate pies (sm5/laserball)
         red_teams_sm5=red_teams_sm5,
         green_teams_sm5=green_teams_sm5,
@@ -199,7 +225,13 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         sean_hits=sean_hits,
         shots_hit=shots_hit,
         shots_fired=shots_fired,
+        # rating over time
+        sm5_rating_over_time_labels=sm5_rating_over_time_labels,
+        sm5_rating_over_time_data=sm5_rating_over_time_data,
+        laserball_rating_over_time_labels=laserball_rating_over_time_labels,
+        laserball_rating_over_time_data=laserball_rating_over_time_data,
     )
+
 
 
 @app.post("/player")

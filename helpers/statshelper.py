@@ -1,16 +1,199 @@
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import List, Tuple, Optional, Callable, Any
+
 from sentry_sdk import Hub, start_transaction
 from tortoise.expressions import Q
 from tortoise.fields import ManyToManyRelation
-
-
-from db.sm5 import SM5Game, SM5Stats
-from db.laserball import LaserballGame, LaserballStats
-from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team
-from db.game import EntityEnds, EntityStarts
 from tortoise.functions import Sum
 
+from db.game import EntityEnds, EntityStarts, PlayerInfo
+from db.laserball import LaserballGame, LaserballStats
+from db.sm5 import SM5Game, SM5Stats
+from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
+from helpers.cachehelper import cache
+
 # stats helpers
+
+
+# The frequency for ticks in time series graphs, in milliseconds.
+_DEFAULT_TICKS_DURATION_MILLIS = 30000
+
+
+@dataclass
+class TimeSeriesDataPoint:
+    """A single data point in a time series."""
+    date: datetime
+
+    value: float
+
+
+@dataclass
+class TimeSeriesRawData:
+    """A collection of data points over a stretch of time.
+
+    This object defines the start and end time and the data points. The data points are in no particular frequency,
+    and there could be multiple points for the same date.
+    """
+    min_date: datetime
+
+    max_date: datetime
+
+    data_points: List[TimeSeriesDataPoint]
+
+
+@dataclass
+class TimeSeriesOrderedGraphData:
+    """Data points that can be used to plot a time series with ChartJS.
+
+    The object defines the time period and the data points in a specific interval.
+    """
+    min_date: datetime
+
+    max_date: datetime
+
+    interval: timedelta
+
+    # The actual data, starting at min_date, each point at "interval" away from each other.
+    data_points: List[float]
+
+    # Labels for the graph.
+    @property
+    def labels(self) -> List[str]:
+        return [
+            (self.min_date + self.interval * offset).strftime("%Y/%m/%d") for offset in range(0, len(self.data_points))
+        ]
+
+
+@dataclass
+class PlayerCoreGameStats:
+    """The stats for a player for one game that apply to most game formats (at least both SM5 and LB)."""
+
+    # Every player will have this object except for fake game stats, like the sum of a team.
+    player_info: Optional[PlayerInfo]
+
+    css_class: str
+
+    team: Team
+
+    # Total number of shots fired.
+    shots_fired: int
+
+    # Total number of shots that hit something.
+    shots_hit: int
+
+    # Total number of shots that hit an opponent.
+    shot_opponent: int
+
+    # Total number of times the player was hit by an opponent.
+    times_zapped: int
+
+    # Breakdown of the score.
+    score_components: dict[str, int]
+
+    @property
+    def entity_start(self) -> Optional[EntityStarts]:
+        return self.player_info.entity_start if self.player_info else None
+
+    @property
+    def entity_end(self) -> Optional[EntityEnds]:
+        return self.player_info.entity_end if self.player_info else None
+
+    @property
+    def name(self) -> str:
+        return self.entity_start.name if self.entity_start else ""
+
+    @property
+    def score(self) -> int:
+        """Final score for this player."""
+        return self.entity_end.score if self.entity_end else 0
+
+    @property
+    def time_in_game_millis(self) -> int:
+        """How long this player was in the game (in milliseconds)."""
+        return self.entity_end.time if self.entity_end else 0
+
+    @property
+    def time_in_game_str(self) -> str:
+        """How long this player was in the game (as MM:SS)."""
+        return millis_to_time(self.time_in_game_millis)
+
+    # How many times the player spent in each state.
+    #
+    # The values are in milliseconds. The actual keys depend on the game type.
+    state_distribution: dict[str, int]
+
+    # MVP points. The formula depends on the game type.
+    mvp_points: float
+
+    @property
+    def accuracy(self) -> float:
+        """Accuracy, between 0.0 and 1.0."""
+        return self.shots_hit / self.shots_fired if self.shots_fired else 0.0
+
+    @property
+    def accuracy_str(self) -> str:
+        return "%.2f%%" % (self.accuracy * 100)
+
+    @property
+    def kd_ratio(self) -> float:
+        """K/D ratio, number of zaps over number of times zapped."""
+        return self.shot_opponent / self.times_zapped if self.times_zapped else 1.0
+
+    @property
+    def kd_ratio_str(self) -> str:
+        return "%.2g (%d/%d)" % (self.kd_ratio, self.shot_opponent, self.times_zapped)
+
+    @property
+    def points_per_minute(self) -> int:
+        return get_points_per_minute(self.entity_end)
+
+    def get_gross_positive_score(self) -> int:
+        return get_sm5_gross_positive_score(self.score_components)
+
+
+@dataclass
+class TeamCoreGameStats:
+    """The stats for a team for one game that apply to most game formats (at least both SM5 and LB)."""
+    # Final team score, including adjustments.
+    score: int
+
+    team: Team
+
+    @property
+    def name(self) -> str:
+        return self.team.name
+
+    @property
+    def css_color_name(self) -> str:
+        return self.team.css_color_name
+
+    @property
+    def css_class(self) -> str:
+        return self.team.css_class
+
+    @property
+    def element(self) -> str:
+        return self.team.element
+
+    @property
+    def color(self) -> str:
+        return self.team.value.color
+
+    @property
+    def score_adjustment_string(self):
+        """Returns the team score adjustment as a string. Empty string if there
+        was no adjustment, otherwise in the format of
+        " (+10000)"
+        " (-5000)"
+        """
+        if self.score_adjustment == 0:
+            return ""
+
+        sign = "+" if self.score_adjustment > 0 else ""
+
+        return f" ({sign}{self.score_adjustment})"
+
 
 """
 
@@ -26,18 +209,176 @@ This is typically less than 20ms. We're using 50 here just in case there is a bi
 """
 _EVENT_LATENCY_THRESHOLD_MILLIS = 50
 
-def _millis_to_time(milliseconds: Optional[int]) -> str:
+
+def millis_to_time(milliseconds: Optional[int]) -> str:
     """Converts milliseconds into an MM:SS string."""
     if milliseconds is None:
         return "00:00"
 
     return "%02d:%02d" % (milliseconds / 60000, milliseconds % 60000 / 1000)
 
+
+def get_ticks_for_time_graph(game_duration_millis: int) -> range:
+    """Returns a list of timestamps for ticks for a time series graph.
+
+    The list will be one tick every 30 seconds, until 30 seconds after the duration
+    of the game.
+    """
+    return range(0, game_duration_millis + _DEFAULT_TICKS_DURATION_MILLIS, _DEFAULT_TICKS_DURATION_MILLIS)
+
+
+def create_time_series_ordered_graph(raw_data: Optional[TimeSeriesRawData], tick_count: int) -> \
+        Optional[TimeSeriesOrderedGraphData]:
+    # If there was no data at all, then return no data.
+    if not raw_data:
+        return None
+
+    # There must be at least one data point.
+    assert raw_data.data_points
+    assert tick_count > 1
+
+    if len(raw_data.data_points) == 1:
+        # If it's just one data point, we can't really do much here.
+        return TimeSeriesOrderedGraphData(raw_data.min_date, raw_data.max_date, interval=timedelta(0.0),
+                                          data_points=[raw_data.data_points[0].value for _ in range(tick_count)])
+
+    # Get the time delta between each tick.
+    tick_delta = (raw_data.max_date - raw_data.min_date) / (tick_count - 1)
+
+    # Get the time at each tick.
+    data_points = []
+    source_index = 0
+    output_index = 0
+    time = raw_data.min_date
+    data_point_count = len(raw_data.data_points)
+
+    while output_index < tick_count:
+        while time > raw_data.data_points[source_index].date and source_index < data_point_count - 1:
+            source_index += 1
+
+        data_points.append(raw_data.data_points[source_index].value)
+        output_index += 1
+        time += tick_delta
+
+    return TimeSeriesOrderedGraphData(
+        min_date=raw_data.min_date,
+        max_date=raw_data.max_date,
+        interval=tick_delta,
+        data_points=data_points,
+    )
+
+
+async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start: EntityStarts) -> dict[str, int]:
+    """Returns a dict with individual components that make up a player's total score.
+
+    Each key is a component ("Missiles", "Nukes", etc), and the value is the amount of
+    points - positive or negative - the player got for all these."""
+    bases_destroyed = await (game.events.filter(
+        Q(type=EventType.DESTROY_BASE) | Q(type=EventType.BASE_AWARDED) | Q(type=EventType.MISISLE_BASE_DESTROY)).
+                             filter(arguments__filter={"0": entity_start.entity_id}).count())
+
+    # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/
+    return {
+        "Missiles": stats.missiled_opponent * 500,
+        "Zaps": stats.shot_opponent * 100,
+        "Bases": bases_destroyed * 1001,
+        "Nukes": stats.nukes_detonated * 500,
+        "Zap own team": stats.shot_team * -100,
+        "Missiled own team": stats.missiled_team * -500,
+        "Got zapped": stats.times_zapped * -20,
+        "Got missiled": stats.times_missiled * -100,
+    }
+
+
+def get_sm5_gross_positive_score(score_components: dict[str, int]) -> int:
+    """Returns the gross positive SM5 score (i.e. the score with all the negative components taken out.
+
+    Args:
+        score_components: The score components as returned by get_sm5_score_components().
+    Returns:
+        The positive part of the score (i.e. without penalties like getting zapped or missiling their own team)."""
+    return sum([
+        value for value in score_components.values() if value > 0
+    ])
+
+
+def get_points_per_minute(entity: EntityEnds) -> int:
+    """Returns the points per minute scored for the duration the player was in the game."""
+    return int(entity.score * 60000 / entity.time) if entity.time > 0 else 0
+
+
+def get_sm5_kd_ratio(stats: SM5Stats) -> float:
+    """Returns the K/D for a player.
+
+    This is the number of zaps (not downs) over the number of times the player got zapped.
+    1 if the player was never zapped."""
+    return stats.shot_opponent / stats.times_zapped if stats.times_zapped > 0 else 1.0
+
+
+def get_sm5_player_alive_times(game_duration_millis: int, player: EntityEnds) -> List[int]:
+    # Only return one value if the player was never eliminated so the pie chart is 100% filled.
+    if did_player_survive_sm5_game(game_duration_millis, player):
+        return [player.time]
+
+    return [player.time, game_duration_millis - player.time]
+
+
+def get_sm5_player_alive_labels(game_duration_millis: int, player: EntityEnds) -> List[str]:
+    # Only return one value if the player was never eliminated so the pie chart is 100% filled.
+    if did_player_survive_sm5_game(game_duration_millis, player):
+        return ["Alive"]
+
+    return ["Alive", "Dead"]
+
+
+def get_sm5_player_alive_colors(game_duration_millis: int, player: EntityEnds) -> List[str]:
+    # Only return one value if the player was never eliminated so the pie chart is 100% filled.
+    if did_player_survive_sm5_game(game_duration_millis, player):
+        return ["#00ff00"]
+
+    return ["#ff0000", "#000000"]
+
+
+def did_player_survive_sm5_game(game_duration_millis: int, player: EntityEnds) -> bool:
+    return player.time >= game_duration_millis
+
+
+@cache()
+async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:
+    """Returns data for a score graph for one player.
+
+    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    """
+    return [await game.get_entity_score_at_time(entity_id, time) for time in range(0, 900000 + 30000, 30000)]
+
+
+@cache()
+async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> List[int]:
+    """Returns data for a score graph for one team.
+
+    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    """
+    return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + 30000, 30000)]
+
+
+@cache()
+async def get_sm5_team_score_graph_data(game: SM5Game, teams: List[Team]) -> dict[Team, List[int]]:
+    """Returns data for a score graph for all teams.
+
+    Returns a dict with an entry for each team. For each team, there will be a list of data points containing the team's
+    current score at the given time, one for every 30 seconds.
+    """
+    return {
+        team: await get_sm5_single_team_score_graph_data(game, team) for team in teams
+    }
+
+
 """
 
 Average score at time
 
 """
+
 
 async def get_average_team_score_at_time_sm5(team: Team, time: int) -> int:
     """
@@ -53,46 +394,44 @@ async def get_average_team_score_at_time_sm5(team: Team, time: int) -> int:
 
     return sum(scores) // len(scores)
 
+
 """
 
 More specific stats
 
 """
 
+
 async def count_zaps(game: SM5Game, zapping_entity_id: str, zapped_entity_id: str) -> int:
     """Returns the number of times one entity zapped another."""
     return await (game.events.filter(entity1=zapping_entity_id,
                                      action=" zaps ",
                                      entity2=zapped_entity_id
-    ).count())
+                                     ).count())
 
 
 async def count_blocks(game: LaserballGame, zapping_entity_id: str, zapped_entity_id: str) -> int:
     """Returns the number of times one entity blocked another."""
-    return await (game.events.filter(
-        arguments__filter={"0": zapping_entity_id}
-    ).filter(
-        arguments__filter={"1": " blocks "}
-    ).filter(
-        arguments__filter={"2": zapped_entity_id}
-    ).count())
+    return await (game.events.filter(entity1=zapping_entity_id,
+                                     action=" blocks ",
+                                     entity2=zapped_entity_id
+                                     ).count())
 
 
 async def count_missiles(game: SM5Game, missiling_entity_id: str, missiled_entity_id: str) -> int:
     """Returns the number of times one entity missiled another."""
-    return await (game.events.filter(
-        arguments__filter={"0": missiling_entity_id}
-    ).filter(
-        arguments__filter={"1": " missiles "}
-    ).filter(
-        arguments__filter={"2": missiled_entity_id}
-    ).count())
+    return await (game.events.filter(entity1=missiling_entity_id,
+                                     action=" missiles ",
+                                     entity2=missiled_entity_id
+                                     ).count())
+
 
 """
 
 Very general stats
 
 """
+
 
 async def get_points_scored() -> int:
     """
@@ -104,10 +443,12 @@ async def get_points_scored() -> int:
 
     points = 0
 
-    for entity in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines").all():
+    for entity in await EntityEnds.filter(sm5games__ranked=True,
+                                          sm5games__mission_name__icontains="space marines").all():
         points += entity.score
 
     return points
+
 
 async def get_nukes_launched() -> int:
     """
@@ -122,6 +463,7 @@ async def get_nukes_launched() -> int:
 
     return nukes
 
+
 async def get_nukes_cancelled() -> int:
     """
     Gets the total nukes cancelled by going through
@@ -134,6 +476,7 @@ async def get_nukes_cancelled() -> int:
         nukes += stats.nuke_cancels
 
     return nukes
+
 
 async def get_medic_hits() -> int:
     """
@@ -148,6 +491,7 @@ async def get_medic_hits() -> int:
 
     return hits
 
+
 async def get_own_medic_hits() -> int:
     """
     Gets the total own medic hits by going through
@@ -161,6 +505,7 @@ async def get_own_medic_hits() -> int:
 
     return hits
 
+
 # laserball totals
 
 async def get_goals_scored() -> int:
@@ -171,7 +516,9 @@ async def get_goals_scored() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("goals")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("goals")).values_list("sum",
+                                                                                                               flat=True))
+
 
 async def get_assists() -> int:
     """
@@ -181,7 +528,9 @@ async def get_assists() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("assists")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("assists")).values_list("sum",
+                                                                                                                 flat=True))
+
 
 async def get_passes() -> int:
     """
@@ -191,7 +540,9 @@ async def get_passes() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("passes")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("passes")).values_list("sum",
+                                                                                                                flat=True))
+
 
 async def get_steals() -> int:
     """
@@ -201,7 +552,9 @@ async def get_steals() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("steals")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("steals")).values_list("sum",
+                                                                                                                flat=True))
+
 
 async def get_clears() -> int:
     """
@@ -211,7 +564,9 @@ async def get_clears() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("clears")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("clears")).values_list("sum",
+                                                                                                                flat=True))
+
 
 async def get_blocks() -> int:
     """
@@ -221,158 +576,40 @@ async def get_blocks() -> int:
     (Laserball)
     """
 
-    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("blocks")).values_list("sum", flat=True))
+    return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("blocks")).values_list("sum",
+                                                                                                                flat=True))
+
 
 # top roles
 # could be improved by accounting for the amount of games played
 # could be combined into one function
 
-async def get_top_commanders(amount=5) -> List[Tuple[str, int]]:
+async def get_top_role_players(amount: int=5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[Tuple[str, int, int]]:
     """
-    Gets the top commanders by going through
+    Gets the top players of a given role by going through
     all games and getting the average score
     for each player
+
+    If min_games is 0 or None, it will return all players
     """
 
-    data = {}
+    players = {}
 
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.COMMANDER).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
+    for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines",
+                                              entity__role=role).all():
+        name = (await entity_end.entity).name
+        if name not in players:
+            players[name] = (0, 0)
+        players[name] = (players[name][0] + entity_end.score, players[name][1] + 1)
 
-    # get the average score for each player
-
-    commanders = []
-
-    for key, value in data.items():
-        commanders.append((key, value[0]//value[1], value[1]))
+    # filter out players with less than min_games games
     
-    # sort the list by score
+    if min_games: # if min_games is 0 or None, it will return all players
+        players = {name: (score, games) for name, (score, games) in players.items() if games >= min_games}
 
-    commanders.sort(key=lambda x: x[1], reverse=True)
+    return sorted([(name, score // games, games) for name, (score, games) in players.items()], key=lambda x: x[1],
+                  reverse=True)[:amount]
 
-    return commanders[:amount]
-    
-
-async def get_top_heavies(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top heavies by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.HEAVY).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    heavies = []
-
-    for key, value in data.items():
-        heavies.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    heavies.sort(key=lambda x: x[1], reverse=True)
-
-    return heavies[:amount]
-
-async def get_top_scouts(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top scouts by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.SCOUT).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    scouts = []
-
-    for key, value in data.items():
-        scouts.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    scouts.sort(key=lambda x: x[1], reverse=True)
-
-    return scouts[:amount]
-
-async def get_top_ammos(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top ammos by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.AMMO).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    ammos = []
-
-    for key, value in data.items():
-        ammos.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    ammos.sort(key=lambda x: x[1], reverse=True)
-
-    return ammos[:amount]
-
-async def get_top_medics(amount=5) -> List[Tuple[str, int]]:
-    """
-    Gets the top medics by going through
-    all games and getting the average score
-    for each player
-    """
-
-    data = {}
-
-    async for entity_end in EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines", entity__role=IntRole.MEDIC).prefetch_related("entity"):
-        codename = entity_end.entity.name
-        
-        if data.get(codename):
-            data[codename] = (data[codename][0]+entity_end.score, data[codename][1]+1)
-        else:
-            data[codename] = (entity_end.score, 1)
-
-    # get the average score for each player
-
-    medics = []
-
-    for key, value in data.items():
-        medics.append((key, value[0]//value[1], value[1]))
-    
-    # sort the list by score
-
-    medics.sort(key=lambda x: x[1], reverse=True)
-
-    return medics[:amount]
 
 # get ranking accuracy
 
@@ -406,12 +643,14 @@ async def get_ranking_accuracy() -> float:
 
     return correct / total if total != 0 else 0
 
+
 # performance helpers
 
 def sentry_trace(func) -> Callable:
     """
     Async sentry tracing decorator
     """
+
     async def wrapper(*args, **kwargs) -> Any:
         transaction = Hub.current.scope.transaction
         if transaction:
@@ -422,6 +661,7 @@ def sentry_trace(func) -> Callable:
                 return await func(*args, **kwargs)
 
     return wrapper
+
 
 async def get_player_state_timeline(entity_start: EntityStarts,
                                     entity_end: EntityEnds,
@@ -548,3 +788,13 @@ async def get_player_state_distribution(entity_start: EntityStarts,
         last_timestamp = state.timestamp_millis
 
     return result
+
+
+def get_player_state_distribution_pie_chart(distribution: dict[str, int],
+                                            state_color_map: dict[str, str]) -> PieChartData:
+    """Takes state distribution data from get_player_state_distribution() and turns it into pie chart data."""
+    return PieChartData(
+        labels=list(distribution.keys()),
+        colors=[state_color_map[state] for state in distribution.keys()],
+        data=list(distribution.values())
+    )

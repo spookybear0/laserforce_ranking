@@ -1,10 +1,12 @@
-from sanic import Request, exceptions
-from shared import app
-from helpers import ratinghelper
-from utils import render_template
-from db.player import Player
-from sanic.log import logger
 from openskill.models import PlackettLuceRating as Rating
+from sanic import Request, exceptions
+from sanic.log import logger
+
+from db.player import Player
+from helpers import ratinghelper
+from shared import app
+from utils import render_template
+
 
 class FakePlayer:
     def __init__(self, codename: str) -> None:
@@ -16,19 +18,38 @@ class FakePlayer:
         self.laserball_rating_mu = ratinghelper.MU
         self.laserball_rating_sigma = ratinghelper.SIGMA
 
+    @property
+    def sm5_ordinal(self) -> int:
+        return self.sm5_rating.ordinal()
+    
+    @property
+    def laserball_ordinal(self) -> int:
+        return self.laserball_rating.ordinal()
+    
+    @property
+    def get_role_rating(self, _) -> Rating:
+        return Rating(ratinghelper.MU, ratinghelper.SIGMA)
+    
+    def get_role_rating_ordinal(self, _) -> int:
+        return self.get_role_rating(_).ordinal()
+
     def __str__(self) -> str:
         return f"{self.codename} (non member)"
-    
+
     def __repr__(self) -> str:
         return f"{self.codename} (non member)"
+
 
 @app.get("/matchmaking")
 async def matchmaking(request: Request) -> str:
     players = await Player.all()
+    players = sorted(players, key=lambda x: x.codename)
 
     # all_players = {codename: (sm5_rating, lb_rating)
     logger.debug("Getting ratings for all players")
-    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
+    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in
+                   players}
+    
 
     return await render_template(
         request,
@@ -39,6 +60,7 @@ async def matchmaking(request: Request) -> str:
         team1=[],
         team2=[],
     )
+
 
 @app.post("/matchmaking")
 async def matchmaking_post(request: Request) -> str:
@@ -56,47 +78,48 @@ async def matchmaking_post(request: Request) -> str:
 
     # all_players = {codename: (sm5_rating, lb_rating)
     logger.debug("Getting ratings for all players")
-    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in players}
+    all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in
+                   players}
 
     logger.debug("Getting players from team 1")
 
     for i in range(16):
-        entity_id = data.get(f"1player{i}")
-        if not entity_id:
+        codename = data.get(f"1player{i}")
+        if not codename:
             continue
-        entity_id = entity_id.strip()
+        codename = codename.strip()
 
-        if entity_id.startswith("#"):
-            player = await Player.filter(entity_id=entity_id).first()
-        else: # non member
-            player = FakePlayer(entity_id)
-            all_players[entity_id] = (player.sm5_rating.ordinal(), player.laserball_rating.ordinal())
+        player = await Player.filter(codename=codename).first()
+        if player: # member
+            all_players.pop(player.codename, None)
+            players.remove(player)
+        else:  # non member
+            player = FakePlayer(codename)
 
         if not player:
-            return exceptions.BadRequest(f"Player {entity_id} not found")
+            return exceptions.BadRequest(f"Player {codename} not found")
 
-        team1.append(player.codename)
+        team1.append((player.codename, player.sm5_ordinal, player.laserball_ordinal))
 
     logger.debug("Getting players from team 2")
 
     for i in range(16):
-        entity_id = data.get(f"2player{i}")
-        if not entity_id:
+        codename = data.get(f"2player{i}")
+        if not codename:
             continue
-        entity_id = entity_id.strip()
+        codename = codename.strip()
 
-        if entity_id.startswith("#"):
-            player = await Player.filter(entity_id=entity_id).first()
-        else: # non member
-            player = FakePlayer(entity_id)
-            all_players[entity_id] = (player.sm5_rating.ordinal(), player.laserball_rating.ordinal())
+        player = await Player.filter(codename=codename).first()
+        if player:
+            all_players.pop(player.codename, None)
+            players.remove(player)
+        else:  # non member
+            player = FakePlayer(codename)
 
         if not player:
-            return exceptions.BadRequest(f"Player {entity_id} not found")
+            return exceptions.BadRequest(f"Player {codename} not found")
 
-        team2.append(player.codename)
-
-    print(all_players)
+        team2.append((player.codename, player.sm5_ordinal, player.laserball_ordinal))
 
     return await render_template(
         request,

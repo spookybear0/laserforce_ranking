@@ -59,11 +59,11 @@
     }
 
     tr:nth-child(odd) > td:nth-child(1) {
-        background-color: #000000;
+        background-color: var(--alternate-table-background-color);
     }
 
     tr > th:nth-child(1) {
-        background-color: #000000;
+        background-color: var(--alternate-table-background-color);
     }
 
     body {
@@ -230,12 +230,10 @@
         }
 
         row = 2;
-        {% if game.ranked %}
-            row = 3;
-        {% endif %}
 
-        sortTable(document.getElementById("fire_table"), row)
-        sortTable(document.getElementById("ice_table"), row)
+        // no longer needed
+        //sortTable(document.getElementById("fire_table"), row)
+        //sortTable(document.getElementById("ice_table"), row)
     }
 
     document.addEventListener("DOMContentLoaded", onReady);
@@ -262,15 +260,16 @@
             </button>
         </form>
         {% if is_admin %}<span title="Admin Page"><h3><a href="/admin/game/laserball/{{ game.id }}/">Admin Page</a></h3></span>{% endif %}
-        <span><h3><a href="/api/game/laserball/{{ game.id }}">Game File</a></h3></span>
+        <span><h3><a href="/api/game/laserball/{{ game.id }}/tdf">Game File</a></h3></span>
         <span title="Replay"><h3><a href="/game/laserball/{{ game.id }}/replay">Replay</a></h3></span>
     </div>
     <div class="userlist" style="text-align: left;">
         <div style="clear: both;"></div>
 
         <div id="teams">
-            <div id="fire_team" class="team">
-                <h2 style="font-size: 20px; color: orangered;" class="team_score">Fire Team: {{ fire_score }}</h2>
+            {% for team in teams %}
+            <div id="{{ team.color }}_team" class="team">
+                <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}</h2>
 
                 <div class="outer-scrolling-table">
                     <div class="inner-scrolling-table">
@@ -280,6 +279,7 @@
                             {% if game.ranked %}
                                 <th><p>Current Rating</p></th>
                             {% endif %}
+                            <th><p>Ball Possession</p></th>
                             <th><p>Goals</p></th>
                             <th><p>Assists</p></th>
                             <th><p>Steals</p></th>
@@ -291,94 +291,41 @@
                             <th><p title="Goal = 1, Assist = 0.75, Steal = 0.5, Clear = 0.25, Block = 0.3">MVP Points</p></th>
                             <th><p>Accuracy</p></th>
                             <th><p>K/D</p></th>
-                            {% for entity in game.entity_starts %}
-                                {% if entity.type == "player" and entity.team.index == 0 %}
-                                    {% set entity_end = get_entity_end(entity) %}
-                                    {% set laserball_stats = get_laserballstats(entity) %}
-                                    <tr>
-                                        {% if entity.entity_id.startswith("@") %}
-                                            <td class="fixed-column"><p>{{ entity.name }}</p></td>
-                                            <td><p>{{ laserball_stats.score }}</p></td>
-                                        {% else %}
-                                            <td class="fixed-column"><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
-                                            <td><a href="/game/laserball/{{game.id}}/scorecard/{{entity_end.id}}">{{ laserball_stats.score }}</a></td>
-                                        {% endif %}
-                                        {% if entity_end.current_rating_mu and game.ranked %}
+                            {% for player in team.players_with_sum %}
+                                {% set entity_end = player.entity_end %}
+                                <tr class="{{ player.css_class }}">
+                                    <td class="fixed-column">{{ player_reference(player) }}</td>
+                                    {% if player.player_info.is_member %}
+                                        <td><a href="/game/laserball/{{game.id}}/scorecard/{{entity_end.id}}">{{ player.score }}</a></td>
+                                    {% else %}
+                                            <td><p>{{ player.score }}</p></td>
+                                    {% endif %}
+                                    {% if game.ranked %}
+                                        {% if entity_end.current_rating_mu %}
                                             <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
+                                        {% else %}
+                                            <td><p>&nbsp;</p></td>
                                         {% endif %}
-                                        <td><p>{{ laserball_stats.goals }}</p></td>
-                                        <td><p>{{ laserball_stats.assists }}</p></td>
-                                        <td><p>{{ laserball_stats.steals }}</p></td>
-                                        <td><p>{{ laserball_stats.clears }}</p></td>
-                                        <td><p>{{ laserball_stats.passes }}</p></td>
-                                        <td><p>{{ laserball_stats.blocks }}</p></td>
-                                        <td><p>{{ laserball_stats.times_stolen }}</p></td>
-                                        <td><p>{{ laserball_stats.times_blocked }}</p></td>
-                                        <td><p>{{ "%.2f" % (laserball_stats.mvp_points|round(2)) }}</p></td>
-                                        <td title="{{laserball_stats.shots_hit}}/{{laserball_stats.shots_fired}}"><p>{{ laserball_stats.shots_fired and "%.2f" % (((laserball_stats.shots_hit/laserball_stats.shots_fired)*100)|round(2)) }}%</p></td>
-                                        <td title="{{laserball_stats.blocks}}/{{laserball_stats.times_blocked}}"><p>{{  laserball_stats.times_blocked and "%.2f" % ((laserball_stats.blocks/laserball_stats.times_blocked) | round(2)) }}</p></td>
-                                    </tr>
-                                {% endif %}
+                                    {% endif %}
+                                    <td><p>{{ player.possession_time_str }}</p></td>
+                                    <td><p>{{ player.goals }}</p></td>
+                                    <td><p>{{ player.assists }}</p></td>
+                                    <td><p>{{ player.steals }}</p></td>
+                                    <td><p>{{ player.clears }}</p></td>
+                                    <td><p>{{ player.passes }}</p></td>
+                                    <td><p>{{ player.blocks }}</p></td>
+                                    <td><p>{{ player.times_stolen }}</p></td>
+                                    <td><p>{{ player.times_blocked }}</p></td>
+                                    <td><p>{{ "%.2f" % (player.mvp_points|round(2)) }}</p></td>
+                                    <td title="{{player.shots_hit}}/{{player.shots_fired}}"><p>{{ player.accuracy_str }}</p></td>
+                                    <td title="{{player.blocks}}/{{player.times_blocked}}"><p>{{ player.kd_ratio_str }}</p></td>
+                                </tr>
                             {% endfor %}
                         </table>
                     </div>
                 </div>
             </div>
-            <div id="ice_team" class="team">
-                <h2 style="font-size: 20px; color: #0096FF;" class="team_score">Ice Team: {{ ice_score }}</h2>
-
-                <div class="outer-scrolling-table">
-                    <div class="inner-scrolling-table">
-                        <table id="ice_table">
-                            <th class="fixed-column"><p>Codename</p></th>
-                            <th><p title="Score = (Goals + Assists) * 10000 + Steals * 100 + Blocks">Score</p></th>
-                            {% if game.ranked %}
-                                <th><p>Current Rating</p></th>
-                            {% endif %}
-                            <th><p>Goals</p></th>
-                            <th><p>Assists</p></th>
-                            <th><p>Steals</p></th>
-                            <th><p>Clears</p></th>
-                            <th><p>Passes</p></th>
-                            <th><p>Blocks</p></th>
-                            <th><p>Stolen</p></th>
-                            <th><p>Blocked</p></th>
-                            <th><p title="Goal = 1, Assist = 0.75, Steal = 0.5, Clear = 0.25, Block = 0.3">MVP Points</p></th>
-                            <th><p>Accuracy</p></th>
-                            <th><p>K/D</p></th>
-                            {% for entity in game.entity_starts %}
-                                {% if entity.type == "player" and entity.team.index == 1 %}
-                                    {% set entity_end = get_entity_end(entity) %}
-                                    {% set laserball_stats = get_laserballstats(entity) %}
-                                    <tr>
-                                        {% if entity.entity_id.startswith("@") %}
-                                            <td class="fixed-column"><p>{{ entity.name }}</p></td>
-                                            <td><p>{{ laserball_stats.score }}</p></td>
-                                        {% else %}
-                                            <td class="fixed-column"><a href="/player/{{entity.name}}"><p>{{ entity.name }}</p></a></td>
-                                            <td><a href="/game/laserball/{{game.id}}/scorecard/{{entity_end.id}}">{{ laserball_stats.score }}</a></td>
-                                        {% endif %}
-                                        {% if entity_end.current_rating_mu and game.ranked %}
-                                            <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
-                                        {% endif %}
-                                        <td><p>{{ laserball_stats.goals }}</p></td>
-                                        <td><p>{{ laserball_stats.assists }}</p></td>
-                                        <td><p>{{ laserball_stats.steals }}</p></td>
-                                        <td><p>{{ laserball_stats.clears }}</p></td>
-                                        <td><p>{{ laserball_stats.passes }}</p></td>
-                                        <td><p>{{ laserball_stats.blocks }}</p></td>
-                                        <td><p>{{ laserball_stats.times_stolen }}</p></td>
-                                        <td><p>{{ laserball_stats.times_blocked }}</p></td>
-                                        <td><p>{{ "%.2f" % (laserball_stats.mvp_points|round(2)) }}</p></td>
-                                        <td title="{{laserball_stats.shots_hit}}/{{laserball_stats.shots_fired}}"><p>{{ laserball_stats.shots_fired and "%.2f" % (((laserball_stats.shots_hit/laserball_stats.shots_fired)*100)|round(2)) }}%</p></td>
-                                        <td title="{{laserball_stats.blocks}}/{{laserball_stats.times_blocked}}"><p>{{ laserball_stats.times_blocked and  (laserball_stats.blocks/laserball_stats.times_blocked) | round(2) }}</p></td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </table>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
         <div id="stats">
             <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
@@ -389,8 +336,6 @@
         </div>
 
         <div style="clear: both;"></div>
-
-        <h1 class="desktop_notif">For more detailed stats, please view the website on desktop.</h1>
     </div>
 </div>
 
@@ -402,24 +347,17 @@
         data: {
             labels: {{score_chart_labels}},
             datasets: [
+            {% for team in teams %}
             {
-                label: "Fire Team Goals",
-                data: {{score_chart_data_red}},
-                borderColor: "orangered",
+                label: "{{ team.element }} Team Goals",
+                data: {{score_chart_data[team.team]}},
+                borderColor: "{{ team.css_color_name }}",
                 fill: false,
                 tension: 0.2,
                 pointRadius: 0,
                 pointHitRadius: 10
-            },
-            {
-                label: "Ice Team Goals",
-                data: {{score_chart_data_blue}},
-                borderColor: "#0096FF",
-                fill: false,
-                tension: 0.2,
-                pointRadius: 0,
-                pointHitRadius: 10
-            }
+            }{{ "," if not loop.last }}
+            {% endfor %}
             ]
         },
         options: {
@@ -501,6 +439,7 @@
         }
     });
 
+    {% if game.ranked and win_chance_before_game and win_chance_after_game %}
     new Chart("win_chance_before_game", {
         type: "pie",
         data: {
@@ -544,6 +483,7 @@
             }
         }
     });
+    {% endif %}
 </script>
 
 </body>

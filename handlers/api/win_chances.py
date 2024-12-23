@@ -1,15 +1,17 @@
-
-
 from sanic import Request
-from shared import app
-from db.player import Player
-from db.types import GameType
 from sanic import response
 from sanic.log import logger
+
+from db.player import Player
+from db.types import GameType
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
+from shared import app
 
-@app.get("/api/<type_:str>/win_chances")
+
+# this api is only used for internal purposes (matchmake page)
+
+@app.get("/api/internal/win_chances/<type_:str>")
 @sentry_trace
 async def api_win_chances(request: Request, type_: str) -> str:
     # 2-4 teams (team1, team2, ...)
@@ -35,7 +37,7 @@ async def api_win_chances(request: Request, type_: str) -> str:
         team4 = []
 
     # get ratings from codenames
-        
+
     team1_players = []
     team2_players = []
     team3_players = []
@@ -45,10 +47,19 @@ async def api_win_chances(request: Request, type_: str) -> str:
         if codename == "Unrated Player" or await Player.filter(codename=codename).first() is None:
             # dummy class to represent unrated player
             class _: pass
+
             p = _()
             p.codename = "Unrated Player"
             p.sm5_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
             p.laserball_rating = ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.sm5_rating_mu = ratinghelper.MU
+            p.sm5_rating_sigma = ratinghelper.SIGMA
+            p.laserball_rating_mu = ratinghelper.MU
+            p.laserball_rating_sigma = ratinghelper.SIGMA
+            p.sm5_ordinal = p.sm5_rating.ordinal()
+            p.laserball_ordinal = p.laserball_rating.ordinal()
+            p.get_role_rating = lambda _: ratinghelper.Rating(ratinghelper.MU, ratinghelper.SIGMA)
+            p.get_role_rating_ordinal = lambda _: p.get_role_rating(_).ordinal()
             team.append(p)
             return True
         return False
@@ -66,13 +77,15 @@ async def api_win_chances(request: Request, type_: str) -> str:
         if not await add_unrated_player(team4_players):
             team4_players.append(await Player.filter(codename=codename).first())
 
-    # calculate win chances
-        
-    win_chances = ratinghelper.get_win_chances(team1_players, team2_players, team3_players, team4_players, mode)
+    all_teams = [team1_players, team2_players]
 
-    if not team3:
-        win_chances.append(0)
-    if not team4:
-        win_chances.append(0)
+    if team3:
+        all_teams.append(team3_players)
+    if team4:
+        all_teams.append(team4_players)
+
+    # get win chances with ratinghelper.get_win_chance for 2 teams at a time
+        
+    win_chances = ratinghelper.get_win_chances(all_teams, mode)
 
     return response.json(win_chances)
