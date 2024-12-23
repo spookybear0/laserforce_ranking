@@ -13,7 +13,7 @@ from helpers.cachehelper import cache_template
 from helpers.laserballhelper import get_laserball_rating_over_time
 from helpers.sm5helper import get_sm5_rating_over_time
 from helpers.statshelper import sentry_trace, create_time_series_ordered_graph
-from helpers.userhelper import get_median_role_score
+from helpers.userhelper import get_median_role_score, get_per_role_game_count
 from shared import app
 from utils import render_cached_template, get_post
 
@@ -88,9 +88,9 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     if not player:
         try:
-            player = await Player.filter(codename=id).get_or_none() # could be a codename
+            player = await Player.filter(codename=id).get_or_none()  # could be a codename
             if not player:
-                player = await Player.filter(entity_id=id).get_or_none() # could be an entity_id
+                player = await Player.filter(entity_id=id).get_or_none()  # could be an entity_id
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
 
@@ -124,12 +124,12 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     blue_wins_laserball = await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL)
 
     sm5_win_percent = (red_wins_sm5 + green_wins_sm5) / (red_teams_sm5 + green_teams_sm5) if (
-                                                                                                         red_teams_sm5 + green_teams_sm5) != 0 else 0
+                                                                                                 red_teams_sm5 + green_teams_sm5) != 0 else 0
     laserball_win_percent = (red_wins_laserball + blue_wins_laserball) / (
-                red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
+        red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
     win_percent = (red_wins_sm5 + green_wins_sm5 + red_wins_laserball + blue_wins_laserball) / (
-                red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
-                                                                                                             red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
+        red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
+                                                                                             red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
 
     logger.debug("Loading stat chart")
 
@@ -231,7 +231,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         laserball_rating_over_time_labels=laserball_rating_over_time_labels,
         laserball_rating_over_time_data=laserball_rating_over_time_data,
     )
-
 
 
 @app.post("/player")
