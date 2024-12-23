@@ -40,6 +40,23 @@ async def get_median_role_score(player: Optional[Player] = None) -> List[int]:
     return data
 
 
+async def get_per_role_game_count(player: Player) -> List[int]:
+    """
+    Returns the number of times a player played each role.
+    """
+    data = []
+
+    for role in range(1, 6):
+        try:
+            game_count = await EntityEnds.filter(entity__entity_id=player.entity_id, entity__role=IntRole(role),
+                                                 entity__sm5games__ranked=True).count()
+        except Exception:
+            game_count = 0
+        data.append(game_count)
+
+    return data
+
+
 def hash_password(password: str) -> str:
     """
     Hashes a password using bcrypt

@@ -13,7 +13,7 @@ from helpers.cachehelper import cache_template
 from helpers.laserballhelper import get_laserball_rating_over_time
 from helpers.sm5helper import get_sm5_rating_over_time
 from helpers.statshelper import sentry_trace, create_time_series_ordered_graph
-from helpers.userhelper import get_median_role_score
+from helpers.userhelper import get_median_role_score, get_per_role_game_count
 from shared import app
 from utils import render_cached_template, get_post
 
@@ -38,24 +38,41 @@ async def get_laserball_stat(game, entity_start) -> Optional[LaserballStats]:
     return await game.laserball_stats.filter(entity=entity_start).first()
 
 
-async def get_role_labels_from_medians(median_role_score) -> list:
+# Returns the label, plus the number of games played if that number is provided.
+def _role_label(role: str, games: Optional[int]) -> str:
+    if not games:
+        return role
+
+    return f"{role} ({games} game{'s' if games != 1 else ''})"
+
+
+# Returns a list of all roles that the player played at least once. If games_per_role is provided, also includes the
+# number of games played as part of the label.
+async def get_role_labels_from_medians(median_role_score, games_per_role: Optional[list[int]] = None) -> list:
     labels = []
     for i, role_score in enumerate(median_role_score):
         if role_score == 0:
             continue
         else:
+            games = games_per_role[i] if games_per_role else None
             if i == 0:
-                labels.append("Commander")
+                labels.append(_role_label("Commander", games))
             elif i == 1:
-                labels.append("Heavy")
+                labels.append(_role_label("Heavy", games))
             elif i == 2:
-                labels.append("Scout")
+                labels.append(_role_label("Scout", games))
             elif i == 3:
-                labels.append("Ammo")
+                labels.append(_role_label("Ammo", games))
             elif i == 4:
-                labels.append("Medic")
+                labels.append(_role_label("Medic", games))
 
     return labels
+
+
+def get_games_per_role_filtered(games_per_role: list[int]) -> list:
+    return [
+        game_count for game_count in games_per_role if game_count > 0
+    ]
 
 
 @app.get("/player/<id>")
@@ -71,9 +88,9 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     if not player:
         try:
-            player = await Player.filter(codename=id).get_or_none() # could be a codename
+            player = await Player.filter(codename=id).get_or_none()  # could be a codename
             if not player:
-                player = await Player.filter(entity_id=id).get_or_none() # could be an entity_id
+                player = await Player.filter(entity_id=id).get_or_none()  # could be an entity_id
         except Exception:
             raise exceptions.NotFound("Not found: Invalid ID or codename")
 
@@ -90,6 +107,7 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         "-start_time").limit(5).offset(_GAMES_PER_PAGE * lbpage)
 
     median_role_score = await get_median_role_score(player)
+    per_role_game_count = await get_per_role_game_count(player)
 
     logger.debug("Loading team rate pies")
 
@@ -106,12 +124,12 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     blue_wins_laserball = await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL)
 
     sm5_win_percent = (red_wins_sm5 + green_wins_sm5) / (red_teams_sm5 + green_teams_sm5) if (
-                                                                                                         red_teams_sm5 + green_teams_sm5) != 0 else 0
+                                                                                                 red_teams_sm5 + green_teams_sm5) != 0 else 0
     laserball_win_percent = (red_wins_laserball + blue_wins_laserball) / (
-                red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
+        red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
     win_percent = (red_wins_sm5 + green_wins_sm5 + red_wins_laserball + blue_wins_laserball) / (
-                red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
-                                                                                                             red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
+        red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
+                                                                                             red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
 
     logger.debug("Loading stat chart")
 
@@ -183,6 +201,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         role_plot_data_player=[x for x in median_role_score if x != 0],
         role_plot_data_world=await Player.get_median_role_score_world(median_role_score),
         role_plot_labels=await get_role_labels_from_medians(median_role_score),
+        role_plot_labels_with_game_count=await get_role_labels_from_medians(median_role_score, per_role_game_count),
+        role_plot_game_count=get_games_per_role_filtered(per_role_game_count),
         # total number of roles that aren't 0
         role_plot_total_roles=len([x for x in median_role_score if x != 0]),
         # stat chart
