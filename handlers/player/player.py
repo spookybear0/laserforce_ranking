@@ -107,6 +107,7 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     median_role_score = await get_median_role_score(player)
     per_role_game_count_ranked = await get_per_role_game_count(player, ranked_only=True)
     per_role_game_count_all = await get_per_role_game_count(player, ranked_only=False)
+    per_role_game_count_unranked = [all_games_played - per_role_game_count_ranked[i] for i, all_games_played in enumerate(per_role_game_count_all)]
 
     logger.debug("Loading team rate pies")
 
@@ -205,6 +206,7 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         # Games played per role
         per_role_game_count_ranked=per_role_game_count_ranked,
         per_role_game_count_all=per_role_game_count_all,
+        per_role_game_count_unranked=per_role_game_count_unranked,
         role_names=_ROLES,
         # total number of roles that aren't 0
         role_plot_total_roles=len([x for x in median_role_score if x != 0]),

@@ -552,7 +552,7 @@
             labels: {{ role_names }},
             datasets: [
                 {
-                    label: "Ranked Games Only",
+                    label: "Ranked Games",
                     data: {{ per_role_game_count_ranked }},
                     backgroundColor: [
                         "rgb(50, 116, 161)",
@@ -563,8 +563,8 @@
                     ]
                 },
                 {
-                    label: "All Games",
-                    data: {{ per_role_game_count_all }},
+                    label: "Unranked Games",
+                    data: {{ per_role_game_count_unranked }},
                     backgroundColor: [
                         "rgb(50, 166, 161)",
                         "rgb(225, 179, 44)",
@@ -579,17 +579,31 @@
             responsive: true,
             scales: {
                 yAxes: [{
-                    ticks:{
+                    ticks: {
                         min: 0,
                     },
-                    stacked: false,
+                    stacked: true,
                 }],
-                xAxes: {
+                xAxes: [{
                     gridLines: {
                         display: false,
                     },
-                    stacked: false
-                },
+                    stacked: true
+                }],
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        const index = tooltipItem["index"];
+                        const datasetIndex = tooltipItem["datasetIndex"];
+                        const label = data.datasets[datasetIndex].label;
+                        const game_count = data.datasets[datasetIndex].data[index];
+
+                        const all_games = data.datasets[0].data[index] + data.datasets[1].data[index];
+
+                        return `${label}: ${game_count} / ${all_games}`;
+                    }
+                }
             },
             plugins: {
                 legend: {
@@ -599,7 +613,7 @@
                 },
                 title: {
                     display: true,
-                    text: "Median player score vs median world score"
+                    text: "Number of games played per role"
                 }
             }
         }
