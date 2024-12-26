@@ -18,6 +18,13 @@ from shared import app
 from utils import render_cached_template, get_post
 
 _GAMES_PER_PAGE = 5
+_ROLES = [
+    "Commander",
+    "Heavy",
+    "Scout",
+    "Ammo",
+    "Medic",
+]
 
 sql = app.ctx.sql
 
@@ -48,23 +55,14 @@ def _role_label(role: str, games: Optional[int]) -> str:
 
 # Returns a list of all roles that the player played at least once. If games_per_role is provided, also includes the
 # number of games played as part of the label.
-async def get_role_labels_from_medians(median_role_score, games_per_role: Optional[list[int]] = None) -> list:
+def get_role_labels_from_medians(median_role_score: list[int], games_per_role: Optional[list[int]] = None) -> list:
     labels = []
     for i, role_score in enumerate(median_role_score):
         if role_score == 0:
             continue
         else:
             games = games_per_role[i] if games_per_role else None
-            if i == 0:
-                labels.append(_role_label("Commander", games))
-            elif i == 1:
-                labels.append(_role_label("Heavy", games))
-            elif i == 2:
-                labels.append(_role_label("Scout", games))
-            elif i == 3:
-                labels.append(_role_label("Ammo", games))
-            elif i == 4:
-                labels.append(_role_label("Medic", games))
+            labels.append(_role_label(_ROLES[i], games))
 
     return labels
 
@@ -107,7 +105,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         "-start_time").limit(5).offset(_GAMES_PER_PAGE * lbpage)
 
     median_role_score = await get_median_role_score(player)
-    per_role_game_count = await get_per_role_game_count(player)
+    per_role_game_count_ranked = await get_per_role_game_count(player, ranked_only=True)
+    per_role_game_count_all = await get_per_role_game_count(player, ranked_only=False)
 
     logger.debug("Loading team rate pies")
 
@@ -200,9 +199,13 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         # role score plot (sm5)
         role_plot_data_player=[x for x in median_role_score if x != 0],
         role_plot_data_world=await Player.get_median_role_score_world(median_role_score),
-        role_plot_labels=await get_role_labels_from_medians(median_role_score),
-        role_plot_labels_with_game_count=await get_role_labels_from_medians(median_role_score, per_role_game_count),
-        role_plot_game_count=get_games_per_role_filtered(per_role_game_count),
+        role_plot_labels=get_role_labels_from_medians(median_role_score),
+        role_plot_labels_with_game_count=get_role_labels_from_medians(median_role_score, per_role_game_count_ranked),
+        role_plot_game_count=get_games_per_role_filtered(per_role_game_count_ranked),
+        # Games played per role
+        per_role_game_count_ranked=per_role_game_count_ranked,
+        per_role_game_count_all=per_role_game_count_all,
+        role_names=_ROLES,
         # total number of roles that aren't 0
         role_plot_total_roles=len([x for x in median_role_score if x != 0]),
         # stat chart
