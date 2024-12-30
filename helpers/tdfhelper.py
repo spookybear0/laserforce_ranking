@@ -28,9 +28,13 @@ def element_to_color(element: str) -> str:
         "Green": "Green",
         "Red": "Red",
         "Blue": "Blue",
+        "Yellow": "Yellow",
+        "Purple": "Purple",
+        "Solid Green": "Green",
         "Solid Red": "Red",
         "Solid Blue": "Blue",
-        "Solid Green": "Green",
+        "Solid Yellow": "Yellow",
+        "Solid Purple": "Purple",
     }
 
     return conversion[element]
