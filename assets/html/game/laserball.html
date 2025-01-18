@@ -226,8 +226,7 @@
 
     function onReady() {
         if ({{ team1_score }} > {{ team2_score }}) {
-            // TODO: generalize
-            document.getElementById("teams").appendChild(document.getElementsByClassName("team1")[0]);
+            document.getElementById("teams").appendChild(document.getElementsByClassName("team2")[0]);
         }
 
         row = 2;
@@ -265,7 +264,7 @@
 
         <div id="teams">
             {% for team in teams %}
-            <div id="{{ team.color }}_team" class="team team{{ loop.index+1 }}">
+            <div id="{{ team.color }}_team" class="team team{{ loop.index }}">
                 <h2 style="font-size: 20px; color: {{ team.css_color_name }}" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}</h2>
 
                 <div class="outer-scrolling-table">
