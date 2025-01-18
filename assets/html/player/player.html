@@ -272,7 +272,7 @@
                             <td>{{ sm5_stats.medic_hits }}</td>
                             <td title="{{sm5_stats.shots_hit}}/{{sm5_stats.shots_fired}}"><p>{{ sm5_stats.shots_fired and "%.2f" % (((sm5_stats.shots_hit/sm5_stats.shots_fired)*100)|round(2)) }}%</p></td>
                             <td title="{{sm5_stats.shot_opponent}}/{{sm5_stats.times_zapped}}"><p>{{ sm5_stats.times_zapped and "%.2f" % ((sm5_stats.shot_opponent/sm5_stats.times_zapped)|round(2)) }}</p></td>
-                            <td style="color: {{ 'orangered' if entity_start.team.color_name == 'Fire' else 'greenyellow' }}">{{ entity_start.team.color_name }}</td>
+                            <td style="color: {{ entity_start.team.enum.css_color_name }}">{{ entity_start.team.color_name }}</td>
                             <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                             <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                         </tr>
@@ -329,7 +329,7 @@
                             <td>{{ laserball_stats.blocks }}</td>
                             <td title="{{laserball_stats.shots_hit}}/{{laserball_stats.shots_fired}}"><p>{{ laserball_stats.shots_fired and "%.2f" % (((laserball_stats.shots_hit/laserball_stats.shots_fired)*100)|round(2)) }}%</p></td>
                             <td title="{{laserball_stats.blocks}}/{{laserball_stats.times_blocked}}"><p>{{ laserball_stats.times_blocked and ((laserball_stats.blocks/laserball_stats.times_blocked) | round(2)) }}</p></td>
-                            <td style="color: {{ 'orangered' if entity_start.team.color_name == 'Fire' else '#0096FF' }}">{{ entity_start.team.color_name }}</td>
+                            <td style="color: {{ entity_start.team.enum.css_color_name }}">{{ entity_start.team.color_name }}</td>
                             <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                             <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                         </tr>
