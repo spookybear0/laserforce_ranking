@@ -15,7 +15,7 @@ from helpers.datehelper import strftime_ordinal
 
 class LaserballGame(Model):
     id = fields.IntField(pk=True)
-    winner = fields.CharEnumField(Team, null=True)
+    winner = fields.CharEnumField(Team)
     winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
     file_version = fields.CharField(20)  # version is a decimal number, we can just store it as a string
