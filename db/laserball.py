@@ -15,7 +15,7 @@ from helpers.datehelper import strftime_ordinal
 
 class LaserballGame(Model):
     id = fields.IntField(pk=True)
-    winner = fields.CharEnumField(Team)
+    winner = fields.CharEnumField(Team, null=True)
     winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
     file_version = fields.CharField(20)  # version is a decimal number, we can just store it as a string
@@ -59,10 +59,12 @@ class LaserballGame(Model):
         return await self.laserball_stats.filter(entity__name=name).first()
 
     async def get_team_score(self, team: Team) -> int:
+        # TODO: optimize
         return sum(map(lambda x: x[0], await self.entity_ends.filter(entity__team__color_name=team.element,
                                                                      entity__type="player").values_list("score")))
 
     async def get_team_score_at_time(self, team: Team, time: int) -> int:
+        # TODO: optimize
         return sum(map(lambda x: x[0],
                        await self.scores.filter(time__lte=time, entity__team__color_name=team.element).values_list(
                            "delta")))
@@ -130,12 +132,14 @@ class LaserballGame(Model):
 
         from helpers.ratinghelper import MU, SIGMA
 
+        teams = await self.get_teams()
+
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
 
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name=teams[0].color_name, entity__type="player")
 
         # get the previous elo for each player
 
@@ -150,7 +154,7 @@ class LaserballGame(Model):
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name=teams[1].color_name, entity__type="player")
 
         # get the previous elo for each player
 
@@ -175,12 +179,14 @@ class LaserballGame(Model):
 
         from helpers.ratinghelper import MU, SIGMA
 
+        teams = await self.get_teams()
+
         # get the win chance for red team
         # this is based on the current_elo of the player's entity_end
 
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name=teams[0].color_name, entity__type="player")
 
         # get the current_elo for each player
 
@@ -195,7 +201,7 @@ class LaserballGame(Model):
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name=teams[1].color_name, entity__type="player")
 
         # get the current_elo for each player
 
@@ -219,12 +225,14 @@ class LaserballGame(Model):
         """
         from helpers.ratinghelper import MU, SIGMA
 
+        teams = await self.get_teams()
+
         # get the win chance for red team
         # this is based on the previous_elo of the player's entity_end
 
         # get all the entity_ends for the red team
 
-        entity_ends_red = await self.entity_ends.filter(entity__team__color_name="Fire", entity__type="player")
+        entity_ends_red = await self.entity_ends.filter(entity__team__color_name=teams[0].color_name, entity__type="player")
 
         # get the previous elo for each player
 
@@ -240,7 +248,7 @@ class LaserballGame(Model):
 
         # get all the entity_ends for the green team
 
-        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name="Ice", entity__type="player")
+        entity_ends_blue = await self.entity_ends.filter(entity__team__color_name=teams[1].color_name, entity__type="player")
 
         # get the previous elo for each player
 
@@ -284,6 +292,12 @@ class LaserballGame(Model):
         """
 
         return await self.entity_starts.filter(type="player")
+    
+    async def get_teams(self) -> List[Team]:
+        """
+        Returns a list of teams in the game but excludes neutral teams
+        """
+        return await self.teams.filter(name__not_in=["Neutral", "None"])
 
     @cache()
     async def to_dict(self, full: bool = True, player_stats=None) -> dict:

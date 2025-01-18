@@ -606,13 +606,13 @@ async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DAT
         min_date=min_date, max_date=max_date, data_points=data_points
     )
 
-async def update_winner(game: SM5Game):
-    """Updates the following fields in the game:
+""" async def update_winner(game: SM5Game):
+    Updates the following fields in the game:
 
     last_team_standing, winner, winner_color.
 
     Will not call save() after the update is done.
-    """
+    
     # Determine whether one team eliminated the other.
     game.last_team_standing = await get_sm5_last_team_standing(game)
 
@@ -630,8 +630,45 @@ async def update_winner(game: SM5Game):
             winner = None
 
     game.winner = winner
-    game.winner_color = winner.value if winner else "none"
+    game.winner_color = winner.value if winner else "none" """
 
+async def update_winner(game: SM5Game):
+    """Updates the following fields in the game:
+
+    last_team_standing, winner, winner_color.
+
+    Adds 10,000 points to the score of the team that eliminated the other team (if applicable).
+    The team with the highest score is declared the winner.
+
+    Will not call save() after the update is done.
+    """
+    # Determine whether one team eliminated the other.
+    game.last_team_standing = await get_sm5_last_team_standing(game)
+
+    # Get all teams in the game.
+    teams = await game.teams.all()
+
+    # Remove neutral team(s)
+    teams = [team.enum for team in teams if team.enum != None]
+
+    scores = {team: await game.get_team_score(team) for team in teams}
+
+    # Adjust scores if a team was eliminated.
+    if game.last_team_standing:
+        scores[game.last_team_standing] += 10000
+
+    # Determine the winner based on the updated scores.
+    max_score = max(scores.values())
+    winning_teams = [team for team, score in scores.items() if score == max_score]
+
+    if len(winning_teams) == 1:
+        winner = winning_teams[0]
+    else:  # Tie or no clear winner
+        winner = Team.NONE
+
+    game.winner = winner
+    game.winner_color = winner.value if winner else "none"
+    
 
 
 async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:

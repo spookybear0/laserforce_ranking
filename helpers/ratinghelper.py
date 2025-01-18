@@ -187,8 +187,11 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     team1 = []
     team2 = []
 
+    teams = await game.get_teams()
+
     for player in await game.entity_starts.filter(type="player"):
-        if (await player.team).color_name == "Fire":
+        team_color = (await player.team).color_name
+        if team_color == (teams[0].color_name):
             team1.append(await Player.filter(entity_id=player.entity_id).first())
         else:
             team2.append(await Player.filter(entity_id=player.entity_id).first())
@@ -196,7 +199,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     team1_elo = list(map(lambda x: Rating(x.sm5_mu, x.sm5_sigma), team1))
     team2_elo = list(map(lambda x: Rating(x.sm5_mu, x.sm5_sigma), team2))
 
-    if game.winner == Team.RED:
+    if game.winner == teams[0].enum:
         team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[0, 1])
     else:
         team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[1, 0])
@@ -316,8 +319,10 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     team1 = []
     team2 = []
 
+    teams = await game.get_teams()
+
     for player in await game.entity_starts.filter(type="player"):
-        if (await player.team).color_name == "Fire":
+        if (await player.team).color_name == (teams[0].color_name):
             team1.append(await Player.filter(entity_id=player.entity_id).first())
         else:
             team2.append(await Player.filter(entity_id=player.entity_id).first())
@@ -325,7 +330,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     team1_elo = list(map(lambda x: Rating(x.laserball_mu, x.laserball_sigma), team1))
     team2_elo = list(map(lambda x: Rating(x.laserball_mu, x.laserball_sigma), team2))
 
-    if game.winner == Team.RED:
+    if game.winner == teams[0].enum:
         team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[0, 1])
     else:
         team1_new, team2_new = model.rate([team1_elo, team2_elo], ranks=[1, 0])

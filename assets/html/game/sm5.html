@@ -483,9 +483,9 @@
     new Chart("win_chance_before_game", {
         type: "pie",
         data: {
-            labels: ["Fire", "Earth"],
+            labels: ["{{ teams[0].element }}", "{{ teams[1].element }}"],
             datasets: [{
-                backgroundColor: ["#b91d47","#00aba9"],
+                backgroundColor: ["{{ teams[0].css_color_name }}", "{{ teams[1].css_color_name }}"],
                 data: [{{ (win_chance_before_game[0]*100)|round(2) }}, {{ (win_chance_before_game[1]*100)|round(2) }}]
             }]
         },
@@ -505,9 +505,9 @@
     new Chart("win_chance", {
         type: "pie",
         data: {
-            labels: ["Fire", "Earth"],
+            labels: ["{{ teams[0].element }}", "{{ teams[1].element }}"],
             datasets: [{
-                backgroundColor: ["#b91d47","#00aba9"],
+                backgroundColor: ["{{ teams[0].css_color_name }}", "{{ teams[1].css_color_name }}"],
                 data: [{{ (win_chance_after_game[0]*100)|round(2) }}, {{ (win_chance_after_game[1]*100)|round(2) }}]
             }]
         },

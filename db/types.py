@@ -79,12 +79,23 @@ class _TeamDefinition:
 
 
 class Team(Enum):
+    # neutral team, sometimes None is used instead of this
+    NEUTRAL = _TeamDefinition(color="neutral", element="Neutral", css_class="neutral-team", css_color_name="white",
+                            dim_color=RgbColor(red=68, green=68, blue=68))
+    NONE = _TeamDefinition(color="none", element="None", css_class="none-team", css_color_name="white",
+                            dim_color=RgbColor(red=68, green=68, blue=68))
+
     RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered",
                           dim_color=RgbColor(red=68, green=17, blue=0))
     GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow",
                             dim_color=RgbColor(red=43, green=60, blue=12))
     BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF",
                            dim_color=RgbColor(red=0, green=37, blue=68))
+    # new additions for laserball ramps mode
+    YELLOW = _TeamDefinition(color="yellow", element="Yellow", css_class="yellow-team", css_color_name="gold", 
+                            dim_color=RgbColor(red=68, green=68, blue=0))
+    PURPLE = _TeamDefinition(color="purple", element="Purple", css_class="purple-team", css_color_name="#A020F0",
+                            dim_color=RgbColor(red=34, green=0, blue=68))
 
     def __call__(cls, value, *args, **kw):
         # Tortoise looks up values by the lower-case color name.
@@ -140,6 +151,24 @@ SM5_ENEMY_TEAM = {
     Team.RED: Team.GREEN,
 }
 
+# Name to team
+
+NAME_TO_TEAM = {
+    # neutral/none
+    "Neutral": Team.NEUTRAL,
+    None: Team.NONE,
+    "None": Team.NONE,
+    # real teams
+    "Fire": Team.RED,
+    "Earth": Team.GREEN,
+    "Red": Team.RED,
+    "Green": Team.GREEN,
+    "Blue": Team.BLUE,
+    "Ice": Team.BLUE,
+    # laserball ramps
+    "Yellow": Team.YELLOW,
+    "Purple": Team.PURPLE,
+}
 
 class Role(Enum):
     SCOUT = "scout"

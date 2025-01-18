@@ -162,15 +162,7 @@
             {% for game in sm5_games %}
                 <tr>
                     <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    {% if not game.winner %}
-                        <td style="color: grey;">None</td>
-                    {% elif game.winner.value == "blue" %}
-                        <td style="color: #0096FF;">{{ game.winner.standardize() }}</td>
-                    {% elif game.winner.value == "red" %}
-                        <td style="color: orangered;">{{ game.winner.standardize() }}</td>
-                    {% else %}
-                        <td style="color: greenyellow;">{{ game.winner.standardize() }}</td>
-                    {% endif %}
+                    <td style="color: {{ game.winner.css_color_name }};">{{ game.winner.standardize() }}</td>
                     <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                     <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                 </tr>
@@ -188,15 +180,7 @@
             {% for game in laserball_games %}
                 <tr>
                     <td><a href="/game/laserball/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
-                    {% if not game.winner %}
-                        <td style="color: grey;">None</td>
-                    {% elif game.winner.value == "blue" %}
-                        <td style="color: #0096FF;">{{ game.winner.standardize() }}</td>
-                    {% elif game.winner.value == "red" %}
-                        <td style="color: orangered;">{{ game.winner.standardize() }}</td>
-                    {% else %}
-                        <td style="color: greenyellow;">{{ game.winner.standardize() }}</td>
-                    {% endif %}
+                    <td style="color: {{ game.winner.css_color_name }};">{{ game.winner.standardize() }}</td>
                     <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
                     <td style="color: {{ 'greenyellow' if game.ranked else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ranked else "✕" }}</td>
                 </tr>

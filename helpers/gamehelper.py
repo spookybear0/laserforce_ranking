@@ -86,10 +86,10 @@ def get_player_display_names(players: List[PlayerInfo]) -> List[str]:
 
 def get_matchmaking_teams(team_rosters: Dict[Team, List[PlayerInfo]]) -> (
         List[str], List[str]):
-    """Returns display names for each player in both teams.
+    """Returns display names for each player in two teams.
 
-    The first returned list will always be the red team unless there is no red
-    team. The second one will be the other team.
+    The first returned list corresponds to the first team in the team_rosters dictionary.
+    The second list corresponds to the second team.
 
     Args:
         team_rosters: All teams and their players, as returned by
@@ -98,18 +98,11 @@ def get_matchmaking_teams(team_rosters: Dict[Team, List[PlayerInfo]]) -> (
     if len(team_rosters.keys()) < 2:
         raise exceptions.ServerError("Game has fewer than two teams in it")
 
-    team1, team2 = iter(team_rosters.keys())
+    # Get the first two teams in the roster
+    team1, team2 = list(team_rosters.keys())[:2]
 
-    if Team.RED in team_rosters:
-        players_matchmake_team1 = get_player_display_names(team_rosters[Team.RED])
-
-        # Pick whichever other team there is to be the other one.
-        other_team = team2 if team1 == Team.RED else team1
-        players_matchmake_team2 = get_player_display_names(team_rosters[other_team])
-    else:
-        # We shouldn't have an SM5 game where red doesn't play, but maybe
-        # somebody messed with the game editor.
-        players_matchmake_team1 = get_player_display_names(team_rosters[team1])
-        players_matchmake_team2 = get_player_display_names(team_rosters[team2])
+    # Get player display names for both teams
+    players_matchmake_team1 = get_player_display_names(team_rosters[team1])
+    players_matchmake_team2 = get_player_display_names(team_rosters[team2])
 
     return players_matchmake_team1, players_matchmake_team2

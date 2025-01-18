@@ -77,6 +77,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
             tooltip_info=TOOLTIP_INFO,
+            # TODO: remove this in favor of "team1" and "team2" scores
             fire_score=await game.get_team_score(SM5Team.RED),
             earth_score=await game.get_team_score(SM5Team.GREEN),
             is_admin=is_admin(request)
@@ -110,6 +111,10 @@ async def game_index(request: Request, type: str, id: int) -> str:
             win_chance_after_game = None
             win_chance_before_game = None
 
+        logger.debug("Fetching teams for scores")
+
+        teams = await game.get_teams()
+
         logger.debug("Rendering template")
 
         return await render_cached_template(
@@ -124,8 +129,8 @@ async def game_index(request: Request, type: str, id: int) -> str:
             win_chance_after_game=win_chance_after_game,
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
-            fire_score=await game.get_team_score(LaserballTeam.RED),
-            ice_score=await game.get_team_score(LaserballTeam.BLUE),
+            team1_score=await game.get_team_score(teams[0].enum),
+            team2_score=await game.get_team_score(teams[1].enum),
             is_admin=is_admin(request)
         )
     else:

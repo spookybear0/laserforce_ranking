@@ -225,15 +225,12 @@
     }
 
     function onReady() {
-        if ({{ ice_score }} > {{ fire_score }}) {
-            document.getElementById("teams").appendChild(document.getElementById("fire_team"));
+        if ({{ team1_score }} > {{ team2_score }}) {
+            // TODO: generalize
+            document.getElementById("teams").appendChild(document.getElementsByClassName("team1")[0]);
         }
 
         row = 2;
-
-        // no longer needed
-        //sortTable(document.getElementById("fire_table"), row)
-        //sortTable(document.getElementById("ice_table"), row)
     }
 
     document.addEventListener("DOMContentLoaded", onReady);
@@ -268,12 +265,12 @@
 
         <div id="teams">
             {% for team in teams %}
-            <div id="{{ team.color }}_team" class="team">
-                <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}</h2>
+            <div id="{{ team.color }}_team" class="team team{{ loop.index+1 }}">
+                <h2 style="font-size: 20px; color: {{ team.css_color_name }}" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}</h2>
 
                 <div class="outer-scrolling-table">
                     <div class="inner-scrolling-table">
-                        <table id="fire_table">
+                        <table>
                             <th class="fixed-column"><p>Codename</p></th>
                             <th><p title="Score = (Goals + Assists) * 10000 + Steals * 100 + Blocks">Score</p></th>
                             {% if game.ranked %}
@@ -443,9 +440,9 @@
     new Chart("win_chance_before_game", {
         type: "pie",
         data: {
-            labels: ["Fire", "Ice"],
+            labels: ["{{ teams[0].element }}", "{{ teams[1].element }}"],
             datasets: [{
-                backgroundColor: ["#b91d47","#0047AB"],
+                backgroundColor: ["{{ teams[0].css_color_name }}", "{{ teams[1].css_color_name }}"],
                 data: [{{ (win_chance_before_game[0]*100)|round(2) }}, {{ (win_chance_before_game[1]*100)|round(2) }}]
             }]
         },
@@ -465,9 +462,9 @@
     new Chart("win_chance", {
         type: "pie",
         data: {
-            labels: ["Fire", "Ice"],
+            labels: ["{{ teams[0].element }}", "{{ teams[1].element }}"],
             datasets: [{
-                backgroundColor: ["#b91d47", "#0047AB"],
+                backgroundColor: ["{{ teams[0].css_color_name }}", "{{ teams[1].css_color_name }}"],
                 data: [{{ (win_chance_after_game[0]*100)|round(2) }}, {{ (win_chance_after_game[1]*100)|round(2) }}]
             }]
         },

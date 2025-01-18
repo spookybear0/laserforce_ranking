@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from tortoise import Model, fields
 
 from db.sm5 import SM5Stats
-from db.types import Team, IntRole, EventType, PlayerStateType
+from db.types import Team, IntRole, EventType, PlayerStateType, NAME_TO_TEAM
 
 
 # general game stuff
@@ -22,16 +22,7 @@ class Teams(Model):
 
     @property
     def enum(self) -> Team:
-        conversions = {
-            "Fire": Team.RED,
-            "Earth": Team.GREEN,
-            "Red": Team.RED,
-            "Green": Team.GREEN,
-            "Blue": Team.BLUE,
-            "Ice": Team.BLUE,
-        }
-
-        return conversions[self.color_name]
+        return NAME_TO_TEAM[self.color_name]
 
     async def to_dict(self) -> dict:
         final = {}

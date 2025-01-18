@@ -13,7 +13,7 @@ from db.sm5 import SM5Game, SM5Stats
 from db.types import EventType, PlayerStateType, Team
 from helpers import ratinghelper
 from helpers.ratinghelper import MU, SIGMA
-from helpers.sm5helper import update_winner
+from helpers import sm5helper, laserballhelper
 import sentry_sdk
 
 
@@ -232,7 +232,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 logger.debug(
                     f"Player State: time: {int(data[1])}, entity: {token_to_entity[data[2]]}, state: {data[3]}")
 
-    # getting the winner
+    # get teams for later use
 
     team1 = None
     team2 = None
@@ -278,7 +278,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     await game.save()
 
     logger.debug("Inital game save complete")
-    await update_winner(game)
+    await sm5helper.update_winner(game)
 
     game.laserrank_version = SM5_LASERRANK_VERSION
     await game.save()
@@ -489,6 +489,11 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
             case "2":  # team info
                 sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3], "color_name": data[4]})
 
+                # TODO: remove hardcode purple (this is nessacery for now because purple's "color_name" is red for some reason)
+                if data[2] == "Purple":
+                    data[3] = 1
+                    data[4] = "Purple"
+
                 teams.append(
                     await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4],
                                        real_color_name=element_to_color(data[4])))
@@ -669,27 +674,27 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     team2_score = 0
     team2 = None
 
-    index = 1
-
-    for t in teams:
+    i = 0
+    for team in teams:
         if not t.color_name or not t.color_enum or t.name == "Neutral":
             continue
 
-        if index == 1:
-            team1 = t
-        else:  # 2
-            team2 = t
+        if i == 0: # found first team
+            team1 = team
+        else: # found second team
+            team2 = team
 
-        entities = await EntityStarts.filter(team=t, type="player").all()
+        # TODO: optimize this
+        entities = await EntityStarts.filter(team=team, type="player").all()
         for e in entities:
             e_end = await EntityEnds.filter(entity__entity_id=e.entity_id).first()
 
-            if index == 1:
+            if i == 1:
                 team1_score += e_end.score
-            elif index == 2:  # 2
+            elif i == 2:
                 team2_score += e_end.score
 
-        index += 1
+        i += 1
 
     if team1_score > team2_score:
         winner_model = team1
@@ -698,19 +703,14 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     else:
         winner_model = None
 
-    # may need to be adjusted for more team colors/names
+    # calculate winner
 
-    red_colors = ["Solid Red", "Fire", "Red"]
-    blue_colors = ["Solid Blue", "Ice", "Earth", "Blue", "Solid Green", "Green"]
+    winner = None
 
     if winner_model is None:
-        winner = None  # tie (draw)
-    elif winner_model.color_name in red_colors:
-        winner = Team.RED
-    elif winner_model.color_name in blue_colors:
-        winner = Team.BLUE
+        winner = None # tie (draw)
     else:
-        raise Exception("Invalid team color")  # or can't find correct team color
+        winner = winner_model.enum
 
     logger.debug(f"Winner: {winner}")
 
@@ -721,7 +721,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
         logger.warning("Game ended early and lasted less than 3 minutes, skipping")
         return None
 
-    game = await LaserballGame.create(winner=winner, winner_color=winner.value if winner else "none",
+    game = await LaserballGame.create(winner=None, winner_color="none" if winner else "none",
                                       tdf_name=os.path.basename(file_location), file_version=file_version,
                                       ranked=ranked,
                                       software_version=program_version, arena=arena, mission_type=mission_type,
@@ -742,6 +742,12 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     await game.save()
 
     logger.debug("Inital game save complete")
+
+    # determine winner
+
+    await laserballhelper.update_winner(game)
+
+    await game.save()
 
     # determine if the game should be ranked automatically
 

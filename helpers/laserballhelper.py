@@ -430,3 +430,32 @@ async def get_laserball_rating_over_time(entity_id: str, min_time: datetime = _M
 
 def _calc_ratio(numerator: int, denominator: int) -> float:
     return float(numerator) / float(denominator) if denominator else 0.0
+
+async def update_winner(game: LaserballGame):
+    """Updates the following fields in the game:
+
+    winner, winner_color.
+
+    The team with the highest score is declared the winner.
+
+    Will not call save() after the update is done.
+    """
+    # Get all teams in the game.
+    teams = await game.teams.all()
+
+    # Remove neutral team(s)
+    teams = [team.enum for team in teams if team.enum != None]
+
+    scores = {team: await game.get_team_score(team) for team in teams}
+
+    # Determine the winner based on the updated scores.
+    max_score = max(scores.values())
+    winning_teams = [team for team, score in scores.items() if score == max_score]
+
+    if len(winning_teams) == 1:
+        winner = winning_teams[0]
+    else:  # Tie or no clear winner
+        winner = Team.NONE
+
+    game.winner = winner
+    game.winner_color = winner.value if winner else "none"

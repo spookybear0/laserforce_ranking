@@ -284,6 +284,13 @@ class SM5Game(Model):
         """
 
         return await self.entity_starts.filter(type="player")
+    
+    async def get_teams(self) -> List[Team]:
+        """
+        Returns a list of teams in the game excluding neutral teams
+        """
+
+        return await self.teams.filter(name__not_in=["Neutral", "None"])
 
     async def get_previous_game_id(self) -> Optional[int]:
         """

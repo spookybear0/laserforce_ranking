@@ -228,7 +228,7 @@
         <div class="scorecard_player_stats">
             {% for team in teams %}
             <div class="scorecard_team_stats">
-                <h2 class="{{ team.css_class }} team-header">{{ team.name }} ({{ team.score }})</h2>
+                <h2 style="color: {{ team.css_color_name }}" class="{{ team.css_class }} team-header">{{ team.name }} ({{ team.score }})</h2>
                 <table class="scorecard_player_stats_table">
                     <tr>
                         <th>Player</th>
