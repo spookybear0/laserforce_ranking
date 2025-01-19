@@ -101,11 +101,10 @@ async def create_sm5_game_1(basic_events: bool = True) -> SM5Game:
                        await create_zap_event(800, ENTITY_ID_1, ENTITY_ID_3),
                        ])
 
-    game = await SM5Game.create(winner_color=Team.RED.value.color, tdf_name="in_memory_test", file_version="0.test.0",
-                                software_version="12.34.56", arena="Test Arena", mission_name="Space Marines 5",
-                                mission_type=0, ranked=True, ended_early=False, start_time=2222222,
-                                mission_duration=900000)
-
+    game = await SM5Game.create(winner=Team.RED, winner_color=Team.RED.value.color, tdf_name="in_memory_test",
+                                file_version="0.test.0", software_version="12.34.56", arena="Test Arena",
+                                mission_name="Space Marines 5", mission_type=0, ranked=True, ended_early=False,
+                                start_time=2222222, mission_duration=900000)
     await game.teams.add(*[_RED_TEAM, _GREEN_TEAM])
     await game.events.add(*events)
     await game.save()
