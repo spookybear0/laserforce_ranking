@@ -204,7 +204,7 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
 
         await game.entity_ends.add(*[entity_end1, entity_end2, entity_end3])
 
-        game2 = await SM5Game.create(winner_color=Team.RED.value.color, tdf_name="in_memory_test",
+        game2 = await SM5Game.create(winner=Team.NONE, winner_color=Team.RED.value.color, tdf_name="in_memory_test",
                                      file_version="0.test.0",
                                      software_version="12.34.56", arena="Test Arena", mission_name="Space Marines 5",
                                      mission_type=0, ranked=True, ended_early=False, start_time=2222222,
