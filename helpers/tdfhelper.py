@@ -258,7 +258,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         return None
     
 
-    game = await SM5Game.create(winner=None, winner_color="none", tdf_name=os.path.basename(file_location),
+    game = await SM5Game.create(winner=Team.NONE, winner_color="none", tdf_name=os.path.basename(file_location),
                                 file_version=file_version, ranked=ranked,
                                 software_version=program_version, arena=arena, mission_type=mission_type,
                                 mission_name=mission_name,
@@ -721,7 +721,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
         logger.warning("Game ended early and lasted less than 3 minutes, skipping")
         return None
 
-    game = await LaserballGame.create(winner=None, winner_color="none" if winner else "none",
+    game = await LaserballGame.create(winner=Team.NONE, winner_color="none" if winner else "none",
                                       tdf_name=os.path.basename(file_location), file_version=file_version,
                                       ranked=ranked,
                                       software_version=program_version, arena=arena, mission_type=mission_type,
