@@ -231,6 +231,7 @@ class EventType(Enum):
     TIME_VIOLATION = "1108"
     CLEAR = "1109"  # Arguments: "(entity 1)", " clears to ", "(entity 2)"
     FAIL_CLEAR = "110A"  # Arguments: "(entity 1)", " fails to clear"
+    RESET_ON_BASE = "110B"  # Arguments: "(entity 1)", " resets on (base entity)"
 
 
 class IntRole(IntEnum):
