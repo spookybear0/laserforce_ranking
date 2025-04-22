@@ -228,6 +228,7 @@ async def get_laserball_player_stats(game: LaserballGame,
         sum_blocks = 0
         sum_clears = 0
         sum_passes = 0
+        sum_times_zapped = 0
         sum_times_blocked = 0
         sum_possession_time_millis = 0
 
@@ -287,7 +288,7 @@ async def get_laserball_player_stats(game: LaserballGame,
             sum_shots_fired += player.shots_fired
             sum_shots_hit += player.shots_hit
             sum_shot_opponent += player.shot_opponent
-            sum_times_blocked += player.times_zapped
+            sum_times_zapped += player.times_zapped
             sum_blocked_main_player += player.blocked_main_player if player.blocked_main_player else 0
             sum_blocked_by_main_player += player.blocked_by_main_player if player.blocked_by_main_player else 0
             sum_goals += player.goals
@@ -319,7 +320,7 @@ async def get_laserball_player_stats(game: LaserballGame,
             shots_fired=sum_shots_fired,
             shots_hit=sum_shots_hit,
             shot_opponent=sum_shot_opponent,
-            times_zapped=sum_times_blocked,
+            times_zapped=sum_times_zapped,
             stats=None,
             blocked_main_player=sum_blocked_main_player,
             blocked_by_main_player=sum_blocked_by_main_player,

@@ -31,8 +31,6 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
 
         replay = await create_sm5_replay(self.game)
 
-        print(replay)
-
         expected = Replay(events=[ReplayEvent(timestamp_millis=2000, message='Indy zaps Miles', team_scores=[100, -20],
                                               cell_changes=[ReplayCellChange(row_id='r1', column=4, new_value='29'),
                                                             ReplayCellChange(row_id='r1', column=7,
@@ -136,8 +134,6 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                            id=3, priority=0, required=False)],
                                        sound_stereo_balance=0.5)]
 
-        print(replay)
-
         self.assertEqual(expected_events, replay.events)
 
     async def test_downed_player_comes_back_up(self):
@@ -233,8 +229,6 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                            priority=0,
                                                            required=False)],
                                        sound_stereo_balance=-0.5)]
-
-        print(replay)
 
         self.assertEqual(expected_events, replay.events)
 
