@@ -32,6 +32,11 @@ class SM5Game(Model):
     mission_name = fields.CharField(100)
     ranked = fields.BooleanField()  # will this game affect player ratings and stats.
     ended_early = fields.BooleanField()  # did the game end early?
+    # Real-life time when the game started. Keep in mind that MySQL does not store timezone information, so this is
+    # a DATETIME(6) field. It has microsecond precision but no concept of timezone, so when you read it as a datetime
+    # object, it will be the local time at the location where it was played, but timezone set to UTC.
+    # Likewise, when you initialize this value with a datetime object, set the timezone to UTC and the time to whatever
+    # it was at the local site to prevent headaches.
     start_time = fields.DatetimeField()
     mission_duration = fields.IntField()  # in milliseconds
     log_time = fields.DatetimeField(auto_now_add=True)

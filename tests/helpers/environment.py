@@ -4,13 +4,15 @@ Sets up a Tortoise environment with an in-memory SQLite database, creates some b
 has functions to create specific scenarios for whatever is needed for a unit test.
 
 For some unit tests, it's better to create minimal setups that just have the bare minimum necessary for the system under
-test. But there are function where every part of the game matters, so we'll have this complete game here as a test
+test. But there are functions where every part of the game matters, so we'll have this complete game here as a test
 dataset.
 """
+import datetime
 import json
 import os
 from typing import Optional
 
+import pytz
 from tortoise import Tortoise
 
 from db.game import Events, EntityStarts, Teams, EntityEnds, Scores
@@ -23,6 +25,12 @@ ENTITY_ID_1 = "Entity#1"
 ENTITY_ID_2 = "Entity#2"
 ENTITY_ID_3 = "Entity#3"
 ENTITY_ID_4 = "Entity#4"
+
+# Keep in mind that the start times need to be set to UTC, regardless of the actual timezone at the local site.
+SM5_GAME_1_START_TIME = datetime.datetime(2024, 6, 14, 18, 10, 2,
+                                          tzinfo=pytz.utc)
+LB_GAME_1_START_TIME = datetime.datetime(2024, 7, 1, 19, 30, 40,
+                                         tzinfo=pytz.utc)
 
 _RED_TEAM: Optional[Teams] = None
 _BLUE_TEAM: Optional[Teams] = None
@@ -104,7 +112,7 @@ async def create_sm5_game_1(basic_events: bool = True) -> SM5Game:
     game = await SM5Game.create(winner=Team.RED, winner_color=Team.RED.value.color, tdf_name="in_memory_test",
                                 file_version="0.test.0", software_version="12.34.56", arena="Test Arena",
                                 mission_name="Space Marines 5", mission_type=0, ranked=True, ended_early=False,
-                                start_time=2222222, mission_duration=900000)
+                                start_time=SM5_GAME_1_START_TIME, mission_duration=900000)
     await game.teams.add(*[_RED_TEAM, _GREEN_TEAM])
     await game.events.add(*events)
     await game.save()
@@ -115,7 +123,8 @@ async def create_laserball_game_1() -> LaserballGame:
     game = await LaserballGame.create(winner=Team.RED, winner_color=Team.RED.value.color, tdf_name="in_memory_test",
                                       file_version="0.test.0",
                                       software_version="12.34.56", arena="Test Arena", mission_name="Laserball",
-                                      mission_type=0, ranked=True, ended_early=False, start_time=2222222,
+                                      mission_type=0, ranked=True, ended_early=False,
+                                      start_time=int(LB_GAME_1_START_TIME.timestamp()),
                                       mission_duration=900000)
 
     await game.save()
