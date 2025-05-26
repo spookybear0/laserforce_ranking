@@ -1,8 +1,9 @@
 import json
 import os
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
+import sentry_sdk
 from sanic.log import logger
 
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
@@ -12,9 +13,8 @@ from db.sm5 import IntRole, SM5_LASERRANK_VERSION
 from db.sm5 import SM5Game, SM5Stats
 from db.types import EventType, PlayerStateType, Team
 from helpers import ratinghelper
-from helpers.ratinghelper import MU, SIGMA
 from helpers import sm5helper, laserballhelper
-import sentry_sdk
+from helpers.ratinghelper import MU, SIGMA
 
 
 def element_to_color(element: str) -> str:
@@ -79,7 +79,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             case ";":
                 continue  # comment
             case "0":  # system info
-                sentry_sdk.set_context("system_info", {"file_version": data[1], "program_version": data[2], "arena": data[3]})
+                sentry_sdk.set_context("system_info",
+                                       {"file_version": data[1], "program_version": data[2], "arena": data[3]})
 
                 file_version = data[1]
                 program_version = data[2]
@@ -87,7 +88,9 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 logger.debug(
                     f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
             case "1":  # game info
-                sentry_sdk.set_context("game_info", {"mission_type": data[1], "mission_name": data[2], "start_time": data[3], "mission_duration": data[4]})
+                sentry_sdk.set_context("game_info",
+                                       {"mission_type": data[1], "mission_name": data[2], "start_time": data[3],
+                                        "mission_duration": data[4]})
 
                 mission_type = int(data[1])
                 mission_name = data[2]
@@ -108,7 +111,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                         return game
 
             case "2":  # team info
-                sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3], "color_name": data[4]})
+                sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3],
+                                                     "color_name": data[4]})
 
                 teams.append(
                     await Teams.create(index=int(data[1]), name=data[2], color_enum=data[3], color_name=data[4],
@@ -165,14 +169,16 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
                 logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
             case "5":  # score
-                sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4], "new": data[5]})
+                sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4],
+                                                 "new": data[5]})
 
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                                                   delta=int(data[4]), new=int(data[5])))
                 logger.debug(
                     f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
             case "6":  # entity end
-                sentry_sdk.set_context("entity_end", {"time": data[1], "entity": data[2], "type": data[3], "score": data[4]})
+                sentry_sdk.set_context("entity_end",
+                                       {"time": data[1], "entity": data[2], "type": data[3], "score": data[4]})
 
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                                                            type=int(data[3]), score=int(data[4])))
@@ -256,7 +262,6 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     if ended_early and mission_duration < 3 * 60 * 1000:
         logger.warning("Game ended early and lasted less than 3 minutes, skipping")
         return None
-    
 
     game = await SM5Game.create(winner=Team.NONE, winner_color="none", tdf_name=os.path.basename(file_location),
                                 file_version=file_version, ranked=ranked,
@@ -264,7 +269,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                                 mission_name=mission_name,
                                 start_time=datetime.strptime(start_time, "%Y%m%d%H%M%S"),
                                 mission_duration=mission_duration, ended_early=ended_early)
-    
+
     sentry_sdk.set_context("game", {"id": game.id})
 
     await game.teams.add(*teams)
@@ -316,17 +321,16 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     heavy_count += 1
                 elif e.role == IntRole.SCOUT:
                     scout_count += 1
-                elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
+                elif e.role == IntRole.AMMO:  # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
                     ammo_count += 1
                 elif e.role == IntRole.MEDIC:
                     medic_count += 1
 
-        if total_count == 0: # probably a neutral team
+        if total_count == 0:  # probably a neutral team
             continue
 
-        if commander_count != 1 or heavy_count != 1  or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
+        if commander_count != 1 or heavy_count != 1 or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
             ranked = False
-
 
     # check if there are any non-member players
 
@@ -363,21 +367,21 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
         if e.type == "player":
             # update entity_id if it's empty
             if await Player.filter(codename=e.name).exists() and (
-            await Player.filter(codename=e.name).first()).entity_id == "":
+                    await Player.filter(codename=e.name).first()).entity_id == "":
                 player = await Player.filter(codename=e.name).first()
                 player.entity_id = e.entity_id
                 player.player_id = db_member_id
                 await player.save()
             # update player name if we have a new one and we have entity_id
             elif await Player.filter(entity_id=e.entity_id).exists() and (
-            await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
+                    await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.codename = e.name
                 player.player_id = db_member_id
                 await player.save()
             # update player_id if we have entity_id and don't have player_id
             elif await Player.filter(entity_id=e.entity_id).exists() and (
-            await Player.filter(entity_id=e.entity_id).first()).player_id == "":
+                    await Player.filter(entity_id=e.entity_id).first()).player_id == "":
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.player_id = db_member_id
                 await player.save()
@@ -402,7 +406,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 continue
 
             player = await Player.filter(entity_id=entity_id).first()
-            
+
             try:
                 entity_end.previous_rating_mu = player.sm5_mu
                 entity_end.previous_rating_sigma = player.sm5_sigma
@@ -413,7 +417,6 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 entity_end.previous_rating_sigma = SIGMA
                 entity_end.current_rating_mu = MU
                 entity_end.current_rating_sigma = SIGMA
-            
 
             await entity_end.save()
 
@@ -463,7 +466,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
             case ";":
                 continue  # comment
             case "0":  # system info
-                sentry_sdk.set_context("system_info", {"file_version": data[1], "program_version": data[2], "arena": data[3]})
+                sentry_sdk.set_context("system_info",
+                                       {"file_version": data[1], "program_version": data[2], "arena": data[3]})
 
                 file_version = data[1]
                 program_version = data[2]
@@ -471,7 +475,9 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 logger.debug(
                     f"System Info: file version: {file_version}, program version: {program_version}, arena: {arena}")
             case "1":  # game info
-                sentry_sdk.set_context("game_info", {"mission_type": data[1], "mission_name": data[2], "start_time": data[3], "mission_duration": data[4]})
+                sentry_sdk.set_context("game_info",
+                                       {"mission_type": data[1], "mission_name": data[2], "start_time": data[3],
+                                        "mission_duration": data[4]})
 
                 mission_type = int(data[1])
                 mission_name = data[2]
@@ -487,7 +493,8 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                     return game
 
             case "2":  # team info
-                sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3], "color_name": data[4]})
+                sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3],
+                                                     "color_name": data[4]})
 
                 # TODO: remove hardcode purple (this is nessacery for now because purple's "color_name" is red for some reason)
                 if data[2] == "Purple":
@@ -517,7 +524,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                     member_id = None
 
                 name = data[4].strip()  # remove whitespace (some names have trailing whitespace for some reason)
-                
+
                 sentry_sdk.set_context(
                     "entity_start", {
                         "time": data[1],
@@ -611,14 +618,16 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
                 logger.debug(f"Event: time: {data[1]}, type: {event_type}, arguments: {data[3:]}")
             case "5":  # score
-                sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4], "new": data[5]})
+                sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4],
+                                                 "new": data[5]})
 
                 scores.append(await Scores.create(time=int(data[1]), entity=token_to_entity[data[2]], old=int(data[3]),
                                                   delta=int(data[4]), new=int(data[5])))
                 logger.debug(
                     f"Score: time: {data[1]}, entity: {token_to_entity[data[2]]}, old: {data[3]}, delta: {data[4]}, new: {data[5]}")
             case "6":  # entity end
-                sentry_sdk.set_context("entity_end", {"time": data[1], "entity": data[2], "type": data[3], "score": data[4]})
+                sentry_sdk.set_context("entity_end",
+                                       {"time": data[1], "entity": data[2], "type": data[3], "score": data[4]})
 
                 entity_ends.append(await EntityEnds.create(time=int(data[1]), entity=token_to_entity[data[2]],
                                                            type=int(data[3]), score=int(data[4])))
@@ -679,9 +688,9 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
         if not t.color_name or not t.color_enum or t.name == "Neutral":
             continue
 
-        if i == 0: # found first team
+        if i == 0:  # found first team
             team1 = team
-        else: # found second team
+        else:  # found second team
             team2 = team
 
         # TODO: optimize this
@@ -708,7 +717,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     winner = None
 
     if winner_model is None:
-        winner = None # tie (draw)
+        winner = None  # tie (draw)
     else:
         winner = winner_model.enum
 
@@ -794,21 +803,21 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
         if e.type == "player":
             # update entity_id if it's empty
             if await Player.filter(codename=e.name).exists() and (
-            await Player.filter(codename=e.name).first()).entity_id == "":
+                    await Player.filter(codename=e.name).first()).entity_id == "":
                 player = await Player.filter(codename=e.name).first()
                 player.entity_id = e.entity_id
                 player.player_id = db_member_id
                 await player.save()
             # update player name if we have a new one and we have entity_id
             elif await Player.filter(entity_id=e.entity_id).exists() and (
-            await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
+                    await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.name = e.name
                 player.player_id = db_member_id
                 await player.save()
             # update player_id if we have entity_id and don't have player_id
             elif await Player.filter(entity_id=e.entity_id).exists() and (
-            await Player.filter(entity_id=e.entity_id).first()).player_id == "":
+                    await Player.filter(entity_id=e.entity_id).first()).player_id == "":
                 player = await Player.filter(entity_id=e.entity_id).first()
                 player.player_id = db_member_id
                 await player.save()
@@ -937,3 +946,16 @@ async def create_event_from_data(data: list[str]) -> Events:
     return await Events.create(time=int(data[1]), type=EventType(data[2]), arguments=arguments,
                                entity1=semantic_arguments["entity1"], action=semantic_arguments["action"],
                                entity2=semantic_arguments["entity2"])
+
+
+async def create_event(time_ms: int, type: EventType,
+                       entity1: Optional[str] = None, action: Optional[str] = None,
+                       entity2: Optional[str] = None) -> Events:
+    """Creates an Events object from semantic arguments."""
+    entity1 = entity1 if entity1 else ""
+    action = action if action else ""
+    entity2 = entity2 if entity2 else ""
+
+    return await Events.create(time=time_ms, type=type,
+                               entity1=entity1, action=action, entity2=entity2,
+                               arguments=json.dumps({}))

@@ -96,7 +96,9 @@ async def create_sm5_game_1(basic_events: bool = True) -> SM5Game:
                        await create_zap_event(400, ENTITY_ID_2, ENTITY_ID_1),
                        await create_zap_event(500, ENTITY_ID_1, ENTITY_ID_2),
                        await Events.create(time=600, type=EventType.ACTIVATE_NUKE,
-                                           arguments=json.dumps([ENTITY_ID_2, " nukes ", ENTITY_ID_1])),
+                                           arguments=json.dumps([ENTITY_ID_2, " nukes ", ENTITY_ID_1]
+                                                                ), entity1=ENTITY_ID_2, action="nukes",
+                                           entity2=ENTITY_ID_1),
                        await create_zap_event(700, ENTITY_ID_3, ENTITY_ID_1),
                        await create_zap_event(800, ENTITY_ID_1, ENTITY_ID_3),
                        ])
@@ -165,19 +167,19 @@ async def create_resupply_lives_event(time_millis: int, supplier_entity_id: str,
 
 
 async def add_entity(
-    entity_id: str,
-    team: Teams,
-    start_time_millis: int = 0,
-    end_time_millis: int = 900000,
-    type: str = "player",
-    name: str = "Some Player",
-    level: int = 0,
-    role: int = 0,
-    battlesuit: str = "Panther",
-    member_id: str = "4-43-000",
-    score: int = 0,
-    sm5_game: Optional[SM5Game] = None,
-    omit_entity_end: bool = False,
+        entity_id: str,
+        team: Teams,
+        start_time_millis: int = 0,
+        end_time_millis: int = 900000,
+        type: str = "player",
+        name: str = "Some Player",
+        level: int = 0,
+        role: int = 0,
+        battlesuit: str = "Panther",
+        member_id: str = "4-43-000",
+        score: int = 0,
+        sm5_game: Optional[SM5Game] = None,
+        omit_entity_end: bool = False,
 ) -> (EntityStarts, Optional[EntityEnds]):
     entity_start = await create_entity_start(
         entity_id=entity_id,
@@ -209,15 +211,15 @@ async def add_entity(
 
 
 async def create_entity_start(
-    entity_id: str,
-    team: Teams,
-    time_millis: int = 0,
-    type: str = "player",
-    name: str = "Some Player",
-    level: int = 0,
-    role: int = 0,
-    battlesuit: str = "Panther",
-    member_id: str = "4-43-000"
+        entity_id: str,
+        team: Teams,
+        time_millis: int = 0,
+        type: str = "player",
+        name: str = "Some Player",
+        level: int = 0,
+        role: int = 0,
+        battlesuit: str = "Panther",
+        member_id: str = "4-43-000"
 ) -> EntityStarts:
     return await EntityStarts.create(time=time_millis,
                                      entity_id=entity_id,
@@ -284,10 +286,10 @@ async def add_sm5_stats(entity_start: EntityStarts,
 
 
 async def create_entity_ends(
-    entity_start: EntityStarts,
-    time_millis: int = 90000,
-    type: int = 1,
-    score: int = 0) -> EntityEnds:
+        entity_start: EntityStarts,
+        time_millis: int = 90000,
+        type: int = 1,
+        score: int = 0) -> EntityEnds:
     return await EntityEnds.create(time=time_millis,
                                    entity=entity_start,
                                    type=type,

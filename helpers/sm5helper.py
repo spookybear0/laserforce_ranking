@@ -15,7 +15,8 @@ from helpers.cachehelper import cache
 from helpers.gamehelper import get_team_rosters, SM5_STATE_LABEL_MAP, SM5_STATE_COLORS
 from helpers.statshelper import PlayerCoreGameStats, get_player_state_distribution, get_sm5_score_components, \
     count_zaps, count_missiles, TeamCoreGameStats, get_sm5_player_alive_times, get_sm5_player_alive_labels, \
-    get_player_state_distribution_pie_chart, get_sm5_player_alive_colors, TimeSeriesRawData, TimeSeriesDataPoint
+    get_player_state_distribution_pie_chart, get_sm5_player_alive_colors, TimeSeriesRawData, TimeSeriesDataPoint, \
+    NotableEvent, sort_notable_events
 
 # TODO: A lot of stuff from statshelper.py should be moved here. But let's do that separately to keep the commit size
 #  reasonable.
@@ -23,6 +24,9 @@ from helpers.statshelper import PlayerCoreGameStats, get_player_state_distributi
 # Artificial timestamps for default values. We can't use datetime.min and datetime.max because they are naive.
 _MIN_DATETIME = datetime(1976, 1, 1, tzinfo=pytz.utc)
 _MAX_DATETIME = datetime(2035, 12, 31, tzinfo=pytz.utc)
+
+# The maximum number of seconds that can pass between nuke activation and detonation.
+MAX_NUKE_TIME = 10
 
 
 @dataclass
@@ -606,6 +610,7 @@ async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DAT
         min_date=min_date, max_date=max_date, data_points=data_points
     )
 
+
 """ async def update_winner(game: SM5Game):
     Updates the following fields in the game:
 
@@ -631,6 +636,7 @@ async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DAT
 
     game.winner = winner
     game.winner_color = winner.value if winner else "none" """
+
 
 async def update_winner(game: SM5Game):
     """Updates the following fields in the game:
@@ -668,7 +674,6 @@ async def update_winner(game: SM5Game):
 
     game.winner = winner
     game.winner_color = winner.value if winner else "none"
-    
 
 
 async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:
@@ -689,6 +694,158 @@ async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:
         return None
 
     return next(iter(alive_player_count.keys()))
+
+
+async def get_sm5_notable_events(game: SM5Game) -> list[NotableEvent]:
+    """Returns a list of all notable events that happened during the game.
+
+    The list will be returned in chronological order."""
+    # Collect the deaths of all the players.
+    entities = await game.entity_starts.all()
+    result = []
+
+    # Map from entity_id to entity
+    entity_id_map = {
+        entity.entity_id: entity for entity in entities
+    }
+
+    team_from_entity_id = {
+        entity.entity_id: await entity.team for entity in entities
+    }
+
+    for entity in entities:
+        player = await SM5Stats.filter(entity__id=entity.id).first()
+
+        if player and player.lives_left == 0:
+            player_end = await game.entity_ends.filter(entity=entity.id).first()
+
+            # Strip out the "Team" from the name
+            team = team_from_entity_id[entity.entity_id]
+            team_name = team.short_name if team else ''
+
+            if player_end:
+                result.append(NotableEvent(seconds=int(player_end.time / 1000),
+                                           event=f"{entity.name} ({team_name} {entity.role}) is eliminated"))
+
+    # Next up, look for nukes.
+    events = await game.events.filter(type__in=
+                                      [EventType.ACTIVATE_NUKE, EventType.DETONATE_NUKE, EventType.DOWNED_TEAM,
+                                       EventType.DOWNED_OPPONENT, EventType.MISSILE_DOWN_TEAM,
+                                       EventType.MISSILE_DOWN_OPPONENT,
+                                       EventType.RESUPPLY_LIVES, EventType.RESUPPLY_AMMO,
+                                       EventType.PENALTY, EventType.MISSION_END]
+                                      ).order_by("time").all()
+
+    event_count = len(events)
+    event_index = 0
+
+    while event_index < event_count:
+        # Is this a nuke?
+        if events[event_index].type == EventType.ACTIVATE_NUKE:
+            nuke_time = int(events[event_index].time / 1000)
+            nuking_entity_id = events[event_index].entity1
+
+            if nuking_entity_id not in entity_id_map:
+                print(f"ERROR - cannot find entity for {nuking_entity_id}")
+                event_index += 1
+                continue
+
+            nuking_entity = entity_id_map[nuking_entity_id]
+            nuking_team = team_from_entity_id[nuking_entity_id]
+
+            # Does it go off?
+            nuke_check_index = event_index + 1
+            nuke_successful = False
+
+            while nuke_check_index < event_count:
+                # If we're past the max time for a detonation, it didn't go off. We'll find out why in a second.
+                if int(events[nuke_check_index].time / 1000) >= nuke_time + MAX_NUKE_TIME:
+                    break
+
+                if events[nuke_check_index].entity1 == nuking_entity_id:
+                    if events[nuke_check_index].type == EventType.DETONATE_NUKE:
+                        # Success!
+                        nuke_successful = True
+
+                        result.append(NotableEvent(seconds=int(events[nuke_check_index].time / 1000),
+                                                   event=f"{nuking_entity.name} detonates a nuke"))
+                        break
+
+                    # If another nuke is attempted by the same player, then this one wasn't successful.
+                    if events[nuke_check_index].type == EventType.ACTIVATE_NUKE:
+                        break
+
+                nuke_check_index += 1
+
+            if not nuke_successful:
+                # Okay, that didn't work. Let's find out why.
+                nuke_check_index = event_index + 1
+                second_nuke_start = None
+
+                while nuke_check_index < event_count:
+                    # We don't know why it didn't work. Let's add that, if we ever see this we can dig into the logs
+                    # and find out why.
+                    if int(events[nuke_check_index].time / 1000) >= nuke_time + MAX_NUKE_TIME:
+                        result.append(NotableEvent(seconds=int(events[nuke_check_index].time / 1000),
+                                                   event=f"{nuking_entity.name} got their nuke canceled (NO IDEA HOW)"))
+                        break
+
+                    if events[nuke_check_index].type == EventType.MISSION_END:
+                        result.append(NotableEvent(seconds=nuke_time,
+                                                   event=f"{nuking_entity.name} tried to nuke but time ran out"))
+                        break
+
+                    # Was something done to the commander?
+                    acting_entity_id = events[nuke_check_index].entity1
+                    receiving_entity_id = events[nuke_check_index].entity2
+
+                    if acting_entity_id in entity_id_map:
+                        acting_entity = entity_id_map[acting_entity_id]
+                        acting_team = team_from_entity_id[acting_entity_id]
+                        event_time_seconds = int(events[nuke_check_index].time / 1000)
+                        type = events[nuke_check_index].type
+
+                        if receiving_entity_id == nuking_entity_id:
+                            if receiving_entity_id in entity_id_map and acting_entity_id in entity_id_map:
+                                # We'll treat TEAM and OPPONENT as the same, Laserforce isn't good about using the right event.
+                                # We'll check the teams ourselves.
+                                if type == EventType.DOWNED_TEAM or type == EventType.DOWNED_OPPONENT or type == EventType.MISSILE_DOWN_TEAM or type == EventType.MISSILE_DOWN_OPPONENT:
+                                    # Compare the teams.
+                                    if nuking_team.color_enum == acting_team.color_enum:
+                                        result.append(NotableEvent(seconds=event_time_seconds,
+                                                                   event=f"{nuking_entity.name} had their nuke canceled by FRIENDLY FIRE ({acting_entity.name})"))
+                                        break
+                                    result.append(NotableEvent(seconds=event_time_seconds,
+                                                               event=f"{nuking_entity.name} had their nuke canceled by {acting_entity.name}"))
+                                    break
+
+                                # Nuke cancel by resup is always fun.
+                                if type == EventType.RESUPPLY_LIVES or type == EventType.RESUPPLY_AMMO:
+                                    result.append(NotableEvent(seconds=event_time_seconds,
+                                                               event=f"{nuking_entity.name} had their nuke canceled by THEIR OWN RESUP ({acting_entity.name})"))
+                                    break
+
+                        if type == EventType.ACTIVATE_NUKE:
+                            # Another player is nuking?
+                            second_nuke_start = event_time_seconds
+
+                        if type == EventType.DETONATE_NUKE:
+                            # Nuke canceled by another nke!
+                            if second_nuke_start:
+                                # The other player nuked later, but had a shorter sound!
+                                result.append(NotableEvent(seconds=nuke_time,
+                                                           event=f"{nuking_entity.name} had their nuke canceled by {acting_entity.name}'s nuke - and they nuked later"))
+                                break
+
+                            result.append(NotableEvent(seconds=nuke_time,
+                                                       event=f"{nuking_entity.name} had their nuke canceled by {acting_entity.name}'s nuke - they nuked first"))
+                            break
+
+                    nuke_check_index += 1
+        event_index += 1
+
+    sort_notable_events(result)
+    return result
 
 
 def _create_lives_snapshot(lives_timeline: dict[int, list[int]], current_lives: dict[int, int]):

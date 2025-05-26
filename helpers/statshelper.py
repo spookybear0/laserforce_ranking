@@ -21,6 +21,16 @@ _DEFAULT_TICKS_DURATION_MILLIS = 30000
 
 
 @dataclass
+class NotableEvent:
+    """An important event during a game."""
+    # Number of seconds into the gameplay at which this event occurred.
+    seconds: int
+
+    # The event that happened.
+    event: str
+
+
+@dataclass
 class TimeSeriesDataPoint:
     """A single data point in a time series."""
     date: datetime
@@ -276,8 +286,8 @@ async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start:
     try:
         bases_destroyed = await (game.events.filter(
             Q(type=EventType.DESTROY_BASE) | Q(type=EventType.BASE_AWARDED) | Q(type=EventType.MISISLE_BASE_DESTROY)).
-                                filter(arguments__filter={"0": entity_start.entity_id}).count())
-    except Exception: # rare exception idk why it happens
+                                 filter(arguments__filter={"0": entity_start.entity_id}).count())
+    except Exception:  # rare exception idk why it happens
         bases_destroyed = 0
         async for event in game.events:
             if event.type == EventType.DESTROY_BASE or event.type == EventType.BASE_AWARDED or \
@@ -591,7 +601,8 @@ async def get_blocks() -> int:
 # could be improved by accounting for the amount of games played
 # could be combined into one function
 
-async def get_top_role_players(amount: int=5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[Tuple[str, int, int]]:
+async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[
+    Tuple[str, int, int]]:
     """
     Gets the top players of a given role by going through
     all games and getting the average score
@@ -610,8 +621,8 @@ async def get_top_role_players(amount: int=5, role: IntRole = IntRole.COMMANDER,
         players[name] = (players[name][0] + entity_end.score, players[name][1] + 1)
 
     # filter out players with less than min_games games
-    
-    if min_games: # if min_games is 0 or None, it will return all players
+
+    if min_games:  # if min_games is 0 or None, it will return all players
         players = {name: (score, games) for name, (score, games) in players.items() if games >= min_games}
 
     return sorted([(name, score // games, games) for name, (score, games) in players.items()], key=lambda x: x[1],
@@ -805,3 +816,8 @@ def get_player_state_distribution_pie_chart(distribution: dict[str, int],
         colors=[state_color_map[state] for state in distribution.keys()],
         data=list(distribution.values())
     )
+
+
+def sort_notable_events(events: list[NotableEvent]):
+    """Sorts a list of notable events in place."""
+    events.sort(key=lambda event: event.seconds)
