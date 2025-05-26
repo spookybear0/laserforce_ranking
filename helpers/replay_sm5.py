@@ -277,7 +277,8 @@ class ReplayGeneratorSm5(ReplayGenerator):
             sounds=self.sound_assets,
             intro_sound=self.start_audio,
             start_sound=self.alarm_start_audio,
-            sort_columns_index=[_SCORE_COLUMN]
+            sort_columns_index=[_SCORE_COLUMN],
+            game_start_real_world_timestamp=game.start_time
         )
 
     def handle_event(self, event: Events, player1, player2):
