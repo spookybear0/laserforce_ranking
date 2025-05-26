@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from tortoise import Model, fields
@@ -23,6 +24,11 @@ class Teams(Model):
     @property
     def enum(self) -> Team:
         return NAME_TO_TEAM[self.color_name]
+
+    @property
+    def short_name(self):
+        """Returns the name without 'Team' in it to keep it short."""
+        return re.sub(r"\s*Team\s*", "", self.name)
 
     async def to_dict(self) -> dict:
         final = {}
