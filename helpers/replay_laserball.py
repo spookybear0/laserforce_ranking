@@ -123,6 +123,7 @@ class ReplayGeneratorLaserball(ReplayGenerator):
             intro_sound=None,
             start_sound=None,
             sort_columns_index=[_GOALS_COLUMN, _ASSISTS_COLUMN, _STEALS_COLUMN, _BLOCKS_COLUMN],
+            game_start_real_world_timestamp=None,
         )
 
     def handle_event(self, event: Events, player1, player2):

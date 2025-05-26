@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -15,6 +16,7 @@ class ReplayCellChange:
     # Name of the row this update is for.
     row_id: str
 
+    # Index of the column. 0 is the left-most (typically the player name).
     column: int
 
     # The new value for this particular cell.
@@ -80,19 +82,22 @@ class ReplayEvent:
 
 @dataclass
 class ReplayPlayer:
-    """Describes a player """
+    """Describes the data for one player in the table."""
     # The innerHTML for each column.
     cells: List[str]
 
     # The row identifier, will be used in the ID of each row and cell.
+    #
+    # Each cell has an ID that is "<row_id>_<column_index>".
     row_id: str
 
-    # CSS class to initially use for this player.
+    # CSS class to initially use for this player. The class is applied to the entire row.
     css_class: str
 
 
 @dataclass
 class ReplayTeam:
+    """Describes one team during the replay."""
     # Display name for the team.
     name: str
 
@@ -108,10 +113,13 @@ class ReplayTeam:
 
 @dataclass
 class Replay:
+    # All events happening during the entire replay, sorted chronologically.
     events: List[ReplayEvent]
 
+    # All teams in this game.
     teams: List[ReplayTeam]
 
+    # All sound effects that might occur during playback.
     sounds: List[ReplaySound]
 
     # Sound to play before the replay starts
@@ -123,11 +131,15 @@ class Replay:
     # Names of the columns in each team table.
     column_headers: List[str]
 
-    # If not empty, the tables should be sorted by these column, in order of significance.
+    # If not empty, the tables should be sorted by these columns, in order of significance.
     sort_columns_index: List[int]
+
+    # The timestamp of when the game started in real life, if available.
+    game_start_real_world_timestamp: Optional[datetime.datetime]
 
     # Export this entire replay to JavaScript code.
     def export_to_js(self) -> str:
+        # TODO(ebomike): This is hella goofy. Probably better to write this with a Jinja template.
         result = ""
 
         for column in self.column_headers:
@@ -182,7 +194,7 @@ class Replay:
         if self.start_sound:
             result += f"setStartSound({self.start_sound.id});\n"
 
-        result += "events = [\n"
+        result += "const events = [\n"
         for event in self.events:
             cell_changes = [cell_change.to_js_string() for cell_change in event.cell_changes]
             row_changes = [row_change.to_js_string() for row_change in event.row_changes]
@@ -191,6 +203,11 @@ class Replay:
                        f"[{','.join(row_changes)}],{event.team_scores},{event.sound_stereo_balance},{sound_ids}],\n")
 
         result += "];\n\n"
+
+        if self.game_start_real_world_timestamp:
+            result += f"const start_real_world_timestamp_seconds = {int(self.game_start_real_world_timestamp.timestamp())};\n"
+        else:
+            result += "const start_real_world_timestamp_seconds = null;\n"
 
         result += """
             document.addEventListener("DOMContentLoaded", function() {

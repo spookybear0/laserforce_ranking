@@ -96,6 +96,11 @@
         font-size: xx-large;
     }
 
+    .realworld-timestamp {
+        text-align: center;
+        color: gray;
+    }
+
     table {
         margin: auto;
         padding: 1rem;
@@ -238,6 +243,8 @@
            max="900" value="0" onInput="onTimeChange(this.value);"/>
     <label for="time-slider" id="timestamp" class="timestamp">00:00</label>
 </div>
+
+<div class="realworld-timestamp" id="realworld-timestamp"></div>
 
 <script defer src="../../../assets/js/replay.js"></script>
 <script defer src="/api/game/{{ game_type }}/{{ game_id }}/replay_data"></script>

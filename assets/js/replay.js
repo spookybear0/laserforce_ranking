@@ -100,8 +100,25 @@ base_game_time_millis = 0;
 // The current time being shown in the time label, in seconds.
 time_label_seconds = 0;
 
+// The current real world timestamp being shown in the timestamp label, as a UNIX timestamp in seconds.
+current_real_world_timestamp_seconds = 0;
+
 // Sound IDs and all Audio objects for them.
 sounds = {};
+
+// Formatter for the real world timestamp. Basically MM/DD/YY HH:MM:SS (AM|PM)
+// Note that we already receive the timestamp with the timezone baked in, so we need to explicitly
+// set it to UTC so it doesn't get converted twice.
+const real_world_timestamp_formatter = new Intl.DateTimeFormat('en-US', {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZone: 'UTC'
+});
 
 /* Returns the time in the game (in milliseconds) that's currently active. */
 function getCurrentGameTimeMillis() {
@@ -524,6 +541,7 @@ function onTimeChange(seconds) {
     base_timestamp = new Date().getTime();
 
     setTimeLabel(seconds);
+    setRealWorldTimestampLabel(seconds);
 
     // If we're not currently playing back, we need to manually update.
     if (!play) {
@@ -536,6 +554,7 @@ function onTimeChange(seconds) {
 function setTimeSlider(seconds) {
     document.getElementById("time-slider").value = seconds;
     setTimeLabel(seconds);
+    setRealWorldTimestampLabel(seconds);
 }
 
 function setTimeLabel(seconds) {
@@ -553,6 +572,24 @@ function setTimeLabel(seconds) {
 
     document.getElementById("timestamp").innerHTML = `${formattedMinutes}:${formattedSeconds}`;
     time_label_seconds = totalSeconds;
+}
+
+function setRealWorldTimestampLabel(seconds) {
+    if (start_real_world_timestamp_seconds === null) {
+        return;
+    }
+
+    new_real_world_timestamp_seconds = start_real_world_timestamp_seconds + Math.floor(seconds);
+
+    if (new_real_world_timestamp_seconds === current_real_world_timestamp_seconds) {
+        return;
+    }
+
+    current_real_world_timestamp_seconds = new_real_world_timestamp_seconds;
+
+    const date = new Date(current_real_world_timestamp_seconds * 1000); // JavaScript uses milliseconds
+    const real_world_time = real_world_timestamp_formatter.format(date);
+    document.getElementById("realworld-timestamp").innerHTML = real_world_time;
 }
 
 function setIntroSound(soundId) {

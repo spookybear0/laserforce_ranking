@@ -1,4 +1,7 @@
+import datetime
 import unittest
+
+import pytz
 
 from db.sm5 import SM5Game
 from db.types import IntRole
@@ -99,7 +102,8 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
             required=True), start_sound=ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1,
                                                     priority=1, required=False),
                           column_headers=['Role', 'Codename', 'Score', 'Lives', 'Shots', 'Missiles', 'Spec', 'Accuracy',
-                                          'K/D'], sort_columns_index=[2])
+                                          'K/D'], sort_columns_index=[2],
+                          game_start_real_world_timestamp=datetime.datetime(1970, 1, 26, 9, 17, 2, tzinfo=pytz.utc))
 
         self.assertEqual(expected, replay)
 
