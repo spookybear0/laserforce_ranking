@@ -338,12 +338,26 @@
                                 <td>{{ player.get_gross_positive_score() }}</td>
                                 <td>{{ player.points_per_minute }}</td>
                                 <td>{{ player.lives_left }}</td>
-                                <td {{ tooltip("sm5_alive") }}><div style="display: flex"><canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
-                                    <span style="margin: auto">{{ player.time_in_game_str }}</span></div></td>
+                                <td {{ tooltip("sm5_alive") }}>
+                                {% if player.entity_end %}
+                                <div style="display: flex">
+                                    <div class="mini-chart">
+                                        <canvas id="time_in_game_{{player.entity_end.id}}"></canvas>
+                                    </div>
+                                    <span style="margin: auto">{{ player.time_in_game_str }}</span>
+                                </div>
+                                {% endif %}
+                                </td>
                                 <td>{{ player.shots_left }}</td>
                                 <td title="{{player.shots_hit}}/{{player.shots_fired}}">{{ player.accuracy_str }}</td>
                                 <td>{{ player.kd_ratio_str }}</td>
-                                <td {{ tooltip("sm5_states") }}><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                                <td {{ tooltip("sm5_states") }}>
+                                {% if player.entity_end %}
+                                <div class="mini-chart" style="margin: auto">
+                                    <canvas id="uptime_{{player.entity_end.id}}"></canvas>
+                                </div>
+                                {% endif %}
+                                </td>
                                 <td>{{ player.zapped_by_main_player }}</td>
                                 <td>{{ player.zapped_main_player }}</td>
                                 <td>{{ player.main_player_hit_ratio }}</td>
@@ -371,7 +385,7 @@
     new Chart("score_composition", {
         // IMPORTANT: If ChartJs is ever upgrade to 3.0.0 or beyond, this needs to change to type "bar" with
         // the option indexAxis set to "y".
-        type: "horizontalBar",
+        type: "bar",
         data: {
             labels: [{{ score_composition_labels }}],
             datasets: [{
@@ -380,26 +394,31 @@
             }]
         },
         options: {
-            legend: {
-                display: false,
+            indexAxis: "y",
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                title: {
+                    display: true,
+                    text: "Score Composition",
+                    color: "white"
+                }
             },
             scales: {
-                xAxes: [{
+                x: {
+                    type: "linear",
                     ticks: {
                         fontColor: "white"
                     }
-                }],
-                yAxes: [{
-                    ticks:{
+                },
+                y: {
+                    type: "linear",
+                    ticks: {
                         fontColor: "white"
                     }
-                }]
+                }
             },
-            title: {
-                display: true,
-                text: "Score Composition",
-                fontColor: "white"
-            }
         }
     });
 
@@ -413,26 +432,28 @@
             }]
         },
         options: {
-            legend: {
-                display: true,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Time spent in each state",
-                fontColor: "white"
-            },
-            tooltips: {
-                callbacks: {
-                    label: function(tooltipItem, data) {
-                        const index = tooltipItem["index"];
-                        const label = data.labels[index];
-                        const milliseconds = data.datasets[0].data[index];
+            plugins: {
+                legend: {
+                    display: true,
+                    fullSize: false
+                },
+                title: {
+                    display: true,
+                    text: "Time spent in each state",
+                    color: "white"
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const index = tooltipItem["index"];
+                            const label = this.chart.data.labels[index];
+                            const milliseconds = this.chart.data.datasets[0].data[index];
 
-                        return `${label}: ${ms_to_mmss(milliseconds)}`;
+                            return `${label}: ${ms_to_mmss(milliseconds)}`;
+                        }
                     }
                 }
-            },
+            }
         }
     });
 
@@ -456,35 +477,28 @@
             ]
         },
         options: {
-            tooltips: {
-                callbacks: {
-                    title: function(tooltipItem, data) {
-                        // show formatted time
-
-                        var time = data.labels[tooltipItem[0].index];
-
-                        if (time.toString().endsWith(".5")) {
-                            return time.toString().slice(0, -2) + ":30";
-                        } else {
-                            return time + ":00";
-                        }
-                    },
+            responsive: true,
+            plugins: {
+                tooltips: {
+                    callbacks: {
+                        title: tooltip_minute_to_mmss
+                    }
                 }
             },
-            responsive: true,
             // change label colors to white
             legend: {
                 labels: {
-                    fontColor: "white"
+                    color: "white"
                 }
             },
             title: {
                 display: true,
                 text: "Score Over Time",
-                fontColor: "white"
+                color: "white"
             },
             scales: {
-                xAxes: [{
+                x: {
+                    type: "linear",
                     ticks: {
                         fontColor: "white",
                         callback: function(value, index, values) {
@@ -500,8 +514,9 @@
                         labelString: "Time",
                         fontColor: "white"
                     }
-                }],
-                yAxes: [{
+                },
+                y: {
+                    type: "linear",
                     ticks: {
                         fontColor: "white",
                     },
@@ -510,7 +525,7 @@
                         labelString: "Score",
                         fontColor: "white"
                     }
-                }]
+                }
             }
         }
     });
