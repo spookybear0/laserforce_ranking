@@ -15,9 +15,8 @@
 
 {% block content %}
 
-<div class="content">
-    <canvas class="inline-block" id="avg_role_score"
-            style="float: left; max-width: 100%; height: 50%; margin: auto;"></canvas>
+<div class="inline-block content" style="height: 50%; margin: auto;">
+    <canvas id="avg_role_score"></canvas>
 </div>
 
 <script>
@@ -40,29 +39,29 @@
         options: {
             responsive: true,
             scales: {
-                xAxes: [{
+                x: {
                     ticks: {
-                        fontColor: "rgb(255, 255, 255)"
+                        color: "rgb(255, 255, 255)"
                     }
-                }],
-                yAxes: [{
-                    ticks:{
+                },
+                y: {
+                    ticks: {
                         min: 0,
-                        fontColor: "rgb(255, 255, 255)"
+                        color: "rgb(255, 255, 255)"
                     }
-                }]
-            },
-            legend: {
-                labels: {
-                    color: "rgb(255, 255, 255)",
-                    fontColor: "rgb(255, 255, 255)"
                 }
             },
-            title: {
-                display: true,
-                text: "Median World Score by Role",
-                color: "rgb(255, 255, 255)",
-                fontColor: "rgb(255, 255, 255)"
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "rgb(255, 255, 255)",
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Median World Score by Role",
+                    color: "rgb(255, 255, 255)",
+                }
             }
         }
     });

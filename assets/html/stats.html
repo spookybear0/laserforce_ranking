@@ -10,6 +10,13 @@
         padding: 0;
     }
 
+    .wins-pie-chart {
+        height: 4em;
+        position: relative;
+        display: flex;
+        justify-content: center;
+    }
+
     table {
         margin: auto;
         padding: 1rem;
@@ -93,7 +100,9 @@ Divided by the total number of games
     <h1 class="stats-header">SM5 Stats</h1>
     <div class="btns">
         <div class="btn">
-            <canvas id="sm5_team_wins"></canvas>
+            <div class="wins-pie-chart">
+                <canvas id="sm5_team_wins"></canvas>
+            </div>
             <p>SM5 Team Wins</p>
         </div>
         <div class="btn">
@@ -121,7 +130,9 @@ Divided by the total number of games
     <h1 class="stats-header">Laserball Stats</h1>
     <div class="btns">
         <div class="btn">
-            <canvas id="laserball_team_wins"></canvas>
+            <div  class="wins-pie-chart">
+                <canvas id="laserball_team_wins"></canvas>
+            </div>
             <p>Laserball Team Wins</p>
         </div>
         <div class="btn">
@@ -189,14 +200,16 @@ Divided by the total number of games
         data: {
             labels: ["Fire", "Earth"],
             datasets: [{
-            backgroundColor: ["#b91d47","#00aba9"],
-            data: [{{ sm5_red_wins }}, {{ sm5_green_wins }}]
+                backgroundColor: ["#b91d47","#00aba9"],
+                data: [{{ sm5_red_wins }}, {{ sm5_green_wins }}]
             }]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
             }
         }
     });
@@ -205,14 +218,16 @@ Divided by the total number of games
         data: {
             labels: ["Fire", "Ice"],
             datasets: [{
-            backgroundColor: ["#b91d47","#0047AB"],
-            data: [{{ laserball_red_wins }}, {{ laserball_blue_wins }}]
+                backgroundColor: ["#b91d47","#0047AB"],
+                data: [{{ laserball_red_wins }}, {{ laserball_blue_wins }}]
             }]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
             }
         }
     });

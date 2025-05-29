@@ -129,7 +129,7 @@
     }
 
     .chart {
-        max-width: 90%;
+        width: 90%;
         display: flex;
         padding: 1rem;
     }
@@ -254,12 +254,12 @@
         width: 100%;
         margin-top: 5rem;
         display: flex;
-        align-items: center;
+        justify-content: center;
     }
 
     .mini-chart {
-        max-width: 48px;
-        display: flex;
+        width: 32px;
+        position: relative;
     }
 </style>
 
@@ -295,11 +295,11 @@
                 </table>
             </div>
             <div class="chart_container">
-                <div class="scorecard_graphs">
-                    <canvas class="chart" id="score_composition"></canvas>
+                <div class="scorecard_graphs chart">
+                    <canvas id="score_composition"></canvas>
                 </div>
-                <div class="scorecard_graphs">
-                    <canvas class="chart" id="state_distribution"></canvas>
+                <div class="scorecard_graphs chart">
+                    <canvas id="state_distribution"></canvas>
                 </div>
             </div>
         </div>
@@ -374,8 +374,8 @@
             {% endfor %}
         </div>
     </div>
-    <div class="scorecard_graphs">
-        <canvas class="chart" id="score_chart"></canvas>
+    <div class="scorecard_graphs chart">
+        <canvas id="score_chart"></canvas>
     </div>
 </div>
 
@@ -383,13 +383,12 @@
     already_shown_rounds = [];
 
     new Chart("score_composition", {
-        // IMPORTANT: If ChartJs is ever upgrade to 3.0.0 or beyond, this needs to change to type "bar" with
-        // the option indexAxis set to "y".
         type: "bar",
         data: {
             labels: [{{ score_composition_labels }}],
             datasets: [{
                 backgroundColor: [{{ score_composition_colors }}],
+                borderColor: [{{ score_composition_colors }}],
                 data: [{{ score_composition_values }}]
             }]
         },
@@ -409,16 +408,15 @@
                 x: {
                     type: "linear",
                     ticks: {
-                        fontColor: "white"
+                        color: "white"
                     }
                 },
                 y: {
-                    type: "linear",
                     ticks: {
-                        fontColor: "white"
+                        color: "white"
                     }
                 }
-            },
+            }
         }
     });
 
@@ -428,10 +426,12 @@
             labels: {{ state_distribution_labels }},
             datasets: [{
                 backgroundColor: {{ state_distribution_colors }},
+                borderColor: "white",
                 data: {{ state_distribution_values }}
             }]
         },
         options: {
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: true,
@@ -442,10 +442,10 @@
                     text: "Time spent in each state",
                     color: "white"
                 },
-                tooltips: {
+                tooltip: {
                     callbacks: {
                         label: function(tooltipItem) {
-                            const index = tooltipItem["index"];
+                            const index = tooltipItem.dataIndex;
                             const label = this.chart.data.labels[index];
                             const milliseconds = this.chart.data.datasets[0].data[index];
 
@@ -466,6 +466,7 @@
             {
                 label: "{{ player_score_chart.label }}",
                 data: {{ player_score_chart.data }},
+                backgroundColor: "{{ player_score_chart.color }}",
                 borderColor: "{{ player_score_chart.color }}",
                 borderWidth: {{ player_score_chart.borderWidth }},
                 fill: false,
@@ -477,53 +478,46 @@
             ]
         },
         options: {
-            responsive: true,
             plugins: {
-                tooltips: {
+                tooltip: {
                     callbacks: {
                         title: tooltip_minute_to_mmss
                     }
-                }
-            },
-            // change label colors to white
-            legend: {
-                labels: {
+                },
+                // change label colors to white
+                legend: {
+                    labels: {
+                        color: "white"
+                    },
+                },
+                title: {
+                    display: true,
+                    text: "Score Over Time",
                     color: "white"
                 }
-            },
-            title: {
-                display: true,
-                text: "Score Over Time",
-                color: "white"
             },
             scales: {
                 x: {
                     type: "linear",
                     ticks: {
-                        fontColor: "white",
-                        callback: function(value, index, values) {
-                            if (value.toString().endsWith(".5")) {
-                                return value.toString().slice(0, -2) + ":30";
-                            } else {
-                                return value + ":00";
-                            }
-                        },
+                        color: "white",
+                        callback: tick_minute_to_mmss
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Time",
-                        fontColor: "white"
+                        text: "Time",
+                        color: "white"
                     }
                 },
                 y: {
                     type: "linear",
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Score",
-                        fontColor: "white"
+                        text: "Score",
+                        color: "white"
                     }
                 }
             }

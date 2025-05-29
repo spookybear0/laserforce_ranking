@@ -203,6 +203,10 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             const time = this.chart.data.labels[tooltipItem[0].dataIndex];
             return minute_to_mmss(time);
         }
+
+        function tick_minute_to_mmss(value, index, values) {
+            return minute_to_mmss(value);
+        }
     </script>
 
     <style>

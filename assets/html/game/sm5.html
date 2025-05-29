@@ -82,6 +82,13 @@
         height: 500px;
     }
 
+    .win-draw-chance {
+        flex-direction: row;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
     .win-chance-before-game, .win-chance {
         width: 30%;
         position: relative;
@@ -183,7 +190,6 @@
 
     .mini-chart {
         width: 32px;
-        //display: flex;
         position: relative;
     }
 
@@ -334,7 +340,7 @@
             <div class="lives-chart" >
                 <canvas id="lives_chart" style="clear: both;"></canvas>
             </div>
-            <div style="width: 100%; display: flex; align-items: center;" class="win-draw-chance">
+            <div class="win-draw-chance">
                 <div class="win-chance-before-game">
                     <canvas id="win_chance_before_game" style="clear: both;"></canvas>
                 </div>
@@ -362,6 +368,7 @@
                 label: "{{ team.element }} Team Score",
                 data: {{score_chart_data[team.team]}},
                 borderColor: "{{ team.css_color_name }}",
+                backgroundColor: "{{ team.css_color_name }}",
                 fill: false,
                 tension: 0.4,
                 pointRadius: 0,
@@ -395,9 +402,7 @@
                     type: "linear",
                     ticks: {
                         color: "white",
-                        callback: function(value, index, values) {
-                            return minute_to_mmss(value);
-                        },
+                        callback: tick_minute_to_mmss
                     },
                     title: {
                         display: true,
@@ -430,6 +435,7 @@
                 label: "{{ chart.label }}",
                 data: {{ chart.data }},
                 borderColor: "{{ chart.color }}",
+                backgroundColor: "{{ chart.color }}",
                 fill: false,
                 tension: 0.4,
                 pointRadius: 0,
@@ -473,9 +479,7 @@
                     type: "linear",
                     ticks: {
                         color: "white",
-                        callback: function(value, index, values) {
-                            return minute_to_mmss(value);
-                        },
+                        callback: tick_minute_to_mmss
                     },
                     title: {
                         display: true,
