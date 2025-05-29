@@ -75,16 +75,26 @@
         display: none;
     }
 
-    #score_chart {
-        max-width: 90%;
+    .score-chart {
+        position: relative;
     }
 
-    #score_chart {
-        max-width: 90%;
+    .stats {
+        margin-top: 2rem;
     }
 
-    #win_chance_before_game, #win_chance {
-        max-width: 30%;
+    .win-draw-chance {
+        flex-direction: row;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .win-chance-before-game, .win-chance {
+        width: 30%;
+        position: relative;
     }
 
     @media screen and (max-width: 1200px) {
@@ -170,16 +180,13 @@
             height: 85%;
         }
 
-        #score_chart {
-            max-width: 100%;
+        .score-chart {
+            width: 100%;
         }
 
-        #win_chance {
-            max-width: 100%;
-        }
-
-        .win_draw_chance {
-            flex-direction: column;
+        .win-chance-before-game, .win-chance {
+            width: 100%;
+            position: relative;
         }
     }
 
@@ -324,10 +331,16 @@
             {% endfor %}
         </div>
         <div id="stats">
-            <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
-            <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
-                <canvas class="inline-block" id="win_chance_before_game" style="clear: both;"></canvas>
-                <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
+            <div class="score-chart">
+                <canvas id="score_chart"></canvas>
+            </div>
+            <div class="win-draw-chance">
+                <div class="win-chance-before-game">
+                    <canvas id="win_chance_before_game"></canvas>
+                </div>
+                <div class="win-chance">
+                    <canvas id="win_chance"></canvas>
+                </div>
             </div>
         </div>
 
@@ -336,8 +349,6 @@
 </div>
 
 <script>
-    already_shown_rounds = [];
-
     new Chart("score_chart", {
         type: "line",
         data: {
@@ -348,6 +359,7 @@
                 label: "{{ team.element }} Team Goals",
                 data: {{score_chart_data[team.team]}},
                 borderColor: "{{ team.css_color_name }}",
+                backgroundColor: "{{ team.css_color_name }}",
                 fill: false,
                 tension: 0.2,
                 pointRadius: 0,
@@ -357,80 +369,68 @@
             ]
         },
         options: {
-            tooltips: {
-                callbacks: {
-                    title: function(tooltipItem, data) {
-                        // show formatted time
-
-                        if (data["labels"][tooltipItem[0]["index"]]["x"].toString().endsWith(".5")) {
-                            return data["labels"][tooltipItem[0]["index"]]["x"].toString().slice(0, -2) + ":30";
-                        } else {
-                            return data["labels"][tooltipItem[0]["index"]]["x"] + ":00";
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItem) {
+                            return minute_to_mmss(this.chart.data.labels[tooltipItem[0].dataIndex]["x"]);
                         }
-                    },
-                }
-            },
-            responsive: true,
-            legend: {
-                labels: {
-                    fontColor: "white"
-                }
-            },
-            title: {
-                display: true,
-                text: "Goals Scored Over Time",
-                fontColor: "white"
-            },
-            scales: {
-                xAxes: [{
-                    id: "xAxis1",
-                    ticks: {
-                        fontColor: "white",
-                        callback: function(value, index, values) {
-                            if (value["x"].toString().endsWith(".5")) {
-                                return value["x"].toString().slice(0, -2) + ":30";
-                            } else {
-                                return value["x"] + ":00";
-                            }
-                        }
-                    },
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Time",
-                        fontColor: "white"
                     }
                 },
-                {
-                    id: "xAxis2",
+                legend: {
+                    labels: {
+                        color: "white"
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Goals Scored Over Time",
+                    color: "white"
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: "white",
+                        callback: function(value, index, values) {
+                            return minute_to_mmss(this.chart.data.labels[index]["x"]);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: "Time",
+                        color: "white"
+                    }
+                },
+                xAxis2: {
                     position: "top",
                     data: {{score_chart_data_rounds}},
                     ticks: {
-                        fontColor: "white",
-                        callback: function(value, index, values) {
-                            if (already_shown_rounds.includes(value["y"])) {
+                        color: "white",
+                        callback: function(value, index, ticks) {
+                            const data = this.chart.data.datasets[0].data;
+                            if (index > 0 && data[index - 1] == data[index]) {
                                 return "";
                             }
-                            already_shown_rounds.push(value["y"]);
-                            return value["y"];
+                            return data[index];
                         },
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Current Round",
-                        fontColor: "white"
+                        text: "Current Round",
+                        color: "white"
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: "white",
+                    },
+                    title: {
+                        display: true,
+                        text: "Score",
+                        color: "white"
                     }
                 }
-                ],
-                yAxes: [{
-                    ticks: {
-                        fontColor: "white",
-                    },
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Score",
-                        fontColor: "white"
-                    }
-                }]
             }
         }
     });
@@ -446,14 +446,17 @@
             }]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Predicted Win Chance",
-                fontColor: "white"
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                },
+                title: {
+                    display: true,
+                    text: "Predicted Win Chance",
+                    color: "white"
+                }
             }
         }
     });
@@ -468,14 +471,17 @@
             }]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Actual Win Chance",
-                fontColor: "white"
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                },
+                title: {
+                    display: true,
+                    text: "Actual Win Chance",
+                    color: "white"
+                }
             }
         }
     });

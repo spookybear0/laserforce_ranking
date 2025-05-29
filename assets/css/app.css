@@ -308,12 +308,6 @@ body {
     width: 70%;
 }
 
-canvas {
-    max-width: 150px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 .btn {
     background-color: #0096FF;
     border: none;

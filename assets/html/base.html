@@ -3,7 +3,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" crossorigin="anonymous"></script>
     <script src="https://js.sentry-cdn.com/562e9ab020654bedbc2a3db770dc07c2.min.js" crossorigin="anonymous"></script>
     <script
             src="https://js.sentry-cdn.com/562e9ab020654bedbc2a3db770dc07c2.min.js"
@@ -45,26 +45,30 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     {% macro alive_time_chart(player) -%}
 
     new Chart("time_in_game_{{player.entity_end.id}}", {
-    type: "pie",
-    data: {
-    datasets: [{
-    backgroundColor: {{ player.alive_time_colors }},
-    data: {{ player.alive_time_values }},
-    borderWidth: 0
-    }]
-    },
-    options: {
-    legend: {
-    display: false,
-    fullSize: false
-    },
-    title: {
-    display: false,
-    },
-    tooltips: {
-    enabled: false
-    }
-    }
+        type: "pie",
+        data: {
+            datasets: [{
+                backgroundColor: {{ player.alive_time_colors }},
+                data: {{ player.alive_time_values }},
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                },
+                title: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        title: tooltip_ms_to_mmss
+                    }
+                }
+            }
+        }
     });
 
     {%- endmacro %}
@@ -101,27 +105,26 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     {% macro uptime_chart(entity_id, state_distribution) -%}
 
     new Chart("uptime_{{entity_id}}", {
-    type: "pie",
-    data: {
-    labels: {{ state_distribution.labels }},
-    datasets: [{
-    backgroundColor: {{ state_distribution.colors }},
-    data: {{ state_distribution.data }},
-    borderWidth: 0
-    }]
-    },
-    options: {
-    legend: {
-    display: false,
-    fullSize: false
-    },
-    title: {
-    display: false,
-    },
-    tooltips: {
-    enabled: false
-    }
-    }
+        type: "pie",
+        data: {
+            labels: {{ state_distribution.labels }},
+            datasets: [{
+                backgroundColor: {{ state_distribution.colors }},
+                data: {{ state_distribution.data }},
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                },
+                title: {
+                    display: false
+                }
+            }
+        }
     });
 
     {%- endmacro %}
@@ -171,6 +174,38 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
                 const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
 
                 return `${formattedMinutes}:${formattedSeconds}`;
+        }
+
+        // Generic tooltip callback for charts to convert milliseconds to a MM:SS string.
+        function tooltip_ms_to_mmss(tooltipItem) {
+            if (!tooltipItem || tooltipItem.length === 0) {
+                return '';
+            }
+
+            const time = this.chart.data.datasets[0].data[tooltipItem[0].dataIndex];
+            return ms_to_mmss(time);
+        }
+
+        function minute_to_mmss(minute) {
+            if (minute.toString().endsWith(".5")) {
+                return minute.toString().slice(0, -2) + ":30";
+            }
+
+            return minute + ":00";
+        }
+
+        // Generic tooltip callback for charts to convert a float-based minute to a MM:SS string.
+        function tooltip_minute_to_mmss(tooltipItem) {
+            if (!tooltipItem || tooltipItem.length === 0) {
+                return '';
+            }
+
+            const time = this.chart.data.labels[tooltipItem[0].dataIndex];
+            return minute_to_mmss(time);
+        }
+
+        function tick_minute_to_mmss(value, index, values) {
+            return minute_to_mmss(value);
         }
     </script>
 
