@@ -70,16 +70,28 @@
         display: none;
     }
 
-    #score_chart {
-        max-width: 90%;
+    .score-chart {
+        width: 90%;
+        position: relative;
+        height: 500px;
     }
 
-    #lives_chart {
-        max-width: 90%;
+    .lives-chart {
+        width: 90%;
+        position: relative;
+        height: 500px;
     }
 
-    #win_chance_before_game, #win_chance {
-        max-width: 30%;
+    .win-draw-chance {
+        flex-direction: row;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .win-chance-before-game, .win-chance {
+        width: 30%;
+        position: relative;
     }
 
     @media screen and (max-width: 991px) {
@@ -156,26 +168,29 @@
             height: 85%;
         }
 
-        #score_chart {
+        .score-chart {
             max-width: 100%;
+            position: relative;
         }
 
-        #lives_chart {
+        .lives-chart {
             max-width: 100%;
+            position: relative;
         }
 
-        #win_chance_before_game, #win_chance {
-            max-width: 100%;
+        .win-chance-before-game, .win-chance {
+            width: 100%;
+            position: relative;
         }
 
-        .win_draw_chance {
+        .win-draw-chance {
             flex-direction: column;
         }
     }
 
     .mini-chart {
-        max-width: 64px;
-        display: flex;
+        width: 32px;
+        position: relative;
     }
 
     .link-button {
@@ -284,14 +299,26 @@
                                         <td><p>{{ player.get_gross_positive_score() }}</p></td>
                                         <td><p>{{ player.points_per_minute }}</p></td>
                                         <td><p>{{ player.lives_left }}</p></td>
-                                        <td class="scorecard_player_stat" {{ tooltip("sm5_alive") }}><div style="display: flex">
-                                            <canvas class="mini-chart" id="time_in_game_{{player.entity_end.id}}"></canvas>
-                                            <span style="margin: auto">{{ player.time_in_game_str }}</span></div></td>
+                                        <td class="scorecard_player_stat" {{ tooltip("sm5_alive") }}>
+                                        {% if player.entity_end %}
+                                        <div style="display: flex">
+                                            <div class="mini-chart">
+                                                <canvas id="time_in_game_{{player.entity_end.id}}"></canvas>
+                                            </div>
+                                            <span style="margin: auto">{{ player.time_in_game_str }}</span>
+                                        </div>
+                                        {% endif %}
                                         </td>
                                         <td><p>{{ player.shots_left }}</p></td>
                                         <td title="{{player.shots_hit}}/{{player.shots_fired}}"><p>{{ player.accuracy_str }}</p></td>
                                         <td title="{{player.shot_opponent}}/{{player.times_zapped}}"><p>{{ player.kd_ratio_str }}</p></td>
-                                        <td class="scorecard_player_stat" {{ tooltip("sm5_states") }}><canvas class="mini-chart" id="uptime_{{player.entity_end.id}}"></canvas></td>
+                                        <td class="scorecard_player_stat" {{ tooltip("sm5_states") }}>
+                                        {% if player.entity_end %}
+                                            <div class="mini-chart" style="margin: auto">
+                                                <canvas id="uptime_{{player.entity_end.id}}"></canvas>
+                                            </div>
+                                        {% endif %}
+                                        </td>
                                         <td><p>{{ player.missiled_opponent }}</p></td>
                                         <td><p>{{ player.times_missiled }}</p></td>
                                         <td><p>{{ player.shot_team }}</p></td>
@@ -307,11 +334,19 @@
             {% endfor %}
         </div>
         <div id="stats">
-            <canvas class="inline-block" id="score_chart" style="clear: both;"></canvas>
-            <canvas class="inline-block" id="lives_chart" style="clear: both;"></canvas>
-            <div style="width: 100%; display: flex; align-items: center;" class="win_draw_chance">
-                <canvas class="inline-block" id="win_chance_before_game" style="clear: both;"></canvas>
-                <canvas class="inline-block" id="win_chance" style="clear: both;"></canvas>
+            <div class="score-chart">
+                <canvas id="score_chart"></canvas>
+            </div>
+            <div class="lives-chart" >
+                <canvas id="lives_chart" style="clear: both;"></canvas>
+            </div>
+            <div class="win-draw-chance">
+                <div class="win-chance-before-game">
+                    <canvas id="win_chance_before_game" style="clear: both;"></canvas>
+                </div>
+                <div class="win-chance">
+                    <canvas id="win_chance" style="clear: both;"></canvas>
+                </div>
             </div>
         </div>
 
@@ -333,6 +368,7 @@
                 label: "{{ team.element }} Team Score",
                 data: {{score_chart_data[team.team]}},
                 borderColor: "{{ team.css_color_name }}",
+                backgroundColor: "{{ team.css_color_name }}",
                 fill: false,
                 tension: 0.4,
                 pointRadius: 0,
@@ -342,61 +378,49 @@
             ]
         },
         options: {
-            tooltips: {
-                callbacks: {
-                    title: function(tooltipItem, data) {
-                        // show formatted time
-
-                        var time = data.labels[tooltipItem[0].index];
-
-                        if (time.toString().endsWith(".5")) {
-                            return time.toString().slice(0, -2) + ":30";
-                        } else {
-                            return time + ":00";
-                        }
-                    },
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: tooltip_minute_to_mmss
+                    }
+                },
+                // change label colors to white
+                legend: {
+                    labels: {
+                        color: "white"
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Score Over Time",
+                    color: "white"
                 }
-            },
-            responsive: true,
-            // change label colors to white
-            legend: {
-                labels: {
-                    fontColor: "white"
-                }
-            },
-            title: {
-                display: true,
-                text: "Score Over Time",
-                fontColor: "white"
             },
             scales: {
-                xAxes: [{
+                x: {
+                    type: "linear",
                     ticks: {
-                        fontColor: "white",
-                        callback: function(value, index, values) {
-                            if (value.toString().endsWith(".5")) {
-                                return value.toString().slice(0, -2) + ":30";
-                            } else {
-                                return value + ":00";
-                            }
-                        },
+                        color: "white",
+                        callback: tick_minute_to_mmss
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Time",
-                        fontColor: "white"
+                        text: "Time",
+                        color: "white"
                     }
-                }],
-                yAxes: [{
+                },
+                y: {
+                    type: "linear",
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Score",
-                        fontColor: "white"
+                        text: "Score",
+                        color: "white"
                     }
-                }]
+                }
             }
         }
     });
@@ -411,6 +435,7 @@
                 label: "{{ chart.label }}",
                 data: {{ chart.data }},
                 borderColor: "{{ chart.color }}",
+                backgroundColor: "{{ chart.color }}",
                 fill: false,
                 tension: 0.4,
                 pointRadius: 0,
@@ -420,61 +445,59 @@
             ]
         },
         options: {
-            tooltips: {
-                callbacks: {
-                    title: function(tooltipItem, data) {
-                        // show formatted time
-
-                        var time = data.labels[tooltipItem[0].index];
-
-                        if (time.toString().endsWith(".5")) {
-                            return time.toString().slice(0, -2) + ":30";
-                        } else {
-                            return time + ":00";
-                        }
-                    },
-                }
-            },
+            maintainAspectRatio: false,
             responsive: true,
-            // change label colors to white
-            legend: {
-                labels: {
-                    fontColor: "white"
-                }
-            },
-            title: {
-                display: true,
-                text: "Average Lives Over Time",
-                fontColor: "white"
-            },
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        fontColor: "white",
-                        callback: function(value, index, values) {
-                            if (value.toString().endsWith(".5")) {
-                                return value.toString().slice(0, -2) + ":30";
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItem) {
+                            // show formatted time
+                            var time = this.chart.data.labels[tooltipItem[0].dataIndex];
+
+                            if (time.toString().endsWith(".5")) {
+                                return time.toString().slice(0, -2) + ":30";
                             } else {
-                                return value + ":00";
+                                return time + ":00";
                             }
                         },
-                    },
-                    scaleLabel: {
-                        display: true,
-                        labelString: "Time",
-                        fontColor: "white"
                     }
-                }],
-                yAxes: [{
+                },
+                // change label colors to white
+                legend: {
+                    labels: {
+                        color: "white"
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Average Lives Over Time",
+                    color: "white"
+                }
+            },
+            scales: {
+                x: {
+                    type: "linear",
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
+                        callback: tick_minute_to_mmss
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Score",
-                        fontColor: "white"
+                        text: "Time",
+                        color: "white"
                     }
-                }]
+                },
+                y: {
+                    type: "linear",
+                    ticks: {
+                        color: "white",
+                    },
+                    title: {
+                        display: true,
+                        text: "Score",
+                        color: "white"
+                    }
+                }
             }
         }
     });
@@ -490,14 +513,17 @@
             }]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Predicted Win Chance",
-                fontColor: "white"
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                },
+                title: {
+                    display: true,
+                    text: "Predicted Win Chance",
+                    color: "white"
+                }
             }
         }
     });
@@ -512,14 +538,17 @@
             }]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
-            },
-            title: {
-                display: true,
-                text: "Actual Win Chance",
-                fontColor: "white"
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                },
+                title: {
+                    display: true,
+                    text: "Actual Win Chance",
+                    color: "white"
+                }
             }
         }
     });

@@ -26,6 +26,13 @@
         font-size: 24;
     }
 
+    .win-chance {
+        position: relative;
+        height: 4rem;
+        display: flex;
+        justify-content: center;
+    }
+
     .sidebar a {
         display: block;
         color: white;
@@ -123,6 +130,14 @@
 
     .right-side {
         float: right;
+    }
+
+    .rating-over-time {
+        position: relative;
+        width: 500px;
+        margin-top: 2rem;
+        height: 400px;
+        float: left;
     }
 
     .btn {
@@ -348,16 +363,20 @@
                 <div>
                     <div class="btns">
                         <div class="btn">
-                            <canvas id="sm5_teams" style="max-width:600px;"></canvas>
+                            <div class="win-chance">
+                                <canvas id="sm5_teams"></canvas>
+                            </div>
                             <p style="font-size: 14px;" title="{{(red_wins_sm5+green_wins_sm5)}}/{{(red_teams_sm5+green_teams_sm5)}}">Win Percent: {{ '%.2f' % ((sm5_win_percent*100)|round(2)) }}%</p>
                             <p>SM5 Teams</p>
                         </div>
                         <div class="btn">
-                            {% if laserball_win_percent %}
-                            <canvas id="laserball_teams" style="max-width:600px;"></canvas>
-                            {% else %}
-                            <canvas id="laserball_teams" style="max-width:600px; opacity: 0;"></canvas>
-                            {% endif %}
+                            <div class="win-chance">
+                                {% if laserball_win_percent %}
+                                <canvas id="laserball_teams"></canvas>
+                                {% else %}
+                                <canvas id="laserball_teams" style="opacity: 0;"></canvas>
+                                {% endif %}
+                            </div>
                             <p style="font-size: 14px;" title="{{red_wins_laserball+blue_wins_laserball}}/{{(red_teams_laserball+blue_teams_laserball)}}">Win Percent: {{ '%.2f' % ((laserball_win_percent*100)|round(2)) }}%</p>
                             <p>Laserball Teams</p>
                         </div>
@@ -379,10 +398,14 @@
 
             <div class="stats">
                 {% if sm5_rating_over_time_data %}
-                <canvas class="inline-block" id="sm5_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                <div class="rating-over-time">
+                    <canvas class="inline-block" id="sm5_rating_over_time"></canvas>
+                </div>
                 {% endif %}
                 {% if laserball_rating_over_time_data %}
-                    <canvas class="inline-block" id="laserball_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                <div class="rating-over-time">
+                    <canvas class="inline-block" id="laserball_rating_over_time"></canvas>
+                </div>
                 {% endif %}
             </div>
 
@@ -432,7 +455,7 @@
 </body>
 
 <script>
-    Chart.defaults.global.defaultFontColor = "#FFFFFF";
+    Chart.defaults.color = "#FFFFFF";
 
     new Chart("sm5_teams", {
         type: "pie",
@@ -452,12 +475,12 @@
                 {% endif %}
             ]
         },
-
-
         options: {
-            legend: {
-                display: false,
-                fullSize: false
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
             }
         }
     });
@@ -480,9 +503,11 @@
             ]
         },
         options: {
-            legend: {
-                display: false,
-                fullSize: false
+            plugins: {
+                legend: {
+                    display: false,
+                    fullSize: false
+                }
             }
         }
     });
@@ -517,15 +542,14 @@
             ]
         },
         options: {
-            responsive: true,
             scales: {
-                yAxes: [{
-                    ticks:{
+                y: {
+                    ticks: {
                         min: 0,
                     },
                     stacked: false,
-                }],
-                xAxes: {
+                },
+                x: {
                     gridLines: {
                         display: false,
                     },
@@ -576,30 +600,29 @@
             ]
         },
         options: {
-            responsive: true,
             scales: {
-                yAxes: [{
+                y: {
                     ticks: {
                         min: 0,
                     },
                     stacked: true,
-                }],
-                xAxes: [{
+                },
+                x: {
                     gridLines: {
                         display: false,
                     },
                     stacked: true
-                }],
+                },
             },
             tooltips: {
                 callbacks: {
-                    label: function(tooltipItem, data) {
-                        const index = tooltipItem["index"];
+                    label: function(tooltipItem) {
+                        const index = tooltipItem[0].dataIndex;
                         const datasetIndex = tooltipItem["datasetIndex"];
-                        const label = data.datasets[datasetIndex].label;
-                        const game_count = data.datasets[datasetIndex].data[index];
+                        const label = this.chart.data.datasets[datasetIndex].label;
+                        const game_count = this.chart.data.datasets[datasetIndex].data[index];
 
-                        const all_games = data.datasets[0].data[index] + data.datasets[1].data[index];
+                        const all_games = this.chart.data.datasets[0].data[index] + this.chart.data.datasets[1].data[index];
 
                         return `${label}: ${game_count} / ${all_games}`;
                     }
@@ -639,27 +662,31 @@
             ]
         },
         options: {
-            responsive: true,
             plugins: {
                 title: {
                     display: true,
-                    text: "Median player score vs median world score"
+                    text: "Median player score vs median world score",
+                    color: "white"
                 }
             },
-            scale: {
-                gridLines: {
-                    color: "rgba(255, 255, 255, 255)"
-                },
-                ticks: {
-                    display: true, // Hides the labels in the middel (numbers)
-                    backdropColor: "rgba(0, 0, 0, 0)", // Hide the lines
-                    beginAtZero: true,
-                    min: 0,
-                    // put above graph
-                    z: 2
-                },
-                pointLabels: {
-                    fontSize: 12
+            scales: {
+                r: {
+                    grid: {
+                        color: "rgba(255, 255, 255, 255)"
+                    },
+                    ticks: {
+                        display: true, // Hides the labels in the middle (numbers)
+                        backdropColor: "rgba(0, 0, 0, 0)", // Hide the lines
+                        beginAtZero: true,
+                        min: 0,
+                        // put above graph
+                        z: 2
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 12
+                        }
+                    }
                 }
             },
             elements: {
@@ -680,6 +707,7 @@
                 label: "SM5 Rating over time",
                 data: {{ sm5_rating_over_time_data }},
                 borderColor: "red",
+                backgroundColor: "red",
                 borderWidth: 4.0,
                 fill: false,
                 tension: 0.4,
@@ -689,49 +717,49 @@
             ]
         },
         options: {
-            responsive: true,
-            // change label colors to white
-            legend: {
-                labels: {
-                    fontColor: "white"
-                }
-            },
-            tooltips: {
-                callbacks: {
-                    label: function(tooltipItem, data) {
-                        const index = tooltipItem["index"];
-                        const rating = data.datasets[0].data[index];
-
-                        return `${rating.toFixed(2)}`;
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "white"
                     }
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const index = tooltipItem[0].dataIndex;
+                            const rating = this.chart.data.datasets[0].data[index];
+
+                            return `${rating.toFixed(2)}`;
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "SM5 Rating Over Time",
+                    color: "white"
                 }
-            },
-            title: {
-                display: true,
-                text: "SM5 Rating Over Time",
-                fontColor: "white"
             },
             scales: {
-                xAxes: [{
+                x: {
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Time",
-                        fontColor: "white"
+                        text: "Time",
+                        color: "white"
                     }
-                }],
-                yAxes: [{
+                },
+                y: {
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Rating",
-                        fontColor: "white"
+                        text: "Rating",
+                        color: "white"
                     }
-                }]
+                }
             }
         }
     });
@@ -747,6 +775,7 @@
                 label: "Laserball Rating over time",
                 data: {{ laserball_rating_over_time_data }},
                 borderColor: "#0047AB",
+                backgroundColor: "#0047AB",
                 borderWidth: 4.0,
                 fill: false,
                 tension: 0.4,
@@ -756,49 +785,49 @@
             ]
         },
         options: {
-            responsive: true,
-            // change label colors to white
-            legend: {
-                labels: {
-                    fontColor: "white"
-                }
-            },
-            tooltips: {
-                callbacks: {
-                    label: function(tooltipItem, data) {
-                        const index = tooltipItem["index"];
-                        const rating = data.datasets[0].data[index];
-
-                        return `${rating.toFixed(2)}`;
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "white"
                     }
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const index = tooltipItem[0].dataIndex;
+                            const rating = this.chart.data.datasets[0].data[index];
+
+                            return `${rating.toFixed(2)}`;
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "Laserball Rating Over Time",
+                    color: "white"
                 }
-            },
-            title: {
-                display: true,
-                text: "Laserball Rating Over Time",
-                fontColor: "white"
             },
             scales: {
-                xAxes: [{
+                x: {
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
                     },
                     scaleLabel: {
                         display: true,
-                        labelString: "Time",
-                        fontColor: "white"
+                        text: "Time",
+                        color: "white"
                     }
-                }],
-                yAxes: [{
+                },
+                y: {
                     ticks: {
-                        fontColor: "white",
+                        color: "white",
                     },
-                    scaleLabel: {
+                    title: {
                         display: true,
-                        labelString: "Rating",
-                        fontColor: "white"
+                        text: "Rating",
+                        color: "white"
                     }
-                }]
+                }
             }
         }
     });
