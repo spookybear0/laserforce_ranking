@@ -132,6 +132,14 @@
         float: right;
     }
 
+    .rating-over-time {
+        position: relative;
+        width: 500px;
+        margin-top: 2rem;
+        height: 400px;
+        float: left;
+    }
+
     .btn {
         height: 9rem;
     }
@@ -390,10 +398,14 @@
 
             <div class="stats">
                 {% if sm5_rating_over_time_data %}
-                <canvas class="inline-block" id="sm5_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                <div class="rating-over-time">
+                    <canvas class="inline-block" id="sm5_rating_over_time"></canvas>
+                </div>
                 {% endif %}
                 {% if laserball_rating_over_time_data %}
-                    <canvas class="inline-block" id="laserball_rating_over_time" style="max-width: 500px; margin-top: 2rem;" height="200px" class="left-side"></canvas>
+                <div class="rating-over-time">
+                    <canvas class="inline-block" id="laserball_rating_over_time"></canvas>
+                </div>
                 {% endif %}
             </div>
 
@@ -659,11 +671,11 @@
             },
             scales: {
                 r: {
-                    gridLines: {
+                    grid: {
                         color: "rgba(255, 255, 255, 255)"
                     },
                     ticks: {
-                        display: true, // Hides the labels in the middel (numbers)
+                        display: true, // Hides the labels in the middle (numbers)
                         backdropColor: "rgba(0, 0, 0, 0)", // Hide the lines
                         beginAtZero: true,
                         min: 0,
