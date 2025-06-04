@@ -26,8 +26,26 @@ class NotableEvent:
     # Number of seconds into the gameplay at which this event occurred.
     seconds: int
 
-    # The event that happened.
+    # Description of the event that happened.
     event: str
+
+    # Short description of the event that happened, spread out over multiple lines.
+    short_event: list[str]
+
+    # The team that this event pertains to.
+    team: Team
+
+    # A unique name for the name event. The ID does not denote chronological order in any way.
+    id: str
+
+    # Vertical position for this event in the chart. This can be plugged into ChartJS as "position". This is pretty lame
+    # imho and should be improved.
+    position: str = ""
+
+    @property
+    def minutes(self) -> float:
+        """Returns the time at which this event occurs, in minutes from the beginning of the game."""
+        return self.seconds / 60
 
 
 @dataclass
