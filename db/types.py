@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 from typing import Optional, List
@@ -52,10 +53,22 @@ class _TeamDefinition:
 
     When converted to a string, it is shown as the lower-case color name so Tortoise can use it as an enum value for
     its schema."""
+    # Lower case name of the team, expressed as a color.
     color: str
+
+    # Name of the team, expressed as an element (Fire, Earth).
     element: str
+
+    # CSS class to use to show text in the color of the team.
     css_class: str
+
+    # CSS name of the color.
     css_color_name: str
+
+    # Color as an rgb() value for cases where CSS cannot be used, like Canvas (i.e. charts).
+    plain_color: str
+
+    # Color value of a dimmed version of the team color.
     dim_color: RgbColor
 
     def __eq__(self, color: str) -> bool:
@@ -81,21 +94,21 @@ class _TeamDefinition:
 class Team(Enum):
     # neutral team, sometimes None is used instead of this
     NEUTRAL = _TeamDefinition(color="neutral", element="Neutral", css_class="neutral-team", css_color_name="white",
-                            dim_color=RgbColor(red=68, green=68, blue=68))
+                              dim_color=RgbColor(red=68, green=68, blue=68), plain_color="rgb(255, 255, 255)")
     NONE = _TeamDefinition(color="none", element="None", css_class="none-team", css_color_name="white",
-                            dim_color=RgbColor(red=68, green=68, blue=68))
+                           dim_color=RgbColor(red=68, green=68, blue=68), plain_color="rgb(255, 255, 255)")
 
     RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered",
-                          dim_color=RgbColor(red=68, green=17, blue=0))
+                          dim_color=RgbColor(red=68, green=17, blue=0), plain_color="rgb(255, 69, 0)")
     GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow",
-                            dim_color=RgbColor(red=43, green=60, blue=12))
+                            dim_color=RgbColor(red=43, green=60, blue=12), plain_color="rgb(173, 255, 47)")
     BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF",
-                           dim_color=RgbColor(red=0, green=37, blue=68))
+                           dim_color=RgbColor(red=0, green=37, blue=68), plain_color="rgb(0, 150, 255)")
     # new additions for laserball ramps mode
-    YELLOW = _TeamDefinition(color="yellow", element="Yellow", css_class="yellow-team", css_color_name="gold", 
-                            dim_color=RgbColor(red=68, green=68, blue=0))
+    YELLOW = _TeamDefinition(color="yellow", element="Yellow", css_class="yellow-team", css_color_name="gold",
+                             dim_color=RgbColor(red=68, green=68, blue=0), plain_color="rgb(255, 215, 0)")
     PURPLE = _TeamDefinition(color="purple", element="Purple", css_class="purple-team", css_color_name="#A020F0",
-                            dim_color=RgbColor(red=34, green=0, blue=68))
+                             dim_color=RgbColor(red=34, green=0, blue=68), plain_color="rgb(160, 32, 240)")
 
     def __call__(cls, value, *args, **kw):
         # Tortoise looks up values by the lower-case color name.
@@ -140,9 +153,19 @@ class Team(Enum):
         return self.value.dim_color
 
     @property
+    def plain_color(self) -> str:
+        """Color to use for this team, expressed as an Rgb() string."""
+        return self.value.plain_color
+
+    @property
     def name(self) -> str:
         """The display name, like "Earth Team"."""
         return f"{self.element} Team"
+
+    @property
+    def short_name(self):
+        """Returns the name without 'Team' in it to keep it short."""
+        return re.sub(r"\s*Team\s*", "", self.name)
 
 
 # Mapping of opposing teams in SM5 games.
@@ -169,6 +192,7 @@ NAME_TO_TEAM = {
     "Yellow": Team.YELLOW,
     "Purple": Team.PURPLE,
 }
+
 
 class Role(Enum):
     SCOUT = "scout"
@@ -213,7 +237,7 @@ class EventType(Enum):
     RESUPPLY_LIVES = "0502"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
     AMMO_BOOST = "0510"  # Arguments: "(entity 1)", " resupplies team"
     LIFE_BOOST = "0512"  # Arguments: "(entity 1)", " resupplies team"
-    PENALTY = "0600" # Arguments: "(entity 1)", " is penalized"
+    PENALTY = "0600"  # Arguments: "(entity 1)", " is penalized"
     ACHIEVEMENT = "0900"  # Arguments: "(entity 1)", " completes an achievement!"
     REWARD = "0902"  # Arguments: "(entity 1)", " earns a reward!"
     BASE_AWARDED = "0B03"  # (technically #0B03 in hex) Arguments: "(entity 1)", " is awarded ", "(entity 2)"
