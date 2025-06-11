@@ -130,6 +130,47 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
     {%- endmacro %}
 
+    {% macro notable_events_annotation(notable_events) -%}
+
+    annotation: {
+        annotations: {
+            {% for notable_event in notable_events %}
+            {{ notable_event.id }}: {
+                type: 'line',
+                xMin: {{ notable_event.minutes }},
+                xMax: {{ notable_event.minutes }},
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: 2,
+                label: {
+                    color: '{{ notable_event.team.plain_color }}',
+                    content: {{ notable_event.short_event }},
+                    position: '{{ notable_event.position }}',
+                    textAlign: 'start',
+                    display: true,
+                    hitTolerance: 2,
+                    z: 5,
+                    xAdjust: center_annotation_x
+                },
+                enter: function(context, event) {
+                    context.element.label.options.backgroundColor = "rgba(255, 255, 255, 255)";
+                    context.element.label.options.color = "rgb(0, 0, 0)";
+                    context.element.options.borderColor = "rgb(255, 255, 255)";
+                    context.element.options.borderWidth = 8;
+                    return true;
+                },
+                leave: function(context, event) {
+                    context.element.label.options.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                    context.element.label.options.color = "{{ notable_event.team.plain_color }}";
+                    context.element.options.borderColor = "rgb(255, 99, 132)";
+                    context.element.options.borderWidth = 2;
+                    return true;
+                }
+            }{% if not loop.last %}, {% endif %}
+            {% endfor %}
+         }
+    }
+    {%- endmacro %}
+
     <script>
         function toggleNav() {
             // animate the nav-items
@@ -208,6 +249,22 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
         function tick_minute_to_mmss(value, index, values) {
             return minute_to_mmss(value);
         }
+
+        function center_annotation_x(context, options) {
+            const fontSize = options.font?.size || Chart.defaults.font.size;
+            const fontFamily = options.font?.family || Chart.defaults.font.family;
+            const fontStyle = options.font?.style || Chart.defaults.font.style;
+
+            const canvas = document.createElement('canvas');
+            const canvasContext = canvas.getContext('2d');
+            canvasContext.font = `${fontStyle} ${fontSize}px ${fontFamily}`;
+            const textWidth = canvasContext.measureText(options.content).width;
+
+            const labelBoxWidth = textWidth;
+
+            return (textWidth / 2) - 15;
+        }
+
     </script>
 
     <style>

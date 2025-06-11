@@ -380,6 +380,7 @@
         options: {
             maintainAspectRatio: false,
             plugins: {
+                {{ notable_events_annotation(notable_events) }},
                 tooltip: {
                     callbacks: {
                         title: tooltip_minute_to_mmss
@@ -448,61 +449,7 @@
             maintainAspectRatio: false,
             responsive: true,
             plugins: {
-                annotation: {
-                    annotations: {
-                        {% for notable_event in notable_events %}
-                        {{ notable_event.id }}: {
-                            type: 'line',
-                            xMin: {{ notable_event.minutes }},
-                            xMax: {{ notable_event.minutes }},
-                            borderColor: 'rgb(255, 99, 132)',
-                            borderWidth: 2,
-                            label: {
-                                color: '{{ notable_event.team.plain_color }}',
-                                content: {{ notable_event.short_event }},
-                                position: '{{ notable_event.position }}',
-                                textAlign: 'start',
-                                display: true,
-                                hitTolerance: 2,
-                                z: 5,
-                                xAdjust: (context, options) => {
-                                    const fontSize = options.font?.size || Chart.defaults.font.size;
-                                    const fontFamily = options.font?.family || Chart.defaults.font.family;
-                                    const fontStyle = options.font?.style || Chart.defaults.font.style;
-
-                                    const canvas = document.createElement('canvas');
-                                    const canvasContext = canvas.getContext('2d');
-                                    canvasContext.font = `${fontStyle} ${fontSize}px ${fontFamily}`;
-                                    const textWidth = canvasContext.measureText(options.content).width;
-
-                                    const labelBoxWidth = textWidth;
-
-                                    return (textWidth / 2) - 15;
-                                }
-                            },
-                            enter: function(context, event) {
-                                console.log(context);
-                                console.log(event.chart);
-                                context.element.options.label.backgroundColor = "rgba(255, 255, 255, 255)";
-                                context.element.options.label.borderColor = "rgb(255, 0, 255)";
-                                context.element.options.label.content += "x";
-                                context.element.options.label.display = false;
-                                context.element.options.borderColor = "rgb(255, 255, 255)";
-                                context.element.options.borderWidth = 8;
-
-                                return true;
-                            },
-                            leave: function(context, event) {
-                                context.element.options.label.backgroundColor = "rgba(0, 0, 0, 0.8)";
-                                context.element.options.borderColor = "rgb(255, 99, 132)";
-                                context.element.options.borderWidth = 2;
-
-                                return true;
-                            }
-                        }{% if not loop.last %}, {% endif %}
-                        {% endfor %}
-                    }
-                },
+                {{ notable_events_annotation(notable_events) }},
                 tooltip: {
                     callbacks: {
                         title: function(tooltipItem) {
