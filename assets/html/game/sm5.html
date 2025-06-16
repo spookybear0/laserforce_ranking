@@ -380,6 +380,7 @@
         options: {
             maintainAspectRatio: false,
             plugins: {
+                {{ notable_events_annotation(notable_events) }},
                 tooltip: {
                     callbacks: {
                         title: tooltip_minute_to_mmss
@@ -448,6 +449,7 @@
             maintainAspectRatio: false,
             responsive: true,
             plugins: {
+                {{ notable_events_annotation(notable_events) }},
                 tooltip: {
                     callbacks: {
                         title: function(tooltipItem) {
