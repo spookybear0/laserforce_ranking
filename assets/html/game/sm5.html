@@ -74,15 +74,17 @@
         width: 90%;
         position: relative;
         height: 500px;
+        margin: auto;
     }
 
     .lives-chart {
         width: 90%;
         position: relative;
         height: 500px;
+        margin: auto;
     }
 
-    .win-draw-chance {
+    .win-chances {
         flex-direction: row;
         width: 100%;
         display: flex;
@@ -90,7 +92,7 @@
     }
 
     .win-chance-before-game, .win-chance {
-        width: 30%;
+        width: 50%;
         position: relative;
     }
 
@@ -169,21 +171,38 @@
         }
 
         .score-chart {
-            max-width: 100%;
-            position: relative;
+            margin-bottom: 5rem;
+            height: 300px;
+        }
+
+        #score_chart {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .lives-chart {
-            max-width: 100%;
-            position: relative;
+            margin-bottom: 5rem;
+            height: 300px;
+        }
+
+        #lives_chart {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .win-chance-before-game, .win-chance {
-            width: 100%;
-            position: relative;
+            width: 80% !important;
+            margin: auto;
+            margin-bottom: 5rem;
         }
 
-        .win-draw-chance {
+        #win_chance_before_game, #win_chance {
+            width: 100% !important;
+            height: 100% !important;
+            margin: auto;
+        }
+
+        .win-chances {
             flex-direction: column;
         }
     }
@@ -340,7 +359,8 @@
             <div class="lives-chart" >
                 <canvas id="lives_chart" style="clear: both;"></canvas>
             </div>
-            <div class="win-draw-chance">
+            {% if game.ranked and win_chance_before_game and win_chance_after_game %}
+            <div class="win-chances">
                 <div class="win-chance-before-game">
                     <canvas id="win_chance_before_game" style="clear: both;"></canvas>
                 </div>
@@ -348,6 +368,7 @@
                     <canvas id="win_chance" style="clear: both;"></canvas>
                 </div>
             </div>
+            {% endif %}
         </div>
 
         <div style="clear: both;"></div>
@@ -378,6 +399,7 @@
             ]
         },
         options: {
+            responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 {{ notable_events_annotation(notable_events) }},
@@ -395,7 +417,10 @@
                 title: {
                     display: true,
                     text: "Score Over Time",
-                    color: "white"
+                    color: "white",
+                    font: {
+                        size: 24
+                    }
                 }
             },
             scales: {
@@ -446,8 +471,8 @@
             ]
         },
         options: {
+            responsive: true, 
             maintainAspectRatio: false,
-            responsive: true,
             plugins: {
                 {{ notable_events_annotation(notable_events) }},
                 tooltip: {
@@ -473,7 +498,10 @@
                 title: {
                     display: true,
                     text: "Average Lives Over Time",
-                    color: "white"
+                    color: "white",
+                    font: {
+                        size: 24
+                    }
                 }
             },
             scales: {
@@ -497,7 +525,7 @@
                     title: {
                         display: true,
                         text: "Score",
-                        color: "white"
+                        color: "white",
                     }
                 }
             }
@@ -515,6 +543,7 @@
             }]
         },
         options: {
+            responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
@@ -524,7 +553,10 @@
                 title: {
                     display: true,
                     text: "Predicted Win Chance",
-                    color: "white"
+                    color: "white",
+                    font: {
+                        size: 24
+                    }
                 }
             }
         }
@@ -540,6 +572,7 @@
             }]
         },
         options: {
+            responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
@@ -549,7 +582,10 @@
                 title: {
                     display: true,
                     text: "Actual Win Chance",
-                    color: "white"
+                    color: "white",
+                    font: {
+                        size: 24
+                    }
                 }
             }
         }
