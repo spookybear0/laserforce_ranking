@@ -285,7 +285,7 @@
                                         <td class="role fixed-column" style="width: 30px"><p>{{ sm5_role_icon(player) }}</p></td>
                                         <td class="second-fixed-column">{{ player_with_penalties(player) }}</td>
                                         {% if game.ranked %}
-                                            {% if player.entity_end %}
+                                            {% if player.entity_end and player.entity_end.current_rating_mu %}
                                                 <td title="mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2)}}">{{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}</td>
                                             {% else %}
                                                 <td></td>

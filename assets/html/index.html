@@ -9,13 +9,17 @@
         margin: 0;
         padding: 0;
     }
+
+    .main-chart {
+        position: relative;
+    }
 </style>
 
 {% endblock %}
 
 {% block content %}
 
-<div class="inline-block content" style="height: 50%; margin: auto;">
+<div class="content main-chart">
     <canvas id="avg_role_score"></canvas>
 </div>
 
@@ -37,7 +41,6 @@
             }]
         },
         options: {
-            responsive: true,
             scales: {
                 x: {
                     ticks: {
