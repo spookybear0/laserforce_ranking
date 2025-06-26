@@ -676,6 +676,32 @@ async def update_winner(game: SM5Game):
     game.winner_color = winner.value if winner else "none"
 
 
+async def update_team_sizes(game: SM5Game):
+    """Updates the following fields in the game:
+
+    team1_size, team2_size.
+
+    Will not call save() after the update is done.
+    """
+    # Get all teams in the game.
+    teams = await game.teams.all()
+
+    # Remove neutral team(s).
+    teams = [team for team in teams if team.enum != None]
+
+    team1_len = 0
+    team2_len = 0
+
+    if len(teams) > 0:
+        team1_len = await game.entity_ends.filter(entity__team=teams[0], entity__type="player").count()
+
+    if len(teams) > 1:
+        team2_len = await game.entity_ends.filter(entity__team=teams[1], entity__type="player").count()
+
+    game.team1_size = team1_len
+    game.team2_size = team2_len
+
+
 async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:
     """Returns the team that eliminated the other team.
 
