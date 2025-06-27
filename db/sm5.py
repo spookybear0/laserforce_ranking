@@ -17,7 +17,7 @@ import sys
 
 # The current version we expect in SM5Game.laserrank_version. If it doesn't match, that game should be recomputed
 # with the recompute_sm5_scores action.
-SM5_LASERRANK_VERSION = 2
+SM5_LASERRANK_VERSION = 3
 
 
 class SM5Game(Model):
@@ -53,6 +53,10 @@ class SM5Game(Model):
     # Our internal SM5 game version when this game was imported. If it doesn't match SM5_LASERRANK_VERSION, it
     # should be recomputed.
     laserrank_version = fields.IntField(default=0)
+    # Number of players on the first team.
+    team1_size = fields.IntField(null=True)
+    # Number of players on the second team.
+    team2_size = fields.IntField(null=True)
 
     def __str__(self) -> str:
         return f"SM5Game ({self.start_time})"

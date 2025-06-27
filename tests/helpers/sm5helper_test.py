@@ -2,7 +2,7 @@ import unittest
 
 from db.sm5 import SM5Game
 from db.types import Team, IntRole, EventType
-from helpers.sm5helper import get_sm5_last_team_standing, get_sm5_notable_events
+from helpers.sm5helper import get_sm5_last_team_standing, get_sm5_notable_events, update_team_sizes
 from helpers.statshelper import NotableEvent
 from helpers.tdfhelper import create_event
 from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id, \
@@ -15,6 +15,45 @@ class TestSm5Helper(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         await teardown_test_database()
+
+    async def test_get_team_sizes_counts_correctly(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        await add_entity(entity_id=ENTITY_ID_1, team=get_red_team(), sm5_game=game)
+        await add_entity(entity_id=ENTITY_ID_2, team=get_green_team(), sm5_game=game)
+        await add_entity(entity_id=ENTITY_ID_3, team=get_red_team(), sm5_game=game)
+
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        await update_team_sizes(game)
+
+        # The team order is not defined, either red or green could be team 1 or team 2.
+        team_sizes = [game.team1_size, game.team2_size]
+        self.assertCountEqual([1, 2], team_sizes)
+
+
+    async def test_get_team_sizes_counts_only_one_team(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        await add_entity(entity_id=ENTITY_ID_1, team=get_red_team(), sm5_game=game)
+        await add_entity(entity_id=ENTITY_ID_3, team=get_red_team(), sm5_game=game)
+
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        await update_team_sizes(game)
+
+        self.assertEqual(2, game.team1_size)
+        self.assertEqual(0, game.team2_size)
+
+
+    async def test_get_team_sizes_counts_no_players(self):
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        await update_team_sizes(game)
+
+        self.assertEqual(0, game.team1_size)
+        self.assertEqual(0, game.team2_size)
+
 
     async def test_get_sm5_last_team_standing_both_alive(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()

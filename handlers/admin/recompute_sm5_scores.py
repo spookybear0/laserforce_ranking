@@ -1,7 +1,7 @@
 from sanic import Request
 
 from db.sm5 import SM5Game, SM5_LASERRANK_VERSION
-from helpers.sm5helper import update_winner
+from helpers.sm5helper import update_team_sizes, update_winner
 from shared import app
 from utils import admin_only
 
@@ -36,8 +36,11 @@ async def recompute_sm5_scores(request: Request) -> str:
 
 async def _update_games(games: list[SM5Game]) -> int:
     for game in games:
-        if game.laserrank_version < 2:
-            await update_winner(game)
+        if game.laserrank_version < SM5_LASERRANK_VERSION:
+            if game.laserrank_version < 2:
+                await update_winner(game)
+            if game.laserrank_version < 3:
+                await update_team_sizes(game)
         game.laserrank_version = SM5_LASERRANK_VERSION
         await game.save()
 

@@ -350,6 +350,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
     game.ranked = ranked
     game.ended_early = ended_early
+    game.team1_size = team1_len
+    game.team2_size = team2_len
 
     await game.save()
 
