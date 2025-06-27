@@ -4,16 +4,15 @@ from db.sm5 import SM5Game, SM5_LASERRANK_VERSION
 from helpers.sm5helper import update_team_sizes, update_winner
 from shared import app
 from utils import admin_only
+from sanic.log import logger
 
 _BATCH_SIZE = 20
 
 
-@app.get("/admin/recompute_sm5_scores")
+@app.post("/admin/migrate_games")
 @admin_only
-async def recompute_sm5_scores(request: Request) -> str:
+async def migrate_games(request: Request) -> str:
     response = await request.respond(content_type="text/html")
-
-    await response.send("<html><body><h1>Updating...</h1>\n")
 
     updated_games_count = 0
 
@@ -25,18 +24,18 @@ async def recompute_sm5_scores(request: Request) -> str:
         if not games:
             break
 
-        update_count = await _update_games(games)
+        update_count = await _migrate_games(games)
         updated_games_count += update_count
-        await response.send(f"Updated {update_count} games\n<br>")
 
-    await response.send(f"<h2>All done.</h2>\n{updated_games_count} games updated.\n</body></html>")
+        logger.info(f"Updated {update_count} games to version {SM5_LASERRANK_VERSION}")
 
-    return ""
+    return response.json({"status": "ok", "updated_games_count": updated_games_count})
 
 
-async def _update_games(games: list[SM5Game]) -> int:
+async def _migrate_games(games: list[SM5Game]) -> int:
     for game in games:
         if game.laserrank_version < SM5_LASERRANK_VERSION:
+            logger.info(f"Updating game {game.id} from version {game.laserrank_version} to {SM5_LASERRANK_VERSION}")
             if game.laserrank_version < 2:
                 await update_winner(game)
             if game.laserrank_version < 3:

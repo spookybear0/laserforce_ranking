@@ -9,12 +9,10 @@ from utils import admin_only
 _BATCH_SIZE = 10000
 
 
-@app.get("/admin/backfill_events")
+@app.post("/admin/backfill_events")
 @admin_only
 async def backfill_events(request: Request) -> str:
     response = await request.respond(content_type="text/html")
-
-    await response.send("<html><body><H1>Updating...</H1>\n")
 
     updated_event_count = 0
 
@@ -28,11 +26,8 @@ async def backfill_events(request: Request) -> str:
 
         update_count = await _update_events(events)
         updated_event_count += update_count
-        await response.send(f"Updated {update_count} events\n<br>")
 
-    await response.send(f"<h2>All done.</h2>\n{updated_event_count} events updated.\n</body></html>")
-
-    return ""
+    return response.json({"status": "ok", "updated_event_count": updated_event_count})
 
 
 async def _update_events(events: list[Events]) -> int:

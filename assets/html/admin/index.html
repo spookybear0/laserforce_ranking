@@ -78,6 +78,28 @@
         });
     }
 
+    function migrate_games() {
+        alert("Migrating games in background...");
+        fetch("/admin/migrate_games", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
+    function backfill_events() {
+        alert("Backfilling events in background...");
+        fetch("/admin/backfill_events", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
     function flush_cache() {
         alert("Flushing cache in background...");
         fetch("/admin/flush_cache", {
@@ -119,6 +141,8 @@
     <button onclick="recalculate_ratings()" class="button">Recalculate Ratings</button>
     <button onclick="recalculate_sm5_ratings()" class="button">Recalculate SM5 Ratings</button>
     <button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
+    <button onclick="migrate_games()" class="button">Migrate Games</button>
+    <button onclick="backfill_events()" class="button">Backfill Events</button>
     <button onclick="flush_cache()" class="button">Flush Cache</button>
 </div>
 

@@ -15,8 +15,8 @@ from helpers.cachehelper import cache
 import math
 import sys
 
-# The current version we expect in SM5Game.laserrank_version. If it doesn't match, that game should be recomputed
-# with the recompute_sm5_scores action.
+# The current version we expect in SM5Game.laserrank_version. If it doesn't match, that game should be migrated
+# with the migrate_games action.
 SM5_LASERRANK_VERSION = 3
 
 
@@ -51,7 +51,7 @@ class SM5Game(Model):
     # If not null, this is the team that eliminated the other.
     last_team_standing = fields.CharEnumField(Team, null=True)
     # Our internal SM5 game version when this game was imported. If it doesn't match SM5_LASERRANK_VERSION, it
-    # should be recomputed.
+    # should be recomputed/migrated.
     laserrank_version = fields.IntField(default=0)
     # Number of players on the first team.
     team1_size = fields.IntField(null=True)
