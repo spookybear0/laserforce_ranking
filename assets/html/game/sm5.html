@@ -84,6 +84,10 @@
         margin: auto;
     }
 
+    .notable-style-picker {
+        text-align: center;
+    }
+
     .win-chances {
         flex-direction: row;
         width: 100%;
@@ -359,6 +363,14 @@
             <div class="lives-chart" >
                 <canvas id="lives_chart" style="clear: both;"></canvas>
             </div>
+            <div class="notable-style-picker">
+                <label for="change_notable">Show events</label>
+                <select id="change_notable" name="notable_annotations" onchange="toggleNotableEvents(this.value);">
+                    <option value="none">None</option>
+                    <option value="short" selected>Short</option>
+                    <option value="verbose">Verbose</option>
+                </select>
+            </div>
             {% if game.ranked and win_chance_before_game and win_chance_after_game %}
             <div class="win-chances">
                 <div class="win-chance-before-game">
@@ -379,7 +391,7 @@
 
 
 <script>
-    new Chart("score_chart", {
+    const scoreChart = new Chart("score_chart", {
         type: "line",
         data: {
             labels: {{score_chart_labels}},
@@ -401,6 +413,7 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            notableEventStyle: "short",
             plugins: {
                 {{ notable_events_annotation(notable_events) }},
                 tooltip: {
@@ -451,7 +464,7 @@
         }
     });
 
-    new Chart("lives_chart", {
+    const livesChart = new Chart("lives_chart", {
         type: "line",
         data: {
             labels: {{score_chart_labels}},
@@ -473,6 +486,7 @@
         options: {
             responsive: true, 
             maintainAspectRatio: false,
+            notableEventStyle: "short",
             plugins: {
                 {{ notable_events_annotation(notable_events) }},
                 tooltip: {
@@ -598,6 +612,29 @@
                 {{ alive_time_chart(player) }}
          {% endfor %}
     {% endfor %}
+
+    function toggleAnnotations(chart, annotationStyle) {
+        chart.options.notableEventStyle = annotationStyle;
+        const annotations = chart.options.plugins.annotation.annotations;
+        const isVisible = annotationStyle != "none";
+
+        if (annotations && typeof annotations === "object") {
+            const firstAnnotationKey = Object.keys(annotations)[0];
+            if (firstAnnotationKey) {
+                for (const key of Object.keys(annotations)) {
+                    annotations[key].display = isVisible;
+                }
+
+                chart.update();
+            }
+        }
+    }
+
+    function toggleNotableEvents(annotationStyle) {
+        toggleAnnotations(livesChart, annotationStyle);
+        toggleAnnotations(scoreChart, annotationStyle);
+    }
+
 </script>
 
 </body>

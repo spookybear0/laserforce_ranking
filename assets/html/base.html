@@ -143,7 +143,13 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
                 borderWidth: 2,
                 label: {
                     color: '{{ notable_event.team.plain_color }}',
-                    content: {{ notable_event.short_event }},
+                    content: (context) => {
+                        const chart = context.chart;
+                        if (chart.options.notableEventStyle == "short") {
+                            return {{ notable_event.short_event }};
+                        }
+                        return "{{ notable_event.event }}";
+                    },
                     position: '{{ notable_event.position }}',
                     textAlign: 'start',
                     display: true,
