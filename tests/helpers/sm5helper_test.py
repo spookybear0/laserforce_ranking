@@ -5,7 +5,7 @@ from db.types import Team, IntRole, EventType
 from helpers.sm5helper import get_sm5_last_team_standing, get_sm5_notable_events, update_team_sizes
 from helpers.statshelper import NotableEvent
 from helpers.tdfhelper import create_event
-from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, get_sm5_game_id, \
+from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, ENTITY_ID_4, get_sm5_game_id, \
     teardown_test_database, add_entity, get_red_team, get_green_team, add_sm5_stats, ENTITY_ID_3, add_sm5_event
 
 
@@ -31,7 +31,6 @@ class TestSm5Helper(unittest.IsolatedAsyncioTestCase):
         team_sizes = [game.team1_size, game.team2_size]
         self.assertCountEqual([1, 2], team_sizes)
 
-
     async def test_get_team_sizes_counts_only_one_team(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
 
@@ -45,7 +44,6 @@ class TestSm5Helper(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, game.team1_size)
         self.assertEqual(0, game.team2_size)
 
-
     async def test_get_team_sizes_counts_no_players(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
 
@@ -53,7 +51,6 @@ class TestSm5Helper(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(0, game.team1_size)
         self.assertEqual(0, game.team2_size)
-
 
     async def test_get_sm5_last_team_standing_both_alive(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
@@ -264,6 +261,97 @@ class TestSm5Helper(unittest.IsolatedAsyncioTestCase):
                                        team=Team.GREEN,
                                        id='event11',
                                        position='80%')], notable_events)
+
+    async def test_get_sm5_notable_events_medic_hits(self):
+        await teardown_test_database()
+        await setup_test_database(basic_events=False)
+
+        game = await SM5Game.filter(id=get_sm5_game_id()).first()
+
+        # Player 1 is RED MEDIC.
+        entity_start, entity_end = await add_entity(entity_id=ENTITY_ID_1, team=get_red_team(),
+                                                    role=IntRole.MEDIC,
+                                                    name="FireMedic")
+        await add_sm5_stats(entity_start)
+
+        # Player 2 is GREEN MEDIC.
+        entity_start2, entity_end2 = await add_entity(entity_id=ENTITY_ID_2, team=get_green_team(),
+                                                      role=IntRole.MEDIC,
+                                                      name="GreenMedic")
+        await add_sm5_stats(entity_start2)
+
+        # Player 3 is RED SCOUT.
+        entity_start3, entity_end3 = await add_entity(entity_id=ENTITY_ID_3, team=get_red_team(),
+                                                      role=IntRole.SCOUT,
+                                                      name="Red Scout")
+        await add_sm5_stats(entity_start3)
+
+        # Player 4 is GREEN AMMO.
+        entity_start4, entity_end4 = await add_entity(entity_id=ENTITY_ID_4, team=get_green_team(),
+                                                      role=IntRole.AMMO,
+                                                      name="Green Ammo")
+        await add_sm5_stats(entity_start4)
+
+        await game.entity_starts.add(entity_start, entity_start2, entity_start3, entity_start4)
+        await game.entity_ends.add(entity_end, entity_end2, entity_end3, entity_end4)
+
+        # 5000: Irrelevant event.
+        await add_sm5_event(await create_event(time_ms=10000, type=EventType.LOCKING,
+                                               entity1=ENTITY_ID_3,
+                                               entity2=ENTITY_ID_1,
+                                               ))
+
+        # 10000: Medic to medic. IGNORED: Across teams, ignored
+        await add_sm5_event(await create_event(time_ms=10000, type=EventType.DOWNED_OPPONENT,
+                                               entity1=ENTITY_ID_1,
+                                               entity2=ENTITY_ID_2,
+                                               ))
+
+        # 20000: Scout to medic. Friendly fire
+        await add_sm5_event(await create_event(time_ms=20000, type=EventType.DOWNED_OPPONENT,
+                                               entity1=ENTITY_ID_3,
+                                               entity2=ENTITY_ID_1,
+                                               ))
+
+        # 30000: Medic to scout. Ignored
+        await add_sm5_event(await create_event(time_ms=30000, type=EventType.DOWNED_OPPONENT,
+                                               entity1=ENTITY_ID_1,
+                                               entity2=ENTITY_ID_3,
+                                               ))
+
+        # 40000: Ammo to medic. Friendly fire.
+        await add_sm5_event(await create_event(time_ms=40000, type=EventType.DOWNED_TEAM,
+                                               entity1=ENTITY_ID_4,
+                                               entity2=ENTITY_ID_2,
+                                               ))
+
+        # 50000: Scout to medic with missile (yeah right). Friendly fire
+        await add_sm5_event(await create_event(time_ms=50000, type=EventType.MISSILE_DOWN_OPPONENT,
+                                               entity1=ENTITY_ID_3,
+                                               entity2=ENTITY_ID_1,
+                                               ))
+
+        notable_events = await get_sm5_notable_events(game)
+
+        # All events, in chronological order.
+        self.assertEqual([NotableEvent(seconds=20,
+                                       event='Red Scout tags own medic FireMedic',
+                                       short_event=['Red Scout', 'tags own medic'],
+                                       team=Team.RED,
+                                       id='event1',
+                                       position='90%'),
+                          NotableEvent(seconds=40,
+                                       event='Green Ammo tags own medic GreenMedic',
+                                       short_event=['Green Ammo', 'tags own medic'],
+                                       team=Team.GREEN,
+                                       id='event2',
+                                       position='80%'),
+                          NotableEvent(seconds=50,
+                                       event='Red Scout MISSILES own medic FireMedic',
+                                       short_event=['Red Scout', 'MISSILES own medic'],
+                                       team=Team.RED,
+                                       id='event3',
+                                       position='70%')], notable_events)
 
         if __name__ == '__main__':
             unittest.main()
