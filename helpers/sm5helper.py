@@ -485,7 +485,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
 
 @cache()
 async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[PlayerInfo]], granularity_millis: int) -> \
-        dict[int, list[int]]:
+    dict[int, list[int]]:
     lives_timeline = defaultdict(list)
     current_lives = {}
 
@@ -554,7 +554,7 @@ async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[Pl
 
 async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DATETIME,
                                    max_time: datetime = _MAX_DATETIME) -> \
-        Optional[TimeSeriesRawData]:
+    Optional[TimeSeriesRawData]:
     """Creates a time series of the SM5 rating for a specific player.
 
     entity_id: Entity ID of the player to get the rating for.
@@ -883,6 +883,52 @@ async def get_sm5_notable_events(game: SM5Game) -> list[NotableEvent]:
                             break
 
                     nuke_check_index += 1
+
+        # Any friendly medic hits?
+        if events[event_index].type in [
+            EventType.DOWNED_OPPONENT,
+            EventType.DOWNED_TEAM,
+            EventType.MISSILE_DOWN_OPPONENT,
+            EventType.MISSILE_DOWN_TEAM]:
+            # One player downed another. Was it a medic?
+            tag_time_ms = events[event_index].time
+            target_entity_id = events[event_index].entity2
+
+            if target_entity_id not in entity_id_map:
+                print(f"ERROR - cannot find entity for target {target_entity_id}")
+                event_index += 1
+                continue
+
+            target_entity = entity_id_map[target_entity_id]
+            target_team = team_from_entity_id[target_entity_id]
+
+            # We only care about medics getting hit.
+            if target_entity.role != IntRole.MEDIC:
+                event_index += 1
+                continue
+
+            aggressor_entity_id = events[event_index].entity1
+
+            if aggressor_entity_id not in entity_id_map:
+                print(f"ERROR - cannot find entity for aggressor {aggressor_entity_id}")
+                event_index += 1
+                continue
+
+            aggressor_entity = entity_id_map[aggressor_entity_id]
+            aggressor_team = team_from_entity_id[aggressor_entity_id]
+
+            if target_team == aggressor_team:
+                # Friendly fire!
+                if events[event_index].type in [EventType.MISSILE_DOWN_TEAM,
+                                                EventType.MISSILE_DOWN_OPPONENT]:
+                    add_event(tag_time_ms,
+                              f"{aggressor_entity.name} MISSILES own medic {target_entity.name}",
+                              [aggressor_entity.name, "MISSILES own medic"], target_team)
+                else:
+                    add_event(tag_time_ms,
+                              f"{aggressor_entity.name} tags own medic {target_entity.name}",
+                              [aggressor_entity.name, "tags own medic"], target_team)
+
         event_index += 1
 
     sort_notable_events(result)
