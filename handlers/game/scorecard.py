@@ -84,7 +84,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
             "Missiled team": player_stats.missiled_team,
             "Nukes detonated": player_stats.nukes_detonated,
             "Nukes canceled": player_stats.nuke_cancels,
-            "Medic hits": player_stats.medic_hits,
+            "Medic hits": player_stats.medic_hits_str,
         }
 
         score_composition = [
