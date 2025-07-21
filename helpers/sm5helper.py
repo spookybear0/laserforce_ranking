@@ -99,6 +99,11 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
         return self.stats.nuke_cancels
 
     @property
+    def medic_hits_str(self) -> str:
+        return get_medic_hits_string(medic_hits=self.stats.medic_hits, own_medic_hits=self.stats.own_medic_hits,
+                                     medic_nukes=self.stats.medic_nukes)
+
+    @property
     def medic_hits(self) -> int:
         return self.stats.medic_hits
 
@@ -550,6 +555,20 @@ async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[Pl
         next_snapshot += granularity_millis
 
     return lives_timeline
+
+
+def get_medic_hits_string(medic_hits: int, own_medic_hits: int, medic_nukes: int) -> str:
+    """Returns the medic hits in the format that is used by LaserForce.
+
+    This is shown as medic_hits_by_tagging_and_missiling/medic_hits_by_nuking/own_medic_hits
+
+    Example: 3/6/-1 (3 hits through tags/missiles, 2 nukes, one tag on the own medic)
+
+    Any component that is 0 will not be shown (except for the first one, which is always shown).
+    """
+    nuke_hits_str = f"/{medic_nukes}" if medic_nukes else ""
+    own_medic_hits_str = f"/-{own_medic_hits}" if own_medic_hits else ""
+    return f"{medic_hits}{nuke_hits_str}{own_medic_hits_str}"
 
 
 async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DATETIME,

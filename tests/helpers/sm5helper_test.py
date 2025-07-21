@@ -2,7 +2,8 @@ import unittest
 
 from db.sm5 import SM5Game
 from db.types import Team, IntRole, EventType
-from helpers.sm5helper import get_sm5_last_team_standing, get_sm5_notable_events, update_team_sizes
+from helpers.sm5helper import get_sm5_last_team_standing, get_sm5_notable_events, update_team_sizes, \
+    get_medic_hits_string
 from helpers.statshelper import NotableEvent
 from helpers.tdfhelper import create_event
 from tests.helpers.environment import setup_test_database, ENTITY_ID_1, ENTITY_ID_2, ENTITY_ID_4, get_sm5_game_id, \
@@ -353,5 +354,12 @@ class TestSm5Helper(unittest.IsolatedAsyncioTestCase):
                                        id='event3',
                                        position='70%')], notable_events)
 
-        if __name__ == '__main__':
-            unittest.main()
+    def test_get_medic_hits_string(self):
+        self.assertEqual(get_medic_hits_string(medic_hits=3, own_medic_hits=2, medic_nukes=6), "3/6/-2")
+        self.assertEqual(get_medic_hits_string(medic_hits=0, own_medic_hits=0, medic_nukes=3), "0/3")
+        self.assertEqual(get_medic_hits_string(medic_hits=4, own_medic_hits=1, medic_nukes=0), "4/-1")
+        self.assertEqual(get_medic_hits_string(medic_hits=2, own_medic_hits=0, medic_nukes=0), "2")
+        self.assertEqual(get_medic_hits_string(medic_hits=0, own_medic_hits=0, medic_nukes=0), "0")
+
+if __name__ == '__main__':
+    unittest.main()
