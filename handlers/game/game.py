@@ -80,9 +80,6 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
             notable_events=notable_events,
-            # TODO: remove this in favor of "team1" and "team2" scores
-            fire_score=await game.get_team_score(SM5Team.RED),
-            earth_score=await game.get_team_score(SM5Team.GREEN),
             is_admin=is_admin(request)
         )
     elif type == "laserball":

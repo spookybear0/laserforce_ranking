@@ -222,8 +222,9 @@
 <script>
     function compareValues(a, b) {
         return (a>b) ? -1 : (a<b) ? 1 : 0;
-      }
+    }
       
+    row = 2
     function sortTable(table, colnum) {
         let rows = Array.from(table.querySelectorAll("tr"));
         
@@ -241,15 +242,6 @@
         rows.forEach(row => table.appendChild(row));
     }
 
-    function onReady() {
-        if ({{ team1_score }} > {{ team2_score }}) {
-            document.getElementById("teams").appendChild(document.getElementsByClassName("team2")[0]);
-        }
-
-        row = 2;
-    }
-
-    document.addEventListener("DOMContentLoaded", onReady);
 </script>
 
 {% endblock %}

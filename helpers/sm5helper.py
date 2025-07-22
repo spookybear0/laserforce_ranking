@@ -428,7 +428,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
 
         # Fake the player count to 1 if there aren't any so we don't divide by 0. All the numbers will be 0 anyway so
         # it won't make a difference.
-        average_divider = player_count if player_count else 1
+        player_count_adjusted = player_count if player_count else 1
 
         # Create the sum of all players in the game.
         sum_player = Sm5PlayerGameStatsSum(
@@ -438,14 +438,14 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             total_score=sum_score,
             total_gross_positive_score=sum_gross_positive_score,
             total_penalties=sum_penalties,
-            average_points_per_minute=int(sum_points_per_minute / average_divider),
+            average_points_per_minute=int(sum_points_per_minute / player_count_adjusted),
             state_distribution=avg_state_distribution,
             score_components=avg_score_components,
-            mvp_points=sum_mvp_points / average_divider,
+            mvp_points=sum_mvp_points / player_count_adjusted,
             shots_fired=sum_shots_fired,
             shots_hit=sum_shots_hit,
-            average_shots_left=int(sum_shots_left / average_divider),
-            average_lives_left=int(sum_lives_left / average_divider),
+            average_shots_left=int(sum_shots_left / player_count_adjusted),
+            average_lives_left=int(sum_lives_left / player_count_adjusted),
             lives_over_time=avg_lives_over_time,
             shot_opponent=sum_shot_opponent,
             times_zapped=sum_times_zapped,
@@ -464,7 +464,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             total_missile_hits=sum_missile_hits,
             total_times_missiled=sum_times_missiled,
             total_medic_hits=sum_medic_hits,
-            average_time_alive_millis=int(sum_time_alive / average_divider),
+            average_time_alive_millis=int(sum_time_alive / player_count_adjusted),
         )
 
         # Sort the roster by score.
@@ -477,7 +477,8 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
                 players=players,
                 sum_player=sum_player,
                 lives_over_time=lives_over_time_team_average
-            ))
+            )
+        )
 
     # Sort teams by score.
     teams.sort(key=lambda x: x.score, reverse=True)
