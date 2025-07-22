@@ -5,6 +5,7 @@ from sanic import Request, response
 from db.player import Player
 from db.types import Permission
 from shared import app
+from helpers.tooltiphelper import TOOLTIP_INFO
 
 
 def get_post(request: Request) -> dict:
@@ -37,6 +38,7 @@ async def render_template(r, template, *args, **kwargs) -> str:
         "config": r.app.ctx.config,
         "Permission": Permission,
         "str": str,
+        "tooltip_info": TOOLTIP_INFO
     }
 
     kwargs = {**kwargs, **additional_kwargs}

@@ -14,7 +14,6 @@ from helpers.laserballhelper import get_laserball_player_stats
 from helpers.sm5helper import get_sm5_player_stats, get_sm5_notable_events
 from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
     millis_to_time
-from helpers.tooltiphelper import TOOLTIP_INFO
 from shared import app
 from utils import is_admin, render_cached_template
 
@@ -81,7 +80,6 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
             notable_events=notable_events,
-            tooltip_info=TOOLTIP_INFO,
             # TODO: remove this in favor of "team1" and "team2" scores
             fire_score=await game.get_team_score(SM5Team.RED),
             earth_score=await game.get_team_score(SM5Team.GREEN),

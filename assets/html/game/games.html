@@ -64,13 +64,6 @@
         vertical-align: middle;
     }
 
-    .ranked-reason {
-        display: inline-block;
-        min-width: 8em;
-        font-size: 1.0rem;
-        vertical-align: middle;
-    }
-
     #mode_table {
         width: 25rem;
         margin-bottom: 1.5rem;
@@ -92,6 +85,8 @@
         }
     }
 </style>
+
+{% include "game/sm5_tooltips_include.html" %}
 
 <script>
     sort = {{sort}};
@@ -188,17 +183,9 @@
                     <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                     <td style="color: {{ game.winner.css_color_name }};">{{ game.winner.standardize() }} {{ '(elim)' if game.last_team_standing else '' }}</td>
                     <td style="color: {{ 'greenyellow' if game.ended_early else 'orangered' }}; font-size: 1.5rem;">{{ "✓" if game.ended_early else "✕" }}</td>
-                    <td class="ranked-column">
+                    <td class="ranked-column" {{ tooltip(game.get_unranked_reason_tooltip()) if not game.ranked else "" }}>
                         <span class="ranked-icon" style="color: {{ 'greenyellow' if game.ranked else 'orangered' }};">{{ "✓" if game.ranked else "✕" }} </span>
-                   <span class="ranked-team-size">{{ game.team1_size }}v{{ game.team2_size }}</span>
-                   <span class="ranked-reason">
-                    {% if game.team1_size != game.team2_size %}
-                        Unbalanced
-                    {% else %}
-                        {{ "Too large" if game.team1_size > 7 }}
-                        {{ "Too small" if game.team1_size < 5 }}
-                    {% endif %}
-                    </span>
+                        <span class="ranked-team-size">{{ game.team1_size }}v{{ game.team2_size }}</span>
                     </td>
                 </tr>
             {% endfor %}

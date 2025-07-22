@@ -26,6 +26,12 @@ _PLAIN_TOOLTIPS = {
     "sm5_you_missiled": "How many times you missiled this particular player",
     "sm5_missiled_you": "How many times this particular player missiled you",
     "sm5_penalty": "Penalty",
+    # Other tooltips.
+    "unranked_reason_ended_early": "Ended early",
+    "unranked_reason_too_small": "Too small",
+    "unranked_reason_too_large": "Too large",
+    "unranked_reason_unbalanced": "Unbalanced",
+    "unranked_reason_unknown": "Unknown reason",
 }
 
 # Tooltips that are complex that they're implemented as separate DIV tags. The value is the ID of the tag.

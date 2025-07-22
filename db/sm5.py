@@ -76,6 +76,27 @@ class SM5Game(Model):
         # The only adjustment currently is the 10k bonus for a team that eliminates another team.
         return 10000 if team == self.last_team_standing else 0
 
+    def get_unranked_reason_tooltip(self) -> Optional[str]:
+        """
+        Returns the reason why this game is unranked, if it is.
+        
+        Returns None if the game is ranked or if there is no reason for it to be unranked.
+        """
+
+        # TODO: could use an enum?
+        if not self.ranked:
+            if self.ended_early:
+                return "unranked_reason_ended_early"
+            elif self.team1_size < 5 or self.team2_size < 5:
+                return "unranked_reason_too_small"
+            elif self.team1_size > 7 or self.team2_size > 7:
+                return "unranked_reason_too_large"
+            elif self.team1_size != self.team2_size:
+                return "unranked_reason_unbalanced"
+            else:
+                return "unranked_reason_unknown"
+        return None
+
 
     async def get_entity_start_from_token(self, token: str) -> Optional["EntityStarts"]:
         return await self.entity_starts.filter(entity_id=token).first()
