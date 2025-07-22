@@ -47,7 +47,8 @@ import utils
 
 TORTOISE_ORM = {
     "connections": {
-        "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/laserforce"},
+        "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/{config['db_name']}",
+    },
     "apps": {
         "models": {
             "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "aerich.models"],
@@ -78,7 +79,7 @@ async def setup_app(app, loop) -> None:
     """
     Start the server in a production environment.
     """
-    app.ctx.sql = await MySQLPool.connect_with_config()
+    app.ctx.sql = await MySQLPool.connect_with_config() # legacy purposes
     app.ctx.banner = {"text": None, "type": None}
     app.ctx.banner_type_to_color = utils.banner_type_to_color
 

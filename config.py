@@ -8,7 +8,7 @@ default_config = {
     "db_user": "root",
     "db_password": "",
     "db_port": 3306,
-    "db_database": "laserforce",
+    "db_name": "laserforce",
     "sentry_dsn": "",
     "sentry_environment": "production",
     "redis": "redis://localhost",
