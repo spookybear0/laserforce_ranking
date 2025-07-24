@@ -11,4 +11,5 @@ sanic_jinja2
 aioredis
 aerich
 pytest
+websockets
 pytailwind==0.0.3
