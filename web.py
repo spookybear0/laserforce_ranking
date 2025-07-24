@@ -12,6 +12,7 @@ from sanic_session import Session, AIORedisSessionInterface, InMemorySessionInte
 from config import config
 from sanic_cors import CORS
 import aioredis
+from tailwind import generate_tailwind_css
 
 # we need to set up our app before we import anything else
 
@@ -85,6 +86,9 @@ async def setup_app(app, loop) -> None:
     # use cache on production server
     cachehelper.use_cache()
 
+    # generate css needed for the site
+    generate_tailwind_css()
+
 
 async def main() -> None:
     """
@@ -96,6 +100,9 @@ async def main() -> None:
     await Tortoise.init(
         config=TORTOISE_ORM
     )
+
+    # generate css needed for the site
+    generate_tailwind_css()
 
     # no cache on dev server
 

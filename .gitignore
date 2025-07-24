@@ -113,6 +113,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
+
+
+
 config.json
 sm5_tdf/*
 laserball_tdf/*
@@ -120,3 +124,7 @@ laserball_tdf/*
 transfer.py
 .idea/* 
 *.code-workspace
+
+# tailwind
+
+assets/css/tailwind.css
