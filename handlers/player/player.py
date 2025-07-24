@@ -26,8 +26,6 @@ _ROLES = [
     "Medic",
 ]
 
-sql = app.ctx.sql
-
 
 async def get_entity_start(game, player) -> Optional[EntityStarts]:
     return await game.entity_starts.filter(entity_id=player.entity_id).first()

@@ -5,7 +5,6 @@ path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(path)
 sys.path.append(path)
 
-from mysql import MySQLPool
 import jinja2
 from sanic import Sanic
 from sanic_jinja2 import SanicJinja2
@@ -34,12 +33,10 @@ app.ctx.jinja = SanicJinja2(
     extensions=["jinja2.ext.loopcontrols"],
     enable_async=True
 )
-app.ctx.sql = MySQLPool()
 app.ctx.config = config
 
 import asyncio
 import router
-from mysql import MySQLPool
 from tortoise import Tortoise
 from config import config
 from helpers import cachehelper
@@ -70,7 +67,6 @@ async def close_db(app, loop) -> None:
     """
     Close the database connection when the server stops.
     """
-    await app.ctx.sql.close()
     await Tortoise.close_connections()
 
 
@@ -79,7 +75,6 @@ async def setup_app(app, loop) -> None:
     """
     Start the server in a production environment.
     """
-    app.ctx.sql = await MySQLPool.connect_with_config() # legacy purposes
     app.ctx.banner = {"text": None, "type": None}
     app.ctx.banner_type_to_color = utils.banner_type_to_color
 
@@ -95,15 +90,12 @@ async def main() -> None:
     """
     Start the server in a development/nonprod environment.
     """
-    app.ctx.sql = await MySQLPool.connect_with_config()
     app.ctx.banner = {"text": "", "type": None}
     app.ctx.banner_type_to_color = utils.banner_type_to_color
 
     await Tortoise.init(
         config=TORTOISE_ORM
     )
-
-    # await adminhelper.repopulate_database()
 
     # no cache on dev server
 

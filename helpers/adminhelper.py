@@ -12,30 +12,6 @@ from helpers import tdfhelper, userhelper, ratinghelper
 from shared import app
 
 
-async def repopulate_database() -> None:
-    await Tortoise.generate_schemas()
-
-    sql = app.ctx.sql
-
-    # get all old player_id's
-
-    ids = await sql.fetchall("SELECT codename, player_id FROM players")
-
-    for codename, player_id in ids:
-        await Player.filter(codename=codename).update(player_id=player_id)
-
-    # some fixes
-
-    await Player.filter(codename="ëMîlÿ").update(entity_id="#RFSjNZ")
-    await Player.filter(codename="Survivor").update(permissions=Permission.ADMIN,
-                                                    password=userhelper.hash_password(config["root_password"]))
-
-    await Player.all().update(sm5_mu=ratinghelper.MU, sm5_sigma=ratinghelper.SIGMA, laserball_mu=ratinghelper.MU,
-                              laserball_sigma=ratinghelper.SIGMA)
-
-    await tdfhelper.parse_all_tdfs()
-
-
 async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battlesuit: str, codename: str,
                                     mode: str) -> None:
     """
