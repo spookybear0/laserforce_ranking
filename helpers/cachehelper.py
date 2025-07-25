@@ -1,11 +1,14 @@
 import asyncio
 import time
 from typing import Dict, Any, Tuple, Union, Callable, List, Optional, Awaitable
+import urllib.parse
 
 from sanic.log import logger
 from sanic.request import Request
 from tortoise.queryset import QuerySet
 from db.types import Permission
+import urllib
+import re
 
 refresh_time_queryset = 60 * 30  # 30 minutes
 refresh_time_function = 0  # 0 seconds
@@ -271,31 +274,33 @@ async def precache_all_functions() -> None:
     Run this function (in the background) after the server starts to precache all functions.
     """
 
+    logger.info("Pre-caching functions and templates...")
+
     # add the dynamic precache rules
 
     for f, rule in precached_rules.items():
         if asyncio.iscoroutinefunction(rule):
-            arglists = await rule()
+            arglists, kwarglists = await rule()
         else:
             raise TypeError(f"Precache rule for {f.__name__} must be a coroutine function")
 
-        for args in arglists:
+        for args, kwargs in zip(arglists, kwarglists):
             if precached_functions.get(f):
-                precached_functions[f].append((args, {}))
+                precached_functions[f].append((args, kwargs))
             else:
-                precached_functions[f] = [(args, {})]
+                precached_functions[f] = [(args, kwargs)]
     
     for f, rule in precached_template_rules.items():
         if asyncio.iscoroutinefunction(rule):
-            arglists = await rule()
+            arglists, kwarglists = await rule()
         else:
             raise TypeError(f"Precache rule for {f.__name__} must be a coroutine function")
 
-        for args in arglists:
+        for args, kwargs in zip(arglists, kwarglists):
             if precached_templates.get(f):
-                precached_templates[f].append((args, {}))
+                precached_templates[f].append((args, kwargs))
             else:
-                precached_templates[f] = [(args, {})]
+                precached_templates[f] = [(args, kwargs)]
 
 
     async def cache(f, *args, **kwargs) -> None:
@@ -318,14 +323,29 @@ async def precache_all_functions() -> None:
             from shared import app
             route = app.router.find_route_by_view_name(f.__name__)
 
+            uri = route.uri
             method, = route.methods # get first method from the route
+
+            # replace route params with the actual values
+            # ex: player/<id:str> -> player/Commander
+            match = re.findall(r"<([A-Za-z]*):([A-Za-z]*)>", uri)
+            for name, type_ in match:
+                uri = uri.replace(f"<{name}:{type_}>", kwargs.get(name, f"<{name}:{type_}>"))
             
-            request = Request(bytes(route.uri, encoding="utf-8"), {}, "", method, None, app)
+            # url encoding
+            uri = urllib.parse.quote(uri)
+            
+            request = Request(bytes(uri, encoding="utf-8"), {}, "", method, None, app)
 
             args = list(args)
             args.insert(0, request)
             request.ctx.session = {
                 "permissions": Permission.USER
             }
+
+            # url encode kwargs
+
+            for key, value in kwargs.copy().items():
+                kwargs[key] = urllib.parse.quote(value)
             
             asyncio.ensure_future(cache(f, *args, **kwargs))

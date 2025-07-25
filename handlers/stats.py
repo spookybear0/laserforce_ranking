@@ -15,7 +15,7 @@ from utils import render_cached_template
 
 @app.get("/stats")
 @sentry_trace
-@cache_template()
+@cache_template(ttl=60*60*24)  # Cache for 24 hours
 @precache_template()
 async def stats(request: Request) -> str:
     logger.info("Loading stats page")

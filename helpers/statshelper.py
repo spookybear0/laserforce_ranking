@@ -630,7 +630,7 @@ async def get_blocks() -> int:
 # top roles
 # could be improved by accounting for the amount of games played
 
-@cache()
+@cache(ttl=60*60*24)  # cache for 24 hours
 @precache([5, IntRole.SCOUT, 5], [5, IntRole.HEAVY, 5], [5, IntRole.COMMANDER, 5],
           [5, IntRole.AMMO, 5], [5, IntRole.MEDIC, 5])
 async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[
@@ -663,7 +663,7 @@ async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDE
 
 # get ranking accuracy
 
-@cache()
+@cache(ttl=60*60*24)
 @precache()
 async def get_ranking_accuracy() -> float:
     """

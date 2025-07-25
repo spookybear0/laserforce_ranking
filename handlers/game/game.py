@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from numpy import arange
 from sanic import Request
@@ -18,18 +18,27 @@ from shared import app
 from utils import is_admin, render_cached_template
 
 
-async def precache_rule() -> List:
+async def precache_rule() -> Tuple[List, List]:
     arglist = []
+    kwarglist = []
 
     # cache 15 most recent SM5 games
     for game in await SM5Game.all().order_by("-start_time").limit(15):
-        arglist.append(["sm5", game.id])
+        arglist.append([])
+        kwarglist.append({
+            "type": "sm5",
+            "id": game.id
+        })
 
     # cache 15 most recent Laserball games
     for game in await LaserballGame.all().order_by("-start_time").limit(15):
-        arglist.append(["laserball", game.id])
+        arglist.append([])
+        kwarglist.append({
+            "type": "laserball",
+            "id": game.id
+        })
 
-    return arglist
+    return arglist, kwarglist
 
 
 @app.get("/game/<type:str>/<id:int>/")

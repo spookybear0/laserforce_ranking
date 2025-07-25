@@ -1,4 +1,4 @@
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Tuple
 from urllib.parse import unquote
 from tortoise.expressions import F
 
@@ -71,15 +71,19 @@ def get_games_per_role_filtered(games_per_role: list[int]) -> list:
         game_count for game_count in games_per_role if game_count > 0
     ]
 
-async def precache_rule() -> List:
+async def precache_rule() -> Tuple[List, List]:
     arglist = []
+    kwarglist = []
 
     # cache top 25 sm5 players
-    top_sm5_players = await Player.all().limit(25).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-sm5_ord")
+    top_sm5_players = await Player.all().limit(10).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-sm5_ord")
     for player in top_sm5_players:
-        arglist.append([player.codename])
+        arglist.append([])
+        kwarglist.append({
+            "id": player.codename
+        })
 
-    return arglist
+    return arglist, kwarglist
 
 
 @app.get("/player/<id>")
