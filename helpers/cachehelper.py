@@ -5,7 +5,6 @@ from typing import Dict, Any, Tuple, Union, Callable, List, Optional, Awaitable
 from sanic.log import logger
 from sanic.request import Request
 from tortoise.queryset import QuerySet
-from shared import app
 from db.types import Permission
 
 refresh_time_queryset = 60 * 30  # 30 minutes
@@ -316,6 +315,7 @@ async def precache_all_functions() -> None:
 
     for f, arglists in precached_templates.items():
         for args, kwargs in arglists:
+            from shared import app
             route = app.router.find_route_by_view_name(f.__name__)
 
             method, = route.methods # get first method from the route

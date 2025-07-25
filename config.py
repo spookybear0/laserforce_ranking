@@ -1,4 +1,5 @@
 import json
+import sys
 import os
 
 path = os.path.dirname(os.path.realpath(__file__))
@@ -57,4 +58,6 @@ for def_conf_option in config_options:
 if updated_conf:
     jconfig.write_file(config)
     print("Your config has been updated! Please change the new vaulues to your liking.")
-    raise SystemExit
+
+    if "pytest" not in sys.modules:
+        raise SystemExit
