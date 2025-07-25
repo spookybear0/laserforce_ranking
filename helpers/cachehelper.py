@@ -329,14 +329,11 @@ async def precache_all_functions() -> None:
             # replace route params with the actual values
             # ex: player/<id:str> -> player/Commander
             match = re.findall(r"<([A-Za-z]*):([A-Za-z]*)>", uri)
-            print(uri)
             for name, type_ in match:
                 uri = uri.replace(f"<{name}:{type_}>", str(kwargs.get(name, f"<{name}:{type_}>")))
             
             # url encoding
             uri = urllib.parse.quote(uri)
-
-            print(uri)
             
             request = Request(bytes(uri, encoding="utf-8"), {}, "", method, None, app)
 

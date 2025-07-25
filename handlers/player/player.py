@@ -76,7 +76,7 @@ async def precache_rule() -> Tuple[List, List]:
     kwarglist = []
 
     # cache top 25 sm5 players
-    top_sm5_players = await Player.all().limit(10).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-sm5_ord")
+    top_sm5_players = await Player.all().limit(25).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-sm5_ord")
     for player in top_sm5_players:
         arglist.append([])
         kwarglist.append({
