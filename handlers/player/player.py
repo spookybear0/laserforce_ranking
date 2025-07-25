@@ -1,5 +1,6 @@
-from typing import Union, Optional
+from typing import Union, Optional, List
 from urllib.parse import unquote
+from tortoise.expressions import F
 
 from sanic import Request, response, exceptions
 from sanic.log import logger
@@ -9,7 +10,7 @@ from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
 from db.sm5 import SM5Game, SM5Stats
 from db.types import GameType, Team
-from helpers.cachehelper import cache_template
+from helpers.cachehelper import cache_template, precache_template
 from helpers.laserballhelper import get_laserball_rating_over_time
 from helpers.sm5helper import get_sm5_rating_over_time
 from helpers.statshelper import sentry_trace, create_time_series_ordered_graph
@@ -70,10 +71,21 @@ def get_games_per_role_filtered(games_per_role: list[int]) -> list:
         game_count for game_count in games_per_role if game_count > 0
     ]
 
+async def precache_rule() -> List:
+    arglist = []
+
+    # cache top 25 sm5 players
+    top_sm5_players = await Player.all().limit(25).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-sm5_ord")
+    for player in top_sm5_players:
+        arglist.append([player.codename])
+
+    return arglist
+
 
 @app.get("/player/<id>")
 @sentry_trace
 @cache_template()
+@precache_template(rule=precache_rule)
 async def player_get(request: Request, id: Union[int, str]) -> str:
     sm5page = int(request.args.get("sm5page", 0))
     lbpage = int(request.args.get("lbpage", 0))
