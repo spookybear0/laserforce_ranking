@@ -7,6 +7,7 @@ from db.game import EntityEnds, EntityStarts
 from db.player import Player
 from db.sm5 import SM5Game
 from db.types import IntRole
+from sanic.log import logger
 
 
 async def player_from_token(game: SM5Game, token: str) -> EntityStarts:
@@ -30,7 +31,8 @@ async def get_median_role_score(player: Optional[Player] = None) -> List[int]:
                 score = median(
                     await EntityEnds.filter(entity__role=IntRole(role), entity__sm5games__ranked=True).values_list(
                         "score", flat=True))
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error calculating median score for role {role}: {e}")
             score = 0
         if score:
             data.append(int(score))

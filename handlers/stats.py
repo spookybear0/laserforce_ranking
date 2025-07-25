@@ -7,7 +7,7 @@ from db.player import Player
 from db.sm5 import SM5Game
 from db.types import Team, IntRole
 from helpers import statshelper
-from helpers.cachehelper import cache_template
+from helpers.cachehelper import cache_template, precache_template
 from helpers.statshelper import sentry_trace
 from shared import app
 from utils import render_cached_template
@@ -16,6 +16,7 @@ from utils import render_cached_template
 @app.get("/stats")
 @sentry_trace
 @cache_template()
+@precache_template()
 async def stats(request: Request) -> str:
     logger.info("Loading stats page")
 
@@ -26,7 +27,7 @@ async def stats(request: Request) -> str:
     ranked_games = await SM5Game.filter(ranked=True).count() + await LaserballGame.filter(ranked=True).count()
     total_games_played = await EntityEnds.all().count()
     ranking_accuracy = await statshelper.get_ranking_accuracy()
-
+    
     logger.debug("Loading SM5 stats")
 
     sm5_red_wins = await SM5Game.filter(winner=Team.RED, ranked=True).count()
@@ -39,11 +40,11 @@ async def stats(request: Request) -> str:
 
     logger.debug("Loading SM5 role stats")
 
-    top_commanders = await statshelper.get_top_role_players(role=IntRole.COMMANDER)
-    top_heavies = await statshelper.get_top_role_players(role=IntRole.HEAVY)
-    top_scouts = await statshelper.get_top_role_players(role=IntRole.SCOUT)
-    top_ammos = await statshelper.get_top_role_players(role=IntRole.AMMO)
-    top_medics = await statshelper.get_top_role_players(role=IntRole.MEDIC)
+    top_commanders = await statshelper.get_top_role_players(5, IntRole.COMMANDER, 5)
+    top_heavies = await statshelper.get_top_role_players(5, IntRole.HEAVY, 5)
+    top_scouts = await statshelper.get_top_role_players(5, IntRole.SCOUT, 5)
+    top_ammos = await statshelper.get_top_role_players(5, IntRole.AMMO, 5)
+    top_medics = await statshelper.get_top_role_players(5, IntRole.MEDIC, 5)
 
     logger.debug("Loading laserball stats")
 

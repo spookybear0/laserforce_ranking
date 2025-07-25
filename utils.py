@@ -8,16 +8,6 @@ from shared import app
 from helpers.tooltiphelper import TOOLTIP_INFO
 
 
-def get_post(request: Request) -> dict:
-    """
-    DEPRECATED
-    """
-    data = request.form
-    for key in data:
-        data[key] = data[key]
-    return data
-
-
 # listen before request
 @app.middleware("request")
 async def add_session_to_request(request: Request) -> None:
@@ -57,6 +47,8 @@ def admin_only(f) -> Callable:
             request.ctx.session["previous_page"] = request.path
             return response.redirect("/login")
         return await f(request, *args, **kwargs)
+
+    wrapper.__name__ = f.__name__
 
     return wrapper
 

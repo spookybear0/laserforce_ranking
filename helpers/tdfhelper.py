@@ -42,6 +42,7 @@ def element_to_color(element: str) -> str:
 
 async def parse_sm5_game(file_location: str) -> SM5Game:
     file = open(file_location, "r", encoding="utf-16")
+    logger.info(f"Parsing {file_location}...")
 
     file_version = ""
     program_version = ""
@@ -429,6 +430,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
 async def parse_laserball_game(file_location: str) -> LaserballGame:
     file = open(file_location, "r", encoding="utf-16")
+    logger.info(f"Parsing {file_location}...")
 
     file_version = ""
     program_version = ""

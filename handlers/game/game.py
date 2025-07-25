@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List
 
 from numpy import arange
 from sanic import Request
@@ -8,7 +8,7 @@ from sanic.log import logger
 from db.game import EntityEnds
 from db.laserball import LaserballGame, LaserballStats, Team as LaserballTeam
 from db.sm5 import SM5Game, Team as SM5Team
-from helpers.cachehelper import cache_template
+from helpers.cachehelper import cache_template, precache_template
 from helpers.gamehelper import get_matchmaking_teams
 from helpers.laserballhelper import get_laserball_player_stats
 from helpers.sm5helper import get_sm5_player_stats, get_sm5_notable_events
@@ -18,17 +18,24 @@ from shared import app
 from utils import is_admin, render_cached_template
 
 
-async def get_entity_end(entity) -> Optional[EntityEnds]:
-    return await EntityEnds.filter(entity=entity).first()
+async def precache_rule() -> List:
+    arglist = []
 
+    # cache 15 most recent SM5 games
+    for game in await SM5Game.all().order_by("-start_time").limit(15):
+        arglist.append(["sm5", game.id])
 
-async def get_laserballstats(entity) -> Optional[LaserballStats]:
-    return await LaserballStats.filter(entity=entity).first()
+    # cache 15 most recent Laserball games
+    for game in await LaserballGame.all().order_by("-start_time").limit(15):
+        arglist.append(["laserball", game.id])
+
+    return arglist
 
 
 @app.get("/game/<type:str>/<id:int>/")
 @sentry_trace
 @cache_template()
+@precache_template(rule=precache_rule)
 async def game_index(request: Request, type: str, id: int) -> str:
     if type == "sm5":
         logger.debug(f"Fetching sm5 game with ID {id}")

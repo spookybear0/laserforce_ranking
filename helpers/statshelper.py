@@ -11,7 +11,7 @@ from db.game import EntityEnds, EntityStarts, PlayerInfo
 from db.laserball import LaserballGame, LaserballStats
 from db.sm5 import SM5Game, SM5Stats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
-from helpers.cachehelper import cache
+from helpers.cachehelper import cache, precache
 
 # stats helpers
 
@@ -467,7 +467,8 @@ Very general stats
 
 """
 
-
+@cache()
+@precache()
 async def get_points_scored() -> int:
     """
     Gets the total points scored by going through
@@ -484,7 +485,8 @@ async def get_points_scored() -> int:
 
     return points
 
-
+@cache()
+@precache()
 async def get_nukes_launched() -> int:
     """
     Gets the total nukes launched by going through
@@ -498,7 +500,8 @@ async def get_nukes_launched() -> int:
 
     return nukes
 
-
+@cache()
+@precache()
 async def get_nukes_cancelled() -> int:
     """
     Gets the total nukes cancelled by going through
@@ -512,7 +515,8 @@ async def get_nukes_cancelled() -> int:
 
     return nukes
 
-
+@cache()
+@precache()
 async def get_medic_hits() -> int:
     """
     Gets the total medic hits by going through
@@ -526,7 +530,8 @@ async def get_medic_hits() -> int:
 
     return hits
 
-
+@cache()
+@precache()
 async def get_own_medic_hits() -> int:
     """
     Gets the total own medic hits by going through
@@ -543,6 +548,8 @@ async def get_own_medic_hits() -> int:
 
 # laserball totals
 
+@cache()
+@precache()
 async def get_goals_scored() -> int:
     """
     Gets the total goals scored by going through
@@ -554,7 +561,8 @@ async def get_goals_scored() -> int:
     return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("goals")).values_list("sum",
                                                                                                                flat=True))
 
-
+@cache()
+@precache()
 async def get_assists() -> int:
     """
     Gets the total assists by going through
@@ -566,7 +574,8 @@ async def get_assists() -> int:
     return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("assists")).values_list("sum",
                                                                                                                  flat=True))
 
-
+@cache()
+@precache()
 async def get_passes() -> int:
     """
     Gets the total passes by going through
@@ -578,7 +587,8 @@ async def get_passes() -> int:
     return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("passes")).values_list("sum",
                                                                                                                 flat=True))
 
-
+@cache()
+@precache()
 async def get_steals() -> int:
     """
     Gets the total steals by going through
@@ -590,7 +600,8 @@ async def get_steals() -> int:
     return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("steals")).values_list("sum",
                                                                                                                 flat=True))
 
-
+@cache()
+@precache()
 async def get_clears() -> int:
     """
     Gets the total clears by going through
@@ -602,7 +613,8 @@ async def get_clears() -> int:
     return sum(await LaserballStats.filter(laserballgames__ranked=True).annotate(sum=Sum("clears")).values_list("sum",
                                                                                                                 flat=True))
 
-
+@cache()
+@precache()
 async def get_blocks() -> int:
     """
     Gets the total blocks by going through
@@ -617,8 +629,10 @@ async def get_blocks() -> int:
 
 # top roles
 # could be improved by accounting for the amount of games played
-# could be combined into one function
 
+@cache()
+@precache([5, IntRole.SCOUT, 5], [5, IntRole.HEAVY, 5], [5, IntRole.COMMANDER, 5],
+          [5, IntRole.AMMO, 5], [5, IntRole.MEDIC, 5])
 async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[
     Tuple[str, int, int]]:
     """
@@ -649,6 +663,8 @@ async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDE
 
 # get ranking accuracy
 
+@cache()
+@precache()
 async def get_ranking_accuracy() -> float:
     """
     Ranks how accurate the ranking system is
@@ -695,6 +711,8 @@ def sentry_trace(func) -> Callable:
         else:
             with start_transaction(op=func.__name__, name=func.__name__):
                 return await func(*args, **kwargs)
+            
+    wrapper.__name__ = func.__name__
 
     return wrapper
 

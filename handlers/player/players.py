@@ -2,7 +2,7 @@ from sanic import Request
 from tortoise.expressions import F
 
 from db.player import Player
-from helpers.cachehelper import cache_template
+from helpers.cachehelper import cache_template, precache_template
 from helpers.statshelper import sentry_trace
 from shared import app
 from utils import render_cached_template
@@ -11,7 +11,8 @@ from utils import render_cached_template
 @app.get("/players")
 @sentry_trace
 @cache_template()
-async def index(request: Request) -> str:
+@precache_template()
+async def players(request: Request) -> str:
     page = int(request.args.get("page", 0))
     sort = int(request.args.get("sort", "2"))
     sort_direction = request.args.get("sort_dir", "desc")

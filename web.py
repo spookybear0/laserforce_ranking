@@ -6,7 +6,7 @@ os.chdir(path)
 sys.path.append(path)
 
 import jinja2
-from sanic import Sanic
+from sanic import Sanic, log
 from sanic_jinja2 import SanicJinja2
 from sanic_session import Session, AIORedisSessionInterface, InMemorySessionInterface
 from config import config
@@ -86,6 +86,8 @@ async def setup_app(app, loop) -> None:
     # use cache on production server
     cachehelper.use_cache()
 
+    await cachehelper.precache_all_functions()
+
     # generate css needed for the site
     generate_tailwind_css()
 
@@ -115,6 +117,15 @@ async def main() -> None:
 
 router.add_all_routes(app)
 app.static("assets", "assets", name="assets")
+
+
+def filter(record):
+    # don't allow anything with "Dispatching singal" or "Sanic-CORS"
+    if "Dispatching signal" in record.getMessage() or "Sanic-CORS" in record.getMessage():
+        return False
+    return True
+
+log.logger.addFilter(filter)
 
 if __name__ == "__main__":
     if os.name == "nt":

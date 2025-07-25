@@ -6,6 +6,7 @@ from db.player import Player
 from helpers import ratinghelper
 from shared import app
 from utils import render_template
+from helpers.cachehelper import cache_template, precache_template
 
 
 class FakePlayer:
@@ -41,6 +42,8 @@ class FakePlayer:
 
 
 @app.get("/matchmaking")
+@cache_template()
+@precache_template()
 async def matchmaking(request: Request) -> str:
     players = await Player.all()
     players = sorted(players, key=lambda x: x.codename)

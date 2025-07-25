@@ -2,7 +2,7 @@ from sanic import Request
 
 from db.laserball import LaserballGame
 from db.sm5 import SM5Game
-from helpers.cachehelper import cache_template
+from helpers.cachehelper import cache_template, precache_template
 from helpers.statshelper import sentry_trace
 from shared import app
 from utils import render_cached_template
@@ -13,7 +13,8 @@ GAMES_PER_PAGE = 15
 @app.get("/games")
 @sentry_trace
 @cache_template()
-async def index(request: Request) -> str:
+@precache_template()
+async def games(request: Request) -> str:
     page = int(request.args.get("page", 0))
     mode = request.args.get("mode", "sm5")
     sort = int(request.args.get("sort", "0"))

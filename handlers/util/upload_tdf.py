@@ -6,7 +6,6 @@ from sanic.log import logger
 from helpers.statshelper import sentry_trace
 from helpers.tdfhelper import parse_sm5_game, parse_laserball_game
 from shared import app
-from utils import get_post
 import sentry_sdk
 
 
@@ -20,8 +19,7 @@ async def auto_upload_dl(request: Request) -> str:
 async def auto_upload(request: Request) -> str:
     logger.info("Uploading TDF")
 
-    data = get_post(request)
-    type = data.get("type")
+    type = request.form.get("type")
     file = request.files.get("upload_file")
 
     logger.debug(f"Type: {type}")
@@ -30,7 +28,8 @@ async def auto_upload(request: Request) -> str:
     sentry_sdk.set_context("upload_tdf", {"type": type, "file": file})
 
     if file is None:
-        raise exceptions.BadRequest()
+        logger.error("No file provided in the request.")
+        raise exceptions.BadRequest("No file provided in the request.")
 
     if type == "sm5":
         target_path = "./sm5_tdf/" + file.name
@@ -41,7 +40,8 @@ async def auto_upload(request: Request) -> str:
         _create_file_from_request(file, target_path)
         await parse_laserball_game(target_path)
     else:
-        raise exceptions.BadRequest()
+        logger.error(f"Unsupported type: {type}")
+        raise exceptions.BadRequest(f"Unsupported type: {type}")
 
     logger.info("Uploaded TDF successfully!")
 

@@ -15,7 +15,7 @@ from helpers.sm5helper import get_sm5_rating_over_time
 from helpers.statshelper import sentry_trace, create_time_series_ordered_graph
 from helpers.userhelper import get_median_role_score, get_per_role_game_count
 from shared import app
-from utils import render_cached_template, get_post
+from utils import render_cached_template
 
 _GAMES_PER_PAGE = 5
 _ROLES = [
@@ -234,10 +234,3 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         laserball_rating_over_time_labels=laserball_rating_over_time_labels,
         laserball_rating_over_time_data=laserball_rating_over_time_data,
     )
-
-
-@app.post("/player")
-async def player_post(request: Request) -> str:
-    data = get_post(request)
-    user = data["userid"]
-    return response.redirect(f"/player/{user}")
