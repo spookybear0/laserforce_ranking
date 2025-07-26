@@ -1,4 +1,5 @@
 import json
+import sys
 import os
 from datetime import datetime
 from typing import List, Dict, Optional
@@ -6,7 +7,6 @@ from typing import List, Dict, Optional
 import sentry_sdk
 from sanic.log import logger
 from sanic import Request
-from shared import app
 
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
 from db.laserball import LaserballGame, LaserballStats
@@ -43,6 +43,12 @@ def element_to_color(element: str) -> str:
     return conversion[element]
 
 async def precache_game(type: str, id: int) -> None:
+    if "pytest" in sys.modules:
+        # don't precache when running tests
+        return
+
+    from shared import app
+
     logger.debug(f"Precaching game {type} {id}")
     request = Request(bytes(f"/game/{type}/{id}", encoding="utf-8"), {}, "", "GET", None, app)
 
