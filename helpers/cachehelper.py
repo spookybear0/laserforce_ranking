@@ -264,6 +264,49 @@ def precache_template(*args, rule: Optional[Awaitable] = None, **kwargs) -> Call
     
     return decorator
 
+
+async def _precache_function(f, *args, **kwargs) -> None:
+    key = _create_cache_key(f, args, kwargs)
+    logger.debug(f"Pre-caching {key} with args: {args} and kwargs: {kwargs}")
+
+    result = await f(*args, **kwargs)
+    function_cache[key] = (result, time.time() + refresh_time_function)
+
+    logger.debug(f"Pre-cache complete for {key}")
+
+async def _precache_template(f, *args, **kwargs) -> None:
+    from shared import app
+    route = app.router.find_route_by_view_name(f.__name__)
+
+    uri = route.uri
+    method, = route.methods # get first method from the route
+
+    # replace route params with the actual values
+    # ex: player/<id:str> -> player/Commander
+    match = re.findall(r"<([A-Za-z]*):([A-Za-z]*)>", uri)
+    for name, type_ in match:
+        uri = uri.replace(f"<{name}:{type_}>", str(kwargs.get(name, f"<{name}:{type_}>")))
+    
+    # url encoding
+    uri = urllib.parse.quote(uri)
+    
+    request = Request(bytes(uri, encoding="utf-8"), {}, "", method, None, app)
+
+    args = list(args)
+    args.insert(0, request)
+    request.ctx.session = {
+        "permissions": Permission.USER
+    }
+
+    # url encode kwargs
+
+    for key, value in kwargs.copy().items():
+        if isinstance(value, str):
+            kwargs[key] = urllib.parse.quote(value)
+    
+    await _precache_function(f, *args, **kwargs)
+
+
 async def precache_all_functions() -> None:
     """
     Actually precache the functions/templates that were decorated with @precache or @precache_template.
@@ -302,51 +345,10 @@ async def precache_all_functions() -> None:
             else:
                 precached_templates[f] = [(args, kwargs)]
 
-
-    async def cache(f, *args, **kwargs) -> None:
-        # not checking if cache is enabled because the server can't enable it until it starts
-
-        key = _create_cache_key(f, args, kwargs)
-        logger.debug(f"Pre-caching {key} with args: {args} and kwargs: {kwargs}")
-
-        result = await f(*args, **kwargs)
-        function_cache[key] = (result, time.time() + refresh_time_function)
-
-        logger.debug(f"Pre-cache complete for {key}")
-
     for f, arglists in precached_functions.items():
         for args, kwargs in arglists:
-            asyncio.ensure_future(cache(f, *args, **kwargs))
+            asyncio.ensure_future(_precache_function(f, *args, **kwargs))
 
     for f, arglists in precached_templates.items():
         for args, kwargs in arglists:
-            from shared import app
-            route = app.router.find_route_by_view_name(f.__name__)
-
-            uri = route.uri
-            method, = route.methods # get first method from the route
-
-            # replace route params with the actual values
-            # ex: player/<id:str> -> player/Commander
-            match = re.findall(r"<([A-Za-z]*):([A-Za-z]*)>", uri)
-            for name, type_ in match:
-                uri = uri.replace(f"<{name}:{type_}>", str(kwargs.get(name, f"<{name}:{type_}>")))
-            
-            # url encoding
-            uri = urllib.parse.quote(uri)
-            
-            request = Request(bytes(uri, encoding="utf-8"), {}, "", method, None, app)
-
-            args = list(args)
-            args.insert(0, request)
-            request.ctx.session = {
-                "permissions": Permission.USER
-            }
-
-            # url encode kwargs
-
-            for key, value in kwargs.copy().items():
-                if isinstance(value, str):
-                    kwargs[key] = urllib.parse.quote(value)
-            
-            asyncio.ensure_future(cache(f, *args, **kwargs))
+            asyncio.ensure_future(_precache_template(f, *args, **kwargs))

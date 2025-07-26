@@ -5,16 +5,19 @@ from typing import List, Dict, Optional
 
 import sentry_sdk
 from sanic.log import logger
+from sanic import Request
+from shared import app
 
 from db.game import EntityEnds, EntityStarts, Events, Scores, PlayerStates, Teams
 from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
 from db.sm5 import IntRole, SM5_LASERRANK_VERSION
 from db.sm5 import SM5Game, SM5Stats
-from db.types import EventType, PlayerStateType, Team
+from db.types import EventType, PlayerStateType, Team, Permission
 from helpers import ratinghelper
 from helpers import sm5helper, laserballhelper
 from helpers.ratinghelper import MU, SIGMA
+from helpers.cachehelper import _precache_template
 
 
 def element_to_color(element: str) -> str:
@@ -38,6 +41,17 @@ def element_to_color(element: str) -> str:
     }
 
     return conversion[element]
+
+async def precache_game(type: str, id: int) -> None:
+    logger.debug(f"Precaching game {type} {id}")
+    request = Request(bytes(f"/game/{type}/{id}", encoding="utf-8"), {}, "", "GET", None, app)
+
+    request.ctx.session = {
+        "permissions": Permission.USER
+    }
+
+    await app.router.find_route_by_view_name("game_index").handler(request, type=type, id=id)
+    logger.debug(f"Precached game {type} {id}")
 
 
 async def parse_sm5_game(file_location: str) -> SM5Game:
@@ -424,6 +438,10 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             await entity_end.save()
 
     logger.info(f"Finished parsing {file_location} (game {game.id})")
+
+    # precache the game so it's available immediately
+
+    await precache_game("sm5", game.id)
 
     return game
 
@@ -859,6 +877,10 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
             await entity_end.save()
 
     logger.info(f"Finished parsing {file_location} (game {game.id})")
+
+    # precache the game so it's available immediately
+
+    await precache_game("laserball", game.id)
 
     return game
 
