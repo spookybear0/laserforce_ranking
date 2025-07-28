@@ -86,7 +86,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     # default values, will be changed later
 
     ranked = True
-    ended_early = False  # will be changed to false if there's a mission end event
+    ended_early = True  # will be changed to false if there's a mission end event
 
     linenum = 0
     while True:
@@ -181,8 +181,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                 token_to_entity[data[2]] = entity_start
             case "4":  # event
                 sentry_sdk.set_context("event", {"time": data[1], "type": data[2], "arguments": data[3:]})
-
-                # okay but why is event type a string
+                
                 events.append(await create_event_from_data(data))
 
                 if EventType(data[2]) == EventType.MISSION_END:  # game ended naturally
