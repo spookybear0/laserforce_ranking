@@ -5,12 +5,13 @@ from db.sm5 import SM5Game
 from helpers.replay_laserball import create_laserball_replay
 from helpers.replay_sm5 import create_sm5_replay
 from helpers.statshelper import sentry_trace
-from shared import app
+from handlers.api import api_bp
+from sanic_ext import openapi
 
-
-@app.get("/api/game/<type:str>/<id:int>/replay_data")
+@api_bp.get("/internal/game/<type:str>/<id:int>/replay_data")
+@openapi.exclude()
 @sentry_trace
-async def api_game_tdf(request: Request, type: str, id: int) -> HTTPResponse:
+async def api_game_replay_data(request: Request, type: str, id: int) -> HTTPResponse:
     if type.lower() == "sm5":
         game = await SM5Game.filter(id=id).first()
         if game is None:

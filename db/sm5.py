@@ -133,7 +133,7 @@ class SM5Game(Game):
 
         await self.fetch_related("sm5_stats")
 
-        final = Game.to_dict(self, full=full, player_stats=player_stats)
+        final = await Game.to_dict(self, full=full, player_stats=player_stats)
 
         final["sm5_stats"] = [await sm5_stat.to_dict() for sm5_stat in self.sm5_stats]
 

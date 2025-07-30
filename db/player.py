@@ -177,47 +177,6 @@ class Player(Model):
         data = Counter(battlesuits)
         return data.most_common(1)[0][0]
 
-    async def get_sean_hits(self, game_type: Optional[GameType] = None) -> int:
-        """
-        AIDAN REQUESTED THIS
-
-        Argument "game_type" can be None, "sm5", or "laserball"
-        None means all game types are counted
-
-        returns: number of times the player hit sean (Commander)
-        """
-
-        sean_entity_id = "#w7Wt8y"
-
-        if game_type is None:
-            return await Events.filter(
-                arguments__filter={"0": self.entity_id}
-            ).filter(
-                Q(arguments__filter={"1": " zaps "}) | Q(arguments__filter={"1": " blocks "}) | Q(
-                    arguments__filter={"1": " steals from "})
-            ).filter(
-                arguments__filter={"2": sean_entity_id}
-            ).count()
-        elif game_type == GameType.SM5:
-            return await Events.filter(
-                sm5games__mission_name__icontains="space marines", arguments__filter={"0": self.entity_id}
-            ).filter(
-                arguments__filter={"1": " zaps "}
-            ).filter(
-                arguments__filter={"2": sean_entity_id}
-            ).count()
-        elif game_type == GameType.LASERBALL:
-            return await Events.filter(
-                laserballgames__mission_name__icontains="laserball", arguments__filter={"0": self.entity_id}
-            ).filter(
-                Q(arguments__filter={"1": " blocks "}) | Q(arguments__filter={"1": " steals from "})
-            ).filter(
-                arguments__filter={"2": sean_entity_id}
-            ).count()
-        else:
-            # raise exception
-            raise ValueError("Invalid game_type")
-
     async def get_shots_fired(self, game_type: Optional[GameType] = None) -> int:
         """
         Argument "game_type" can be None, "sm5", or "laserball"
@@ -283,6 +242,8 @@ class Player(Model):
         """
         If game_type is None, all game types are counted
         """
+
+        # TODO: fix win percent when game_type is None (counting all games)
 
         if game_type is None:
             # return None
@@ -405,7 +366,6 @@ class Player(Model):
             player_dict.update({
                 "favorite_role": await self.get_favorite_role(),
                 "favorite_battlesuit": await self.get_favorite_battlesuit(),
-                "sean_hits": await self.get_sean_hits(),
                 "shots_fired": await self.get_shots_fired(),
                 "shots_hit": await self.get_shots_hit(),
                 "win_percent": await self.get_win_percent(),

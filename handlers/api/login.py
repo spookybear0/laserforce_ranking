@@ -3,10 +3,47 @@ from sanic import response
 
 from db.player import Player
 from helpers.statshelper import sentry_trace
-from shared import app
+from handlers.api import api_bp
+from sanic_ext import openapi
+from sanic_ext.extensions.openapi.definitions import RequestBody, Response
 
 
-@app.post("/api/login")
+@api_bp.post("/login")
+@openapi.definition(
+    summary="Login",
+    description="Logs in a player with codename and password. This allows the player to access their session and perform actions that require authentication.",
+    response=[
+        Response(
+            {"application/json": {"type": "object", "properties": {"status": {"type": "string"}}}},
+            description="Login successful",
+            status=200,
+        ),
+        Response(
+            {"application/json": {"type": "object", "properties": {"error": {"type": "string"}}}},
+            description="Invalid codename or password",
+            status=401,
+        ),
+        Response(
+            {"application/json": {"type": "object", "properties": {"error": {"type": "string"}}}},
+            description="Internal Server Error",
+            status=500,
+        ),
+    ],
+    body=RequestBody(
+        content={
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "codename": {"type": "string"},
+                        "password": {"type": "string"},
+                    },
+                    "required": ["codename", "password"],
+                }
+            }
+        }
+    ),
+)
 @sentry_trace
 async def api_login(request: Request) -> str:
     # get the codename and password from the request

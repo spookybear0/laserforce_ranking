@@ -16,7 +16,7 @@
     }
 
     .events_main {
-        width: 40%;
+        width: 25%;
     }
 
     .event_box {
@@ -34,6 +34,7 @@
         margin: 0;
         border: 0;
         text-align: center;
+        white-space: nowrap;
 
         border: 0px;
         overflow: hidden;
@@ -82,14 +83,16 @@
     }
 
     .time-slider {
-        width: 90%;
+        flex-direction: column;
+        align-items: center;
+        width: 70%;
         margin: auto;
         margin-top: 16px;
         margin-bottom: 24px;
     }
 
     .time-slider-control {
-        width: 80%;
+        width: 100%;
     }
 
     .timestamp {
@@ -247,6 +250,6 @@
 <div class="realworld-timestamp" id="realworld-timestamp"></div>
 
 <script defer src="../../../assets/js/replay.js"></script>
-<script defer src="/api/game/{{ game_type }}/{{ game_id }}/replay_data"></script>
+<script defer src="/api/internal/game/{{ game_type }}/{{ game_id }}/replay_data"></script>
 
 {% endblock %}

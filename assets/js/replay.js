@@ -486,7 +486,7 @@ function checkPendingAssets() {
 
 function enableReplayUi() {
     teamsLoadingPlaceholder.style.display = "none";
-    timeSlider.style.display = "block";
+    timeSlider.style.display = "flex";
     replayViewer.style.display = "flex";
 }
 
@@ -529,6 +529,10 @@ function onLoad() {
 
     playButton.addEventListener("click", playPause);
     restartButton.addEventListener("click", restartReplay);
+
+    // initialize the real world timestamp starting at 0
+    // so it shows up before we click play.
+    setRealWorldTimestampLabel(0);
 }
 
 function onTimeChange(seconds) {

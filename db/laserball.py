@@ -113,7 +113,7 @@ class LaserballGame(Game):
     async def to_dict(self, full: bool = True, player_stats=None) -> dict:
         # convert the entire game to a dict
         # this is used for the api
-        final = Game.to_dict(self, full=full, player_stats=player_stats)
+        final = await Game.to_dict(self, full=full, player_stats=player_stats)
 
         final["laserball_stats"] = [await (await laserball_stats).to_dict() for laserball_stats in
                                     await self.laserball_stats.all()]

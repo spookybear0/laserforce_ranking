@@ -150,7 +150,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     times_played_sm5 = red_teams_sm5 + green_teams_sm5
     favorite_role_sm5 = await player.get_favorite_role()
     favorite_battlesuit_sm5 = await player.get_favorite_battlesuit(GameType.SM5)
-    sean_hits_sm5 = await player.get_sean_hits(GameType.SM5)
     sm5_shots_hit = await player.get_shots_hit(GameType.SM5)
     sm5_shots_fired = await player.get_shots_fired(GameType.SM5)
 
@@ -159,7 +158,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     # no roles in laserball
     times_played_laserball = red_teams_laserball + blue_teams_laserball
     favorite_battlesuit_laserball = await player.get_favorite_battlesuit(GameType.LASERBALL)
-    sean_hits_laserball = await player.get_sean_hits(GameType.LASERBALL)
     laserball_shots_hit = await player.get_shots_hit(GameType.LASERBALL)
     laserball_shots_fired = await player.get_shots_fired(GameType.LASERBALL)
 
@@ -167,7 +165,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     times_played = times_played_sm5 + times_played_laserball
     favorite_battlesuit = await player.get_favorite_battlesuit()
-    sean_hits = sean_hits_sm5 + sean_hits_laserball
     shots_hit = sm5_shots_hit + laserball_shots_hit
     shots_fired = sm5_shots_fired + laserball_shots_fired
 
@@ -229,19 +226,16 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         times_played_sm5=times_played_sm5,
         favorite_role_sm5=favorite_role_sm5,
         favorite_battlesuit_sm5=favorite_battlesuit_sm5,
-        sean_hits_sm5=sean_hits_sm5,
         shots_hit_sm5=sm5_shots_hit,
         shots_fired_sm5=sm5_shots_fired,
         # laserball
         times_played_laserball=times_played_laserball,
         favorite_battlesuit_laserball=favorite_battlesuit_laserball,
-        sean_hits_laserball=sean_hits_laserball,
         shots_hit_laserball=laserball_shots_hit,
         shots_fired_laserball=laserball_shots_fired,
         # overall
         times_played=times_played,
         favorite_battlesuit=favorite_battlesuit,
-        sean_hits=sean_hits,
         shots_hit=shots_hit,
         shots_fired=shots_fired,
         # rating over time

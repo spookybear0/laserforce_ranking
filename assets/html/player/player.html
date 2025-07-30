@@ -420,7 +420,6 @@
                                 <td>Favorite Role</td>
                                 <td>Favorite Battlesuit</td>
                                 <td>Accuracy</td>
-                                <td>Sean Hits</td>
                             </th>
                             <tr>
                                 <td>SM5</td>
@@ -428,7 +427,6 @@
                                 <td>{{ favorite_role_sm5 }}</td>
                                 <td>{{ favorite_battlesuit_sm5 }}</td>
                                 <td>{{ '%.2f' % (((shots_hit_sm5/shots_fired_sm5)*100)|round(2) if shots_fired_sm5 != 0 else 0) }}%</td>
-                                <td>{{ sean_hits_sm5 }}</td>
                             </tr>
                             <tr>
                                 <td>Laserball</td>
@@ -436,7 +434,6 @@
                                 <td>N/A</td>
                                 <td>{{ favorite_battlesuit_laserball }}</td>
                                 <td>{{ '%.2f' % ((shots_hit_laserball/shots_fired_laserball)*100)|round(2) if shots_fired_laserball != 0 else 0 }}%</td>
-                                <td>{{ sean_hits_laserball }}</td>
                             </tr>
                             <tr>
                                 <td>Overall</td>
@@ -444,7 +441,6 @@
                                 <td>{{ favorite_role_sm5 }}</td>
                                 <td>{{ favorite_battlesuit }}</td>
                                 <td>{{ '%.2f' % ((shots_hit/shots_fired)*100)|round(2) if shots_fired != 0 else 0 }}%</td>
-                                <td>{{ sean_hits }}</td>
                             </tr>
                         </table>
                     </div>

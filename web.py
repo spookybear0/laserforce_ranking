@@ -6,17 +6,26 @@ os.chdir(path)
 sys.path.append(path)
 
 import jinja2
-from sanic import Sanic, log
+from sanic import Sanic, log, exceptions
 from sanic_jinja2 import SanicJinja2
 from sanic_session import Session, AIORedisSessionInterface, InMemorySessionInterface
 from config import config
 from sanic_cors import CORS
 import aioredis
 from tailwind import generate_tailwind_css
+from sanic.log import logger
+from handlers.api import api_bp
+from sanic_ext import openapi
 
 # we need to set up our app before we import anything else
 
 app = Sanic("laserforce_rankings")
+
+app.ext.openapi.describe(
+    "Laserforce Rankings API",
+    version="1.0.0",
+    description="This is the API for the Laserforce Rankings website. It provides access to game data, player data, and more.",
+)
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()
@@ -59,9 +68,16 @@ TORTOISE_ORM = {
 @app.exception(AttributeError)
 async def handle_attribute_error(request, exception):
     # check if the error is due to _sentry_hub
-    if "_sentry_hub" not in str(exception):
+    if "_sentry_hub" not in str(exception) or "sentry_sdk" not in str(exception):
         raise exception
 
+@app.exception(exceptions.RequestCancelled, asyncio.exceptions.CancelledError)
+async def handle_request_cancelled(request, exception):
+    """
+    Handle request cancelled exceptions.
+    This is a no-op to prevent logging these exceptions.
+    """
+    pass
 
 @app.listener("before_server_stop")
 async def close_db(app, loop) -> None:
@@ -84,9 +100,14 @@ async def setup_app(app, loop) -> None:
     )
 
     # use cache on production server
-    cachehelper.use_cache()
 
-    await cachehelper.precache_all_functions()
+    # check for --debug argument
+    if "--debug" not in sys.argv:
+        logger.info("Using cache")
+        cachehelper.use_cache()
+        await cachehelper.precache_all_functions()
+    else:
+        logger.info("Not using cache, --debug argument detected")
 
     # generate css needed for the site
     generate_tailwind_css()
@@ -114,8 +135,24 @@ async def main() -> None:
     await server.after_start()
     await server.serve_forever()
 
+# api blueprint
+
+app.blueprint(api_bp)
+
+# add routes
 
 router.add_all_routes(app)
+
+# exclude routes from documentation unless part of the API blueprint
+
+# go through every route and replace it with route = openapi.exclude()(route), then save it back to app.router.routes
+
+for route in app.router.routes:
+    if "api." not in route.name:
+        route.handler = openapi.exclude()(route.handler)
+
+# static files
+
 app.static("assets", "assets", name="assets")
 
 
