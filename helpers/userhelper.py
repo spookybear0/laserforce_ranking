@@ -1,4 +1,4 @@
-from statistics import median
+from statistics import median, StatisticsError
 from typing import List, Optional
 
 import bcrypt
@@ -31,6 +31,9 @@ async def get_median_role_score(player: Optional[Player] = None) -> List[int]:
                 score = median(
                     await EntityEnds.filter(entity__role=IntRole(role), entity__sm5games__ranked=True).values_list(
                         "score", flat=True))
+        except StatisticsError:
+            # empty data, no median can be calculated
+            score = 0
         except Exception as e:
             logger.error(f"Error calculating median score for role {role}: {e}")
             score = 0
