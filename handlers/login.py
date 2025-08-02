@@ -44,7 +44,5 @@ async def login_post(request: Request) -> str:
 
     logger.debug("Redirecting to previous page")
 
-    flush_cache(flush_queryset=False)
-
     # redirect to previous page
     return response.redirect(request.ctx.session.get("previous_page", "/"))

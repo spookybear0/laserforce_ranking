@@ -44,7 +44,6 @@ async def render_cached_template(r, template, *args, **kwargs) -> str:
 def admin_only(f) -> Callable:
     async def wrapper(request: Request, *args, **kwargs) -> Union[response.HTTPResponse, Any]:
         if not request.ctx.session.get("permissions", 0) == Permission.ADMIN:
-            request.ctx.session["previous_page"] = request.path
             return response.redirect("/login")
         return await f(request, *args, **kwargs)
 

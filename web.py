@@ -8,7 +8,7 @@ sys.path.append(path)
 import jinja2
 from sanic import Sanic, log, exceptions
 from sanic_jinja2 import SanicJinja2
-from sanic_session import Session, AIORedisSessionInterface, InMemorySessionInterface
+from sanic_sessions import Session, AIORedisSessionInterface, InMemorySessionInterface
 from config import config
 from sanic_cors import CORS
 import aioredis
@@ -85,6 +85,23 @@ async def close_db(app, loop) -> None:
     Close the database connection when the server stops.
     """
     await Tortoise.close_connections()
+
+
+@app.middleware("request")
+async def set_previous_page(request) -> None:
+    """
+    Middleware to set the previous page in the session.
+    This is used for redirecting after login/logout.
+    """
+    # check if this is file request, if so, don't set previous page
+
+    
+
+    if request.path != "/login" and request.path != "/logout" \
+    and not request.path.startswith("/api/") \
+    and not request.path.startswith("/assets/") \
+    and not request.path.startswith("/favicon.ico"):
+        request.ctx.session["previous_page"] = request.path
 
 
 @app.signal("server.init.before")
