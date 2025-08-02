@@ -52,7 +52,6 @@ async def matchmaking(request: Request) -> str:
     logger.debug("Getting ratings for all players")
     all_players = {player.codename: (player.sm5_rating.ordinal(), player.laserball_rating.ordinal()) for player in
                    players}
-    
 
     return await render_cached_template(
         request,

@@ -91,8 +91,17 @@ async def precache_rule() -> Tuple[List, List]:
 @cache_template()
 @precache_template(rule=precache_rule)
 async def player_get(request: Request, id: Union[int, str]) -> str:
-    sm5page = int(request.args.get("sm5page", 0))
-    lbpage = int(request.args.get("lbpage", 0))
+    sm5page = request.args.get("sm5page", 0)
+    lbpage = request.args.get("lbpage", 0)
+
+    try:
+        sm5page = int(sm5page)
+        lbpage = int(lbpage)
+    except ValueError:
+        raise exceptions.BadRequest("Invalid page number")
+
+    if sm5page < 0 or lbpage < 0:
+        raise exceptions.BadRequest("Page number cannot be negative")
 
     id = unquote(id)
 

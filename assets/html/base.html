@@ -200,6 +200,13 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
         // sentry
         window.sentryOnLoad = function () {
+            // check if sentry dsn or env are null or ""
+
+            var config = {{ config|tojson }};
+            if (!config["sentry_dsn"] || !config["sentry_environment"]) {
+                return;
+            }
+
             Sentry.init({
                 dsn: {{ config["sentry_dsn"]|tojson }},
 

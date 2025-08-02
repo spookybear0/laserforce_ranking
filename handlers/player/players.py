@@ -13,9 +13,27 @@ from utils import render_cached_template
 @cache_template()
 @precache_template()
 async def players(request: Request) -> str:
-    page = int(request.args.get("page", 0))
-    sort = int(request.args.get("sort", "2"))
+    page = request.args.get("page", 0)
+    sort = request.args.get("sort", "2")
     sort_direction = request.args.get("sort_dir", "desc")
+
+    # Validate and convert page number to integer
+
+    try:
+        page = int(page)
+    except ValueError:
+        raise ValueError("Invalid page number")
+    
+    # Validate sort parameter
+    try:
+        sort = int(sort)
+    except ValueError:
+        raise ValueError("Invalid sort parameter")
+    
+    # Validate sort direction
+
+    if sort_direction not in ["asc", "desc"]:
+        raise ValueError('Invalid sort direction. Use "asc" or "desc".')
 
     # handle negative page numbers
 

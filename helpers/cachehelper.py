@@ -175,9 +175,9 @@ def cache_template(ttl: Union[float, int] = refresh_time_function, refresh_in_ba
     def decorator(f):
         async def wrapper(*args, **kwargs) -> str:
             if not function_cache_enabled:
-                args = await f(*args, **kwargs)
+                new_args = await f(*args, **kwargs)
                 from utils import render_template
-                return await render_template(args[0], args[1], *args[2], **args[3])
+                return await render_template(new_args[0], new_args[1], *new_args[2], **new_args[3])
             
             key = _create_cache_key(f, args, kwargs)
             
