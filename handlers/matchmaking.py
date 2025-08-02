@@ -5,7 +5,7 @@ from sanic.log import logger
 from db.player import Player
 from helpers import ratinghelper
 from shared import app
-from utils import render_template
+from utils import render_cached_template, render_template
 from helpers.cachehelper import cache_template, precache_template
 
 
@@ -54,7 +54,7 @@ async def matchmaking(request: Request) -> str:
                    players}
     
 
-    return await render_template(
+    return await render_cached_template(
         request,
         "matchmaking.html",
         players=players,
