@@ -4,7 +4,7 @@
 
 {% block html_head %}
 
-<link rel="stylesheet" href="../../css/game/replay.css">
+<link rel="stylesheet" href="/assets/css/game/replay.css">
 {% endblock %}
 
 {% block content %}
@@ -43,7 +43,7 @@
 
 <div class="realworld-timestamp" id="realworld-timestamp"></div>
 
-<script defer src="../../../assets/js/replay.js"></script>
+<script defer src="/assets/../assets/js/replay.js"></script>
 <script defer src="/api/internal/game/{{ game_type }}/{{ game_id }}/replay_data"></script>
 
 {% endblock %}
