@@ -60,31 +60,8 @@
         }
     </script>
 
-    <style>
-        /* desktop */
-        @media screen and (min-width: 991px) {
-            .login-item {
-                float: right;
-            }
+    <link rel="stylesheet" href="../../css/admin/adminbase.css">
 
-            #content {
-                margin-left: 300px;
-                padding-top: 30px;
-            }
-        }
-        /* mobile */
-        @media screen and (max-width: 991px) {
-            #content {
-                padding-top: 30px;
-                margin: auto;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-
-    </style>
-    
     {% block html_head %}{% endblock %}
 </head>
 <body>
@@ -107,10 +84,10 @@
             {% block content %}{% endblock %}
         </div>
     </div>
-  
+
     <div id="footer">
         {% block footer %}
-                
+
         {% endblock %}
     </div>
 </body>

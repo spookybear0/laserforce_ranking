@@ -1,0 +1,212 @@
+.team_box {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin: 0.5em;
+    margin-left: 5em;
+    margin-right: 5em;
+}
+
+.team {
+    display: inline-block;
+    height: 35%;
+    padding: 1rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    margin-left: 5em;
+    margin-right: 5em;
+    border: 0;
+    vertical-align: top;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+table {
+    margin: auto;
+    padding: 1rem;
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td, tr {
+    text-align: center;
+    border: 1px solid lightgray;
+    height: 30px;
+}
+
+td {
+    color: lightgray;
+    padding: 2px;
+}
+
+tr:nth-child(even) {
+    background-color: #252525;
+}
+
+tr:nth-child(even) > td:nth-child(1) {
+    background-color: #252525;
+}
+
+tr:nth-child(odd) > td:nth-child(1) {
+    background-color: var(--alternate-table-background-color);
+}
+
+tr > th:nth-child(1) {
+    background-color: var(--alternate-table-background-color);
+}
+
+body {
+    height: 130vh;
+}
+
+.desktop_notif {
+    text-align: center;
+    display: none;
+}
+
+.score-chart {
+    width: 90%;
+    position: relative;
+    height: 500px;
+    margin: auto;
+}
+
+.stats {
+    margin-top: 2rem;
+}
+
+.win-chances {
+    flex-direction: row;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.win-chance-before-game, .win-chance {
+    width: 50%;
+    position: relative;
+}
+
+@media screen and (max-width: 1200px) {
+    table tr td:nth-child(n+9) {
+        display: none;
+    }
+
+    table tr th:nth-child(n+9) {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 991px) {
+    .userlist {
+        background: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    h2, h3 {
+        zoom: 1.5;
+    }
+
+    .team_score {
+        zoom: 2;
+    }
+
+    table {
+        table-layout: auto;
+        width: 100%;
+    }
+
+    .fixed-column {
+        position: sticky;
+        z-index: 1;
+        left: 0px;
+    }
+
+    .outer-scrolling-table {
+        width: 100%;
+    }
+
+    .inner-scrolling-table {
+        position: relative;
+        overflow: auto;
+        border: 1px solid black;
+        white-space: nowrap;
+    }
+
+    .team {
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 0;
+    }
+
+    #teams {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .desktop_notif {
+        display: block;
+    }
+
+    table {
+        word-wrap: break-word;
+    }
+
+    #content {
+        height: 100%;
+    }
+
+    body {
+        height: 85%;
+    }
+
+    .score-chart {
+        margin-bottom: 5rem;
+        height: 300px;
+    }
+
+    #score_chart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .win-chance-before-game, .win-chance {
+        width: 80% !important;
+        margin: auto;
+        margin-bottom: 5rem;
+    }
+
+    #win_chance_before_game, #win_chance {
+        width: 100% !important;
+        height: 100% !important;
+        margin: auto;
+    }
+
+    .win-chances {
+        flex-direction: column;
+    }
+}
+
+.link-button {
+    background: none;
+    border: none;
+    color: #2fa4e7;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0;
+    font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+}
+
+.link-button h3 {
+    margin: 0;
+}
+
+.link-button:focus {
+    outline: none;
+}

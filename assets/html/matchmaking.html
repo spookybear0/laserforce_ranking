@@ -8,11 +8,11 @@
 
     mobile = false;
     currentlyDragging = undefined;
-    
+
     // vars from args
     team1 = {{ team1|tojson }};
     team2 = {{ team2|tojson }};
-    
+
     currentMode = "{{ mode }}"; // sm5 or laserall
     numTeams = 2;
     matchmakeRoles = false;
@@ -21,179 +21,7 @@
 
 <script defer src="../../../assets/js/matchmaking.js"></script>
 
-<style>
-    .btn {
-        width: 10.5rem;
-        height: 5rem;
-        cursor: pointer;
-    }
-
-    .players-div {
-        background-color: #1A1A1A;
-        width: 20rem;
-        height: 80%;
-        padding: 10px;
-        border-radius: 10px;
-        overflow: auto;
-        max-height: 80vh;
-    }
-
-    ::-webkit-scrollbar {
-        width: 10px;
-    }
-  
-    ::-webkit-scrollbar-track {
-        background: #1A1A1A;
-        border-radius: 10px;
-    }
-  
-    ::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-
-    .sub-container {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .teams-div {
-        width: 50rem;
-        height: 70vh;
-        /*expand up and down all the way on firefox */
-        
-        padding: 10px;
-        border-radius: 10px;
-        flex-direction: row;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .team-div {
-        background-color: #1A1A1A;
-        padding: 10px;
-        border-radius: 10px;
-        width: 40%;
-        height: 100%;
-        margin-bottom: 5rem;
-    }
-
-    .controls-div {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .container {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        width: 100%;
-        height: calc(100vh - 48px);
-    }
-
-    .selected {
-        border: 2px solid #079CFF;
-    }
-
-    h2 {
-        color: lightgray;
-        text-align: center;
-        margin-top: 0;
-    }
-
-    #team3-div, #team4-div {
-        display: none;
-    }
-
-    table {
-        margin: auto;
-        padding: 1rem;
-        border: 1px solid lightgray;
-        border-collapse: collapse;
-        width: 100%;
-        border-radius: 10px;
-    }
-
-    tr:nth-child(even) {
-        background-color: #252525;
-    }
-
-    th, td, tr {
-        text-align: center;
-        border: 1px solid lightgray;
-        border-radius: 10px;
-        padding: 5px;
-    }
-
-    td {
-        color: lightgray;
-    }
-
-    .role-cell-hidden {
-        padding: 0;
-        display: none;
-    }
-
-    .role-cell {
-        padding: 0;
-        padding-top: 0.15rem;
-    }
-
-    @media screen and (max-width: 991px) {
-        #content {
-            width: 100%;
-            zoom: 1.5;
-        }
-
-        .container {
-            flex-direction: column;
-            height: auto;
-            margin: auto;
-        }
-
-        .teams-div {
-            width: 100%;
-            height: auto;
-        }
-
-        .team-div {
-            width: 90%;
-            margin-top: 2rem;
-        }
-
-        .players-div {
-            width: 90%;
-            height: 50%;
-            margin-top: 1rem;
-        }
-
-        .sub-container {
-            /*center items */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 80%;
-            height: 6rem;
-            font-size: 1rem;
-        }
-    }
-</style>
+<link rel="stylesheet" href="../css/matchmaking.css">
 
 {% endblock %}
 
