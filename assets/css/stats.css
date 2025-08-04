@@ -1,0 +1,44 @@
+.stats-header {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.wins-pie-chart {
+    height: 4em;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+table {
+    margin: auto;
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr:nth-child(even) {
+    background-color: #252525;
+}
+
+th, td, tr {
+    text-align: center;
+    border: 1px solid lightgray;
+    padding: 5px;
+}
+
+td {
+    color: lightgray;
+}
+
+.role-leaderboards {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    gap: 1rem;
+}

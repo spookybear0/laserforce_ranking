@@ -1,0 +1,21 @@
+#banner_text {
+    width: 400px;
+    background: #262626;
+    border: 1px solid #999;
+    border-radius: 4px;
+    color: #fff;
+    height: 4em;
+    font-size: 1em;
+    padding: 0.5em;
+}
+
+#banner_type {
+    width: 200px;
+    background: #262626;
+    border: 1px solid #999;
+    border-radius: 4px;
+    color: #fff;
+    height: 4em;
+    font-size: 1em;
+    padding: 0.5em;
+}

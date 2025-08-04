@@ -1,0 +1,256 @@
+table {
+    margin: auto;
+    padding: 1rem;
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    width: 100%;
+    color: lightgray;
+}
+
+th, td, tr {
+    text-align: center;
+    border: 1px solid lightgray;
+}
+
+td {
+    padding: 2px;
+}
+
+tr:nth-child(even) {
+    background-color: #252525;
+}
+
+body {
+    height: 100vh;
+}
+
+.role {
+    width: 50px;
+}
+
+.desktop_notif {
+    text-align: center;
+    display: none;
+}
+
+#score_chart {
+    max-width: 90%;
+}
+
+#win_chance_before_game, #win_chance {
+    max-width: 30%;
+}
+
+@media screen and (max-width: 991px) {
+    .userlist {
+        background: none;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+
+    h2, h3 {
+        zoom: 1.5;
+    }
+
+    table {
+        table-layout: auto;
+    }
+
+    .desktop_notif {
+        display: block;
+    }
+
+    #content {
+        height: 100%;
+    }
+
+    body {
+        height: 85%;
+    }
+
+    .role {
+        width: 75px;
+        min-width: 75px;
+    }
+}
+
+
+.link_button {
+    background: none;
+    border: none;
+    color: #2fa4e7;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0;
+    font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+}
+
+.link_button h3 {
+    margin: 0;
+}
+
+.link_button:focus {
+    outline: none;
+}
+
+.player_name_header {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team-header {
+    font-size: 20px;
+    float: none;
+    margin-bottom: 16px;
+}
+
+.scorecard_main_stats {
+    width: 45%;
+    float: left;
+}
+
+.scorecard_player_stats {
+    width: 45%;
+    float: left;
+}
+
+.chart_container {
+    width: 100%;
+}
+
+.chart {
+    width: 90%;
+    display: flex;
+    padding: 1rem;
+}
+
+/*
+    * Balance the left and right sections based on screen width.
+    * The score card is complex and needs more space, so we may need to redistribute screen space
+    * based on that.
+    */
+@media screen and (max-width: 2599px) {
+    .scorecard_main_stats {
+        width: 30%;
+        float: left;
+    }
+
+    .scorecard_player_stats {
+        width: 65%;
+        float: left;
+    }
+}
+
+/* Once the screen is really wide, the charts can go side by side. */
+@media screen and (min-width: 2600px) {
+    .chart_container {
+        display: flex;
+    }
+}
+
+.player {
+}
+
+@media screen and (max-width: 991px) {
+    .scorecard_main_stats {
+        width: 95%;
+    }
+
+    .scorecard_player_stats {
+        width: 95%;
+    }
+
+    .scorecard_stats {
+        width: 100%;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .scorecard_main_stats {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* center stuff on mobile */
+    .scorecard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    tr:nth-child(even) > td:nth-child(1) {
+        background-color: #252525;
+    }
+
+    tr:nth-child(odd) > td:nth-child(1) {
+        background-color: var(--alternate-table-background-color);
+    }
+
+    tr:nth-child(even) > td:nth-child(2) {
+        background-color: #252525;
+    }
+
+    tr:nth-child(odd) > td:nth-child(2) {
+        background-color: var(--alternate-table-background-color);
+    }
+
+    tr > th:nth-child(1) {
+        background-color: var(--alternate-table-background-color);
+    }
+
+    tr > th:nth-child(2) {
+        background-color: var(--alternate-table-background-color);
+    }
+}
+
+@media screen and (min-width: 991px) {
+    .scorecard {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
+
+    .scorecard_main_stats {
+        width: 100%;
+    }
+
+    .scorecard_stats {
+        width: 45%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.scorecard_team_stats {
+    float: none;
+    margin-bottom: 16px;
+}
+
+table.scorecard_main_stats_table {
+    border: 0px;
+    width: 90%;
+}
+
+table.scorecard_player_stats_table {
+    border: 0px;
+    width: 90%;
+}
+
+.scorecard_graphs {
+    width: 100%;
+    margin-top: 5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.mini-chart {
+    width: 32px;
+    position: relative;
+}

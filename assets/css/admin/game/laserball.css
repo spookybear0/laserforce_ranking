@@ -1,0 +1,186 @@
+.team_box {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin: 0.5em;
+    margin-left: 5em;
+    margin-right: 5em;
+}
+
+.team {
+    display: inline-block;
+    height: 35%;
+    padding: 1rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border: 0;
+    vertical-align: top;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#teams {
+    width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table {
+    margin: auto;
+    padding: 1rem;
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td, tr {
+    text-align: center;
+    border: 1px solid lightgray;
+}
+
+td {
+    color: lightgray;
+    padding: 2px;
+}
+
+tr:nth-child(even) {
+    background-color: #252525;
+}
+
+body {
+    height: 130vh;
+}
+
+.role {
+    width: 50px;
+}
+
+.desktop_notif {
+    text-align: center;
+    display: none;
+}
+
+#score_chart {
+    max-width: 90%;
+}
+
+#win_chance {
+    max-width: 30%;
+}
+
+.page_buttons {
+    text-align: center;
+    padding-top: 0.5em;
+    font-size: 24;
+}
+
+@media screen and (max-width: 1200px) {
+    table tr td:nth-child(n+11) {
+        display: none;
+    }
+
+    table tr th:nth-child(n+11) {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 991px) {
+    .userlist {
+        background: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    h2, h3 {
+        zoom: 1.5;
+    }
+
+    .team_score {
+        zoom: 2;
+    }
+
+    table {
+        table-layout: auto;
+    }
+
+    table tr td:nth-child(n+6) {
+        display: none;
+    }
+
+    table tr th:nth-child(n+6) {
+        display: none;
+    }
+
+    .team {
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 0;
+    }
+
+    #teams {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .role {
+        width: 75px;
+    }
+
+    .desktop_notif {
+        display: block;
+    }
+
+    #content {
+        height: 100%;
+    }
+
+    body {
+        height: 85%;
+    }
+
+    #score_chart {
+        max-width: 100%;
+    }
+
+    #win_chance {
+        max-width: 100%;
+    }
+
+    .win_draw_chance {
+        flex-direction: column;
+    }
+}
+
+
+.link-button {
+    background: none;
+    border: none;
+    color: #2fa4e7;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0;
+    font-family: Inter, Helvetica Neue, Tahoma, Arial, Hiragino Kaku Gothic ProN, Meiryo, Microsoft YaHei, Apple SD Gothic Neo, sans-serif;
+}
+
+.link-button h3 {
+    margin: 0;
+}
+
+.link-button:focus {
+    outline: none;
+}
+
+/*fade in animation*/
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+#log_in_players_popup, #delete_player_popup {
+    display: none;
+    animation: fadein 0.5s;
+}

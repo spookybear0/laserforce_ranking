@@ -1,0 +1,22 @@
+/* desktop */
+@media screen and (min-width: 991px) {
+    .login-item {
+        float: right;
+    }
+
+    #content {
+        margin-left: 300px;
+        padding-top: 30px;
+    }
+}
+/* mobile */
+@media screen and (max-width: 991px) {
+    #content {
+        padding-top: 30px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+

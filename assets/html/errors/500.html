@@ -2,18 +2,10 @@
 {% block title %}500 - Internal Server Error{% endblock %}
 
 {% block html_head %}
-
-<style>
-    @media screen and (max-width: 991px) {
-        h1, p {
-            zoom: 2;
-        }
-    }
-</style>
-
+<link rel="stylesheet" href="../../css/errors/500.css">
 {% endblock %}
 
 {% block content %}
-<h1 style="text-align: center;">500 - Internal Server Error</h1>
-<p style="text-align: center;">{{ description }}</p>
+<h1>500 - Internal Server Error</h1>
+<p>{{ description }}</p>
 {% endblock %}

@@ -1,0 +1,64 @@
+p {
+    text-align: center;
+    padding-top: 0.5em;
+    font-size: 24;
+}
+
+table {
+    margin: auto;
+    padding: 1rem;
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr:nth-child(even) {
+    background-color: #252525;
+}
+
+#sm5_game_table tbody tr:nth-child(even) {
+    background-color: #252525;
+}
+
+#laserball_game_table tbody tr:nth-child(even) {
+    background-color: #252525;
+}
+
+th, td, tr {
+    text-align: center;
+    border: 1px solid lightgray;
+    padding: 5px;
+}
+
+td {
+    color: lightgray;
+}
+
+th {
+    cursor: pointer;
+}
+
+.table-div {
+    width: 50%;
+}
+
+#mode_table {
+    width: 25rem;
+    margin-bottom: 2.5rem;
+    /*make table headers equal width*/
+    table-layout: fixed;
+}
+
+@media screen and (max-width: 991px) {
+    .table-div {
+        width: 100%;
+    }
+
+    p {
+        zoom: 2.5;
+    }
+
+    #mode_table {
+        height: 4rem;
+    }
+}

@@ -1,0 +1,13 @@
+@media screen and (max-width: 991px) {
+    h1, p {
+        zoom: 2;
+    }
+}
+
+h1 {
+    text-align: center;
+}
+
+p {
+    text-align: center;
+}
