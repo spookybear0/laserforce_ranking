@@ -55,6 +55,7 @@
                                 <th class="second-fixed-column" {{ tooltip("sm5_codename") }}><p>Codename</p></th>
                                 {% if game.ranked %}
                                     <th {{ tooltip("sm5_rating") }}><p>Rating</p></th>
+                                    <th {{ tooltip("sm5_rating_difference") }}><p>Rating Diff</p></th>
                                 {% endif %}
                                 <th {{ tooltip("sm5_score") }}><p>Score</p></th>
                                 <th {{ tooltip("sm5_positive_score") }}><p>Positive Score</p></th>
@@ -68,7 +69,6 @@
                                 <th {{ tooltip("sm5_missiled_other") }}><p>Missiled Other</p></th>
                                 <th {{ tooltip("sm5_missiled") }}><p>Missiled</p></th>
                                 <th {{ tooltip("sm5_shot_team") }}><p>Shot Team</p></th>
-                                <th {{ tooltip("sm5_missiled_team") }}><p>Missiled Team</p></th>
                                 <th {{ tooltip("sm5_medic_hits") }}><p>Medic Hits</p></th>
                                 <th {{ tooltip("sm5_mvp_points") }}><a href="https://lfstats.com/pages/aboutSM5#:~:text=Lose%203%20lives-,MVP%20Points,-All%20Players" target="_blank"><p>MVP Points</p></a></th>
                                 {% for player in team.players_with_sum %}
@@ -78,8 +78,15 @@
                                         <td class="second-fixed-column">{{ player_with_penalties(player) }}</td>
                                         {% if game.ranked %}
                                             {% if player.entity_end and player.entity_end.current_rating_mu %}
-                                                <td title="mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2)}}">{{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}</td>
+                                                <td title= "mu: {{ player.entity_end.current_rating_mu|round(2) }}, sigma: {{ player.entity_end.current_rating_sigma|round(2)}}">
+                                                    {{ (player.entity_end.current_rating_mu - 3 * player.entity_end.current_rating_sigma)|round(2) }}
+                                                </td>
+                                                <td title="mu: {{ player.entity_end.rating_difference_mu|round(2) }}, sigma: {{ player.entity_end.rating_difference_sigma|round(2)}}"
+                                                    class="{% if player.entity_end.rating_difference < 0 %}fire-team{% else %}earth-team{% endif %}">
+                                                    {% if player.entity_end.rating_difference > 0 %}+{% endif %}{{ player.entity_end.rating_difference|round(2) }}
+                                                </td>
                                             {% else %}
+                                                <td></td>
                                                 <td></td>
                                             {% endif %}
                                         {% endif %}
@@ -114,7 +121,6 @@
                                         <td><p>{{ player.missiled_opponent }}</p></td>
                                         <td><p>{{ player.times_missiled }}</p></td>
                                         <td><p>{{ player.shot_team }}</p></td>
-                                        <td><p>{{ player.missiled_team }}</p></td>
                                         <td><p>{{ player.medic_hits_str }}</p></td>
                                         <td><p>{{ "%.2f" % (player.mvp_points | round(2)) }}</p></td>
                                     </tr>

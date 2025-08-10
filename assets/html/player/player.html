@@ -31,6 +31,7 @@
                         <th>Game</th>
                         <th>Win/Loss</th>
                         <th>Rating</th>
+                        <th>Rating Diff</th>
                         <th>Role</th>
                         <th>Score</th>
                         <th>Lives Left</th>
@@ -52,8 +53,12 @@
                             <td><a href="/game/sm5/{{game.id}}">{{ game.start_time.strftime("%Y/%m/%d %I:%M %p") }}</a></td>
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
-                            <td title="mu: {{ ('%.2f' % (entity_end.current_rating_mu|round(2))) if entity_end.current_rating_mu else 25 }}, sigma: {{ ('%.2f' % (entity_end.current_rating_sigma|round(2))) if entity_end.current_rating_sigma else 8.33 }}" style="font-weight: 500; color: white;">{{ ('%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2)) if entity_end.current_rating_mu and entity_end.current_rating_sigma else 0}}</td>
+                                <td title="mu: {{ ('%.2f' % (entity_end.current_rating_mu|round(2))) if entity_end.current_rating_mu else 25 }}, sigma: {{ ('%.2f' % (entity_end.current_rating_sigma|round(2))) if entity_end.current_rating_sigma else 8.33 }}" style="font-weight: 500; color: white;">{{ ('%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2)) if entity_end.current_rating_mu and entity_end.current_rating_sigma else 0}}</td>
+                                <td title="mu: {{ entity_end.rating_difference_mu|round(2) }}, sigma: {{ entity_end.rating_difference_sigma|round(2)}}"
+                                class="{% if entity_end.rating_difference < 0 %}fire-team{% else %}earth-team{% endif %}">
+                                {% if entity_end.rating_difference > 0 %}+{% endif %}{{ entity_end.rating_difference|round(2) }}
                             {% else %}
+                                <td></td>
                                 <td></td>
                             {% endif %}
                             <td style="width: 30px;"><img src="/assets/sm5/roles/{{entity_start.role|string|lower}}.png" alt="role image" width="30" height="30"></td>
@@ -85,6 +90,7 @@
                         <th>Game</th>
                         <th>Win/Loss</th>
                         <th>Rating</th>
+                        <th>Rating Diff</th>
                         <th>Goals</th>
                         <th>Assists</th>
                         <th>Steals</th>
@@ -111,7 +117,12 @@
                             <td style="color: {{ 'greenyellow' if entity_start.team.enum == game.winner else 'orangered' }}">{{ "Win" if entity_start.team.enum == game.winner else "Loss" }}</td>
                             {% if entity_end.current_rating_mu != 25 %}
                                 <td title="mu: {{ ('%.2f' % (entity_end.current_rating_mu|round(2))) if entity_end.current_rating_mu else 25 }}, sigma: {{ ('%.2f' % (entity_end.current_rating_sigma|round(2))) if entity_end.current_rating_sigma else 8.33 }}" style="font-weight: 500; color: white;">{{ ('%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2)) if entity_end.current_rating_mu and entity_end.current_rating_sigma else 0}}</td>
+                                <td title="mu: {{ entity_end.rating_difference_mu|round(2) }}, sigma: {{ entity_end.rating_difference_sigma|round(2)}}"
+                                class="{% if entity_end.rating_difference < 0 %}fire-team{% else %}earth-team{% endif %}">
+                                {% if entity_end.rating_difference > 0 %}+{% endif %}{{ entity_end.rating_difference|round(2) }}
+                            </td>
                             {% else %}
+                                <td></td>
                                 <td></td>
                             {% endif %}
                             <td>{{ laserball_stats.goals }}</td>
@@ -150,9 +161,9 @@
                         <div class="btn">
                             <div class="win-chance">
                                 {% if laserball_win_percent %}
-                                <canvas id="laserball_teams"></canvas>
+                                    <canvas id="laserball_teams"></canvas>
                                 {% else %}
-                                <canvas id="laserball_teams" style="opacity: 0;"></canvas>
+                                    <canvas id="laserball_teams" style="opacity: 0;"></canvas>
                                 {% endif %}
                             </div>
                             <p style="font-size: 14px;" title="{{red_wins_laserball+blue_wins_laserball}}/{{(red_teams_laserball+blue_teams_laserball)}}">Win Percent: {{ '%.2f' % ((laserball_win_percent*100)|round(2)) }}%</p>

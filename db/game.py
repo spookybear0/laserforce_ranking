@@ -194,6 +194,44 @@ class EntityEnds(Model):
     previous_rating_mu = fields.FloatField(null=True)  # only for players, only for ranked games
     previous_rating_sigma = fields.FloatField(null=True)  # only for players, only for ranked games
 
+    @property
+    def current_rating(self) -> Optional[float]:
+        """Returns the current rating (mu - 3 * sigma) after the game ended."""
+        if self.current_rating_mu is None or self.current_rating_sigma is None:
+            return None
+        return self.current_rating_mu - 3 * self.current_rating_sigma
+    
+    @property
+    def previous_rating(self) -> Optional[float]:
+        """Returns the previous rating (mu - 3 * sigma) before the game ended."""
+        if self.previous_rating_mu is None or self.previous_rating_sigma is None:
+            return None
+        return self.previous_rating_mu - 3 * self.previous_rating_sigma
+
+    @property
+    def rating_difference(self) -> Optional[float]:
+        """Returns the rating (mu - 3 * sigma) difference after the game ended."""
+        if self.current_rating is None or self.previous_rating is None:
+            return None
+        
+        return self.current_rating - self.previous_rating
+    
+    @property
+    def rating_difference_mu(self) -> Optional[float]:
+        """Returns the rating mu difference after the game ended."""
+        if self.current_rating_mu is None or self.previous_rating_mu is None:
+            return None
+        
+        return self.current_rating_mu - self.previous_rating_mu
+    
+    @property
+    def rating_difference_sigma(self) -> Optional[float]:
+        """Returns the rating sigma difference after the game ended."""
+        if self.current_rating_sigma is None or self.previous_rating_sigma is None:
+            return None
+        
+        return self.current_rating_sigma - self.previous_rating_sigma
+
     async def get_player(self) -> "Player":
         # get the player object from the entity
         from db.player import Player

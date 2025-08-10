@@ -6,6 +6,9 @@ _PLAIN_TOOLTIPS = {
     "sm5_role": "The role this player had",
     "sm5_codename": "Name of the player",
     "sm5_rating": "Rating for this player at the point after this game has been played",
+    "sm5_rating_difference": "Rating difference for this player at the point after this game has been played. " +
+                            "A positive number means the player gained rating, a negative number means they lost rating. " +
+                            "A zero means the rating did not change.",
     "sm5_score": "Final score",
     "sm5_positive_score": "Final score without any reductions (no penalties for getting zapped, missiled, nuked, etc)",
     "sm5_points_minute": "Number of points per minute of time the player spent in the game",
