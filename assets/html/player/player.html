@@ -55,7 +55,7 @@
                             {% if entity_end.current_rating_mu != 25 %}
                                 <td title="mu: {{ ('%.2f' % (entity_end.current_rating_mu|round(2))) if entity_end.current_rating_mu else 25 }}, sigma: {{ ('%.2f' % (entity_end.current_rating_sigma|round(2))) if entity_end.current_rating_sigma else 8.33 }}" style="font-weight: 500; color: white;">{{ ('%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2)) if entity_end.current_rating_mu and entity_end.current_rating_sigma else 0}}</td>
                                 <td title="mu: {{ entity_end.rating_difference_mu|round(2) }}, sigma: {{ entity_end.rating_difference_sigma|round(2)}}"
-                                class="{% if entity_end.rating_difference < 0 %}fire-team{% else %}earth-team{% endif %}">
+                                class="{% if entity_end.rating_difference < 0 %}fire-team{% elif entity_end.rating_difference > 0 %}earth-team{% endif %}">
                                 {% if entity_end.rating_difference > 0 %}+{% endif %}{{ entity_end.rating_difference|round(2) }}
                             {% else %}
                                 <td></td>
@@ -118,7 +118,7 @@
                             {% if entity_end.current_rating_mu != 25 %}
                                 <td title="mu: {{ ('%.2f' % (entity_end.current_rating_mu|round(2))) if entity_end.current_rating_mu else 25 }}, sigma: {{ ('%.2f' % (entity_end.current_rating_sigma|round(2))) if entity_end.current_rating_sigma else 8.33 }}" style="font-weight: 500; color: white;">{{ ('%.2f' % (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2)) if entity_end.current_rating_mu and entity_end.current_rating_sigma else 0}}</td>
                                 <td title="mu: {{ entity_end.rating_difference_mu|round(2) }}, sigma: {{ entity_end.rating_difference_sigma|round(2)}}"
-                                class="{% if entity_end.rating_difference < 0 %}fire-team{% else %}earth-team{% endif %}">
+                                class="{% if entity_end.rating_difference < 0 %}fire-team{% elif entity_end.rating_difference > 0 %}earth-team{% endif %}">
                                 {% if entity_end.rating_difference > 0 %}+{% endif %}{{ entity_end.rating_difference|round(2) }}
                             </td>
                             {% else %}

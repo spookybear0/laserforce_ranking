@@ -97,7 +97,7 @@
                                         {% if entity_end.current_rating_mu %}
                                             <td title="mu: {{ entity_end.current_rating_mu|round(2) }}, sigma: {{ entity_end.current_rating_sigma|round(2) }}">{{ (entity_end.current_rating_mu - 3 * entity_end.current_rating_sigma)|round(2) }}</td>
                                             <td title="mu: {{ player.entity_end.rating_difference_mu|round(2) }}, sigma: {{ player.entity_end.rating_difference_sigma|round(2)}}"
-                                                class="{% if player.entity_end.rating_difference < 0 %}fire-team{% else %}earth-team{% endif %}">
+                                                class="{% if player.entity_end.rating_difference < 0 %}fire-team{% elif player.entity_end.rating_difference > 0 %}earth-team{% endif %}">
                                                 {% if player.entity_end.rating_difference > 0 %}+{% endif %}{{ player.entity_end.rating_difference|round(2) }}
                                             </td>
                                         {% else %}
