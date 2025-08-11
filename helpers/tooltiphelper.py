@@ -18,7 +18,7 @@ _PLAIN_TOOLTIPS = {
     "sm5_accuracy": "Percentage of shots that hit something",
     "sm5_kd_ratio": "Ratio of how many times this player zapped someone vs. how many times they got zapped. " +
                     "The number is about zaps, <b>not</b> missiles, nukes, or downs.",
-    "sm5_missiled_other": "Number of times this player successfully missiled another player",
+    "sm5_missiles_landed": "Number of times this player successfully missiled another player",
     "sm5_missiled": "Number of times this player got successfully missiled",
     "sm5_shot_team": "Number of times this player zapped a team mate",
     "sm5_missiled_team": "Number of times this player missiled a team mate",
