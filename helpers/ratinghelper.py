@@ -207,6 +207,7 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 weight_mu = 0.25 # default for missile event
                 if target.role == IntRole.MEDIC:
                     weight_mu = 0.5 # medic events are weighted more heavily
+                weight_sigma = 0.1 # default for missile event
 
                 # update general ratings with weights
 
