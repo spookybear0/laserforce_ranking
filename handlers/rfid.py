@@ -25,8 +25,8 @@ async def rfid_post(request: Request) -> str:
         decimal = data["decimal"][0]
 
     if hex:
-        return HTTPResponse(str(userhelper.to_decimal(hex)))
+        return HTTPResponse(str(userhelper.rfid_to_decimal(hex)))
     elif decimal:
-        return HTTPResponse(str(userhelper.to_hex(decimal)))
+        return HTTPResponse(str(userhelper.rfid_to_hex(decimal)))
 
     raise exceptions.BadRequest("Form data must be filled out.")

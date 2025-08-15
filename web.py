@@ -58,7 +58,7 @@ TORTOISE_ORM = {
     },
     "apps": {
         "models": {
-            "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "aerich.models"],
+            "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "db.tag", "aerich.models"],
             "default_connection": "default"
         }
     }

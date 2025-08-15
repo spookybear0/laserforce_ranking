@@ -183,7 +183,7 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     {%- endmacro %}
 
     <script>
-        function toggleNav() {
+        async function toggleNav() {
             // animate the nav-items
 
             var nav_items = document.getElementsByClassName("nav-item");
@@ -286,6 +286,19 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     </script>
 
     <style>
+        .rfid_button {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            left: 40px;
+            background-color: #007BFF;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            border: none;
+        }
+
         @media screen and (min-width: 991px) {
             .login-item {
                 float: right;
@@ -293,19 +306,6 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
 
             :root {
               --alternate-table-background-color: #1A1A1A;
-            }
-
-            .rfid_button {
-                position: fixed;
-                width: 60px;
-                height: 60px;
-                bottom: 40px;
-                left: 40px;
-                background-color: #007BFF;
-                color: #FFF;
-                border-radius: 50px;
-                text-align: center;
-                border: none;
             }
         }
 
@@ -338,7 +338,12 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             }
 
             .rfid_button {
-                display: none;
+                width: 100px;
+                height: 100px;
+            }
+
+            .rfid-icon {
+                font-size: 30px;
             }
         }
 
@@ -470,11 +475,11 @@ floating button for rfid
 it's disabled for now, but can be reenable by removing the if statement.
 maybe find some way to detect if the user has an rfid reader without asking
 -->
-<!--
-<button onclick="readRfid()" class="rfid_button" id="rfid_button">
-    <i class="fa-brands fa-nfc-symbol fa-lg"></i>
+
+<button onclick="rfidButton()" class="rfid_button" id="rfid_button">
+    <i class="fa-brands fa-nfc-symbol fa-lg rfid-icon"></i>
 </button>
--->
+
 
 <div id="footer">
     {% block footer %}

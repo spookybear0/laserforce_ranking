@@ -65,9 +65,9 @@ class Player(Model):
     password = fields.CharField(255, null=True)  # hashed password
     permissions = fields.IntEnumField(Permission, default=Permission.USER)
 
-    # rfid stuff
+    # rfid
 
-    rfid_tags = fields.JSONField(default=[]) # List[int] stored as an int, not how LF does it
+    # Player.tags is a reverse relation to the Tag model
 
     def get_codename(self) -> str:
         # This is a property that repalces the codename field to handle blank codenames correctly.

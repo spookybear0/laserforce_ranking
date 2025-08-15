@@ -43,11 +43,11 @@ class PlayerSchemaWithRecentGames(PlayerSchemaWithStats):
     summary="Get Player Information",
     description=dedent(
         """\
-        Get information about a player by their codename or player ID.
+        Get information about a player by their codename, player ID, or RFID tag.
         If `stats` is true, include stats for the player.
         If `recent_games` is true, include recent games for the player.
 
-        `identifier` can be the player's codename or player ID (ex: 4-43-1265).
+        `identifier` can be the player's codename, player ID (ex: 4-43-1265), or an RFID tag (ex: 2831191 or 47:0f:51:b4).
         """
     ),
     response=[
@@ -104,12 +104,8 @@ async def api_player(request: Request, identifier: Union[str, int]) -> str:
     if player is None:
         player = await Player.filter(player_id=identifier).first()
         if player is None:
-            try:
-                rfid_tag = int(identifier)
-            except ValueError:
-                return response.json({"error": "Player not found"}, status=404)
-            # get from rfid_tags
-            player = await Player.filter(rfid_tags__contains=[rfid_tag]).first()
+            # get from rfid tag
+            player = await Player.filter(tags__id=identifier.lower()).first()
             if player is None:
                 return response.json({"error": "Player not found"}, status=404)
 

@@ -5,39 +5,6 @@
 {% block html_head %}
 <link rel="stylesheet" href="/assets/css/admin/player.css">
 
-<script>
-    async function addTag() {
-        if (!portOpen) {
-            await openPort();
-            setTimeout(readPortData, 0);
-        }
-
-        console.log("Waiting for tag");
-
-        if (mostRecentTag == null) {
-            // loop until a tag is scanned
-            setTimeout(addTag, 1000, true);
-        }
-        else {
-            fetch("/admin/player/{{ player.player_id }}/add_tag", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    "tag": mostRecentTag,
-                }),
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();
-                }
-                else {
-                    alert("Failed to add tag");
-                }
-            });
-        }
-    }
-</script>
 {% endblock %}
 
 {% block content %}
@@ -51,10 +18,10 @@
 
     <h2>RFID Tags</h2>
 
-    <button onclick="addTag()">Add Tag</button>
+    <button onclick="addTag(`{{ player.player_id }}`)">Add Tag</button>
 
-    {% for tag in player.rfid_tags %}
-        <h3>{{ str(tag).rjust(10, "0") }}</h3>
+    {% for tag in player.tags %}
+        <h3>{{ str(tag.id).rjust(10, "0") }}</h3>
     {% endfor %}
 
 </div>
