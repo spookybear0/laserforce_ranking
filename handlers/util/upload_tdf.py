@@ -9,9 +9,11 @@ from shared import app
 import sentry_sdk
 
 
+"""
 @app.get("/util/auto_upload_dl")
 async def auto_upload_dl(request: Request) -> str:
-    return response.file("./upload_scripts/upload.bat")
+    return await response.file("./upload_scripts/upload.bat")
+"""
 
 
 @app.post("/util/upload_tdf")
@@ -35,10 +37,18 @@ async def auto_upload(request: Request) -> str:
         target_path = "./sm5_tdf/" + file.name
         _create_file_from_request(file, target_path)
         await parse_sm5_game(target_path)
+    elif type == "sm5_3team":
+        target_path = "./sm5_3team_tdf/" + file.name
+        _create_file_from_request(file, target_path)
+        # don't parse 3 team games, since they are not supported yet
     elif type == "laserball":
         target_path = "./laserball_tdf/" + file.name
         _create_file_from_request(file, target_path)
         await parse_laserball_game(target_path)
+    elif type == "dnd":
+        target_path = "./dnd_tdf/" + file.name
+        _create_file_from_request(file, target_path)
+        # don't parse DnD games, since they are not supported yet
     else:
         logger.error(f"Unsupported type: {type}")
         raise exceptions.BadRequest(f"Unsupported type: {type}")
