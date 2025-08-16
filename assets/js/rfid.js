@@ -35,6 +35,14 @@ function openPlayerPage(tag) {
                 window.location.href = `/player/${data.codename}`
             });
         }
+        else if (response.status === 404) {
+            // tag is not associated with a player
+            alert("Tag not associated with a player. Please add the tag to a player first.");
+        }
+        else {
+            console.error("Failed to open player page:", response.statusText);
+            alert("Failed to open player page. Please try again.");
+        }
     });
 }
 
