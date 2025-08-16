@@ -49,10 +49,10 @@ async def admin_player_add_tag(request: Request, id: Union[int, str]) -> str:
     logger.info(f"Adding tag {tag} to player {player}")
 
     if tag:
-        existing_tag = await Tag.get_or_none(id=tag, type=tag_type, player=player)
+        existing_tag = await Tag.get_or_none(id=tag)
         if existing_tag:
-            logger.info(f"Tag {tag} already exists in player {player}")
-            return response.json({"status": "already_exists"})
+            logger.info(f"Tag {tag} already exists for player {player}")
+            return response.json({"status": "error", "message": "Tag already exists"}, status=400)
         
         new_tag = Tag(id=tag, type=tag_type, player=player)
         await new_tag.save()
