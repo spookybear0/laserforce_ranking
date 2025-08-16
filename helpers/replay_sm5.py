@@ -373,12 +373,14 @@ class ReplayGeneratorSm5(ReplayGenerator):
                             self._down_player(player, event.time)
 
             case EventType.AMMO_BOOST:
+                self._add_special_points(player1, -15)
                 for player in self.teams[player1.team]:
                     if not player.downed:
                         self._add_shots(player, player.role_details.shots_resupply)
                 self.add_sound(self.boost_audio, player1.team)
 
             case EventType.LIFE_BOOST:
+                self._add_special_points(player1, -10)
                 for player in self.teams[player1.team]:
                     if not player.downed:
                         self._add_lives(player, player.role_details.lives_resupply)
