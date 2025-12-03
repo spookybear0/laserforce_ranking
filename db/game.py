@@ -419,7 +419,7 @@ class Game(Model):
         else:
             zero_pad = "-"
 
-        return strftime_ordinal(f"%A, %B {'{S}'} at %{zero_pad}I:%M %p", self.start_time)
+        return strftime_ordinal(f"%A, %B {'{S}'}, %Y at %{zero_pad}I:%M %p", self.start_time)
     
     async def get_battlesuits(self) -> List[str]:  # only the non-member players
         """
