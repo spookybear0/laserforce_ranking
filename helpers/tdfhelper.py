@@ -793,7 +793,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").count()
     team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").count()
 
-    # 1 < team size
+    # team size < 1
 
     if team1_len < 1 or team2_len < 1:
         ranked = False

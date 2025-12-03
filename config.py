@@ -1,6 +1,14 @@
 import json
 import sys
 import os
+from db.config import get_tortoise_orm_config
+
+def is_in_ipython() -> bool:
+    try:
+        __IPYTHON__
+        return True
+    except NameError:
+        return False
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -16,7 +24,6 @@ default_config = {
 }
 
 config_options = list(default_config.keys())
-
 
 class JsonFile:
     def __init__(self, file_name: str) -> None:
@@ -59,5 +66,8 @@ if updated_conf:
     jconfig.write_file(config)
     print("Your config has been updated! Please change the new vaulues to your liking.")
 
-    if "pytest" not in sys.modules:
+
+    if "pytest" not in sys.modules and not is_in_ipython():
         raise SystemExit
+    
+TORTOISE_ORM = get_tortoise_orm_config(config)

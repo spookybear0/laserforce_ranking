@@ -115,7 +115,7 @@
 
 <h1 style="text-align: center;">Dashboard</h1>
 
-<div style="display: flex; flex-direction: row; gap: 10px;">
+<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; margin-left: 1rem; margin-right: 1rem;">
     <button onclick="recalculate_ratings()" class="button">Recalculate Ratings</button>
     <button onclick="recalculate_sm5_ratings()" class="button">Recalculate SM5 Ratings</button>
     <button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
@@ -126,7 +126,7 @@
 
 <!-- Banner -->
 
-<div style="display: flex; flex-direction: row; gap: 10px; margin-top: 5rem;">
+<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; margin-top: 5rem; margin-left: 1rem; margin-right: 1rem;">
     <input type="text" id="banner_text" placeholder="Banner Text" id="banner_text">
     <select id="banner_type" id="banner_type">
         <option value="info">Info</option>

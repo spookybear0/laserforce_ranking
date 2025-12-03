@@ -10,7 +10,7 @@ from sanic import Sanic, log, exceptions
 from sanic_jinja2 import SanicJinja2
 from sanic_sessions import Session, AIORedisSessionInterface, InMemorySessionInterface
 from config import config
-from sanic_cors import CORS
+#from sanic_cors import CORS
 import aioredis
 from tailwind import generate_tailwind_css
 from sanic.log import logger
@@ -27,7 +27,7 @@ app.ext.openapi.describe(
     description="This is the API for the Laserforce Rankings website. It provides access to game data, player data, and more.",
 )
 
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+#CORS(app, resources={r"/api/*": {"origins": "*"}})
 session = Session()
 if config["redis"] not in ["", None, False]:
     app.ctx.redis = aioredis.from_url(config["redis"], decode_responses=True)
@@ -48,21 +48,9 @@ app.ctx.config = config
 import asyncio
 import router
 from tortoise import Tortoise
-from config import config
+from config import config, TORTOISE_ORM
 from helpers import cachehelper
 import utils
-
-TORTOISE_ORM = {
-    "connections": {
-        "default": f"mysql://{config['db_user']}:{config['db_password']}@{config['db_host']}:{config['db_port']}/{config['db_name']}",
-    },
-    "apps": {
-        "models": {
-            "models": ["db.game", "db.laserball", "db.legacy", "db.player", "db.sm5", "db.tag", "aerich.models"],
-            "default_connection": "default"
-        }
-    }
-}
 
 
 @app.exception(AttributeError)
@@ -175,7 +163,7 @@ app.static("assets", "assets", name="assets")
 
 def filter(record):
     # don't allow anything with "Dispatching singal" or "Sanic-CORS"
-    if "Dispatching signal" in record.getMessage() or "Sanic-CORS" in record.getMessage():
+    if "Dispatching signal" in record.getMessage() or "Sanic-CORS" in record.getMessage() or "no attribute '_cors'" in record.getMessage():
         return False
     return True
 
