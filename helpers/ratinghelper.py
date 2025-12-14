@@ -163,9 +163,10 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 role_out = model.rate([[shooter_elo_role], [target_elo_role]], ranks=[0, 1])
 
                 weight_mu = SM5_HIT_WEIGHT_MU # default for damage and downed events
+                weight_sigma = SM5_HIT_WEIGHT_SIGMA # default for damage and downed events
                 if target.role == IntRole.MEDIC:
                     weight_mu = SM5_HIT_MEDIC_WEIGHT_MU # give more weight to medic hits
-                weight_sigma = SM5_HIT_WEIGHT_SIGMA # default for damage and downed events
+                    weight_sigma = SM5_HIT_MEDIC_WEIGHT_SIGMA
 
                 # update general ratings with weights
                 shooter_player.sm5_mu += (general_out[0][0].mu - shooter_player.sm5_mu) * weight_mu
@@ -204,10 +205,11 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 general_out = model.rate([[shooter_elo], [target_elo]], ranks=[0, 1])
                 role_out = model.rate([[shooter_elo_role], [target_elo_role]], ranks=[0, 1])
 
-                weight_mu = 0.25 # default for missile event
+                weight_mu = SM5_MISSILE_WEIGHT_MU # default for missiles
+                weight_sigma = SM5_MISSILE_WEIGHT_SIGMA
                 if target.role == IntRole.MEDIC:
-                    weight_mu = 0.5 # medic events are weighted more heavily
-                weight_sigma = 0.1 # default for missile event
+                    weight_mu = SM5_MISSILE_MEDIC_WEIGHT_MU # give more weight to medic missiles
+                    weight_sigma = SM5_MISSILE_MEDIC_WEIGHT_SIGMA
 
                 # update general ratings with weights
 
