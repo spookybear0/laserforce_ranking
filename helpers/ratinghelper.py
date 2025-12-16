@@ -172,21 +172,23 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                 shooter_player.sm5_mu += (general_out[0][0].mu - shooter_player.sm5_mu) * weight_mu
                 shooter_player.sm5_sigma += (general_out[0][0].sigma - shooter_player.sm5_sigma) * weight_sigma
 
+                # update role ratings with weights
+                setattr(shooter_player, f"{str(shooter.role).lower()}_mu", getattr(shooter_player, f"{str(shooter.role).lower()}_mu") + (role_out[0][0].mu - getattr(shooter_player, f"{str(shooter.role).lower()}_mu")) * weight_mu)
+                setattr(shooter_player, f"{str(shooter.role).lower()}_sigma", getattr(shooter_player, f"{str(shooter.role).lower()}_sigma") + (role_out[0][0].sigma - getattr(shooter_player, f"{str(shooter.role).lower()}_sigma")) * weight_sigma)
+
                 if target.role == IntRole.MEDIC:
                     # don't penalize medics extra just for being medic
                     # (give people hitting medics more ranking, but don't give medics less ranking because it's a medic hit)
                     weight_mu = SM5_HIT_WEIGHT_MU
+                    weight_sigma = SM5_HIT_WEIGHT_SIGMA
 
+                # update general ratings with weights
                 target_player.sm5_mu += (general_out[1][0].mu - target_player.sm5_mu) * weight_mu
                 target_player.sm5_sigma += (general_out[1][0].sigma - target_player.sm5_sigma) * weight_sigma
 
                 # update role ratings with weights
-
-                setattr(shooter_player, f"{str(shooter.role).lower()}_mu", getattr(shooter_player, f"{str(shooter.role).lower()}_mu") + (role_out[0][0].mu - getattr(shooter_player, f"{str(shooter.role).lower()}_mu")) * 0.1)
-                setattr(shooter_player, f"{str(shooter.role).lower()}_sigma", getattr(shooter_player, f"{str(shooter.role).lower()}_sigma") + (role_out[0][0].sigma - getattr(shooter_player, f"{str(shooter.role).lower()}_sigma")) * 0.1)
-
-                setattr(target_player, f"{str(target.role).lower()}_mu", getattr(target_player, f"{str(target.role).lower()}_mu") + (role_out[1][0].mu - getattr(target_player, f"{str(target.role).lower()}_mu")) * 0.1)
-                setattr(target_player, f"{str(target.role).lower()}_sigma", getattr(target_player, f"{str(target.role).lower()}_sigma") + (role_out[1][0].sigma - getattr(target_player, f"{str(target.role).lower()}_sigma")) * 0.1)
+                setattr(target_player, f"{str(target.role).lower()}_mu", getattr(target_player, f"{str(target.role).lower()}_mu") + (role_out[1][0].mu - getattr(target_player, f"{str(target.role).lower()}_mu")) * weight_mu)
+                setattr(target_player, f"{str(target.role).lower()}_sigma", getattr(target_player, f"{str(target.role).lower()}_sigma") + (role_out[1][0].sigma - getattr(target_player, f"{str(target.role).lower()}_sigma")) * weight_sigma)
 
                 await shooter_player.save()
                 await target_player.save()
@@ -212,23 +214,25 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
                     weight_sigma = SM5_MISSILE_MEDIC_WEIGHT_SIGMA
 
                 # update general ratings with weights
-
                 shooter_player.sm5_mu += (general_out[0][0].mu - shooter_player.sm5_mu) * weight_mu
                 shooter_player.sm5_sigma += (general_out[0][0].sigma - shooter_player.sm5_sigma) * weight_sigma
 
-                if target.role == IntRole.MEDIC:
-                    weight_mu = 0.25
+                # update role ratings with weights
+                setattr(shooter_player, f"{str(shooter.role).lower()}_mu", getattr(shooter_player, f"{str(shooter.role).lower()}_mu") + (role_out[0][0].mu - getattr(shooter_player, f"{str(shooter.role).lower()}_mu")) * weight_mu)
+                setattr(shooter_player, f"{str(shooter.role).lower()}_sigma", getattr(shooter_player, f"{str(shooter.role).lower()}_sigma") + (role_out[0][0].sigma - getattr(shooter_player, f"{str(shooter.role).lower()}_sigma")) * weight_sigma)
 
+                if target.role == IntRole.MEDIC:
+                    # don't penalize medics extra just for being medic
+                    weight_mu = SM5_MISSILE_WEIGHT_MU
+                    weight_sigma = SM5_MISSILE_WEIGHT_SIGMA
+
+                # update general ratings with weights
                 target_player.sm5_mu += (general_out[1][0].mu - target_player.sm5_mu) * weight_mu
                 target_player.sm5_sigma += (general_out[1][0].sigma - target_player.sm5_sigma) * weight_sigma
 
                 # update role ratings with weights
-                
-                setattr(shooter_player, f"{str(shooter.role).lower()}_mu", getattr(shooter_player, f"{str(shooter.role).lower()}_mu") + (role_out[0][0].mu - getattr(shooter_player, f"{str(shooter.role).lower()}_mu")) * 0.1)
-                setattr(shooter_player, f"{str(shooter.role).lower()}_sigma", getattr(shooter_player, f"{str(shooter.role).lower()}_sigma") + (role_out[0][0].sigma - getattr(shooter_player, f"{str(shooter.role).lower()}_sigma")) * 0.1)
-
-                setattr(target_player, f"{str(target.role).lower()}_mu", getattr(target_player, f"{str(target.role).lower()}_mu") + (role_out[1][0].mu - getattr(target_player, f"{str(target.role).lower()}_mu")) * 0.1)
-                setattr(target_player, f"{str(target.role).lower()}_sigma", getattr(target_player, f"{str(target.role).lower()}_sigma") + (role_out[1][0].sigma - getattr(target_player, f"{str(target.role).lower()}_sigma")) * 0.1)
+                setattr(target_player, f"{str(target.role).lower()}_mu", getattr(target_player, f"{str(target.role).lower()}_mu") + (role_out[1][0].mu - getattr(target_player, f"{str(target.role).lower()}_mu")) * weight_mu)
+                setattr(target_player, f"{str(target.role).lower()}_sigma", getattr(target_player, f"{str(target.role).lower()}_sigma") + (role_out[1][0].sigma - getattr(target_player, f"{str(target.role).lower()}_sigma")) * weight_sigma)
 
                 await shooter_player.save()
                 await target_player.save()
@@ -622,10 +626,13 @@ async def recalculate_sm5_ratings() -> None:
 
                 player = await Player.filter(entity_id=entity_id).first()
 
-                entity_end.previous_rating_mu = player.laserball_mu
-                entity_end.previous_rating_sigma = player.laserball_sigma
-                entity_end.current_rating_mu = player.laserball_mu
-                entity_end.current_rating_sigma = player.laserball_sigma
+                if not player:
+                    continue
+
+                entity_end.previous_rating_mu = player.sm5_mu
+                entity_end.previous_rating_sigma = player.sm5_sigma
+                entity_end.current_rating_mu = player.sm5_mu
+                entity_end.current_rating_sigma = player.sm5_sigma
 
                 await entity_end.save()
 
