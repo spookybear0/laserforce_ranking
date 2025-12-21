@@ -26,7 +26,7 @@ async def stats(request: Request) -> str:
     total_games = await SM5Game.all().count() + await LaserballGame.all().count()
     ranked_games = await SM5Game.filter(ranked=True).count() + await LaserballGame.filter(ranked=True).count()
     total_games_played = await EntityEnds.all().count()
-    ranking_accuracy = await statshelper.get_ranking_accuracy()
+    predictive_accuracy = await statshelper.get_predictive_accuracy()
     
     logger.debug("Loading SM5 stats")
 
@@ -69,7 +69,7 @@ async def stats(request: Request) -> str:
                                         total_games=total_games,
                                         ranked_games=ranked_games,
                                         total_games_played=total_games_played,
-                                        ranking_accuracy=ranking_accuracy,
+                                        predictive_accuracy=predictive_accuracy,
 
                                         # sm5 stats
 

@@ -661,11 +661,9 @@ async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDE
                   reverse=True)[:amount]
 
 
-# get ranking accuracy
-
 @cache(ttl=60*60*24)
 @precache()
-async def get_ranking_accuracy() -> float:
+async def get_predictive_accuracy(*, _sample_size: int=99999) -> float:
     """
     Ranks how accurate the ranking system is
     at predicting the winner of a game
@@ -676,24 +674,94 @@ async def get_ranking_accuracy() -> float:
     correct = 0
     total = 0
 
-    for game in await SM5Game.filter(ranked=True).all():
+
+    for game in await SM5Game.filter(ranked=True).order_by("start_time").limit(_sample_size):
+        if game.team1_size != game.team2_size:
+            # only consider games with equal team sizes
+            continue
+
         red_chance, green_chance = await game.get_win_chance_before_game()
         red_score, green_score = await game.get_team_score(Team.RED), await game.get_team_score(Team.GREEN)
 
         # see if scores are close enough
-        if abs(red_chance - green_chance) <= 0.08 and abs(red_score - green_score) <= 3000:
-            # if so, add 2 to correct
-            # it means we did a phoenomenal job at predicting the winner
-            # technically this means our rating could be higher than 100%
-            # but let's treat it like extra credit :)
-            correct += 2
-        elif red_chance >= green_chance and red_score > green_score:
+        # win chance 40-60% and score diff is less than 10%
+        if abs(red_chance - green_chance) <= 0.2 and abs(red_score - green_score) <= 0.10*(red_score + green_score):
+            # if so, add 1 to correct
+            # it means we did a phoenomenal job at predicting the winner (or at least a close game)
             correct += 1
-        elif green_chance >= red_chance and green_score > red_score:
+        elif red_chance > green_chance and red_score > green_score:
+            correct += 1
+        elif green_chance > red_chance and green_score > red_score:
             correct += 1
         total += 1
 
     return correct / total if total != 0 else 0
+
+@cache(ttl=60*60*24)
+@precache()
+async def get_brier_score(*, _sample_size: int=99999) -> float:
+    """
+    Computes the mean Brier score for win probability predictions.
+    Lower is better. Range: [0, 1].
+    """
+
+    total = 0
+    brier_sum = 0.0
+
+    for game in await SM5Game.filter(ranked=True).order_by("start_time").limit(_sample_size):
+
+        red_chance, green_chance = await game.get_win_chance_before_game()
+        red_score = await game.get_team_score(Team.RED)
+        green_score = await game.get_team_score(Team.GREEN)
+
+        # define outcome from red team's perspective
+        outcome = 1 if red_score > green_score else 0
+
+        brier_sum += (red_chance - outcome) ** 2
+        total += 1
+
+    return brier_sum / total if total != 0 else 0.0
+
+@cache(ttl=60*60*24)
+@precache()
+async def get_margin_prediction_error(*, _sample_size: int=99999) -> float:
+    """
+    Computes mean squared margin error (MSME) for the ranking system.
+
+    Compares predicted win probability to normalized score margin:
+        actual_margin = (red_score - green_score) / (red_score + green_score)
+        predicted_margin = 2 * red_win_probability - 1
+
+    Lower values indicate better alignment between predicted confidence
+    and actual game dominance.
+    """
+
+    total_error = 0.0
+    total_games = 0
+
+    for game in await SM5Game.filter(ranked=True).order_by("start_time").limit(_sample_size):
+
+        red_chance, green_chance = await game.get_win_chance_before_game()
+        red_score = await game.get_team_score(Team.RED)
+        green_score = await game.get_team_score(Team.GREEN)
+
+        # Skip invalid or empty games
+        if red_score + green_score == 0:
+            continue
+
+        # Actual normalized score margin in [-1, 1]
+        actual_margin = (red_score - green_score) / (red_score + green_score)
+
+        # Predicted margin proxy from win probability
+        predicted_margin = 2 * red_chance - 1
+
+        # Squared error
+        error = (predicted_margin - actual_margin) ** 2
+
+        total_error += error
+        total_games += 1
+
+    return total_error / total_games if total_games > 0 else 0.0
 
 
 # performance helpers

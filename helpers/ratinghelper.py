@@ -34,22 +34,22 @@ ZETA = 0.09  # default: 0 (custom addition for uneven team rating adjustment), h
 # overall weight for an entire game (mu_weight, sigma_weight) = (1, 1) ( rate([team1, team2]) )
 
 
-SM5_HIT_WEIGHT_MU = 0.1  # skill weight for hits in sm5
-SM5_HIT_WEIGHT_SIGMA = 0.1  # uncertainty weight for hits in sm5
+SM5_HIT_WEIGHT_MU = 0.01  # skill weight for hits in sm5
+SM5_HIT_WEIGHT_SIGMA = 0.01  # uncertainty weight for hits in sm5
 
-SM5_HIT_MEDIC_WEIGHT_MU = 0.2  # skill weight for medic hits in sm5
-SM5_HIT_MEDIC_WEIGHT_SIGMA = 0.1  # uncertainty weight for medic hits in sm5
+SM5_HIT_MEDIC_WEIGHT_MU = 0.02  # skill weight for medic hits in sm5
+SM5_HIT_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic hits in sm5
 
 
-SM5_MISSILE_WEIGHT_MU = 0.25  # skill weight for missile hits in sm5
-SM5_MISSILE_WEIGHT_SIGMA = 0.1  # uncertainty weight for missile hits in sm5
+SM5_MISSILE_WEIGHT_MU = 0.025  # skill weight for missile hits in sm5
+SM5_MISSILE_WEIGHT_SIGMA = 0.01  # uncertainty weight for missile hits in sm5
 
-SM5_MISSILE_MEDIC_WEIGHT_MU = 0.5  # skill weight for medic missiles in sm5
-SM5_MISSILE_MEDIC_WEIGHT_SIGMA = 0.1  # uncertainty weight for medic missiles in sm5
+SM5_MISSILE_MEDIC_WEIGHT_MU = 0.05  # skill weight for medic missiles in sm5
+SM5_MISSILE_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic missiles in sm5
 
 # laserball
 
-# TODO: check if weight_sigma should be == 0.1 for all events like in sm5
+# TODO: check if weight_sigma should be the same for all events like in sm5
 # TODO: possibily only use overall game ratings for laserball to make ratings
 # fully depend on the game outcome, not individual events
 
@@ -599,9 +599,11 @@ def get_draw_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
     return model.predict_draw([team1, team2])
 
 
-async def recalculate_sm5_ratings() -> None:
+async def recalculate_sm5_ratings(*, _sample_size: int=99999) -> None:
     """
     Recalculates sm5 ratings
+
+    _sample_size is for testing purposes only, it limits the number of games to recalculate
     """
 
     # reset sm5 ratings
@@ -610,7 +612,7 @@ async def recalculate_sm5_ratings() -> None:
 
     # get all games and recalculate ratings
 
-    sm5_games = await SM5Game.all().order_by("start_time").all()
+    sm5_games = await SM5Game.all().order_by("start_time").limit(_sample_size)
 
     for game in sm5_games:
         if game.ranked:
@@ -637,7 +639,7 @@ async def recalculate_sm5_ratings() -> None:
                 await entity_end.save()
 
 
-async def recalculate_laserball_ratings() -> None:
+async def recalculate_laserball_ratings(*, _sample_size: int=99999) -> None:
     """
     Recalculates laserball ratings
     """
@@ -646,7 +648,7 @@ async def recalculate_laserball_ratings() -> None:
 
     await Player.all().update(laserball_mu=MU, laserball_sigma=SIGMA)
 
-    lb_games = await LaserballGame.all().order_by("start_time").all()
+    lb_games = await LaserballGame.all().order_by("start_time").limit(_sample_size)
 
     for game in lb_games:
         if game.ranked:

@@ -38,7 +38,7 @@ async def admin_player_add_tag(request: Request, id: Union[int, str]) -> str:
     tag = request.json.get("tag")
     tag_type = request.json.get("type", "HF").upper()
 
-    print(f"Adding tag {tag} of type {tag_type} to player {player}")
+    logger.info(f"Adding tag {tag} of type {tag_type} to player {player}")
 
     try:
         tag_type = TagType(tag_type)

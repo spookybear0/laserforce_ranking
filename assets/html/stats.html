@@ -36,13 +36,13 @@ Sum of all ranked games:
 
 Divided by the total number of games
 "
-            >{{ "%.2f" % (ranking_accuracy*100)|round(2) }}%</h2>
+            >{{ "%.2f" % (predictive_accuracy*100)|round(2) }}%</h2>
             <p title=
-                       "Algorithm for Ranking Accuracy
+                       "Algorithm for Predictive Accuracy
 
 Sum of all ranked games:
 +1 point for each correct prediction or
-+2 points for each correct prediction of a tie, aka a close game (score diff <= 1000)
++1 points for each correct prediction of a tie, aka a close game (score diff <= 10% of combined score and 40-60% win chance)
 
 Divided by the total number of games
 "
