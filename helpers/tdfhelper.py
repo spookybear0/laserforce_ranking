@@ -143,6 +143,8 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
             case "3":  # entity start
                 team = None
 
+                # what team is this player on?
+                # iterate through teams until we find the right one and save it to "team"
                 for t in teams:
                     if t.index == int(data[5]):
                         team = t
@@ -153,7 +155,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
 
                 # has index 9
                 try:
-                    member_id = int(data[9])
+                    member_id = data[9]
                 except (ValueError, IndexError):
                     member_id = None
 
