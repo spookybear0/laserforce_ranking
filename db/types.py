@@ -195,11 +195,11 @@ NAME_TO_TEAM = {
 
 
 class Role(Enum):
-    SCOUT = "scout"
-    HEAVY = "heavy"
     COMMANDER = "commander"
-    MEDIC = "medic"
+    HEAVY = "heavy"
+    SCOUT = "scout"
     AMMO = "ammo"
+    MEDIC = "medic"
 
 
 class GameType(Enum):
