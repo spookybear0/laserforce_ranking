@@ -402,11 +402,7 @@ async def update_laserball_ratings(game: LaserballGame) -> bool:
     return True
 
 
-# deprecated
-def matchmake(players, mode: GameType = GameType.SM5) -> Tuple[List[Player], List[Player]]:
-    return matchmake_teams(players, 2, mode)
-
-def matchmake_teams(players: List[Player], num_teams: int, mode: str = GameType.SM5) -> List[List[Player]]:
+def matchmake_teams(players: List[Player], num_teams: int=2, mode: str = GameType.SM5) -> List[List[Player]]:
     mode = mode.value.lower()
 
     if not 2 <= num_teams <= 4:

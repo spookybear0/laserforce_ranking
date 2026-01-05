@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List, Tuple, Optional, Callable, Any
 
 from sentry_sdk import Hub, start_transaction
-from tortoise.expressions import Q
+from tortoise.expressions import Q, F
 from tortoise.fields import ManyToManyRelation
 from tortoise.functions import Sum
 
@@ -11,6 +11,7 @@ from db.game import EntityEnds, EntityStarts, PlayerInfo
 from db.laserball import LaserballGame, LaserballStats
 from db.sm5 import SM5Game, SM5Stats
 from db.types import IntRole, EventType, PlayerStateDetailType, PlayerStateType, PlayerStateEvent, Team, PieChartData
+from db.player import Player
 from helpers.cachehelper import cache, precache
 
 # stats helpers
@@ -633,7 +634,7 @@ async def get_blocks() -> int:
 @cache(ttl=60*60*24)  # cache for 24 hours
 @precache([5, IntRole.SCOUT, 5], [5, IntRole.HEAVY, 5], [5, IntRole.COMMANDER, 5],
           [5, IntRole.AMMO, 5], [5, IntRole.MEDIC, 5])
-async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDER, min_games: int = 5) -> List[
+async def get_top_role_players_score(amount: int = 5, role: IntRole = IntRole.COMMANDER, min_games: Optional[int] = 5) -> List[
     Tuple[str, int, int]]:
     """
     Gets the top players of a given role by going through
@@ -659,6 +660,36 @@ async def get_top_role_players(amount: int = 5, role: IntRole = IntRole.COMMANDE
 
     return sorted([(name, score // games, games) for name, (score, games) in players.items()], key=lambda x: x[1],
                   reverse=True)[:amount]
+
+@cache(ttl=60*60*24)  # cache for 24 hours
+@precache([5, IntRole.SCOUT], [5, IntRole.HEAVY], [5, IntRole.COMMANDER],
+          [5, IntRole.AMMO], [5, IntRole.MEDIC])
+async def get_top_role_players_rating(amount: int = 5, role: IntRole = IntRole.COMMANDER) -> List[Tuple[str, float, int]]:
+    """
+    Gets the top players of a given role sorting
+    the players by their role rating
+
+    Minimum amount of games is not considered here because
+    it takes a lot of extra effort and processing power,
+    plus the sigma value already accounts for uncertainty
+    """
+
+    players = await Player.filter().limit(amount).annotate(ord=F(f"{str(role).lower()}_mu") - 3 * F(f"{str(role).lower()}_sigma")).order_by("-ord")
+
+    ratings = []
+
+    for player in players:
+        mu = getattr(player, f"{str(role).lower()}_mu")
+        sigma = getattr(player, f"{str(role).lower()}_sigma")
+        rating = mu - 3 * sigma
+
+        num_games = await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines",
+                                            entity__role=role, entity__entity_id=player.entity_id).count()
+
+        ratings.append((player.codename, rating, num_games))
+
+    return ratings
+
 
 
 @cache(ttl=60*60*24)

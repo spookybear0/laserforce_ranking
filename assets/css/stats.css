@@ -41,4 +41,7 @@ td {
     flex-wrap: wrap;
     margin-top: 1rem;
     gap: 1rem;
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
 }
