@@ -610,7 +610,17 @@ async def recalculate_sm5_ratings(*, _sample_size: int=99999) -> None:
 
     # reset sm5 ratings
 
+    logger.info("Resetting sm5 general ratings")
+
     await Player.all().update(sm5_mu=MU, sm5_sigma=SIGMA)
+
+    # reset per-role ratings
+
+    for role in IntRole:
+        if role == IntRole.OTHER:
+            continue
+        logger.info(f"Resetting {str(role).lower()} ratings")
+        await Player.all().update(**{f"{str(role).lower()}_mu": MU, f"{str(role).lower()}_sigma": SIGMA})
 
     # get all games and recalculate ratings
 
