@@ -32,6 +32,8 @@ ZETA = 0.09  # default: 0 (custom addition for uneven team rating adjustment), h
 # TODO: possibly seperate damaged and downed events, but for now they are treated the same
 
 # overall weight for an entire game (mu_weight, sigma_weight) = (1, 1) ( rate([team1, team2]) )
+# this is for the overall game outcome (win/loss) which rates all players at once
+# the multipliers for mu and sigma are both 1
 
 
 SM5_HIT_WEIGHT_MU = 0.01  # skill weight for hits in sm5

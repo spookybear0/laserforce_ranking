@@ -84,7 +84,7 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
     {{ player.name }}
     {% else %}
     {% if player.player_info.is_member %}
-    <a href="/player/{{player.player_info.entity_start.name}}">{{ player.player_info.display_name }}</a>
+    <a href="/player/{{player.player_info.entity_start.get_current_codename()}}">{{ player.player_info.display_name }}</a>
     {% else %}
     {{ player.player_info.display_name }}
     {% endif %}

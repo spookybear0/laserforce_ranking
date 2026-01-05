@@ -67,6 +67,14 @@ class EntityStarts(Model):
     battlesuit = fields.CharField(50)  # for targets its the target name
     member_id = fields.CharField(50, null=True)  # only for newer games (or ones with the option to include member_id)
 
+    async def get_current_codename(self) -> str:
+        # if the player has changed their name since the game, get the current name
+        from db.player import Player
+        player = await Player.filter(entity_id=self.entity_id).first()
+        if player:
+            return player.codename
+        return self.name
+
     async def get_player(self) -> "Player":
         # get the player object from the entity
         from db.player import Player
