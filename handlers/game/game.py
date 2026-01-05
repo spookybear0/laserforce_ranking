@@ -66,7 +66,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Fetching matchmaking teams")
 
-        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(full_stats.get_team_rosters())
+        players_matchmake_team1, players_matchmake_team2 = await get_matchmaking_teams(full_stats.get_team_rosters())
 
         logger.debug("Fetching win chances")
 
@@ -116,7 +116,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
 
         logger.debug("Fetching matchmaking teams")
 
-        players_matchmake_team1, players_matchmake_team2 = get_matchmaking_teams(full_stats.get_team_rosters())
+        players_matchmake_team1, players_matchmake_team2 = await get_matchmaking_teams(full_stats.get_team_rosters())
 
         logger.debug("Fetching win chances")
 

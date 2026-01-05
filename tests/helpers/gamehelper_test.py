@@ -77,7 +77,7 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
         roster = await get_team_rosters([entity1, entity2, entity3],
                                         [entity_end1, entity_end2, entity_end3])
 
-        player_matchmaking_1, player_matchmaking_2 = get_matchmaking_teams(roster)
+        player_matchmaking_1, player_matchmaking_2 = await get_matchmaking_teams(roster)
 
         # Red team should be team 1.
         self.assertCountEqual(["Indy", "Bumblebee"], player_matchmaking_1)
@@ -94,7 +94,7 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
         roster = await get_team_rosters([entity1, entity2, entity3],
                                         [entity_end1, entity_end2, entity_end3])
 
-        player_matchmaking_1, player_matchmaking_2 = get_matchmaking_teams(roster)
+        player_matchmaking_1, player_matchmaking_2 = await get_matchmaking_teams(roster)
 
         # The order of the teams is not defined.
         if "Miles" in player_matchmaking_2:
@@ -111,7 +111,7 @@ class TestGameHelper(unittest.IsolatedAsyncioTestCase):
                                         [entity_end1])
 
         with self.assertRaises(exceptions.ServerError):
-            get_matchmaking_teams(roster)
+            await get_matchmaking_teams(roster)
 
 
 if __name__ == '__main__':

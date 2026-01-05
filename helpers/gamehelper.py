@@ -83,8 +83,12 @@ def get_player_display_names(players: List[PlayerInfo]) -> List[str]:
     """Extracts all the display names from a list of players."""
     return [player.display_name for player in players]
 
+async def get_player_current_names(players: List[PlayerInfo]) -> List[str]:
+    """Extracts all the current names from a list of players. If a player has changed their name since a game, this will show the new name."""
+    return [await player.entity_start.get_current_codename() for player in players]
 
-def get_matchmaking_teams(team_rosters: Dict[Team, List[PlayerInfo]]) -> (
+
+async def get_matchmaking_teams(team_rosters: Dict[Team, List[PlayerInfo]]) -> (
         List[str], List[str]):
     """Returns display names for each player in two teams.
 
@@ -102,7 +106,7 @@ def get_matchmaking_teams(team_rosters: Dict[Team, List[PlayerInfo]]) -> (
     team1, team2 = list(team_rosters.keys())[:2]
 
     # Get player display names for both teams
-    players_matchmake_team1 = get_player_display_names(team_rosters[team1])
-    players_matchmake_team2 = get_player_display_names(team_rosters[team2])
+    players_matchmake_team1 = await get_player_current_names(team_rosters[team1])
+    players_matchmake_team2 = await get_player_current_names(team_rosters[team2])
 
     return players_matchmake_team1, players_matchmake_team2
