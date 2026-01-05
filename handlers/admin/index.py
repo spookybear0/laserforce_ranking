@@ -27,7 +27,7 @@ async def admin_index(request: Request) -> str:
 @admin_only
 async def admin_recalculate_ratings(request: Request) -> str:
     request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate and the site may be slow"
-    asyncio.create_task(recalculate_ratings(), name="Recalculate Ratings").add_done_callback(lambda _: reset_banner())
+    request.app.create_task(recalculate_ratings(), name="Recalculate Ratings").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 
@@ -36,7 +36,7 @@ async def admin_recalculate_ratings(request: Request) -> str:
 @admin_only
 async def admin_recalculate_sm5_ratings(request: Request) -> str:
     request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate and the site may be slow"
-    asyncio.create_task(recalculate_sm5_ratings(), name="Recalculate SM5 Ratings").add_done_callback(lambda _: reset_banner())
+    request.app.create_task(recalculate_sm5_ratings(), name="Recalculate SM5 Ratings").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 
@@ -45,7 +45,7 @@ async def admin_recalculate_sm5_ratings(request: Request) -> str:
 @admin_only
 async def admin_recalculate_lb_ratings(request: Request) -> str:
     request.app.ctx.banner["text"] = "Rating recalculation in progress, stats may be inaccurate and the site may be slow"
-    asyncio.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings").add_done_callback(lambda _: reset_banner())
+    request.app.create_task(recalculate_laserball_ratings(), name="Recalculate Laserball Ratings").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 

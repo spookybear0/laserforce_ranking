@@ -110,7 +110,7 @@ async def setup_app(app, loop) -> None:
     if "--debug" not in sys.argv:
         logger.info("Using cache")
         cachehelper.use_cache()
-        await cachehelper.precache_all_functions()
+        app.add_task(cachehelper.precache_all_functions())
     else:
         logger.info("Not using cache, --debug argument detected")
 
