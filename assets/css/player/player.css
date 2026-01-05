@@ -134,13 +134,15 @@ td {
     float: left;
 }
 
-.btn {
-    height: 9rem;
-}
-
 @media screen and (max-width: 991px) {
+    .mobile-middle {
+        text-align: center;
+        margin: auto;
+        float: none;
+    }
+
     .btn {
-        height: 9em;
+        height: 6em;
     }
 
     h1 {

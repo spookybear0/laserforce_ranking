@@ -9,7 +9,7 @@ from db.game import EntityEnds, EntityStarts
 from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
 from db.sm5 import SM5Game, SM5Stats
-from db.types import GameType, Team
+from db.types import GameType, Team, Role
 from helpers.cachehelper import cache_template, precache_template
 from helpers.laserballhelper import get_laserball_rating_over_time
 from helpers.sm5helper import get_sm5_rating_over_time
@@ -223,6 +223,8 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         role_plot_labels=get_role_labels_from_medians(median_role_score),
         role_plot_labels_with_game_count=get_role_labels_from_medians(median_role_score, per_role_game_count_ranked),
         role_plot_game_count=get_games_per_role_filtered(per_role_game_count_ranked),
+        # role rating plot (sm5)
+        per_role_ratings=[player.get_role_rating(role).ordinal() for role in Role],
         # Games played per role
         per_role_game_count_ranked=per_role_game_count_ranked,
         per_role_game_count_all=per_role_game_count_all,
