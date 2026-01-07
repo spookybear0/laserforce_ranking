@@ -714,7 +714,7 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
 
     i = 0
     for team in teams:
-        if not t.color_name or not t.color_enum or t.name == "Neutral":
+        if not team.color_name or not team.color_enum or team.name == "Neutral":
             continue
 
         if i == 0:  # found first team
@@ -795,15 +795,19 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
     team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").count()
     team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").count()
 
+    logger.debug(f"Team 1 size: {team1_len}, Team 2 size: {team2_len}")
+
     # team size < 1
 
-    if team1_len < 1 or team2_len < 1:
+    if team1_len < 2 or team2_len < 2:
+        logger.debug("One of the teams has less than 2 players, unranking game")
         ranked = False
 
     # check if there are any non-member players
 
     for e in entity_starts:
         if e.type == "player" and e.entity_id.startswith("@") and e.name == e.battlesuit:
+            logger.debug(f"Found non-member player {e.name}, unranking game")
             ranked = False
             break
 
