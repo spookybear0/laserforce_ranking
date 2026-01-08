@@ -88,6 +88,9 @@ async def audit_ranked_status(request: Request, type: str) -> str:
                     ranked = False
                     break
 
+            if game.ended_early:
+                ranked = False
+
             if ranked != game.ranked:
                 logger.info(f"SM5 Game ID {game.id} ranked status changed from {game.ranked} to {ranked}")
                 game.ranked = ranked
@@ -133,6 +136,9 @@ async def audit_ranked_status(request: Request, type: str) -> str:
                     logger.debug(f"Found non-member player {e.name}, unranking game")
                     ranked = False
                     break
+            
+            if game.ended_early:
+                ranked = False
 
             if ranked != game.ranked:
                 logger.info(f"Laserball Game ID {game.id} ranked status changed from {game.ranked} to {ranked}")
