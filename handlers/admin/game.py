@@ -77,7 +77,10 @@ async def admin_game_rank(request: Request, mode: str, id: Union[int, str]) -> s
     game.ranked = True
     await game.save()
 
-    await ratinghelper.update_sm5_ratings(game)
+    if mode == "sm5":
+        await ratinghelper.update_sm5_ratings(game)
+    elif mode == "laserball":
+        await ratinghelper.update_laserball_ratings(game)
 
     return response.json({"status": "ok"})
 

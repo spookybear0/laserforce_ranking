@@ -78,6 +78,39 @@
         });
     }
 
+    function audit_ranked_status_sm5() {
+        alert("Auditing ranked status for SM5 in background...");
+        fetch("/admin/audit_ranked_status/sm5", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
+    function audit_ranked_status_laserball() {
+        alert("Auditing ranked status for Laserball in background...");
+        fetch("/admin/audit_ranked_status/laserball", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
+    function audit_ranked_status_all() {
+        alert("Auditing ranked status for all games in background...");
+        fetch("/admin/audit_ranked_status/all", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    }
+
     function flush_cache() {
         alert("Flushing cache in background...");
         fetch("/admin/flush_cache", {
@@ -121,6 +154,9 @@
     <button onclick="recalculate_laserball_ratings()" class="button">Recalculate Laserball Ratings</button>
     <button onclick="migrate_games()" class="button">Migrate Games</button>
     <button onclick="backfill_events()" class="button">Backfill Events</button>
+    <button onclick="audit_ranked_status_sm5()" class="button">Audit Ranked Status SM5</button>
+    <button onclick="audit_ranked_status_laserball()" class="button">Audit Ranked Status Laserball</button>
+    <button onclick="audit_ranked_status_all()" class="button">Audit Ranked Status All</button>
     <button onclick="flush_cache()" class="button">Flush Cache</button>
 </div>
 
