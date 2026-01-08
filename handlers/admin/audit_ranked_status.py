@@ -22,7 +22,7 @@ async def audit_ranked_status(request: Request, type: str) -> str:
     
     # go through each game and check ranked eligibility
     if type in ["sm5", "all"]:
-        sm5_games = await SM5Game.all().order_by("-start_time")
+        sm5_games = await SM5Game.all().order_by("start_time")
         for game in sm5_games:
             # maybe eventually make elgibility criteria in a helper function
 
@@ -99,7 +99,7 @@ async def audit_ranked_status(request: Request, type: str) -> str:
                     await ratinghelper.update_sm5_ratings(game)
 
     if type in ["laserball", "all"]:
-        laserball_games = await LaserballGame.all().order_by("-start_time")
+        laserball_games = await LaserballGame.all().order_by("start_time")
         for game in laserball_games:
             ranked = True
 
