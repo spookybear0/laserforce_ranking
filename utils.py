@@ -28,7 +28,8 @@ async def render_template(r, template, *args, **kwargs) -> str:
         "config": r.app.ctx.config,
         "Permission": Permission,
         "str": str,
-        "tooltip_info": TOOLTIP_INFO
+        "tooltip_info": TOOLTIP_INFO,
+        "is_admin": is_admin(r),
     }
 
     kwargs = {**kwargs, **additional_kwargs}

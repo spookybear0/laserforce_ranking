@@ -15,7 +15,7 @@ from helpers.sm5helper import get_sm5_player_stats, get_sm5_notable_events
 from helpers.statshelper import sentry_trace, get_sm5_team_score_graph_data, \
     millis_to_time
 from shared import app
-from utils import is_admin, render_cached_template
+from utils import render_cached_template
 
 
 async def precache_rule() -> Tuple[List, List]:
@@ -95,8 +95,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team1=players_matchmake_team1,
             players_matchmake_team2=players_matchmake_team2,
             lives_over_time=full_stats.get_lives_over_time_team_average_line_chart(),
-            notable_events=notable_events,
-            is_admin=is_admin(request)
+            notable_events=notable_events
         )
     elif type == "laserball":
         game = await LaserballGame.filter(id=id).prefetch_related("entity_starts", "entity_ends").first()
@@ -147,7 +146,6 @@ async def game_index(request: Request, type: str, id: int) -> str:
             players_matchmake_team2=players_matchmake_team2,
             team1_score=await game.get_team_score(teams[0].enum),
             team2_score=await game.get_team_score(teams[1].enum),
-            is_admin=is_admin(request)
         )
     else:
         raise exceptions.BadRequest("Invalid game type")
