@@ -1,4 +1,4 @@
-from sanic import Request
+from sanic import Request, response
 from sanic.log import logger
 
 from db.sm5 import SM5Game
@@ -11,8 +11,6 @@ from utils import admin_only
 @app.post("/admin/audit_ranked_status/<type:str>")
 @admin_only
 async def audit_ranked_status(request: Request, type: str) -> str:
-    response = await request.respond(content_type="text/html")
-
     logger.info(f"Starting ranked status audit for type: {type}")
 
     async def task():

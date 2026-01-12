@@ -2,6 +2,7 @@ import asyncio
 import time
 from typing import Dict, Any, Tuple, Union, Callable, List, Optional, Awaitable
 import urllib.parse
+from sanic import Sanic
 
 from sanic.log import logger
 from sanic.request import Request
@@ -74,6 +75,7 @@ def flush_cache(flush_queryset: bool = True, flush_function: bool = True) -> Non
         queryset_cache.clear()
     if flush_function:
         function_cache.clear()
+        Sanic.get_app("laserforce_ranking").add_task(precache_all_functions(), name="Precache Functions After Flush")
     logger.info("Cache flushed")
 
 

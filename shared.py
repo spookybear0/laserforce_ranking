@@ -27,4 +27,4 @@ if config["sentry_dsn"] is not None and config["sentry_dsn"] != "" \
 else:
     logger.info("Sentry DSN or environment not set, Sentry will not be initialized.")
 
-app = Sanic.get_app("laserforce_rankings")
+app = Sanic.get_app("laserforce_ranking")

@@ -19,7 +19,7 @@ from sanic_ext import openapi
 
 # we need to set up our app before we import anything else
 
-app = Sanic("laserforce_rankings")
+app = Sanic("laserforce_ranking")
 
 app.ext.openapi.describe(
     "Laserforce Rankings API",

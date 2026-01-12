@@ -60,7 +60,7 @@ async def precache_game(type: str, id: int) -> None:
     logger.debug(f"Precached game {type} {id}")
 
 
-async def parse_sm5_game(file_location: str) -> SM5Game:
+async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
     file = open(file_location, "r", encoding="utf-16")
     logger.info(f"Parsing {file_location}...")
 
@@ -130,6 +130,12 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
                     if file_location == "sm5_tdf/" + game.tdf_name:
                         logger.warning(f"Game {game.id} already exists, skipping")
                         return game
+                    
+                if mission_type != 5:
+                    # only parse sm5 games (mission type 5)
+
+                    logger.warning(f"Game at {file_location} is not an SM5 game (mission type {mission_type}), skipping")
+                    return None
 
             case "2":  # team info
                 sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3],
@@ -453,7 +459,7 @@ async def parse_sm5_game(file_location: str) -> SM5Game:
     return game
 
 
-async def parse_laserball_game(file_location: str) -> LaserballGame:
+async def parse_laserball_game(file_location: str) -> Optional[LaserballGame]:
     file = open(file_location, "r", encoding="utf-16")
     logger.info(f"Parsing {file_location}...")
 
@@ -520,6 +526,12 @@ async def parse_laserball_game(file_location: str) -> LaserballGame:
                 if game := await LaserballGame.filter(start_time=start_time, arena=arena).first():
                     logger.warning(f"Game {game.id} already exists, skipping")
                     return game
+                
+                if mission_type != 28:
+                    # only parse laserball games (mission type 28)
+
+                    logger.warning(f"Game at {file_location} is not a Laserball game (mission type {mission_type}), skipping")
+                    return None
 
             case "2":  # team info
                 sentry_sdk.set_context("team_info", {"index": data[1], "name": data[2], "color_enum": data[3],

@@ -195,7 +195,7 @@ class Scores(Model):
 class EntityEnds(Model):
     time = fields.IntField()  # time in milliseconds
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
-    type = fields.IntField()  # don't know what enum this is
+    type = fields.IntField()  # don't know what enum this is (1=ended_early, 2=normal, 4=died)
     score = fields.IntField()
     current_rating_mu = fields.FloatField(null=True)  # only for players, only for ranked games
     current_rating_sigma = fields.FloatField(null=True)  # only for players, only for ranked games

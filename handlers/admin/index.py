@@ -68,6 +68,6 @@ async def admin_set_banner(request: Request) -> str:
     request.app.ctx.banner["text"] = request.json.get("text") or None
     request.app.ctx.banner["type"] = request.json.get("type") or None
 
-    flush_cache()
+    flush_cache(flush_queryset=False)
 
     return response.json({"status": "ok"})
