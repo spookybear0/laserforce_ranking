@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}SM5 game on {{ game.start_time.strftime("%A, %B %d at %I:%M %p") }}{% endblock %}
-
+{% block title %}SM5 Game #{{ game.id }}{% endblock %}
+{% block meta_description %}Detailed statistics and information for the SM5 game that took place on {{ game.start_time.strftime("%A, %B %d at %I:%M %p") }}.{% endblock %}
 
 {% block html_head %}
 
 <link rel="stylesheet" href="/assets/css/game/sm5.css">
+<meta name="robots" content="noindex, follow">
 
 <script>
     function onReady() {

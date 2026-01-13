@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Laserball game on {{ game.start_time.strftime("%A, %B %d at %I:%M %p")}}{% endblock %}
-
+{% block title %}Laserball Game #{{ game.id }}{% endblock %}
+{% block meta_description %}Detailed statistics and information for the Laserball game played on {{ game.start_time.strftime("%A, %B %d at %I:%M %p")}}.{% endblock %}
 
 {% block html_head %}
 
 <link rel="stylesheet" href="/assets/css/game/laserball.css">
+<meta name="robots" content="noindex, follow">
 
 <script>
     function compareValues(a, b) {

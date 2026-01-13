@@ -7,16 +7,18 @@
 
     <script src="/assets/js/rfid.js"></script>
 
-    <title>Laserforce Ranking Panel - {% block title %}{% endblock %}</title>
+    <title>{{ self.title() }} - Laserforce Ranking Panel</title>
 
-    <meta name="title" content="Laserforce Ranking Panel - {{ self.title() }}">
+    <meta name="title" content="{{ self.title() }} - Laserforce Ranking Panel">
     <meta name="description" content="Laserforce Ranking for Invasion Laser Tag SM5 and Laserball.">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://laserforce.spoo.uk/">
-    <meta property="og:title" content="Laserforce Ranking Panel - {{ self.title() }}">
+    <meta property="og:title" content="{{ self.title() }} - Laserforce Ranking Panel">
     <meta property="og:description" content="Laserforce Ranking for Invasion Laser Tag SM5 and Laserball.">
     <meta property="og:image" content="">
+
+    <meta name="robots" content="noindex">
 
     <script>
         function toggleNav() {

@@ -11,7 +11,7 @@ _BATCH_SIZE = 20
 
 @app.post("/admin/migrate_games")
 @admin_only
-async def migrate_games(request: Request) -> str:
+async def admin_migrate_games(request: Request) -> str:
     response = await request.respond(content_type="text/html")
 
     updated_games_count = 0

@@ -1,8 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Games{% endblock %}
+{% block meta_description %}List of recent SM5 and Laserball games{% endblock %}
 
 {% block html_head %}
 <link rel="stylesheet" href="/assets/css/game/games.css">
+
+
+{% if page > 0 %}
+<meta name="robots" content="noindex, follow">
+<link rel="prev" href="/games?page={{ page-1 }}&mode={{ mode }}">
+{% else %}
+<meta name="robots" content="index, follow">
+{% endif %}
+
+<link rel="next" href="/games?page={{ page+1 }}&mode={{ mode }}">
 
 <script>
     sort = {{sort}};

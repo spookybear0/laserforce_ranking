@@ -1,8 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Viewing {{ player.codename }}{% endblock %}
+{% block title %}{{ player.codename }}{% endblock %}
+{% block meta_description %}Player profile page for {{ player.codename }} including recent games and statistics.{% endblock %}
 
 {% block html_head %}
 <link rel="stylesheet" href="/assets/css/player/player.css">
+<link rel="canonical" href="https://www.iplaylaserforce.com/player/{{ player.codename }}">
+
+{% if sm5page > 0 or lbpage > 0 %}
+<meta name="robots" content="noindex, follow">
+{% else %}
+<meta name="robots" content="index, follow">
+{% endif %}
+
 {% endblock %}
 
 {% block content %}

@@ -114,9 +114,6 @@ dmypy.json
 .pyre/
 
 
-
-
-
 config.json
 sm5_tdf/*
 laserball_tdf/*
@@ -128,6 +125,8 @@ transfer.py
 *.sqlite3-shm
 *.sqlite3-wal
 *.csv
+
+sitemap.xml
 
 # tailwind
 

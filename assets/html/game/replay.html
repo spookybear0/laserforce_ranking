@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Replay{% endblock %}
-
+{% block title %}Replay for {% if game_type == "sm5" %}SM5{% else %}{{game_type|capitalize}}{% endif %} Game #{{ game_id }}{% endblock %}
+{% block meta_description %}Replay for {% if game_type == "sm5" %}SM5{% else %}{{game_type|capitalize}}{% endif %} Game #{{ game_id }} on {{ game.start_time.strftime("%A, %B %d at %I:%M %p") }}.{% endblock %}
 
 {% block html_head %}
 
 <link rel="stylesheet" href="/assets/css/game/replay.css">
+<meta name="robots" content="noindex, follow">
 {% endblock %}
 
 {% block content %}

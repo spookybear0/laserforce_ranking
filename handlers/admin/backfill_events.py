@@ -11,7 +11,7 @@ _BATCH_SIZE = 10000
 
 @app.post("/admin/backfill_events")
 @admin_only
-async def backfill_events(request: Request) -> str:
+async def admin_backfill_events(request: Request) -> str:
     response = await request.respond(content_type="text/html")
 
     updated_event_count = 0

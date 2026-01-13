@@ -12,7 +12,6 @@ from sanic_sessions import Session, AIORedisSessionInterface, InMemorySessionInt
 from config import config
 #from sanic_cors import CORS
 import aioredis
-from tailwind import generate_tailwind_css
 from sanic.log import logger
 from handlers.api import api_bp
 from sanic_ext import openapi
@@ -115,7 +114,9 @@ async def setup_app(app, loop) -> None:
         logger.info("Not using cache, --debug argument detected")
 
     # generate css needed for the site
+    from utils import generate_tailwind_css, generate_sitemap
     generate_tailwind_css()
+    await generate_sitemap("https://laserforce.spoo.uk/")
 
 
 async def main() -> None:
@@ -130,7 +131,9 @@ async def main() -> None:
     )
 
     # generate css needed for the site
+    from utils import generate_tailwind_css, generate_sitemap
     generate_tailwind_css()
+    await generate_sitemap("http://localhost:8000/")
 
     # no cache on dev server
 
@@ -162,7 +165,7 @@ app.static("assets", "assets", name="assets")
 
 
 def filter(record):
-    # don't allow anything with "Dispatching singal" or "Sanic-CORS"
+    # don't allow anything with "Dispatching singal" or "Sanic-CORS" to clean up the logs
     if "Dispatching signal" in record.getMessage() or "Sanic-CORS" in record.getMessage() or "no attribute '_cors'" in record.getMessage():
         return False
     return True

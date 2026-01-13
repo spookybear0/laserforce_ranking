@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Players{% endblock %}
+{% block meta_description %}Leaderboard and list of players{% endblock %}
 
 {% block html_head %}
 <link rel="stylesheet" href="/assets/css/player/players.css">
+{% if page > 0 %}
+<link rel="prev" href="/players?page={{ page-1 }}">
+<meta name="robots" content="noindex, follow">
+{% else %}
+<meta name="robots" content="index, follow">
+{% endif %}
+
+<link rel="next" href="/players?page={{ page+1 }}">
 
 <script>
     sort = {{sort}};

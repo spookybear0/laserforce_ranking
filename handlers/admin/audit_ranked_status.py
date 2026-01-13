@@ -10,7 +10,7 @@ from utils import admin_only
 
 @app.post("/admin/audit_ranked_status/<type:str>")
 @admin_only
-async def audit_ranked_status(request: Request, type: str) -> str:
+async def admin_audit_ranked_status(request: Request, type: str) -> str:
     logger.info(f"Starting ranked status audit for type: {type}")
 
     async def task():
