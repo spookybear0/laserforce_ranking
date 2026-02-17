@@ -348,3 +348,12 @@ class LineChartData:
     color: str
     data: List[int]
     borderWidth: int = 3
+
+
+ROLES = [
+    str(role) for role in IntRole if role != IntRole.OTHER
+]
+
+ROLE_MAP = {
+    str(role): role for role in IntRole if role != IntRole.OTHER
+}

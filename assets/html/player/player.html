@@ -12,6 +12,67 @@
 <meta name="robots" content="index, follow">
 {% endif %}
 
+<style>
+    .filter-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        justify-content: center;
+        height: 50px;
+    }
+
+    .filter-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: white;
+        font-size: 24px;
+        margin-right: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .filter-toggle:hover {
+        transform: scale(1.1);
+    }
+
+    .role-filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow: hidden;
+        max-width: 0;
+        opacity: 0;
+        transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    }
+
+    .role-filters.expanded {
+        max-width: 400px;
+        opacity: 1;
+    }
+
+    .role-filter-btn {
+        background: none;
+        border: 2px solid transparent;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+        opacity: 0.5; /* Dimmed by default (off state) */
+        transition: opacity 0.2s, border-color 0.2s;
+        flex-shrink: 0;
+    }
+
+    .role-filter-btn.active {
+        opacity: 1; /* Fully visible when active */
+        border-color: #2fa4e7;
+    }
+
+    .role-filter-btn img {
+        width: 30px;
+        height: 30px;
+        display: block;
+    }
+</style>
+
 {% endblock %}
 
 {% block content %}
@@ -35,6 +96,22 @@
             <div class="recent_games">
                 {% if recent_games_sm5 %}
                 <h2 style="text-align: center;">Recent SM5 Games</h2>
+
+                <div class="filter-container">
+                    <button class="filter-toggle" onclick="toggleFilters()" title="Filter by Role">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <div class="role-filters" id="roleFilters">
+                        {% for role in role_names %}
+                        <button class="role-filter-btn {% if role in selected_roles %}active{% endif %}"
+                                onclick="toggleRole('{{ role }}')"
+                                title="{{ role }}">
+                            <img src="/assets/sm5/roles/{{ role|lower }}.png" alt="{{ role }}">
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <table>
                     <tr>
                         <th>Game</th>
@@ -245,6 +322,38 @@
 </body>
 
 <script>
+    // Role filtering logic
+    let selectedRoles = {{ selected_roles|tojson }};
+
+    function toggleFilters() {
+        const filters = document.getElementById('roleFilters');
+        filters.classList.toggle('expanded');
+    }
+
+    function toggleRole(role) {
+        const index = selectedRoles.indexOf(role);
+        if (index > -1) {
+            selectedRoles.splice(index, 1);
+        } else {
+            selectedRoles.push(role);
+        }
+
+        // Reload page with new filters
+        const url = new URL(window.location.href);
+        url.searchParams.delete('role');
+        selectedRoles.forEach(r => url.searchParams.append('role', r));
+        window.location.href = url.toString();
+    }
+
+    // Initialize filter state
+    document.addEventListener('DOMContentLoaded', () => {
+        const filters = document.getElementById('roleFilters');
+        // If any filters are active (not all roles selected), expand the filter bar
+        if (selectedRoles.length < {{ role_names|length }}) {
+            filters.classList.add('expanded');
+        }
+    });
+
     Chart.defaults.color = "#FFFFFF";
 
     new Chart("sm5_teams", {
