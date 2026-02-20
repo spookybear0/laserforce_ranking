@@ -1,15 +1,15 @@
 from typing import Union, Optional, List, Tuple
 from urllib.parse import unquote
-from tortoise.expressions import F
 
-from sanic import Request, response, exceptions
+from sanic import Request, exceptions
 from sanic.log import logger
+from tortoise.expressions import F
 
 from db.game import EntityEnds, EntityStarts
 from db.laserball import LaserballGame, LaserballStats
 from db.player import Player
 from db.sm5 import SM5Game, SM5Stats
-from db.types import GameType, Team, Role
+from db.types import GameType, Team, Role, ROLES, ROLE_MAP
 from helpers.cachehelper import cache_template, precache_template
 from helpers.laserballhelper import get_laserball_rating_over_time
 from helpers.sm5helper import get_sm5_rating_over_time
@@ -19,13 +19,6 @@ from shared import app
 from utils import render_cached_template
 
 _GAMES_PER_PAGE = 5
-_ROLES = [
-    "Commander",
-    "Heavy",
-    "Scout",
-    "Ammo",
-    "Medic",
-]
 
 
 async def get_entity_start(game, player) -> Optional[EntityStarts]:
@@ -61,7 +54,7 @@ def get_role_labels_from_medians(median_role_score: list[int], games_per_role: O
             continue
         else:
             games = games_per_role[i] if games_per_role else None
-            labels.append(_role_label(_ROLES[i], games))
+            labels.append(_role_label(ROLES[i], games))
 
     return labels
 
@@ -71,12 +64,14 @@ def get_games_per_role_filtered(games_per_role: list[int]) -> list:
         game_count for game_count in games_per_role if game_count > 0
     ]
 
+
 async def precache_rule() -> Tuple[List, List]:
     arglist = []
     kwarglist = []
 
     # cache top 25 sm5 players
-    top_sm5_players = await Player.all().limit(25).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by("-sm5_ord")
+    top_sm5_players = await Player.all().limit(25).annotate(sm5_ord=F("sm5_mu") - 3 * F("sm5_sigma")).order_by(
+        "-sm5_ord")
     for player in top_sm5_players:
         arglist.append([])
         kwarglist.append({
@@ -122,15 +117,28 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
 
     logger.debug("Loading recent games")
 
-    recent_games_sm5 = await SM5Game.filter(entity_starts__entity_id=player.entity_id).order_by("-start_time").limit(
-        5).offset(_GAMES_PER_PAGE * sm5page)
+    # Filter roles.
+    selected_role_strings = []
+    if "role" in request.args:
+        selected_role_strings = request.args.getlist("role")
+    else:
+        selected_role_strings = ROLES
+
+    selected_roles_enum = [ROLE_MAP[r] for r in selected_role_strings if r in ROLE_MAP]
+
+    recent_games_sm5 = await SM5Game.filter(
+        entity_starts__entity_id=player.entity_id,
+        entity_starts__role__in=selected_roles_enum
+    ).order_by("-start_time").limit(5).offset(_GAMES_PER_PAGE * sm5page)
+
     recent_games_laserball = await LaserballGame.filter(entity_starts__entity_id=player.entity_id).order_by(
         "-start_time").limit(5).offset(_GAMES_PER_PAGE * lbpage)
 
     median_role_score = await get_median_role_score(player)
     per_role_game_count_ranked = await get_per_role_game_count(player, ranked_only=True)
     per_role_game_count_all = await get_per_role_game_count(player, ranked_only=False)
-    per_role_game_count_unranked = [all_games_played - per_role_game_count_ranked[i] for i, all_games_played in enumerate(per_role_game_count_all)]
+    per_role_game_count_unranked = [all_games_played - per_role_game_count_ranked[i] for i, all_games_played in
+                                    enumerate(per_role_game_count_all)]
 
     logger.debug("Loading team rate pies")
 
@@ -147,12 +155,12 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
     blue_wins_laserball = await player.get_wins_as_team(Team.BLUE, GameType.LASERBALL)
 
     sm5_win_percent = (red_wins_sm5 + green_wins_sm5) / (red_teams_sm5 + green_teams_sm5) if (
-                                                                                                 red_teams_sm5 + green_teams_sm5) != 0 else 0
+                                                                                                     red_teams_sm5 + green_teams_sm5) != 0 else 0
     laserball_win_percent = (red_wins_laserball + blue_wins_laserball) / (
-        red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
+            red_teams_laserball + blue_teams_laserball) if (red_teams_laserball + blue_teams_laserball) != 0 else 0
     win_percent = (red_wins_sm5 + green_wins_sm5 + red_wins_laserball + blue_wins_laserball) / (
-        red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
-                                                                                             red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
+            red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) if (
+                                                                                                     red_teams_sm5 + green_teams_sm5 + red_teams_laserball + blue_teams_laserball) != 0 else 0
 
     logger.debug("Loading stat chart")
 
@@ -229,7 +237,7 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         per_role_game_count_ranked=per_role_game_count_ranked,
         per_role_game_count_all=per_role_game_count_all,
         per_role_game_count_unranked=per_role_game_count_unranked,
-        role_names=_ROLES,
+        role_names=ROLES,
         # total number of roles that aren't 0
         role_plot_total_roles=len([x for x in median_role_score if x != 0]),
         # stat chart
@@ -254,4 +262,6 @@ async def player_get(request: Request, id: Union[int, str]) -> str:
         sm5_rating_over_time_data=sm5_rating_over_time_data,
         laserball_rating_over_time_labels=laserball_rating_over_time_labels,
         laserball_rating_over_time_data=laserball_rating_over_time_data,
+        # selected roles
+        selected_roles=selected_role_strings,
     )
