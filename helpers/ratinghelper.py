@@ -684,10 +684,7 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
 
     # TODO: synergy
 
-    def pair_synergy(p1, p2):
-        """
-        Placeholder.
-        """
+    """def pair_synergy(p1, p2):
         return synergy_model.predict(p1.id, p2.id)
 
     def team_synergy(team):
@@ -697,7 +694,7 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
         for p1, p2 in itertools.combinations(team, 2):
             score += pair_synergy(p1, p2)
 
-        return score
+        return score"""
 
     # role matchups
 
@@ -762,9 +759,9 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
                     - team_role_strength(t2, roles[teams.index(t2)])
                 )
 
-        if USE_SYNERGY:
-            for team in teams:
-                synergy_total += team_synergy(team)
+        #if USE_SYNERGY:
+        #    for team in teams:
+        #        synergy_total += team_synergy(team)
 
         score_components = []
 
