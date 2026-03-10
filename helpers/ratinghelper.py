@@ -2,7 +2,7 @@ import itertools
 import math
 import random
 import statistics
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 
 from openskill.models import PlackettLuceRating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
@@ -848,7 +848,7 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
         logger.warning("Advanced matchmaking reached maximum attempts, returning best found solution")
         return teams, roles
     
-    win_chances = get_win_chances(teams, mode=mode)
+    win_chances = get_win_chances(teams, mode=mode, roles=roles)
 
     if any(abs(win[0] - 0.5) > 0.1 if win != 0 else 0 for win in win_chances):
         logger.info(f"Win chances for teams are imbalanced: {win_chances}, redoing matchmaking (attempt {_attempts}/3)")
@@ -857,7 +857,7 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
     return teams, roles
 
 
-def get_win_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
+def get_win_chance(team1: List[Player], team2: List[Player], mode: GameType = GameType.SM5, roles: Optional[List[List[IntRole]]]=None) -> float:
     """
     Gets win chance for two teams
     """
@@ -865,15 +865,20 @@ def get_win_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
     logger.debug(f"Getting win chance for {team1} vs {team2}")
 
     mode = mode.value
-    # get rating object for mode
-    team1 = list(map(lambda x: getattr(x, f"{mode}_rating"), team1))
-    team2 = list(map(lambda x: getattr(x, f"{mode}_rating"), team2))
+
+    if roles:
+        team1 = list(map(lambda p, r: p.get_role_rating(r), team1, roles[0]))
+        team2 = list(map(lambda p, r: p.get_role_rating(r), team2, roles[1]))
+    else:
+        # get rating object for mode
+        team1 = list(map(lambda p: getattr(p, f"{mode}_rating"), team1))
+        team2 = list(map(lambda p: getattr(p, f"{mode}_rating"), team2))
 
     # predict
     return model.predict_win([team1, team2])
 
 
-def get_win_chances(all_teams: List[List[Player]], mode: GameType = GameType.SM5) -> List[float]:
+def get_win_chances(all_teams: List[List[Player]], mode: GameType = GameType.SM5, roles: Optional[List[List[IntRole]]]=None) -> List[float]:
     win_chances = []
 
     for i in range(len(all_teams)):
@@ -883,7 +888,7 @@ def get_win_chances(all_teams: List[List[Player]], mode: GameType = GameType.SM5
 
             logger.info(f"Calculating win chance for teams {i + 1} and {j + 1}")
 
-            win_chances.append(get_win_chance(first_team, second_team, mode))
+            win_chances.append(get_win_chance(first_team, second_team, mode, roles[i:j+1] if roles else None))
 
     if len(all_teams) <= 3:
         win_chances.append(0)

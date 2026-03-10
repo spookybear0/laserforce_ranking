@@ -1,5 +1,6 @@
 
 const roleImgs = ["assets/sm5/roles/commander.png", "assets/sm5/roles/heavy.png", "assets/sm5/roles/scout.png", "assets/sm5/roles/ammo.png", "assets/sm5/roles/medic.png"];
+const roleNames = ["Commander", "Heavy", "Scout", "Ammo", "Medic"];
 
 function addTeam() {
     if (numTeams < 4) {
@@ -264,6 +265,16 @@ function updateWinChances() {
     let xhr = new XMLHttpRequest();
     let url = "/api/internal/win_chances/" + currentMode;
     let params = "team1=" + team1 + "&team2=" + team2 + "&team3=" + team3 + "&team4=" + team4;
+
+    // if using roles, also send the roles to the api
+
+    if (matchmakeRoles &&
+        currentRoles &&
+        currentRoles.length == numTeams &&
+        currentRoles.every(roleList => roleList.length > 0) ) {
+        params += "&team1_roles=" + JSON.stringify(currentRoles[0]) + "&team2_roles=" + JSON.stringify(currentRoles[1]) + "&team3_roles=" + JSON.stringify(currentRoles[2]) + "&team4_roles=" + JSON.stringify(currentRoles[3]);
+    }
+
     xhr.open("GET", url + "?" + params, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function() {
@@ -376,6 +387,9 @@ function matchmakePlayers() {
 
             let matchmadeTeams = jsonData["teams"];
             let matchmadeRoles = jsonData["roles"];
+
+            currentTeams = matchmadeTeams;
+            currentRoles = matchmadeRoles;
 
             let className = "role-cell-hidden";
             if (matchmakeRoles) {

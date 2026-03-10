@@ -3,7 +3,7 @@ from sanic import response
 from sanic.log import logger
 
 from db.player import Player
-from db.types import GameType
+from db.types import GameType, IntRole
 from helpers import ratinghelper
 from helpers.statshelper import sentry_trace
 from handlers.api import api_bp
@@ -28,6 +28,19 @@ async def api_win_chances(request: Request, type_: str) -> str:
     team2 = request.args.get("team2").strip('][').replace('"', "").split(', ')
     team3 = request.args.get("team3").strip('][').replace('"', "").split(', ')
     team4 = request.args.get("team4").strip('][').replace('"', "").split(', ')
+
+    # team roles if they have them (for matchmake page)
+
+    team1_roles, team2_roles, team3_roles, team4_roles = None, None, None, None
+
+    if request.args.get("team1_roles") not in ["undefined", None]:
+        team1_roles = [IntRole(int(x)) for x in request.args.get("team1_roles").strip('][').replace("'", "").split(',')]
+    if request.args.get("team2_roles") not in ["undefined", None]:
+        team2_roles = [IntRole(int(x)) for x in request.args.get("team2_roles").strip('][').replace("'", "").split(',')]
+    if request.args.get("team3_roles") not in ["undefined", None]:
+        team3_roles = [IntRole(int(x)) for x in request.args.get("team3_roles").strip('][').replace("'", "").split(',')]
+    if request.args.get("team4_roles") not in ["undefined", None]:
+        team4_roles = [IntRole(int(x)) for x in request.args.get("team4_roles").strip('][').replace("'", "").split(',')]
 
     if not team1 or team1[0] == "":
         team1 = []
@@ -87,7 +100,9 @@ async def api_win_chances(request: Request, type_: str) -> str:
         all_teams.append(team4_players)
 
     # get win chances with ratinghelper.get_win_chance for 2 teams at a time
+
+    roles = [team1_roles, team2_roles, team3_roles, team4_roles][:len(all_teams)] if any([team1_roles, team2_roles, team3_roles, team4_roles]) else None
         
-    win_chances = ratinghelper.get_win_chances(all_teams, mode)
+    win_chances = ratinghelper.get_win_chances(all_teams, mode, roles)
 
     return response.json(win_chances)
