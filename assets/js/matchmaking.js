@@ -54,6 +54,48 @@ function sortTable(table) {
     }
 }
 
+function sortTeamTable(table) {
+    // sort by role if matchmakeRoles is true, otherwise sort by name
+    // for matchmakeRoles, the roles are commander, heavy, scout, ammo, medic in that order, so the first td is the role and the second td is the name
+    // in the form <img src="assets/sm5/roles/ammo.png" width="25" height="25">
+
+    let rows, switching, i, x, y, shouldSwitch;
+
+    switching = true;
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[0];
+            y = rows[i + 1].getElementsByTagName("TD")[0];
+
+            if (matchmakeRoles) {
+                const roleOrder = ["commander", "heavy", "scout", "ammo", "medic"];
+                const xRole = roleOrder.findIndex(role => x.innerHTML.includes(role));
+                const yRole = roleOrder.findIndex(role => y.innerHTML.includes(role));
+
+                if (xRole > yRole) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            else {  x = rows[i].getElementsByTagName("TD")[1];
+                y = rows[i + 1].getElementsByTagName("TD")[1];
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+        }
+    }
+}
+
 function dragEnd(event, target_=undefined) {
     // find the team div that the player was dropped into (which team div is the closest to the mouse position)
     let droppedDiv = document.elementFromPoint(event.clientX, event.clientY);
@@ -399,6 +441,13 @@ function matchmakePlayers() {
             }
 
             updateWinChances();
+
+            // sort team tables by role (commander, heavy, scout, ammo, medic)
+
+            sortTeamTable(team1Table);
+            sortTeamTable(team2Table);
+            sortTeamTable(team3Table);
+            sortTeamTable(team4Table);
         }
     }
     xhr.send(params);

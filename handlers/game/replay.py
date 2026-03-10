@@ -12,7 +12,17 @@ from db.laserball import LaserballGame
 @sentry_trace
 async def game_replay(request: Request, type: str, id: int) -> str:
     if type == "sm5":
-        return await render_template(request, "game/replay.html", game_type=type, game_id=id, game=await SM5Game.filter(id=id).first())
+        game = await SM5Game.filter(id=id).first()
+
+        if not game:
+            raise exceptions.NotFound("Game not found")
+
+        return await render_template(request, "game/replay.html", game_type=type, game_id=id, game=game)
     elif type in "laserball":
-        return await render_template(request, "game/replay.html", game_type=type, game_id=id, game=await LaserballGame.filter(id=id).first())
+        game = await LaserballGame.filter(id=id).first()
+
+        if not game:
+            raise exceptions.NotFound("Game not found")
+
+        return await render_template(request, "game/replay.html", game_type=type, game_id=id, game=game)
     raise exceptions.BadRequest("Invalid game type")

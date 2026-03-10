@@ -94,7 +94,7 @@ async def api_matchmake(request: Request, type_: str) -> str:
     matchmade_roles = None
 
     if matchmake_roles:
-        matchmade_teams, matchmade_roles = ratinghelper.matchmake_teams_with_roles(all_players, num_teams, mode)
+        matchmade_teams, matchmade_roles = ratinghelper.matchmake_advanced(all_players, num_teams, mode)
     else:
         matchmade_teams = ratinghelper.matchmake_teams(all_players, num_teams, mode)
 
