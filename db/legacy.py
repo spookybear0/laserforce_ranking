@@ -4,7 +4,7 @@ from db.types import Team, Role
 
 
 class LegacySM5Game(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     winner = fields.CharEnumField(Team)
     players = fields.ManyToManyField("models.LegacySM5GamePlayer")
     timestamp = fields.DatetimeField(auto_now=True)
@@ -28,7 +28,7 @@ class LegacySM5GamePlayer(Model):
 
 
 class LegacyLaserballGame(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     winner = fields.CharEnumField(Team)
     players = fields.ManyToManyField("models.LegacyLaserballGamePlayer")
     timestamp = fields.DatetimeField(auto_now=True)

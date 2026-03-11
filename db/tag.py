@@ -7,7 +7,7 @@ class TagType(Enum):
 
 # rfid tag (125khz/13.56mhz) storing id (ex: 2831191 or 47:0f:51:b4)
 class Tag(Model):
-    id = fields.CharField(max_length=64, unique=True, pk=True)
+    id = fields.CharField(max_length=64, unique=True, primary_key=True) # tag id (ex: 2831191 or 47:0f:51:b4)
     type = fields.CharEnumField(TagType) # type of tag (LF/HF)
     player = fields.ForeignKeyField("models.Player", related_name="tags", on_delete=fields.CASCADE)
 
