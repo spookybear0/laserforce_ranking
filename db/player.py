@@ -30,7 +30,7 @@ def setup_properties():
     Player.__getattribute__ = hook
 
 class Player(Model):
-    id = fields.IntField(primary_key=True)
+    id = fields.IntField(pk=True)
     player_id = fields.CharField(20)
     codename = fields.CharField(255)
     entity_id = fields.CharField(50, default="")

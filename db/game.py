@@ -56,7 +56,7 @@ class Teams(Model):
 
 
 class EntityStarts(Model):
-    id = fields.IntField(primary_key=True)
+    id = fields.IntField(pk=True)
     time = fields.IntField()  # time in milliseconds
     entity_id = fields.CharField(50)  # id of the entity
     type = fields.CharField(50)  # can be [player, standard-target, maybe more]
@@ -355,7 +355,7 @@ class PlayerInfo:
 # abstract class for game
 
 class Game(Model):
-    id = fields.IntField(primary_key=True)
+    id = fields.IntField(pk=True)
     winner = fields.CharEnumField(Team)
     winner_color = fields.CharField(20)
     tdf_name = fields.CharField(100)
