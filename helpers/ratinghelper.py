@@ -312,9 +312,13 @@ async def update_sm5_ratings(game: SM5Game) -> bool:
     # need to update current rating and for each entity end object
 
     for entity_end in await game.entity_ends.filter(entity__type="player"):
-        player = await Player.filter(entity_id=(await entity_end.entity).entity_id).first()
+        entity_start = await entity_end.entity
+        player = await Player.filter(entity_id=entity_start.entity_id).first()
+
         entity_end.current_rating_mu = player.sm5_mu
         entity_end.current_rating_sigma = player.sm5_sigma
+        entity_end.current_role_rating_mu = player.get_role_rating(entity_start.role).mu
+        entity_end.current_role_rating_sigma = player.get_role_rating(entity_start.role).sigma
         await entity_end.save()
 
     return True
@@ -915,53 +919,57 @@ def get_draw_chance(team1, team2, mode: GameType = GameType.SM5) -> float:
 
 
 async def recalculate_sm5_ratings(*, _sample_size: int=99999) -> None:
-    """
-    Recalculates sm5 ratings
+    try:
+        """
+        Recalculates sm5 ratings
 
-    _sample_size is for testing purposes only, it limits the number of games to recalculate
-    """
+        _sample_size is for testing purposes only, it limits the number of games to recalculate
+        """
 
-    # reset sm5 ratings
+        # reset sm5 ratings
 
-    logger.info("Resetting sm5 general ratings")
+        logger.info("Resetting sm5 general ratings")
 
-    await Player.all().update(sm5_mu=MU, sm5_sigma=SIGMA)
+        await Player.all().update(sm5_mu=MU, sm5_sigma=SIGMA)
 
-    # reset per-role ratings
+        # reset per-role ratings
 
-    for role in IntRole:
-        if role == IntRole.OTHER:
-            continue
-        logger.info(f"Resetting {str(role).lower()} ratings")
-        await Player.all().update(**{f"{str(role).lower()}_mu": MU, f"{str(role).lower()}_sigma": SIGMA})
+        for role in IntRole:
+            if role == IntRole.OTHER:
+                continue
+            logger.info(f"Resetting {str(role).lower()} ratings")
+            await Player.all().update(**{f"{str(role).lower()}_mu": MU, f"{str(role).lower()}_sigma": SIGMA})
 
-    # get all games and recalculate ratings
+        # get all games and recalculate ratings
 
-    sm5_games = await SM5Game.all().order_by("start_time").limit(_sample_size)
+        sm5_games = await SM5Game.all().order_by("start_time").limit(_sample_size)
 
-    for game in sm5_games:
-        if game.ranked:
-            logger.info(f"Updating player ranking for game {game.id}")
+        for game in sm5_games:
+            if game.ranked:
+                logger.info(f"Updating player ranking for game {game.id}")
 
-            if await update_sm5_ratings(game):
-                logger.info(f"Updated player rankings for game {game.id}")
-            else:
-                logger.error(f"Failed to update player rankings for game {game.id}")
-        else:  # still need to add current_rating and previous_rating
-            for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
-                entity_id = (await entity_end.entity).entity_id
+                if await update_sm5_ratings(game):
+                    logger.info(f"Updated player rankings for game {game.id}")
+                else:
+                    logger.error(f"Failed to update player rankings for game {game.id}")
+            else:  # still need to add current_rating and previous_rating
+                for entity_end in await game.entity_ends.filter(entity__type="player", entity__entity_id__startswith="#"):
+                    entity_id = (await entity_end.entity).entity_id
 
-                player = await Player.filter(entity_id=entity_id).first()
+                    player = await Player.filter(entity_id=entity_id).first()
 
-                if not player:
-                    continue
+                    if not player:
+                        continue
 
-                entity_end.previous_rating_mu = player.sm5_mu
-                entity_end.previous_rating_sigma = player.sm5_sigma
-                entity_end.current_rating_mu = player.sm5_mu
-                entity_end.current_rating_sigma = player.sm5_sigma
+                    entity_end.previous_rating_mu = player.sm5_mu
+                    entity_end.previous_rating_sigma = player.sm5_sigma
+                    entity_end.current_rating_mu = player.sm5_mu
+                    entity_end.current_rating_sigma = player.sm5_sigma
 
-                await entity_end.save()
+                    await entity_end.save()
+    except Exception as e:
+        logger.error(f"Error recalculating sm5 ratings: {e}")
+        raise e
 
 
 async def recalculate_laserball_ratings(*, _sample_size: int=99999) -> None:

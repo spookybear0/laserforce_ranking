@@ -431,7 +431,8 @@ async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
             logger.error(f"Failed to update player rankings for game {game.id}")
     else:  # still need to add current_rating and previous_rating
         for entity_end in await game.entity_ends.filter(entity__type="player"):
-            entity_id = (await entity_end.entity).entity_id
+            entity_start = await entity_end.entity
+            entity_id = entity_start.entity_id
             if entity_id.startswith("@"):
                 continue
 
@@ -442,11 +443,21 @@ async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
                 entity_end.previous_rating_sigma = player.sm5_sigma
                 entity_end.current_rating_mu = player.sm5_mu
                 entity_end.current_rating_sigma = player.sm5_sigma
+
+                entity_end.previous_role_rating_mu = player.get_role_rating(entity_start.role).mu
+                entity_end.previous_role_rating_sigma = player.get_role_rating(entity_start.role).sigma
+                entity_end.current_role_rating_mu = player.get_role_rating(entity_start.role).mu
+                entity_end.current_role_rating_sigma = player.get_role_rating(entity_start.role).sigma
             except AttributeError:
                 entity_end.previous_rating_mu = MU
                 entity_end.previous_rating_sigma = SIGMA
                 entity_end.current_rating_mu = MU
                 entity_end.current_rating_sigma = SIGMA
+
+                entity_end.previous_role_rating_mu = MU
+                entity_end.previous_role_rating_sigma = SIGMA
+                entity_end.current_role_rating_mu = MU
+                entity_end.current_role_rating_sigma = SIGMA
 
             await entity_end.save()
 

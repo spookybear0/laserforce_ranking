@@ -197,10 +197,16 @@ class EntityEnds(Model):
     entity = fields.ForeignKeyField("models.EntityStarts", to_field="id")
     type = fields.IntField()  # don't know what enum this is (1=ended_early, 2=normal, 4=died)
     score = fields.IntField()
+
     current_rating_mu = fields.FloatField(null=True)  # only for players, only for ranked games
     current_rating_sigma = fields.FloatField(null=True)  # only for players, only for ranked games
     previous_rating_mu = fields.FloatField(null=True)  # only for players, only for ranked games
     previous_rating_sigma = fields.FloatField(null=True)  # only for players, only for ranked games
+
+    current_role_rating_mu = fields.FloatField(null=True)  # only for players, only for ranked games, only for sm5
+    current_role_rating_sigma = fields.FloatField(null=True)  # only for players, only for ranked games, only for sm5
+    previous_role_rating_mu = fields.FloatField(null=True)  # only for players, only for ranked games, only for sm5
+    previous_role_rating_sigma = fields.FloatField(null=True)  # only for players, only for ranked games, only for sm5
 
     @property
     def current_rating(self) -> Optional[float]:
@@ -239,6 +245,46 @@ class EntityEnds(Model):
             return None
         
         return self.current_rating_sigma - self.previous_rating_sigma
+    
+    # role rating properties (only for sm5)
+
+    @property
+    def current_role_rating(self) -> Optional[float]:
+        """Returns the current role rating (mu - 3 * sigma) after the game ended."""
+        if self.current_role_rating_mu is None or self.current_role_rating_sigma is None:
+            return None
+        return self.current_role_rating_mu - 3 * self.current_role_rating_sigma
+    
+    @property
+    def previous_role_rating(self) -> Optional[float]:
+        """Returns the previous role rating (mu - 3 * sigma) before the game ended."""
+        if self.previous_role_rating_mu is None or self.previous_role_rating_sigma is None:
+            return None
+        return self.previous_role_rating_mu - 3 * self.previous_role_rating_sigma
+    
+    @property
+    def role_rating_difference(self) -> Optional[float]:
+        """Returns the role rating (mu - 3 * sigma) difference after the game ended."""
+        if self.current_role_rating is None or self.previous_role_rating is None:
+            return None
+        
+        return self.current_role_rating - self.previous_role_rating
+    
+    @property
+    def role_rating_difference_mu(self) -> Optional[float]:
+        """Returns the role rating mu difference after the game ended."""
+        if self.current_role_rating_mu is None or self.previous_role_rating_mu is None:
+            return None
+        
+        return self.current_role_rating_mu - self.previous_role_rating_mu
+    
+    @property
+    def role_rating_difference_sigma(self) -> Optional[float]:
+        """Returns the role rating sigma difference after the game ended."""
+        if self.current_role_rating_sigma is None or self.previous_role_rating_sigma is None:
+            return None
+        
+        return self.current_role_rating_sigma - self.previous_role_rating_sigma
 
     async def get_player(self) -> "Player":
         # get the player object from the entity
@@ -259,6 +305,7 @@ class EntityEnds(Model):
         final["entity"] = (await self.entity).entity_id
         final["type"] = self.type
         final["score"] = self.score
+        # general rating
         final["current_rating_mu"] = self.current_rating_mu
         final["current_rating_sigma"] = self.current_rating_sigma
         if self.current_rating_mu and self.current_rating_sigma:
@@ -271,6 +318,19 @@ class EntityEnds(Model):
             final["previous_rating"] = self.previous_rating_mu - 3 * self.previous_rating_sigma
         else:
             final["previous_rating"] = None
+        # role rating
+        final["current_role_rating_mu"] = self.current_role_rating_mu
+        final["current_role_rating_sigma"] = self.current_role_rating_sigma
+        if self.current_role_rating_mu and self.current_role_rating_sigma:
+            final["current_role_rating"] = self.current_role_rating_mu - 3 * self.current_role_rating_sigma
+        else:
+            final["current_role_rating"] = None
+        final["previous_role_rating_mu"] = self.previous_role_rating_mu
+        final["previous_role_rating_sigma"] = self.previous_role_rating_sigma
+        if self.previous_role_rating_mu and self.previous_role_rating_sigma:
+            final["previous_role_rating"] = self.previous_role_rating_mu - 3 * self.previous_role_rating_sigma
+        else:
+            final["previous_role_rating"] = None
 
         return final
 
@@ -335,7 +395,7 @@ class Game(Model):
     # win chance related functions
 
     @cache()
-    async def get_win_chance(self, timeframe: Optional[str] = None) -> List[float]:
+    async def get_win_chance(self, timeframe: Optional[str] = None, consider_roles: bool=True) -> List[float]:
         """
         Calculates the win chance for the game based on the players' ratings.
         The timeframe can be "before", "after", or None.
@@ -344,10 +404,15 @@ class Game(Model):
         "after" will use ratings recorded directly after the game ended, so it will include the game itself in the prediction.
         None will use the current ratings of the players, so it will include all games played by the players up to now.
 
+        consider_roles is only applicable for sm5, and it will use the role ratings instead of the overall ratings if set to True.
+
         Returns the win chance in the format [team1, team2] / [red, green] / [red, blue]
         """
         from helpers.ratinghelper import MU, SIGMA
 
+        # game modes without roles
+        if self.short_type in ["laserball"]:
+            consider_roles = False
 
         async def get_rating(entity_end: EntityEnds) -> Rating:
             """
@@ -363,9 +428,15 @@ class Game(Model):
             else:
                 player = await entity_end.get_player()
                 if timeframe == "before":
-                    return Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma)
+                    if consider_roles and player and hasattr(player, "previous_role_rating_mu"):
+                        return Rating(entity_end.previous_role_rating_mu, entity_end.previous_role_rating_sigma)
+                    else:
+                        return Rating(entity_end.previous_rating_mu, entity_end.previous_rating_sigma)
                 elif timeframe == "after":
-                    return Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma)
+                    if consider_roles and player and hasattr(player, "current_role_rating_mu"):
+                        return Rating(entity_end.current_role_rating_mu, entity_end.current_role_rating_sigma)
+                    else:
+                        return Rating(entity_end.current_rating_mu, entity_end.current_rating_sigma)
                 else:
                     return Rating(
                         getattr(player, f"{self.short_type}_mu", MU),

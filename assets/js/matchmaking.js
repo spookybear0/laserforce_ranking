@@ -145,7 +145,7 @@ function dragEnd(event, target_=undefined) {
         target.remove();
     }
 
-    sortTable(teamTable);
+    sortTeamTable(teamTable);
     updateWinChances();
 
     event.preventDefault();
