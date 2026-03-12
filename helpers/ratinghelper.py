@@ -661,7 +661,7 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
 
     # search settings
 
-    ITERATIONS = 5000
+    ITERATIONS = 2000
     INITIAL_TEMP = 1.0
     COOLING_RATE = 0.999
 
@@ -847,14 +847,14 @@ def matchmake_advanced(players: List[Player], num_teams: int, mode: str = GameTy
 
     _attempts += 1
 
-    # check win chances for the final teams, if >7.5% difference, redo matchmaking up to 3 times
-    if _attempts >= 3:
+    # check win chances for the final teams, if >5% difference, redo matchmaking up to 3 times
+    if _attempts >= 10:
         logger.warning("Advanced matchmaking reached maximum attempts, returning best found solution")
         return teams, roles
     
     win_chances = get_win_chances(teams, mode=mode, roles=roles)
 
-    if any(abs(win[0] - 0.5) > 0.1 if win != 0 else 0 for win in win_chances):
+    if any(abs(win[0] - 0.5) > 0.05 if win != 0 else 0 for win in win_chances):
         logger.info(f"Win chances for teams are imbalanced: {win_chances}, redoing matchmaking (attempt {_attempts}/3)")
         return matchmake_advanced(players, num_teams, mode=mode, _attempts=_attempts)
 
