@@ -66,12 +66,12 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                               sound_stereo_balance=-0.5)], teams=[
             ReplayTeam(name='Fire Team', css_class='fire-team', id='fire_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/commander.png" alt="Commander" width="30" height="30">', 'Indy',
-                       '0', '15', '0', '5', '0', '', ''], row_id='r1', css_class='fire-team'), ReplayPlayer(
+                       '0', '15', '30', '5', '0', '0.00%', '0.00'], row_id='r1', css_class='fire-team'), ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/medic.png" alt="Medic" width="30" height="30">', 'Bumblebee', '0',
-                       '20', '0', '0', '0', '', ''], row_id='r2', css_class='fire-team')]),
+                       '20', '15', '0', '0', '0.00%', '0.00'], row_id='r2', css_class='fire-team')]),
             ReplayTeam(name='Earth Team', css_class='earth-team', id='earth_team', players=[ReplayPlayer(
                 cells=['<img src="/assets/sm5/roles/scout.png" alt="Scout" width="30" height="30">', 'Miles', '0', '15',
-                       '0', '0', '0', '', ''], row_id='r3', css_class='earth-team')])], sounds=[ReplaySound(
+                       '30', '0', '0', '0.00%', '0.00'], row_id='r3', css_class='earth-team')])], sounds=[ReplaySound(
             asset_urls=['/assets/sm5/audio/Start.0.wav', '/assets/sm5/audio/Start.1.wav',
                         '/assets/sm5/audio/Start.2.wav', '/assets/sm5/audio/Start.3.wav'], id=0, priority=2,
             required=True), ReplaySound(asset_urls=['/assets/sm5/audio/Effect/General Quarters.wav'], id=1, priority=1,
@@ -125,7 +125,7 @@ class TestReplaySm5(unittest.IsolatedAsyncioTestCase):
                                                      # 100 pts
                                                      ReplayCellChange(row_id='r3', column=2, new_value='-20'),
                                                      # -20 pts
-                                                     ReplayCellChange(row_id='r1', column=8, new_value=''),  # K/D
+                                                     ReplayCellChange(row_id='r1', column=8, new_value=''),
                                                      ReplayCellChange(row_id='r3', column=8, new_value='0.00')],  # K/D
                                        row_changes=[
                                            ReplayRowChange(row_id='r3', new_css_class='earth-team-down')],
