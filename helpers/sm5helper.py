@@ -848,7 +848,7 @@ async def get_sm5_notable_events(game: SM5Game) -> list[NotableEvent]:
 
                     if events[nuke_check_index].type == EventType.MISSION_END:
                         add_event(nuke_time_ms, f"{nuking_entity.name} tried to nuke but time ran out",
-                                  [nuking_entity, "nuked too late"], nuking_team)
+                                  [nuking_entity.name, "nuked too late"], nuking_team)
                         break
 
                     # Was something done to the commander?
