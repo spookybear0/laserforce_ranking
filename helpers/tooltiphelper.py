@@ -11,6 +11,7 @@ _PLAIN_TOOLTIPS = {
                             "A zero means the rating did not change.",
     "sm5_score": "Final score",
     "sm5_positive_score": "Final score without any reductions (no penalties for getting zapped, missiled, nuked, etc)",
+    "sm5_special_points": "Points from zapping and missiling. Heavy will always have 0 special points",
     "sm5_points_minute": "Number of points per minute of time the player spent in the game",
     "sm5_lives_left": "Number of lives left when the game finished",
     "sm5_alive": "The time the player was alive in the game (if red, the player was eliminated)",

@@ -60,7 +60,7 @@
                                 {% endif %}
                                 <th {{ tooltip("sm5_score") }}><p>Score</p></th>
                                 <th {{ tooltip("sm5_positive_score") }}><p>Positive Score</p></th>
-                                <th {{ tooltip("sm5_points_minute") }}><p>PPM</p></th>
+                                <th {{ tooltip("sm5_special_points") }}><p>Spec</p></th>
                                 <th {{ tooltip("sm5_lives_left") }}><p>Lives Left</p></th>
                                 <th {{ tooltip("sm5_alive") }}><p>Alive</p></th>
                                 <th {{ tooltip("sm5_shots_left") }}><p>Shots Left</p></th>
@@ -97,7 +97,7 @@
                                             <td>{{ player.score }}</td>
                                         {% endif %}
                                         <td><p>{{ player.get_gross_positive_score() }}</p></td>
-                                        <td><p>{{ player.points_per_minute }}</p></td>
+                                        <td><p>{{ player.special_points }}</p></td>
                                         <td><p>{{ player.lives_left }}</p></td>
                                         <td class="scorecard_player_stat" {{ tooltip("sm5_alive") }}>
                                         {% if player.entity_end %}

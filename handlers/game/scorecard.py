@@ -74,6 +74,7 @@ async def scorecard(request: Request, type: str, id: int, entity_end_id: int) ->
 
         main_stats = {
             "Score": player_stats.score,
+            "Special points": player_stats.special_points,
             "Lives left": player_stats.lives_left,
             "Shots left": player_stats.shots_left,
             "Shots fired": player_stats.shots_fired,

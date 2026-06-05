@@ -17,7 +17,7 @@ import math
 
 # The current version we expect in SM5Game.laserrank_version. If it doesn't match, that game should be migrated
 # with the migrate_games action.
-SM5_LASERRANK_VERSION = 3
+SM5_LASERRANK_VERSION = 4
 
 
 class SM5Game(Game):
@@ -171,6 +171,14 @@ class SM5Stats(Model):
     missiled_opponent = fields.IntField()
     missiled_team = fields.IntField()
 
+    # custom addition that's not in the tdf
+    special_points = fields.IntField(null=True)
+
+    async def bases_destroyed(self) -> int:
+        # get last digit of score
+        score: int = await (await self.entity).get_score()
+        return int(str(score)[-1])
+
     async def mvp_points(self) -> float:
         """
         mvp points according to lfstats.com
@@ -178,8 +186,10 @@ class SM5Stats(Model):
         NOTE: this is a function, while LaserballStats.mvp_points is a property
         """
 
-        score: int = await (await self.entity).get_score()
-        game: SM5Game = await SM5Game.filter(entity_starts__id=(await self.entity).id).first()
+        entity = await self.entity
+
+        score: int = await entity.get_score()
+        game: SM5Game = await SM5Game.filter(entity_starts__id=entity.id).first()
 
         total_points = 0
 
@@ -202,7 +212,7 @@ class SM5Stats(Model):
         if mission_end is not None:
             mission_length = mission_end.time
 
-            if await game.get_team_eliminated(SM5_ENEMY_TEAM[(await (await self.entity).team).enum]):
+            if await game.get_team_eliminated(SM5_ENEMY_TEAM[(await entity.team).enum]):
                 total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled
@@ -219,12 +229,12 @@ class SM5Stats(Model):
 
         # get eliminated: -1 point for getting elimated (doesn't apply to medics)
 
-        if self.lives_left <= 0 and (await self.entity).role != IntRole.MEDIC:
+        if self.lives_left <= 0 and entity.role != IntRole.MEDIC:
             total_points -= 1
 
         # commander specific points:
 
-        if (await self.entity).role == IntRole.COMMANDER:
+        if entity.role == IntRole.COMMANDER:
             # missile opponent: 1 point for every missile on an opponent
 
             total_points += self.missiled_opponent
@@ -243,7 +253,7 @@ class SM5Stats(Model):
                 total_points += (score - 10000) / 1000
 
         # heavy specific points:
-        elif (await self.entity).role == IntRole.HEAVY:
+        elif entity.role == IntRole.HEAVY:
             # missiles: 2 points for every missile hit
 
             total_points += self.missiled_opponent * 2
@@ -254,7 +264,7 @@ class SM5Stats(Model):
                 total_points += (score - 7000) / 1000
 
         # scout specific points:
-        elif (await self.entity).role == IntRole.SCOUT:
+        elif entity.role == IntRole.SCOUT:
             # hits vs 3 hit (commander/heavy): .2 points for every hit vs 3 hit
 
             total_points += self.shot_3_hits * .2
@@ -265,7 +275,7 @@ class SM5Stats(Model):
                 total_points += (score - 6000) / 1000
 
         # ammo specific points:
-        elif (await self.entity).role == IntRole.AMMO:
+        elif entity.role == IntRole.AMMO:
             # ammo boosts: 3 point for every ammo boost
 
             total_points += self.ammo_boosts * 3
@@ -276,7 +286,7 @@ class SM5Stats(Model):
                 total_points += (score - 3000) / 1000
 
         # medic specific points:
-        elif (await self.entity).role == IntRole.MEDIC:
+        elif entity.role == IntRole.MEDIC:
             # life boosts: 3 points for every life boost
 
             total_points += self.life_boosts * 3
@@ -292,6 +302,7 @@ class SM5Stats(Model):
                 total_points += ((score - 2000) / 1000) * 2
 
         return total_points
+    
 
     @cache()
     async def to_dict(self) -> dict:

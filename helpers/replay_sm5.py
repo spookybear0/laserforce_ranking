@@ -62,7 +62,7 @@ _EVENTS_COSTING_MISSILES = {
     EventType.MISSILE_DOWN_OPPONENT,
     EventType.MISSILE_BASE_MISS,
     EventType.MISSILE_BASE_DAMAGE,
-    EventType.MISISLE_BASE_DESTROY,
+    EventType.MISSILE_BASE_DESTROY,
 }
 
 _EVENTS_SUCCESSFUL_HITS = {
@@ -86,7 +86,7 @@ _EVENTS_GIVING_SPECIAL_POINTS = {
     EventType.DESTROY_BASE: 5,
     EventType.DOWNED_OPPONENT: 1,
     EventType.MISSILE_BASE_DAMAGE: 5,
-    EventType.MISISLE_BASE_DESTROY: 5,
+    EventType.MISSILE_BASE_DESTROY: 5,
     EventType.MISSILE_DAMAGE_OPPONENT: 2,
     EventType.MISSILE_DOWN_OPPONENT: 2,
 }
@@ -101,7 +101,7 @@ _EVENTS_ADDING_TO_SCORE = {
     EventType.DOWNED_OPPONENT: 100,
     EventType.DOWNED_TEAM: -100,
     EventType.MISSILE_BASE_DAMAGE: 1001,
-    EventType.MISISLE_BASE_DESTROY: 1001,
+    EventType.MISSILE_BASE_DESTROY: 1001,
     EventType.MISSILE_DAMAGE_OPPONENT: 500,
     EventType.MISSILE_DAMAGE_TEAM: -500,
     EventType.MISSILE_DOWN_OPPONENT: 500,
@@ -339,7 +339,7 @@ class ReplayGeneratorSm5(ReplayGenerator):
             case EventType.HIT_BASE:
                 self.add_sound(self.do_it_audio, player1.team)
 
-            case EventType.DESTROY_BASE | EventType.MISISLE_BASE_DESTROY | EventType.MISSILE_BASE_DAMAGE:
+            case EventType.DESTROY_BASE | EventType.MISSILE_BASE_DESTROY | EventType.MISSILE_BASE_DAMAGE:
                 self.add_sound(self.base_destroyed_audio, player1.team)
 
             case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:

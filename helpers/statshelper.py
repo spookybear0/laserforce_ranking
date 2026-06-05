@@ -304,13 +304,13 @@ async def get_sm5_score_components(game: SM5Game, stats: SM5Stats, entity_start:
     points - positive or negative - the player got for all these."""
     try:
         bases_destroyed = await (game.events.filter(
-            Q(type=EventType.DESTROY_BASE) | Q(type=EventType.BASE_AWARDED) | Q(type=EventType.MISISLE_BASE_DESTROY)).
+            Q(type=EventType.DESTROY_BASE) | Q(type=EventType.BASE_AWARDED) | Q(type=EventType.MISSILE_BASE_DESTROY)).
                                  filter(arguments__filter={"0": entity_start.entity_id}).count())
     except Exception:  # rare exception idk why it happens
         bases_destroyed = 0
         async for event in game.events:
             if event.type == EventType.DESTROY_BASE or event.type == EventType.BASE_AWARDED or \
-                    event.type == EventType.MISISLE_BASE_DESTROY:
+                    event.type == EventType.MISSILE_BASE_DESTROY:
                 bases_destroyed += 1
 
     # Scores taken from https://www.iplaylaserforce.com/games/space-marines-sm5/

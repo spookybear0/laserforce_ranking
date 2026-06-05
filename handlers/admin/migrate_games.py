@@ -1,7 +1,7 @@
 from sanic import Request
 
 from db.sm5 import SM5Game, SM5_LASERRANK_VERSION
-from helpers.sm5helper import update_team_sizes, update_winner
+from helpers.sm5helper import update_team_sizes, update_winner, update_special_points
 from shared import app
 from utils import admin_only
 from sanic.log import logger
@@ -40,6 +40,8 @@ async def _migrate_games(games: list[SM5Game]) -> int:
                 await update_winner(game)
             if game.laserrank_version < 3:
                 await update_team_sizes(game)
+            if game.laserrank_version < 4:
+                await update_special_points(game)
         game.laserrank_version = SM5_LASERRANK_VERSION
         await game.save()
 

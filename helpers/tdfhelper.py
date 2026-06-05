@@ -81,6 +81,14 @@ async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
     sm5_stats: List[SM5Stats] = []
     player_states: List[PlayerStates] = []
 
+    # key: player entity id, value: special points
+    # this is needed because tdf doesn't save the ending special points
+    # and leaderboards usually have this info
+    # we'll update this dict as we parse events and then save the final values to the database when we parse the entity end events
+    player_special_points: Dict[str, int] = {}
+    # key: player entity id, value: whether the player can gain specials (False if heavy or has rapid fire on)
+    player_can_gain_specials: Dict[str, bool] = {}
+
     token_to_entity = {}
 
     # default values, will be changed later
@@ -187,15 +195,62 @@ async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
 
                 entity_starts.append(entity_start)
                 token_to_entity[data[2]] = entity_start
+
+                # if this is a player, determine if they can gain specials (heavies can't gain specials and scouts can't gain specials until they get rapid fire)
+                if entity_start.type == "player":
+                    if entity_start.role == IntRole.HEAVY:
+                        player_can_gain_specials[data[2]] = False
+                    else:
+                        player_can_gain_specials[data[2]] = True
+                    player_special_points[data[2]] = 0  # initialize special points to 0
             case "4":  # event
                 sentry_sdk.set_context("event", {"time": data[1], "type": data[2], "arguments": data[3:]})
                 
                 events.append(await create_event_from_data(data))
 
-                if EventType(data[2]) == EventType.MISSION_END:  # game ended naturally
+                event_type = EventType(data[2])
+
+                if event_type == EventType.MISSION_END:  # game ended naturally
                     ended_early = False
 
-                logger.debug(f"Event: time: {data[1]}, type: {EventType(data[2])}, arguments: {data[3:]}")
+                logger.debug(f"Event: time: {data[1]}, type: {event_type}, arguments: {data[3:]}")
+
+                # handle special points
+                if player_can_gain_specials.get(data[3], True): # if player can gain specials (not heavy or doesn't have rapid fire on)
+                    match event_type:
+                        # give specials
+                        case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
+                            # only enemies (damaged/downed opponent still is used for teammates)
+                            if token_to_entity[data[3]].team != token_to_entity[data[5]].team:
+                                player_special_points[data[3]] = min(player_special_points.get(data[3], 0) + 1, 99)
+                        case EventType.MISSILE_DOWN_OPPONENT:
+                            if token_to_entity[data[3]].team != token_to_entity[data[5]].team:
+                                player_special_points[data[3]] = min(player_special_points.get(data[3], 0) + 2, 99)
+
+                        # remove specials
+                        case EventType.ACTIVATE_NUKE:
+                            player_special_points[data[3]] = min(player_special_points.get(data[3], 0) - 20, 99)
+                        case EventType.AMMO_BOOST:
+                            player_special_points[data[3]] = min(player_special_points.get(data[3], 0) - 15, 99)
+                        case EventType.LIFE_BOOST:
+                            player_special_points[data[3]] = min(player_special_points.get(data[3], 0) - 10, 99)
+
+                # scouts can get sp from bases even with rapid
+                if event_type in [EventType.DESTROY_BASE, EventType.MISSILE_BASE_DESTROY, EventType.BASE_AWARDED] and token_to_entity[data[3]].role != IntRole.HEAVY:
+                    player_special_points[data[3]] = min(player_special_points.get(data[3], 0) + 5, 99)
+
+                # scout activated rapid
+                if event_type == EventType.ACTIVATE_RAPID_FIRE:
+                    # rapid fire turned on, specials can't be gained until it's turned off
+                    player_special_points[data[3]] = min(player_special_points.get(data[3], 0) - 10, 99)
+                    player_can_gain_specials[data[3]] = False
+
+                # scout deactivated rapid from being resupplied ammo or lives
+                if event_type in [EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]:
+                    if token_to_entity[data[5]].role == IntRole.SCOUT:
+                        # rapid fire turned off, specials can be gained again
+                        player_can_gain_specials[data[5]] = True
+
             case "5":  # score
                 sentry_sdk.set_context("score", {"time": data[1], "entity": data[2], "old": data[3], "delta": data[4],
                                                  "new": data[5]})
@@ -238,7 +293,9 @@ async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
                         "shot_opponent": data[21],
                         "shot_team": data[22],
                         "missiled_opponent": data[23],
-                        "missiled_team": data[24]
+                        "missiled_team": data[24],
+                        # custom addition not in tdf
+                        "special_points": player_special_points.get(data[1], 0)
                     }
                 )
 
@@ -254,10 +311,10 @@ async def parse_sm5_game(file_location: str) -> Optional[SM5Game]:
                                                        penalties=int(data[18]), shot_3_hits=int(data[19]),
                                                        own_nuke_cancels=int(data[20]), shot_opponent=int(data[21]),
                                                        shot_team=int(data[22]), missiled_opponent=int(data[23]),
-                                                       missiled_team=int(data[24])))
+                                                       missiled_team=int(data[24]), special_points=player_special_points.get(data[1], 0)))
 
                 logger.debug(
-                    f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}")
+                    f"SM5 Stats: entity: {token_to_entity[data[1]]}, shots hit: {data[2]}, shots fired: {data[3]}, times zapped: {data[4]}, times missiled: {data[5]}, missile hits: {data[6]}, nukes detonated: {data[7]}, nukes activated: {data[8]}, nuke cancels: {data[9]}, medic hits: {data[10]}, own medic hits: {data[11]}, medic nukes: {data[12]}, scout rapid fires: {data[13]}, life boosts: {data[14]}, ammo boosts: {data[15]}, lives left: {data[16]}, shots left: {data[17]}, penalties: {data[18]}, shot 3 hits: {data[19]}, own nuke cancels: {data[20]}, shot opponent: {data[21]}, shot team: {data[22]}, missiled opponent: {data[23]}, missiled team: {data[24]}, special points: {player_special_points.get(data[1], 0)}")
             case "9":  # player state
                 sentry_sdk.set_context("player_state", {"time": data[1], "entity": data[2], "state": data[3]})
 

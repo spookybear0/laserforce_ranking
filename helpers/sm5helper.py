@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Dict
+from sanic.log import logger
 
 import pytz
 from tortoise.expressions import Q
@@ -118,12 +119,18 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
     @property
     def state_distribution_pie_chart(self) -> PieChartData:
         return get_player_state_distribution_pie_chart(self.state_distribution, SM5_STATE_COLORS)
+    
+    @property
+    def special_points(self) -> int:
+        return self.stats.special_points
 
 
 @dataclass
 class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
     """Fake SM5 player game stats for the sum of all players in a team."""
     total_score: int
+
+    total_special_points: int
 
     total_gross_positive_score: int
 
@@ -156,6 +163,10 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
     @property
     def score(self) -> int:
         return self.total_score
+    
+    @property
+    def special_points(self) -> int:
+        return self.total_special_points
 
     @property
     def lives_left(self) -> int:
@@ -317,6 +328,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
         sum_missiled_main_player = 0
         sum_missiled_by_main_player = 0
         sum_score = 0
+        sum_special_points = 0
         sum_penalties = 0
         sum_points_per_minute = 0
         sum_gross_positive_score = 0
@@ -391,6 +403,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
 
             # Run a tally so we can compute the sum/average for the team.
             sum_score += player.score
+            sum_special_points += player.special_points if player.special_points else 0
             sum_penalties += player.penalties
             sum_gross_positive_score += player.get_gross_positive_score()
             sum_points_per_minute += player.points_per_minute
@@ -436,6 +449,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             player_info=None,
             css_class="team_totals",
             total_score=sum_score,
+            total_special_points=sum_special_points,
             total_gross_positive_score=sum_gross_positive_score,
             total_penalties=sum_penalties,
             average_points_per_minute=int(sum_points_per_minute / player_count_adjusted),
@@ -631,33 +645,6 @@ async def get_sm5_rating_over_time(entity_id: str, min_time: datetime = _MIN_DAT
     )
 
 
-""" async def update_winner(game: SM5Game):
-    Updates the following fields in the game:
-
-    last_team_standing, winner, winner_color.
-
-    Will not call save() after the update is done.
-    
-    # Determine whether one team eliminated the other.
-    game.last_team_standing = await get_sm5_last_team_standing(game)
-
-    # winner determination
-    winner = game.last_team_standing
-
-    if not winner:
-        red_score = await game.get_team_score(Team.RED)
-        green_score = await game.get_team_score(Team.GREEN)
-        if red_score > green_score:
-            winner = Team.RED
-        elif red_score < green_score:
-            winner = Team.GREEN
-        else:  # tie or no winner or something crazy happened
-            winner = None
-
-    game.winner = winner
-    game.winner_color = winner.value if winner else "none" """
-
-
 async def update_winner(game: SM5Game):
     """Updates the following fields in the game:
 
@@ -721,6 +708,76 @@ async def update_team_sizes(game: SM5Game):
     game.team1_size = team1_len
     game.team2_size = team2_len
 
+async def update_special_points(game: SM5Game):
+    # key: player entity id, value: special points
+    # this is needed because tdf doesn't save the ending special points
+    # and leaderboards usually have this info
+    # we'll update this dict as we parse events and then save the final values to the database when we parse the entity end events
+    player_special_points: Dict[str, int] = {}
+    # key: player entity id, value: whether the player can gain specials (False if heavy or has rapid fire on)
+    player_can_gain_specials: Dict[str, bool] = {}
+
+    logger.debug(f"updatin specials, Processing game {game.id}...")
+
+    # initialize player_can_gain_specials for all players in the game
+    for entity_start in await game.entity_starts.all():
+        if entity_start.role == IntRole.HEAVY:
+            player_can_gain_specials[entity_start.entity_id] = False
+        else:
+            player_can_gain_specials[entity_start.entity_id] = True
+        player_special_points[entity_start.entity_id] = 0
+
+    # go through events
+    for event in await game.events.order_by("time").all():
+        
+        logger.debug(f"updating specials, Event: {event}")
+
+        entity1 = await game.entity_starts.filter(entity_id=event.entity1).first()
+        entity2 = await game.entity_starts.filter(entity_id=event.entity2).first()
+
+        # handle special points
+        if player_can_gain_specials.get(event.entity1, True): # if player can gain specials (not heavy or doesn't have rapid fire on)
+            match event.type:
+                # give specials
+                case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
+                    # only enemies (damaged/downed opponent still is used for teammates)
+                    if entity1.team != entity2.team:
+                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 1, 99)
+                case EventType.MISSILE_DOWN_OPPONENT:
+                    if entity1.team != entity2.team:
+                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 2, 99)
+
+                # remove specials
+                case EventType.ACTIVATE_NUKE:
+                    player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 20, 99)
+                case EventType.AMMO_BOOST:
+                    player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 15, 99)
+                case EventType.LIFE_BOOST:
+                    player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
+
+        # scouts can get sp from bases even with rapid
+        if event.type in [EventType.DESTROY_BASE, EventType.MISSILE_BASE_DESTROY, EventType.BASE_AWARDED] and entity1.role != IntRole.HEAVY:
+            player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 5, 99)
+
+        # scout activated rapid
+        if event.type == EventType.ACTIVATE_RAPID_FIRE:
+            # rapid fire turned on, specials can't be gained until it's turned off
+            player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
+            player_can_gain_specials[event.entity1] = False
+
+        # scout deactivated rapid from being resupplied ammo or lives
+        if event.type in [EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]:
+            if entity2.role == IntRole.SCOUT:
+                # rapid fire turned off, specials can be gained again
+                player_can_gain_specials[event.entity2] = True
+    
+    for entity_id in player_special_points:
+        logger.debug(f"Updating player {entity_id} with {player_special_points[entity_id]} special points...")
+        # update the player's sm5_stats with the calculated special points
+        stats = await game.sm5_stats.filter(entity__entity_id=entity_id).first()
+        if stats:
+            stats.special_points = player_special_points[entity_id]
+            await stats.save()
 
 async def get_sm5_last_team_standing(game: SM5Game) -> Optional[Team]:
     """Returns the team that eliminated the other team.

@@ -212,7 +212,7 @@ class EventType(Enum):
     MISSION_START = "0100"  # Arguments: "* Mission Start *"
     MISSION_END = "0101"  # Arguments: "* Mission End *"
     SHOT_EMPTY = "0200"  # unused?
-    MISS = "0201"  # Arguments: "(entity 1)", " misses"
+    MISS = "0201"  # Arguments: "(entity 1)", " misses" (this is NOT shown on scoreboard, only in logs)
     MISS_BASE = "0202"  # Arguments: "(entity 1)", " misses ", "(entity 2)". Entity 2 is a base
     HIT_BASE = "0203"  # Arguments: "(entity 1)", " zaps ", "(entity 2)". Entity 2 is a base
     DESTROY_BASE = "0204"  # Arguments: "(entity 1)", " destroys ", "(entity 2)". Entity 2 is a base
@@ -222,10 +222,10 @@ class EventType(Enum):
     DOWNED_TEAM = "0208"  # unused?
     LOCKING = "0300"  # (aka missile start) Arguments: "(entity 1)", " locking ", "(entity 2)"
     MISSILE_BASE_MISS = "0301"
-    MISSILE_BASE_DAMAGE = "0302"
-    MISISLE_BASE_DESTROY = "0303"  # Arguments: "(entity 1)", " destroys ", "(entity 2)"
+    MISSILE_BASE_DAMAGE = "0302" # not used in sm5
+    MISSILE_BASE_DESTROY = "0303"  # Arguments: "(entity 1)", " destroys ", "(entity 2)"
     MISSILE_MISS = "0304"
-    MISSILE_DAMAGE_OPPONENT = "0305"  # unused? theres no way for a missile to not down/destroy
+    MISSILE_DAMAGE_OPPONENT = "0305"  # unused? theres no way for a missile to not down/destroy in sm5
     MISSILE_DOWN_OPPONENT = "0306"  # Arguments: "(entity 1)", " missiles ", "(entity 2)"
     MISSILE_DAMAGE_TEAM = "0307"  # unused?
     MISSILE_DOWN_TEAM = "0308"
