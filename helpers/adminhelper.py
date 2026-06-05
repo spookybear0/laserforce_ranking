@@ -48,6 +48,10 @@ async def manually_login_player_sm5(game: Union[SM5Game, LaserballGame], battles
             if info == old_entity_id:
                 arguments[arguments.index(info)] = player.entity_id
         event.arguments = arguments
+        if event.entity1 == old_entity_id:
+            event.entity1 = player.entity_id
+        if event.entity2 == old_entity_id:
+            event.entity2 = player.entity_id
         await event.save()
 
     logger.debug("Changing data on the tdf file")

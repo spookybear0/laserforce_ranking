@@ -720,7 +720,7 @@ async def update_special_points(game: SM5Game):
     logger.debug(f"updatin specials, Processing game {game.id}...")
 
     # initialize player_can_gain_specials for all players in the game
-    for entity_start in await game.entity_starts.all():
+    for entity_start in await game.entity_starts.filter(type="player").all():
         if entity_start.role == IntRole.HEAVY:
             player_can_gain_specials[entity_start.entity_id] = False
         else:
@@ -767,7 +767,7 @@ async def update_special_points(game: SM5Game):
 
         # scout deactivated rapid from being resupplied ammo or lives
         if event.type in [EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]:
-            if entity2.role == IntRole.SCOUT:
+            if entity2 and entity2.role == IntRole.SCOUT:
                 # rapid fire turned off, specials can be gained again
                 player_can_gain_specials[event.entity2] = True
     

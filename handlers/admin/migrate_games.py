@@ -33,7 +33,7 @@ async def admin_migrate_games(request: Request) -> str:
 
     request.app.ctx.banner["text"] = "Game migration in progress, the site may be slow and some stats may be inaccurate until it's done"
     request.app.ctx.banner["type"] = "warning"
-    request.app.add_task(task(), name="Migrate Games").add_done_callback(reset_banner)
+    request.app.add_task(task(), name="Migrate Games").add_done_callback(lambda _: reset_banner())
 
     return response.json({"status": "ok"})
 
