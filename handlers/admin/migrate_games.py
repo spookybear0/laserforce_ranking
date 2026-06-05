@@ -2,8 +2,9 @@ from sanic import Request
 
 from db.sm5 import SM5Game, SM5_LASERRANK_VERSION
 from helpers.sm5helper import update_team_sizes, update_winner, update_special_points
+
 from shared import app
-from utils import admin_only
+from utils import admin_only, reset_banner
 from sanic.log import logger
 
 _BATCH_SIZE = 20
@@ -14,22 +15,27 @@ _BATCH_SIZE = 20
 async def admin_migrate_games(request: Request) -> str:
     response = await request.respond(content_type="text/html")
 
-    updated_games_count = 0
+    async def task():
+        updated_games_count = 0
 
-    while True:
-        # Get all SM5 games. We only need those that aren't already on the latest version.
-        games = await SM5Game.filter(laserrank_version__not=SM5_LASERRANK_VERSION).limit(_BATCH_SIZE).all()
+        while True:
+            # Get all SM5 games. We only need those that aren't already on the latest version.
+            games = await SM5Game.filter(laserrank_version__not=SM5_LASERRANK_VERSION).limit(_BATCH_SIZE).all()
 
-        # Keep going until there's nothing left to update.
-        if not games:
-            break
+            # Keep going until there's nothing left to update.
+            if not games:
+                break
 
-        update_count = await _migrate_games(games)
-        updated_games_count += update_count
+            update_count = await _migrate_games(games)
+            updated_games_count += update_count
 
-        logger.info(f"Updated {update_count} games to version {SM5_LASERRANK_VERSION}")
+            logger.info(f"Updated {update_count} games to version {SM5_LASERRANK_VERSION}")
 
-    return response.json({"status": "ok", "updated_games_count": updated_games_count})
+    request.app.ctx.banner["text"] = "Game migration in progress, the site may be slow and some stats may be inaccurate until it's done"
+    request.app.ctx.banner["type"] = "warning"
+    request.app.add_task(task(), name="Migrate Games").add_done_callback(reset_banner)
+
+    return response.json({"status": "ok"})
 
 
 async def _migrate_games(games: list[SM5Game]) -> int:

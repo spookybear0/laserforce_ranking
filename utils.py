@@ -68,6 +68,11 @@ def banner_type_to_color(type: str) -> str:
         "danger": "#ff4d4d",
     }.get(type, "#4da6ff")
 
+def reset_banner() -> None:
+    app.ctx.banner = {
+        "text": None,
+        "type": None,
+    }
 
 def generate_tailwind_css() -> None:
     """
