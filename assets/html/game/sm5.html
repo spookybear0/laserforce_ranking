@@ -48,6 +48,7 @@
             {% for team in teams %}
                 <div id="{{ team.color }}_team" class="team">
                     <h2 style="font-size: 20px;" class="team_score {{ team.css_class }}">{{ team.element }} Team: {{ team.score }}{{team.score_adjustment_string}}</h2>
+                    <h3 style="font-size: 18px; margin-top: 0px;" class=" {{ team.css_class }}">Doubles: {{ "%.2f" % (team.doubles_percent*100|round(2)) }}%</h3>
 
                     <div class="outer-scrolling-table">
                         <div class="inner-scrolling-table">

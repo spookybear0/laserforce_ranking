@@ -12,6 +12,7 @@ from db.types import Team, IntRole, EventType, SM5_ENEMY_TEAM
 from typing import List, Optional
 from tortoise import Model, fields
 from helpers.cachehelper import cache
+from sanic.log import logger
 from db.game import Game
 import math
 
@@ -35,10 +36,15 @@ class SM5Game(Game):
     # Our internal SM5 game version when this game was imported. If it doesn't match SM5_LASERRANK_VERSION, it
     # should be recomputed/migrated.
     laserrank_version = fields.IntField(default=0)
-    # Number of players on the first team.
+    # Number of players on the first team. (usually red)
     team1_size = fields.IntField(null=True)
-    # Number of players on the second team.
+    # Number of players on the second team. (usually blue/green)
     team2_size = fields.IntField(null=True)
+    
+    # cached percentage of doubles (resupplies within 3 seconds to the same target) for each team,
+    # since this is a costly calculation and we want to show it on the game page
+    _team1_double_percent = fields.FloatField(null=True)
+    _team2_double_percent = fields.FloatField(null=True)
 
     def __str__(self) -> str:
         return f"SM5Game(id={self.id}, start_time={self.start_time}, arena={self.arena}, mission_type={self.mission_type}, " \
@@ -51,6 +57,18 @@ class SM5Game(Game):
     @abstractmethod
     def short_type(self) -> str:
         return "sm5"
+    
+    async def get_team_doubles_percent(self, team: Team) -> float:
+        if team == Team.RED:
+            if self._team1_double_percent is None:
+                self._team1_double_percent = await self._get_team_doubles_percent(team)
+                await self.save(update_fields=["_team1_double_percent"])
+            return self._team1_double_percent
+        else:
+            if self._team2_double_percent is None:
+                self._team2_double_percent = await self._get_team_doubles_percent(team)
+                await self.save(update_fields=["_team2_double_percent"])
+            return self._team2_double_percent
 
     async def get_team_score(self, team: Team) -> int:
         # Add 10,000 extra points if this team eliminated the opposition.
@@ -107,6 +125,55 @@ class SM5Game(Game):
         end_event = await self.events.filter(type=EventType.MISSION_END).first()
 
         return end_event.time if end_event else self.mission_duration
+    
+
+    async def _get_team_doubles_percent(self, team: Team) -> float:
+        # go through every resupply
+        resupplies = await self.events.filter(type__in=[EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]).order_by("time").all()
+
+        groups = {}
+
+        for resupply in resupplies:
+            entity1 = await self.entity_starts.filter(entity_id=resupply.entity1).first()
+            entity1_team = await entity1.team
+
+            if entity1_team.name != team.name:
+                continue
+
+            target = resupply.entity2
+
+            if target not in groups:
+                groups[target] = [{
+                    "start": resupply.time,
+                    "events": [resupply]
+                }]
+                continue
+
+            current = groups[target][-1]
+
+            if resupply.time - current["start"] <= 3000:
+                current["events"].append(resupply)
+            else:
+                groups[target].append({
+                    "start": resupply.time,
+                    "events": [resupply]
+                })
+
+        total = 0
+        double_events = 0
+
+        for target_groups in groups.values():
+            for group in target_groups:
+                count = len(group["events"])
+
+                total += count
+
+                if count >= 2:
+                    double_events += count
+
+        logger.debug(f"Team {team.name} had {double_events} double events out of {total} total events")
+
+        return double_events / total if total > 0 else 0
 
     # funcs for getting total score at a certain time for a team
 

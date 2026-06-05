@@ -224,6 +224,9 @@ class TeamSm5GameStats(TeamCoreGameStats):
     # The score adjustment on top of the players' scores.
     score_adjustment: int
 
+    # percentage of resupplies that were part of a "double resupply"
+    doubles_percent: Optional[float]
+
     # The stats for every player in the game, plus a fake stat at the end with the sum (or average) of all players.
     @property
     def players_with_sum(self):
@@ -490,7 +493,8 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
                 score_adjustment=game.get_team_score_adjustment(team),
                 players=players,
                 sum_player=sum_player,
-                lives_over_time=lives_over_time_team_average
+                lives_over_time=lives_over_time_team_average,
+                doubles_percent=await game.get_team_doubles_percent(team)
             )
         )
 
