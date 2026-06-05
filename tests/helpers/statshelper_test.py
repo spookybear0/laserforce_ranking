@@ -150,13 +150,13 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
         scores = await get_sm5_single_player_score_graph_data(game, entity1.id)
 
-        self.assertEqual([
-            # 00:00
-            0, 0, 0, 0, 100, 100, 100, 100, 100, 100,
-            # 05:00
-            100, 100, 100, 100, 500, 500, 500, 500, 500, 500,
-            # 10:00
-            500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500], scores)
+        self.assertEqual(
+[0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+ 100, 100, 100, 100, 100, 100, 100, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+ 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+ 500, 500, 500, 500, 500, 500, 500], scores)
+        
+#
 
     async def test_get_sm5_single_team_score_graph_data(self):
         await self.create_score_test_scenario()
@@ -164,13 +164,10 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
         scores = await get_sm5_single_team_score_graph_data(game, Team.RED)
 
-        self.assertEqual([
-            # 00:00
-            0, 0, 0, 0, 100, 100, 100, 100, 100, 100,
-            # 05:00
-            400, 400, 400, 400, 800, 800, 800, 800, 800, 800,
-            # 10:00
-            800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800], scores)
+        self.assertEqual([0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+                          400, 400, 400, 400, 400, 400, 400, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800,
+                          800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800,
+                          800, 800, 800, 800, 800, 800, 800], scores)
 
     async def test_get_sm5_team_score_graph_data(self):
         await self.create_score_test_scenario()
@@ -179,21 +176,14 @@ class TestStatsHelper(unittest.IsolatedAsyncioTestCase):
         scores = await get_sm5_team_score_graph_data(game, [Team.RED, Team.GREEN])
 
         self.assertEqual({
-            Team.RED: [
-                # 00:00
-                0, 0, 0, 0, 100, 100, 100, 100, 100, 100,
-                # 05:00
-                400, 400, 400, 400, 800, 800, 800, 800, 800, 800,
-                # 10:00
-                800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800],
-            Team.GREEN: [
-                # 00:00
-                0, 0, 0, 0, 0, 0, 0, 200, 200, 200,
-                # 05:00
-                200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
-                # 10:00
-                200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]},
-            scores)
+            Team.RED: [0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+                       400, 400, 400, 400, 400, 400, 400, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800,
+                       800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800,
+                       800, 800, 800, 800, 800, 800, 800],
+            Team.GREEN: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+                          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+                          200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+                          200, 200, 200, 200]}, scores)
 
     async def test_get_points_scored(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
