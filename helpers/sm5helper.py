@@ -44,7 +44,7 @@ class PlayerSm5GameStats(PlayerCoreGameStats):
     # Colors for alive_time_values. Can be plugged into a pie chart.
     alive_time_colors: List[str]
 
-    # Number of lives over time, for every 30 seconds. Only valid if the stats were created with
+    # Number of lives over time, for every 15 seconds. Only valid if the stats were created with
     # compute_lives_over_time set to true.
     lives_over_time: List[int]
 
@@ -232,7 +232,7 @@ class TeamSm5GameStats(TeamCoreGameStats):
     # A fake player that has the sum (or average where appropriate) of all players in the team.
     sum_player: Sm5PlayerGameStatsSum
 
-    # Average number of lives across all players over time, for every 30 seconds. Only valid if the stats were created
+    # Average number of lives across all players over time, for every 15 seconds. Only valid if the stats were created
     # with compute_lives_over_time set to true.
     lives_over_time: List[float]
 
@@ -309,7 +309,7 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
     live_over_time_per_player = {}
 
     if compute_lives_over_time:
-        live_over_time_per_player = await get_sm5_lives_over_time(game, team_rosters, 30000)
+        live_over_time_per_player = await get_sm5_lives_over_time(game, team_rosters, 15000)
 
     for team in team_rosters.keys():
         players = []

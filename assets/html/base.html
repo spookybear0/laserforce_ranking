@@ -258,6 +258,12 @@ If you have any comments or suggestions please contact me at collinmcarroll@gmai
             if (minute.toString().endsWith(".5")) {
                 return minute.toString().slice(0, -2) + ":30";
             }
+            if (minute.toString().endsWith(".25")) {
+                return minute.toString().slice(0, -3) + ":15";
+            }
+            if (minute.toString().endsWith(".75")) {
+                return minute.toString().slice(0, -3) + ":45";
+            }
 
             return minute + ":00";
         }

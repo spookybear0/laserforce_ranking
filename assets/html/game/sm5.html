@@ -179,7 +179,7 @@
                 borderColor: "{{ team.css_color_name }}",
                 backgroundColor: "{{ team.css_color_name }}",
                 fill: false,
-                tension: 0.4,
+                tension: 0.3,
                 pointRadius: 0,
                 pointHitRadius: 10
             }{{ "," if not loop.last }}
@@ -252,7 +252,7 @@
                 borderColor: "{{ chart.color }}",
                 backgroundColor: "{{ chart.color }}",
                 fill: false,
-                tension: 0.4,
+                tension: 0.3,
                 pointRadius: 0,
                 pointHitRadius: 10
             }{{ "," if not loop.last }}
@@ -273,7 +273,14 @@
 
                             if (time.toString().endsWith(".5")) {
                                 return time.toString().slice(0, -2) + ":30";
-                            } else {
+                            }
+                            else if (time.toString().endsWith(".25")) {
+                                return time.toString().slice(0, -2) + ":15";
+                            }
+                            else if (time.toString().endsWith(".75")) {
+                                return time.toString().slice(0, -2) + ":45";
+                            }
+                            else {
                                 return time + ":00";
                             }
                         },

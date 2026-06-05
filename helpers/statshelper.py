@@ -18,7 +18,7 @@ from helpers.cachehelper import cache, precache
 
 
 # The frequency for ticks in time series graphs, in milliseconds.
-_DEFAULT_TICKS_DURATION_MILLIS = 30000
+_DEFAULT_TICKS_DURATION_MILLIS = 15000
 
 
 @dataclass
@@ -383,18 +383,18 @@ def did_player_survive_sm5_game(game_duration_millis: int, player: EntityEnds) -
 async def get_sm5_single_player_score_graph_data(game: SM5Game, entity_id: int) -> List[int]:
     """Returns data for a score graph for one player.
 
-    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    Returns a list with data points containing the current score at the given time, one for every 15 seconds.
     """
-    return [await game.get_entity_score_at_time(entity_id, time) for time in range(0, 900000 + 30000, 30000)]
+    return [await game.get_entity_score_at_time(entity_id, time) for time in range(0, 900000 + _DEFAULT_TICKS_DURATION_MILLIS, _DEFAULT_TICKS_DURATION_MILLIS)]
 
 
 @cache()
 async def get_sm5_single_team_score_graph_data(game: SM5Game, team: Team) -> List[int]:
     """Returns data for a score graph for one team.
 
-    Returns a list with data points containing the current score at the given time, one for every 30 seconds.
+    Returns a list with data points containing the current score at the given time, one for every 15 seconds.
     """
-    return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + 30000, 30000)]
+    return [await game.get_team_score_at_time(team, time) for time in range(0, 900000 + _DEFAULT_TICKS_DURATION_MILLIS, _DEFAULT_TICKS_DURATION_MILLIS)]
 
 
 @cache()

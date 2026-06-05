@@ -155,7 +155,7 @@ class TeamLaserballGameStats(TeamCoreGameStats):
     """The stats for a team for one Laserball game."""
     players: List[PlayerLaserballGameStats]
 
-    # Score over time, one data point every 30 seconds.
+    # Score over time, one data point every 15 seconds.
     team_score_graph: List[int]
 
     # The stats for every player in the game, plus a fake stat at the end with the sum (or average) of all players.
@@ -178,10 +178,10 @@ class FullLaserballStats:
     # Dict with all players from all teams. Key is the entity end ID.
     all_players: dict[int, PlayerLaserballGameStats]
 
-    # Score graph (one data point every 30 seconds) for every team.
+    # Score graph (one data point every 15 seconds) for every team.
     score_chart_data: dict[Team, List[int]]
 
-    # Round graph (current round for every 30 seconds during the game).
+    # Round graph (current round for every 15 seconds during the game).
     score_chart_data_rounds: List[int]
 
     def get_teams(self) -> List[Team]:
