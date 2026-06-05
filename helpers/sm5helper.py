@@ -134,11 +134,11 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
 
     total_gross_positive_score: int
 
-    average_points_per_minute: int
+    total_points_per_minute: int
 
-    average_lives_left: int
+    total_lives_left: int
 
-    average_shots_left: int
+    total_shots_left: int
 
     total_shot_team: int
 
@@ -170,15 +170,15 @@ class Sm5PlayerGameStatsSum(PlayerSm5GameStats):
 
     @property
     def lives_left(self) -> int:
-        return self.average_lives_left
+        return self.total_lives_left
 
     @property
     def shots_left(self) -> int:
-        return self.average_shots_left
+        return self.total_shots_left
 
     @property
     def points_per_minute(self) -> int:
-        return self.average_points_per_minute
+        return self.total_points_per_minute
 
     def get_gross_positive_score(self) -> int:
         return self.total_gross_positive_score
@@ -452,14 +452,14 @@ async def get_sm5_player_stats(game: SM5Game, main_player: Optional[EntityStarts
             total_special_points=sum_special_points,
             total_gross_positive_score=sum_gross_positive_score,
             total_penalties=sum_penalties,
-            average_points_per_minute=int(sum_points_per_minute / player_count_adjusted),
+            total_points_per_minute=sum_points_per_minute,
             state_distribution=avg_state_distribution,
             score_components=avg_score_components,
-            mvp_points=sum_mvp_points / player_count_adjusted,
+            mvp_points=sum_mvp_points,
             shots_fired=sum_shots_fired,
             shots_hit=sum_shots_hit,
-            average_shots_left=int(sum_shots_left / player_count_adjusted),
-            average_lives_left=int(sum_lives_left / player_count_adjusted),
+            total_shots_left=sum_shots_left,
+            total_lives_left=sum_lives_left,
             lives_over_time=avg_lives_over_time,
             shot_opponent=sum_shot_opponent,
             times_zapped=sum_times_zapped,
