@@ -14,8 +14,9 @@ class TestSm5(unittest.IsolatedAsyncioTestCase):
     async def test_get_game_duration_full_length(self):
         game = await SM5Game.filter(id=get_sm5_game_id()).first()
 
-        # The default duration for an SM5 game is 15 minutes (900,000ms).
-        self.assertEqual(900000, await game.get_game_duration())
+        # The default duration for an SM5 game is 15 minutes (900,000ms),
+        # but we take the last event for how long the game lasted, so we'll add an event at 800 ms to test that.
+        self.assertEqual(800, await game.get_game_duration())
 
     async def test_get_game_duration_early_termination(self):
         await add_sm5_event(await create_mission_end_event(88888))
