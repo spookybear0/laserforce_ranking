@@ -144,7 +144,7 @@ class SM5Game(Game):
             .filter(entity__role=IntRole.MEDIC) \
             .first()
 
-        if medic_death_event and medic_death_event.time < await self.get_actua_game_duration():
+        if medic_death_event and medic_death_event.time < await self.get_actual_game_duration():
             return medic_death_event.time
         return None
 
