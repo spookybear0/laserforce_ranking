@@ -117,19 +117,48 @@ class SM5Game(Game):
 
         return scores[-1].new if scores else 0
 
-    async def get_actual_game_duration(self) -> int:
-        """Returns the actual mission duration time in milliseconds.
+    async def get_game_duration(self) -> int:
+        """Returns the ACTUAL mission duration time in milliseconds.
 
-        Returns the expected duration time unless the game terminated early, for example because one entire team was
-        eliminated."""
+        If the MISSION_END event exists, returns the time of that event. Otherwise, returns the time of the last event,
+        this happens when the game ends unnaturally.
+        """
         end_event = await self.events.filter(type=EventType.MISSION_END).first()
 
-        return end_event.time if end_event else self.mission_duration
+        if end_event:
+            return end_event.time
+        
+        last_event = await self.events.order_by("-time").first()
+
+        return last_event.time
     
+    async def get_medic_death_time(self, team: Team) -> Optional[int]:
+        """
+        Returns the time in milliseconds when the medic on the given team died, or None if they never died.
+        """
+
+        # this will find when the medic entity is finished
+        # which if it's before the end of the mission, means the medic died
+        medic_death_event = await self.entity_ends \
+            .filter(entity__team__color_name=team.element) \
+            .filter(entity__role=IntRole.MEDIC) \
+            .first()
+
+        if medic_death_event and medic_death_event.time < await self.get_actua_game_duration():
+            return medic_death_event.time
+        return None
 
     async def _get_team_doubles_percent(self, team: Team) -> float:
+        # get what timestamp the medic died at
+
+        medic_death_time = await self.get_medic_death_time(team)
+
         # go through every resupply
-        resupplies = await self.events.filter(type__in=[EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]).order_by("time").all()
+        resupplies = await self.events \
+            .filter(type__in=[EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]) \
+            .filter(
+                time__lte=medic_death_time if medic_death_time is not None else self.mission_duration
+            ).all()
 
         groups = {}
 

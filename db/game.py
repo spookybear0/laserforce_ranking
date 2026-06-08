@@ -371,8 +371,8 @@ class Game(Model):
     # object, it will be the local time at the location where it was played, but timezone set to UTC.
     # Likewise, when you initialize this value with a datetime object, set the timezone to UTC and the time to whatever
     # it was at the local site to prevent headaches.
-    start_time = fields.DatetimeField()
-    mission_duration = fields.IntField()  # in seconds
+    start_time = fields.DatetimeFifeld()
+    mission_duration = fields.IntField() # how long the game can last if it doesn't end early, in milliseconds
     log_time = fields.DatetimeField(auto_now_add=True)
     # Field that is not currently stored: penalty (the amount of points deducted from when a player gets a penalty ex: 0, -1000)
     teams = fields.ManyToManyField("models.Teams")
