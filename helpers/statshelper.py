@@ -645,20 +645,22 @@ async def get_top_role_players_score(amount: int = 5, role: IntRole = IntRole.CO
     """
 
     players = {}
+    entity_id_to_name = {}
 
     for entity_end in await EntityEnds.filter(sm5games__ranked=True, sm5games__mission_name__icontains="space marines",
                                               entity__role=role).all():
-        name = (await entity_end.entity).name
-        if name not in players:
-            players[name] = (0, 0)
-        players[name] = (players[name][0] + entity_end.score, players[name][1] + 1)
+        entity_id = (await entity_end.entity).entity_id
+        if entity_id not in players:
+            players[entity_id] = (0, 0)
+        players[entity_id] = (players[entity_id][0] + entity_end.score, players[entity_id][1] + 1)
+        entity_id_to_name[entity_id] = (await entity_end.entity).name
 
     # filter out players with less than min_games games
 
     if min_games:  # if min_games is 0 or None, it will return all players
-        players = {name: (score, games) for name, (score, games) in players.items() if games >= min_games}
+        players = {entity_id: (score, games) for entity_id, (score, games) in players.items() if games >= min_games}
 
-    return sorted([(name, score // games, games) for name, (score, games) in players.items()], key=lambda x: x[1],
+    return sorted([(entity_id_to_name[entity_id], score // games, games) for entity_id, (score, games) in players.items()], key=lambda x: x[1],
                   reverse=True)[:amount]
 
 @cache(ttl=60*60*24)  # cache for 24 hours
