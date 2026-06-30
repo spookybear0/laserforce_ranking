@@ -567,7 +567,7 @@ async def get_sm5_lives_over_time(game: SM5Game, team_roster: dict[Team, List[Pl
                             _remove_lives(current_lives, entity_id_to_end_id, player.entity_start.entity_id, 3)
 
     # Keep writing snapshots until we have covered the full duration of the game.
-    duration = await game.get_game_duration()
+    duration = game.mission_duration
 
     while next_snapshot <= duration + granularity_millis:
         _create_lives_snapshot(lives_timeline, current_lives)
