@@ -37,17 +37,17 @@ ZETA = 0.09  # default: 0 (custom addition for uneven team rating adjustment), h
 # the multipliers for mu and sigma are both 1
 
 
-SM5_HIT_WEIGHT_MU = 0.01  # skill weight for hits in sm5
+SM5_HIT_WEIGHT_MU = 0.02  # skill weight for hits in sm5
 SM5_HIT_WEIGHT_SIGMA = 0.01  # uncertainty weight for hits in sm5
 
-SM5_HIT_MEDIC_WEIGHT_MU = 0.02  # skill weight for medic hits in sm5
+SM5_HIT_MEDIC_WEIGHT_MU = 0.04  # skill weight for medic hits in sm5
 SM5_HIT_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic hits in sm5
 
 
-SM5_MISSILE_WEIGHT_MU = 0.025  # skill weight for missile hits in sm5
+SM5_MISSILE_WEIGHT_MU = 0.05  # skill weight for missile hits in sm5
 SM5_MISSILE_WEIGHT_SIGMA = 0.01  # uncertainty weight for missile hits in sm5
 
-SM5_MISSILE_MEDIC_WEIGHT_MU = 0.05  # skill weight for medic missiles in sm5
+SM5_MISSILE_MEDIC_WEIGHT_MU = 0.1  # skill weight for medic missiles in sm5
 SM5_MISSILE_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic missiles in sm5
 
 # sm5 role specific multipliers (multiply the above weights by these for role specific ratings)
