@@ -28,6 +28,10 @@
             <h2>{{ total_games_played }}</h2>
             <p>Total Games Played</p>
         </div>
+        <div class="btn">
+            <h2>{{ "%.2f" % (elim_percent*100)|round(2) }}%</h2>
+            <p>Elimination Rate</p>
+        </div>
         <div class="btn" title="Algorithm for Predictive Accuracy
 
 Sum of all ranked games:

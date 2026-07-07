@@ -26,6 +26,7 @@ async def stats(request: Request) -> str:
     total_games = await SM5Game.all().count() + await LaserballGame.all().count()
     ranked_games = await SM5Game.filter(ranked=True).count() + await LaserballGame.filter(ranked=True).count()
     total_games_played = await EntityEnds.all().count()
+    get_elimination_rate = await statshelper.get_elimination_rate()
 
     logger.debug("Calculating predictive accuracy")
 
@@ -81,6 +82,7 @@ async def stats(request: Request) -> str:
                                         ranked_games=ranked_games,
                                         total_games_played=total_games_played,
                                         predictive_accuracy=predictive_accuracy,
+                                        get_elimination_rate=get_elimination_rate,
 
                                         # sm5 stats
 

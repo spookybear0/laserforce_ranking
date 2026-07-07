@@ -958,3 +958,13 @@ def get_player_state_distribution_pie_chart(distribution: dict[str, int],
 def sort_notable_events(events: list[NotableEvent]):
     """Sorts a list of notable events in place."""
     events.sort(key=lambda event: event.seconds)
+
+async def get_elimination_rate():
+    """
+    Gets the percentage of games that ended with a team elimation
+    """
+
+    total_games = await SM5Game.filter(ranked=True).count()
+    total_eliminations = await SM5Game.filter(ranked=True, last_team_standing__isnull=False).count()
+
+    return total_eliminations / total_games if total_games > 0 else 0
