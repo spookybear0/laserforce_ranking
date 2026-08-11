@@ -22,7 +22,18 @@ SIGMA = 25 / 3
 BETA = 25 / 6
 KAPPA = 0.0001
 TAU = 25 / 275  # default: 25/300 (for rating volatility, higher = more volatile ratings)
-ZETA = 0.09  # default: 0 (custom addition for uneven team rating adjustment), higher value = more adjustment for uneven teams
+FEED = 0.8
+# How much of an average body's value is handed straight back to the enemy by
+# being farmable. 0 = stock openskill behaviour (an extra body is worth its
+# full rating just for existing); 1 = an average body is net-zero and a
+# below-average one is a liability. Estimated from the two shared tdf logs by
+# counting each score swing once at full value (zap 120, missile 600, friendly
+# fire -120 against the shooter; base destroys and nukes have no victim):
+# points fed / points contributed = 0.73 and 0.76, weakest players break even
+# at 0.75-0.90, so the data brackets FEED at roughly 0.7-0.85. The estimation
+# method recovers the true value on synthetic ground-truth ladders. When
+# enough real uneven-roster games exist, re-fit by sweeping FEED in [0, 1]
+# against actual outcomes and keep the best-predicting value.
 
 # mu is for skill, sigma is for uncertainty/confidence
 # the higher the mu, the better the player is expected to perform
@@ -102,27 +113,26 @@ class CustomPlackettLuce(PlackettLuce):
 
         # 2 Player Case
         if n == 2:
-            # CUSTOM ADDITION
-            if len(teams[0]) > len(teams[1]):
-                logger.debug("Adjusting team ratings for uneven team count (team 1 has more players)")
-                # team 1 has more players than team 2
-                for player in teams[1]:
-                    # multiply by 1 + 0.1 * the difference in player count
-                    player.mu *= 1 + ZETA * abs(len(teams[0]) - len(teams[1]))
-            elif len(teams[0]) < len(teams[1]): # TODO: do testing to see if this actually predicts uneven matches well
-                logger.debug("Adjusting team ratings for uneven team count (team 2 has more players)")
-                # team 2 has more players than team 1
-                for player in teams[0]:
-                    # multiply by 1 + 0.1 * the difference in player count
-                    player.mu *= 1 + ZETA * abs(len(teams[0]) - len(teams[1]))
-
-            total_player_count = len(teams[0]) + len(teams[1])
             teams_ratings = self._calculate_team_ratings(teams)
             a = teams_ratings[0]
             b = teams_ratings[1]
 
+            # CUSTOM ADDITION: per-body feed cost.
+            # In SM5 a player both scores points and concedes ("feeds") them,
+            # so a body's worth is measured against an ABSENT player, not a
+            # zero-skill floor. Subtracting zeta per body cancels exactly when
+            # team sizes are equal (even matchups are unchanged) and removes
+            # the +mu "existence bonus" an extra body otherwise gets.
+            # Unlike the previous mu-inflation approach this does NOT mutate
+            # the rating objects passed in.
+            zeta = FEED * self.mu
+            mu_a = a.mu - len(teams[0]) * zeta
+            mu_b = b.mu - len(teams[1]) * zeta
+
+            total_player_count = len(teams[0]) + len(teams[1])
+
             result = phi_major(
-                (a.mu - b.mu)
+                (mu_a - mu_b)
                 / math.sqrt(
                     total_player_count * self.beta ** 2
                     + a.sigma_squared
