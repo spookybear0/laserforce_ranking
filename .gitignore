@@ -130,4 +130,5 @@ sitemap.xml
 
 # tailwind
 
-assets/css/tailwind.css
+assets/css/output.css
+assets/css/tailwindcss.exe

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+
+<!-- Hero Header Component -->
+<div class="hero bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-center">
+    <div class="hero-content">
+        <div class="max-w-md">
+            <h1 class="text-5xl font-bold text-primary">{{ title }}</h1>
+            <p class="py-6 text-base-content/70">Welcome to our application! We handle the backend so you can focus on building amazing things.</p>
+            <button class="btn btn-primary">Get Started</button>
+            <button class="btn btn-outline btn-secondary ml-2">Learn More</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Grid Component -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Stat Card 1 -->
+    <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+            <h2 class="card-title text-secondary">Our Active Team</h2>
+            <p class="text-4xl font-extrabold">{{ team_count }} Members</p>
+            <p class="text-sm text-base-content/50">Growing every single day.</p>
+            <div class="card-actions justify-end">
+                <button class="btn btn-sm btn-ghost">View Team</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Card 2 -->
+    <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+            <h2 class="card-title text-success">System Status</h2>
+            <div class="badge badge-success gap-2">Online</div>
+            <p class="text-sm text-base-content/50">All Python backend systems are operational.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

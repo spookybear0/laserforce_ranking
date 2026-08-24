@@ -1,0 +1,96 @@
+{% load static %}
+{% load django_htmx %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawerCheckbox = document.getElementById('main-drawer');
+            
+            if (drawerCheckbox) {
+                // get state from storage
+                const isDrawerOpen = localStorage.getItem('drawer-open');
+                
+                // open if never set
+                if (isDrawerOpen !== null) {
+                    drawerCheckbox.checked = isDrawerOpen === 'true';
+                }
+        
+                // when toggled, save new state
+                drawerCheckbox.addEventListener('change', (e) => {
+                    localStorage.setItem('drawer-open', e.target.checked);
+                });
+            }
+        });
+      </script>
+</head>
+<body class="bg-base-200 min-h-screen">
+    <div class="drawer lg:drawer-open">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle inline" />
+        <script>
+            // restore drawer state on page load
+            (function() {
+                const state = localStorage.getItem('drawer-open');
+                if (state !== null) {
+                    document.getElementById('main-drawer').checked = (state === 'true');
+                }
+            })();
+          </script>
+        <div class="drawer-content">
+            <!-- navbar -->
+            <nav class="navbar w-full bg-base-300">
+                <label for="main-drawer" aria-label="open sidebar" class="btn btn-square btn-ghost drawer-button">
+                <!--toggle icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4"><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
+                </label>
+                <div class="px-4">Laserforce Ranking</div>
+            </nav>
+            <div class="container mx-auto p-8 min-h-screen">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    
+        <div class="drawer-side is-drawer-close:overflow-visible">
+            <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
+            <ul class="menu w-full grow">
+                <a href="{% url 'index' %}">
+                <li>
+                <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Homepage">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house-icon lucide-house"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <span class="is-drawer-close:hidden">Homepage</span>
+                </button>
+                </li>
+                </a>
+
+                <!--games-->
+                <a href="{% url 'game_list' %}">
+                <li>
+                <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Games">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gamepad2-icon lucide-gamepad-2"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>
+                    <span class="is-drawer-close:hidden">Games</span>
+                </button>
+                </li>
+                </a>
+
+                <!--players-->
+                <a href="{% url 'player_list' %}">
+                <li>
+                <button class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Players">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="is-drawer-close:hidden">Players</span>
+                </button>
+                </li>
+                </a>
+            </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

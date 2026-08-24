@@ -1,0 +1,132 @@
+<div class="container mx-auto bg-base-100 rounded-2xl shadow-xl p-10 mb-8" hx-swap="outerHTML" id="game-table">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Games</h1>
+        <div class="flex space-x-2 flex-row">
+            <button name="mode" 
+                    value="sm5"
+                    hx-get="{% url 'game_list' %}?sort={{current_sort}}&page={{ page_obj.number }}"
+                    hx-target="#game-table"
+                    hx-include="[name='site'], [name='mode']"
+                    class="btn {% if current_mode == 'sm5' %}btn-primary{% else %}btn-outline{% endif %}">
+                SM5
+            </button>
+            
+            <button name="mode" 
+                    value="laserball"
+                    hx-get="{% url 'game_list' %}?sort={{current_sort}}&page={{ page_obj.number }}"
+                    hx-target="#game-table"
+                    hx-include="[name='site'], [name='mode']"
+                    class="btn {% if current_mode == 'laserball' %}btn-primary{% else %}btn-outline{% endif %}">
+                Laserball
+            </button>
+
+            <select name="site" hx-get="{% url 'game_list' %}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="select select-primary">
+                <option value="" {% if not current_site %}selected{% endif %}>All Sites</option>
+                {% for site in sites %}
+                    <option value="{{ site }}" {% if current_site == site %}selected{% endif %}>{{ site }}</option>
+                {% endfor %}
+            </select>
+            <button hx-get="{% url 'game_list' %}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-secondary">Sort by Date</button>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table w-full table-sm">
+            <thead>
+                <tr>
+                    <th>
+                        <button hx-get="{% url 'game_list' %}?sort={% if current_sort == 'game' %}-game{% else %}game{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-ghost">
+                            Game
+                            {% if current_sort == 'game' %}
+                                <span>&uarr;</span>
+                            {% elif current_sort == '-game' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button hx-get="{% url 'game_list' %}?sort={% if current_sort == 'site' %}-site{% else %}site{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-ghost">
+                            Site
+                            {% if current_sort == 'site' %}
+                                <span>&uarr;</span>
+                            {% elif current_sort == '-site' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button hx-get="{% url 'game_list' %}?sort={% if current_sort == 'start_date' %}-start_date{% else %}start_date{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-ghost">
+                            Start Date
+                            {% if current_sort == 'start_date' %}
+                                <span>&uarr;</span>
+                            {% elif current_sort == '-start_date' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button hx-get="{% url 'game_list' %}?sort={% if current_sort == 'length' %}-length{% else %}length{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-ghost">
+                            Length
+                            {% if current_sort == 'length' %}
+                                <span>&uarr;</span>
+                            {% elif current_sort == '-length' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button hx-get="{% url 'game_list' %}?sort={% if current_sort == 'outcome' %}-outcome{% else %}outcome{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-ghost">
+                            Outcome
+                            {% if current_sort == 'outcome' %}
+                                <span>&uarr;</span>
+                            {% elif current_sort == '-outcome' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button hx-get="{% url 'game_list' %}?sort={% if current_sort == 'score' %}-score{% else %}score{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode']" class="btn btn-ghost">
+                            Score
+                            {% if current_sort == 'score' %}
+                                <span>&uarr;</span>
+                            {% elif current_sort == '-score' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                </tr>
+            </thead>    </thead>
+            <tbody id="game-table">
+                {% for game in games %}
+                <tr>
+                    <td><a href="/games/{{ game.id }}" class="link link-primary">{{ game }}</a></td>
+                    <td>{{ game }}</td>
+                    <td>{{ game }}</td>
+                    <td>{{ game }}</td>
+                    <td>{{ game }}</td>
+                    <td>{{ game }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-site py-4 text-base-content/50">No games found for this site.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between mt-4">
+        <button hx-get="{% url 'game_list' %}?sort={{ current_sort }}&page={{ page_obj.prev_page_number }}&mode={{ current_mode }}" class="btn btn-outline" {% if not has_prev %}disabled{% endif %}>Previous</button>
+        <button hx-get="{% url 'game_list' %}?sort={{ current_sort }}&page={{ page_obj.prev_page_number }}&mode={{ current_mode }}" class="btn btn-outline" {% if not has_next %}disabled{% endif %}>Next</button>
+    </div>
+</div>
