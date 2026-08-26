@@ -132,3 +132,6 @@ sitemap.xml
 
 assets/css/output.css
 assets/css/tailwindcss.exe
+assets/css/daisyui-theme.mjs
+assets/css/daisyui.mjs
+assets/css/tailwindcss

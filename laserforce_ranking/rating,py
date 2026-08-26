@@ -1,0 +1,95 @@
+import itertools
+import math
+import random
+import statistics
+from typing import List, Tuple, Union, Optional
+
+from openskill.models import PlackettLuceRating, PlackettLuce
+from openskill.models.weng_lin.common import phi_major
+from sanic.log import logger
+
+# CONSTANTS
+
+MU = 25
+SIGMA = 25 / 3
+BETA = 25 / 6
+KAPPA = 0.0001
+TAU = 25 / 275  # default: 25/300 (for rating volatility, higher = more volatile ratings)
+FEED = 0.8
+# How much of an average body's value is handed straight back to the enemy by
+# being farmable. 0 = stock openskill behaviour (an extra body is worth its
+# full rating just for existing); 1 = an average body is net-zero and a
+# below-average one is a liability. Estimated from the two shared tdf logs by
+# counting each score swing once at full value (zap 120, missile 600, friendly
+# fire -120 against the shooter; base destroys and nukes have no victim):
+# points fed / points contributed = 0.73 and 0.76, weakest players break even
+# at 0.75-0.90, so the data brackets FEED at roughly 0.7-0.85. The estimation
+# method recovers the true value on synthetic ground-truth ladders. When
+# enough real uneven-roster games exist, re-fit by sweeping FEED in [0, 1]
+# against actual outcomes and keep the best-predicting value.
+
+# mu is for skill, sigma is for uncertainty/confidence
+# the higher the mu, the better the player is expected to perform
+# the higher the sigma, the less confident we are in the player's skill
+
+# sm5
+
+# TODO: possibly seperate damaged and downed events, but for now they are treated the same
+
+# overall weight for an entire game (mu_weight, sigma_weight) = (1, 1) ( rate([team1, team2]) )
+# this is for the overall game outcome (win/loss) which rates all players at once
+# the multipliers for mu and sigma are both 1
+
+
+SM5_HIT_WEIGHT_MU = 0.02  # skill weight for hits in sm5
+SM5_HIT_WEIGHT_SIGMA = 0.01  # uncertainty weight for hits in sm5
+
+SM5_HIT_MEDIC_WEIGHT_MU = 0.04  # skill weight for medic hits in sm5
+SM5_HIT_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic hits in sm5
+
+
+SM5_MISSILE_WEIGHT_MU = 0.05  # skill weight for missile hits in sm5
+SM5_MISSILE_WEIGHT_SIGMA = 0.01  # uncertainty weight for missile hits in sm5
+
+SM5_MISSILE_MEDIC_WEIGHT_MU = 0.1  # skill weight for medic missiles in sm5
+SM5_MISSILE_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic missiles in sm5
+
+# sm5 role specific multipliers (multiply the above weights by these for role specific ratings)
+
+SM5_COMMANDER_WEIGHT_MU = 1
+SM5_COMMANDER_WEIGHT_SIGMA = 1
+
+SM5_HEAVY_WEIGHT_MU = 1
+SM5_HEAVY_WEIGHT_SIGMA = 1
+
+SM5_SCOUT_WEIGHT_MU = 1
+SM5_SCOUT_WEIGHT_SIGMA = 1
+
+SM5_AMMO_WEIGHT_MU = 1
+SM5_AMMO_WEIGHT_SIGMA = 1.25 # give more uncertainty weight to ammo players since their role is less combat focused
+
+SM5_MEDIC_WEIGHT_MU = 1
+SM5_MEDIC_WEIGHT_SIGMA = 2 # give more uncertainty weight to medic players since their role is less combat focused
+
+SM5_ROLE_WEIGHT_MULTIPLIERS = {
+    #IntRole.COMMANDER: (SM5_COMMANDER_WEIGHT_MU, SM5_COMMANDER_WEIGHT_SIGMA),
+    #IntRole.HEAVY: (SM5_HEAVY_WEIGHT_MU, SM5_HEAVY_WEIGHT_SIGMA),
+    #IntRole.SCOUT: (SM5_SCOUT_WEIGHT_MU, SM5_SCOUT_WEIGHT_SIGMA),
+    #IntRole.AMMO: (SM5_AMMO_WEIGHT_MU, SM5_AMMO_WEIGHT_SIGMA),
+    #IntRole.MEDIC: (SM5_MEDIC_WEIGHT_MU, SM5_MEDIC_WEIGHT_SIGMA),
+}
+
+# laserball
+
+# TODO: check if weight_sigma should be the same for all events like in sm5
+# TODO: possibily only use overall game ratings for laserball to make ratings
+# fully depend on the game outcome, not individual events
+
+LB_STEAL_WEIGHT_MU = 0.2  # skill weight for steals in laserball
+LB_STEAL_WEIGHT_SIGMA = 0.2  # uncertainty weight for steals in laserball
+
+LB_GOAL_WEIGHT_MU = 1.5  # skill weight for goals in laserball
+LB_GOAL_WEIGHT_SIGMA = 1.5  # uncertainty weight for goals in laserball
+
+LB_ASSIST_WEIGHT_MU = 0.75  # skill weight for assists in laserball
+LB_ASSIST_WEIGHT_SIGMA = 0.75  # uncertainty weight for assists in laserball

@@ -16,11 +16,18 @@ def main():
     
     # start tailwind watcher
     try:
-        subprocess.Popen(
-            ["./assets/css/tailwindcss.exe", "-i", "assets/css/input.css", "-o", "assets/css/output.css", "--watch"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        if os.name == "nt":
+            subprocess.Popen(
+                ["./assets/css/tailwindcss.exe", "-i", "assets/css/input.css", "-o", "assets/css/output.css", "--watch"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        else:
+            subprocess.Popen(
+                ["./assets/css/tailwindcss", "-i", "assets/css/input.css", "-o", "assets/css/output.css", "--watch"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
     except Exception as e:
         print(f"Error starting tailwind watcher: {e}")
 

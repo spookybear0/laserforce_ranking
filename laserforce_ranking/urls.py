@@ -23,11 +23,11 @@ from . import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.IndexView.as_view(), name="index"),
-    path("players/", views.PlayerListView.as_view(), name="player_list"),
-    path("games/", views.GameListView.as_view(), name="game_list"),
+    path("players", views.PlayerListView.as_view(), name="player_list"),
+    path("games", views.GameListView.as_view(), name="game_list"),
+    path("players/<int:pk>", views.PlayerView.as_view(), name="player_detail"),
+    path("about", views.AboutView.as_view(), name="about"),
 ]
-
-print(settings.MEDIA_URL)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
