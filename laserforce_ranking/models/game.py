@@ -2,7 +2,7 @@ from django.db import models
 from abc import abstractmethod
 import sys
 from datetime import datetime
-from models.types import Team, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType
+from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType
 from dataclasses import dataclass
 import re
 
@@ -13,42 +13,36 @@ def strftime_ordinal(format: str, time_: datetime) -> str:
     return time_.strftime(format).replace("{S}", str(time_.day) + suffix(time_.day))
 
 class Team(models.Model):
-    index = models.IntField()
+    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    index = models.IntegerField()
     name = models.CharField(50)
-    color_enum = models.IntField() # no idea what this enum is
+    color_enum = models.IntegerField() # no idea what this enum is
     color_name = models.CharField(50)
+
     real_color_name = models.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
+    score = models.IntegerField() # total score for the team, useful for getting fast info
 
     @property
-    def enum(self) -> Team:
+    def enum(self) -> TeamType:
         return NAME_TO_TEAM[self.color_name]
 
     @property
     def short_name(self):
         """Returns the name without 'Team' in it to keep it short."""
         return re.sub(r"\s*Team\s*", "", self.name)
-@dataclass
-class PlayerInfo:
-    """Information about a player in one particular game."""
-    entity_start: EntityStarts
-    entity_end: EntityEnds
-    display_name: str
-
-    @property
-    def is_member(self) -> bool:
-        return not self.entity_start.entity_id.startswith("@")
 
 class EntityStart(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
     time = models.IntegerField() # milliseconds since game start, measures when initalized
-    entity_id = models.IntegerField()
+    entity_id = models.CharField(max_length=50) # ex: #ZRbsz (member) or @71 (battlesuit/base)
     type = models.CharField(max_length=50, choices=EntityType)
     name = models.CharField(max_length=50) # name of the entity, usually a codename, battlesuit name, or target name
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    level = models.IntField() # LF level, 0 in games without levels
+    level = models.IntegerField() # LF level, 0 in games without levels
     role = models.IntegerField(choices=IntRole)
     battlesuit = models.CharField(max_length=50) # name of the battlesuit (only different if logged in)
     member_id = models.CharField(max_length=50, null=True) # member id of the player, if included in the tdf, otherwise null
+    entity_end = models.OneToOneField("EntityEnd", on_delete=models.SET_NULL, null=True, blank=True) # the entity end for this entity, if it exists
 
     async def get_current_codename(self) -> str:
         # if the player has changed their name since the game, get the current name
@@ -57,6 +51,14 @@ class EntityStart(models.Model):
         if player:
             return player.codename
         return self.name
+    
+    async def get_penalty_count(self) -> int:
+        """Returns the number of penalties this player received in this game."""
+        penalty_count = await self.game.events.filter(
+            type=EventType.PENALTY,
+            entity1=self.entity_id
+        ).acount()
+        return penalty_count
 
 class Event(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
@@ -96,7 +98,27 @@ class EntityEnd(models.Model):
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
     type = models.CharField(max_length=50, choices=EntityEndType)
 
-    # TODO: current and previous ratings globally and arena-specific
+    """
+    ratings = {
+        "global": {
+            "mu": float,
+            "sigma": float,
+        },
+        "global_role": {
+            "mu": float,
+            "sigma": float,
+        },
+        "arena": {
+            "mu": float,
+            "sigma": float,
+        },
+        "arena_role": {
+            "mu": float,
+            "sigma": float,
+        },
+    }
+    """
+    ratings = models.JSONField(null=True) # current and previous ratings, if available
 
 @dataclass
 class PlayerInfo:
@@ -113,15 +135,14 @@ class PlayerInfo:
 # base game type for a laserforce game imported from tdf
 class Game(models.Model):
     id = models.AutoField(primary_key=True)
-    site_id = models.CharField(max_length=50)
+    site_id = models.CharField(max_length=50) # continent-arena (ex: 4-43)
     tdf_name = models.CharField(max_length=100) # name of tdf in filesystem for storage
-    file_version = models.DecimalField() # version is a decimal number, we can just store it as a string
+    file_version = models.CharField(max_length=20) # version is a decimal number, we can just store it as a string
     software_version = models.CharField(max_length=20)  # ^
-    arena = models.CharField(max_length=20) # continent-arena, (ex: 4-43)
     mission_type = models.IntegerField() # mission type, depends on site
     mission_name = models.CharField(max_length=100)
     ranked = models.BooleanField() # will this game affect player ratings and stats.
-    ended_early = models.BooleanField() # did the game end early?
+    force_ended_early = models.BooleanField() # did someone stop this game with the end game button
     # Real-life time when the game started. Keep in mind that MySQL does not store timezone information, so this is
     # a DATETIME(6) field. It has microsecond precision but no concept of timezone, so when you read it as a datetime
     # object, it will be the local time at the location where it was played, but timezone set to UTC.
@@ -129,8 +150,18 @@ class Game(models.Model):
     # it was at the local site to prevent headaches.
     start_time = models.DateTimeField()
     mission_duration = models.IntegerField() # how long the game can last if it doesn't end early, in milliseconds
+    penalty_amount = models.IntegerField() # how much score is added for each penalty, can be negative (ex: 0, -1000)
+    teams = models.ManyToManyField(Team, related_name="games")
+    entity_starts = models.ManyToManyField(EntityStart, related_name="games")
+    events = models.ManyToManyField(Event, related_name="games")
+    player_states = models.ManyToManyField(PlayerState, related_name="games")
+    scores = models.ManyToManyField(Score, related_name="games")
+    entity_ends = models.ManyToManyField(EntityEnd, related_name="games")
+
+    team1_size = models.IntegerField(null=True) # quick and dirty way to get team sizes
+    team2_size = models.IntegerField(null=True) # quick and dirty way to get team sizes
+
     log_time = models.DateTimeField(auto_now_add=True)
-    # TODO: related fields
 
     @property
     @abstractmethod
@@ -155,5 +186,19 @@ class Game(models.Model):
 
         return strftime_ordinal(f"%A, %B {'{S}'}, %Y at %{zero_pad}I:%M %p", self.start_time)
     
-    class Meta:
-        abstract = True
+
+    async def get_game_duration(self) -> int:
+        """Returns the ACTUAL mission duration time in milliseconds.
+
+        If the MISSION_END event exists, returns the time of that event. Otherwise, returns the time of the last event,
+        this happens when the game ends unnaturally.
+        """
+        # find "mission_end event"
+        end_event = await self.events.filter(type=EventType.MISSION_END).afirst()
+
+        if end_event:
+            return end_event.time
+        
+        last_event = await self.events.order_by("-time").afirst()
+
+        return last_event.time

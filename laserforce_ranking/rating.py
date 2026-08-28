@@ -3,10 +3,14 @@ import math
 import random
 import statistics
 from typing import List, Tuple, Union, Optional
+from .models.game import Game
+from .models.sm5 import SM5Game
 
-from openskill.models import PlackettLuceRating, PlackettLuce
+from openskill.models import PlackettLuceRating as Rating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
-from sanic.log import logger
+
+SM5_RANK_VERSION = 1
+LASERBALL_RANK_VERSION = 1
 
 # CONSTANTS
 
@@ -93,3 +97,9 @@ LB_GOAL_WEIGHT_SIGMA = 1.5  # uncertainty weight for goals in laserball
 
 LB_ASSIST_WEIGHT_MU = 0.75  # skill weight for assists in laserball
 LB_ASSIST_WEIGHT_SIGMA = 0.75  # uncertainty weight for assists in laserball
+
+async def update_sm5_rankings(game: SM5Game):
+    pass # TODO: rankings for sm5 games
+
+async def update_laserball_rankings(game: Game):
+    pass # TODO: rankings for laserball games

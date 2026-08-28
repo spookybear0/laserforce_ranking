@@ -2,18 +2,18 @@ from django.db import models
 
 class LaserballStats(models.Model):
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
-    goals = models.IntField()
-    assists = models.IntField()
-    passes = models.IntField()
-    steals = models.IntField()
-    clears = models.IntField()
-    blocks = models.IntField()
-    shots_fired = models.IntField()
-    shots_hit = models.IntField()
-    started_with_ball = models.IntField()
-    times_stolen = models.IntField()
-    times_blocked = models.IntField()
-    passes_received = models.IntField()
+    goals = models.IntegerField()
+    assists = models.IntegerField()
+    passes = models.IntegerField()
+    steals = models.IntegerField()
+    clears = models.IntegerField()
+    blocks = models.IntegerField()
+    shots_fired = models.IntegerField()
+    shots_hit = models.IntegerField()
+    started_with_ball = models.IntegerField()
+    times_stolen = models.IntegerField()
+    times_blocked = models.IntegerField()
+    passes_received = models.IntegerField()
 
     @property
     def mvp_points(self) -> float:

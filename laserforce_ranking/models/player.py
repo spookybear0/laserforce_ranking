@@ -1,10 +1,12 @@
 from django.db import models
-from types import Permission
+from .types import Permission, IntRole
+from typing import Optional
+from laserforce_ranking.rating import Rating
 
 """
 Player.ratings specification:
 [
-    "general": {
+    "global": {
         "sm5_mu": float,
         "sm5_sigma": float,
         "commander_mu": float,
@@ -20,7 +22,7 @@ Player.ratings specification:
         "laserball_mu": float,
         "laserball_sigma": float,
     }
-    arena_id(int): {
+    site_id(int): {
         "sm5_mu": float,
         "sm5_sigma": float,
         "commander_mu": float,
@@ -48,13 +50,34 @@ class Player(models.Model):
 
     # general db stuff
 
-    timestamp = models.DatetimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     # account stuff
-    password = models.CharField(max_length=255, null=True)  # hashed password
+    password = models.CharField(max_length=255, null=True) # hashed password
     permissions = models.IntegerField(choices=Permission, default=Permission.USER)
 
     # TODO: rfid
 
+    async def get_rating(self, game_type: str, role: Optional[IntRole], site: Optional[str]):
+        """
+        Get specified rating from the player.ratings json object
+        """
+
+        key_1 = "global"
+
+        if site is not None:
+            key_1 = site
+
+        if role is None:
+            key_2 = f"{game_type.lower()}_"
+        else:
+            key_2 = f"{role.name.lower()}_"
+       
+        mu = self.ratings[key_1][f"{key_2}_mu"]
+        sigma = self.ratings[key_1][f"{key_2}_sigma"]
+
+        return Rating(mu, sigma)
+        
+
     def __str__(self):
-        return self.name
+        return self.codename

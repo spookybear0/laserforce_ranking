@@ -87,8 +87,7 @@ class _TeamDefinition:
     def __hash__(self):
         return self.color.__hash__()
 
-
-class Team(Enum):
+class TeamType(Enum):
     # neutral team, sometimes None is used instead of this
     NEUTRAL = _TeamDefinition(color="neutral", element="Neutral", css_class="neutral-team", css_color_name="white",
                               dim_color=RgbColor(red=68, green=68, blue=68), plain_color="rgb(255, 255, 255)")
@@ -125,7 +124,7 @@ class Team(Enum):
 
     @property
     def css_class(self) -> str:
-        """CSS class to use to show text using the color of this team."""
+        """CSS class to use to show text using the color of this Team."""
         return self.value.css_class
 
     @property
@@ -166,28 +165,28 @@ class Team(Enum):
 
 # Mapping of opposing teams in SM5 games.
 SM5_ENEMY_TEAM = {
-    Team.GREEN: Team.RED,
-    Team.RED: Team.GREEN,
+    TeamType.GREEN: TeamType.RED,
+    TeamType.RED: TeamType.GREEN,
 }
 
 # Name to team
 
 NAME_TO_TEAM = {
     # neutral/none
-    "Neutral": Team.NEUTRAL,
-    None: Team.NONE,
-    "None": Team.NONE,
+    "Neutral": TeamType.NEUTRAL,
+    None: TeamType.NONE,
+    "None": TeamType.NONE,
     # real teams
-    "Fire": Team.RED,
-    "Earth": Team.GREEN,
-    "Red": Team.RED,
-    "Green": Team.GREEN,
-    "Blue": Team.BLUE,
-    "Ice": Team.BLUE,
+    "Fire": TeamType.RED,
+    "Earth": TeamType.GREEN,
+    "Red": TeamType.RED,
+    "Green": TeamType.GREEN,
+    "Blue": TeamType.BLUE,
+    "Ice": TeamType.BLUE,
     # some arenas have different team names
     # laserball ramps
-    "Yellow": Team.YELLOW,
-    "Purple": Team.PURPLE,
+    "Yellow": TeamType.YELLOW,
+    "Purple": TeamType.PURPLE,
 }
 
 
@@ -311,6 +310,6 @@ class EntityEndType(models.IntegerChoices):
     ENDED_NORMAL = 2
     ELIMATED = 4
 
-class Permission(models.IntegerChoices)
+class Permission(models.IntegerChoices):
     USER = 0
     ADMIN = 1
