@@ -5,8 +5,8 @@ import asyncio
 
 
 async def startup():
-    from laserforce_ranking.tdf import import_legacy_tdf, scrape_lfstats_tdf
-    await scrape_lfstats_tdf()
+    from laserforce_ranking.tdf import import_legacy_tdf, scrape_lfstats_tdf, mass_parse_tdfs
+    #await mass_parse_tdfs()
 
 class LaserforceRankingConfig(AppConfig):
     name = "laserforce_ranking"

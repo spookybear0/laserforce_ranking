@@ -97,6 +97,7 @@ class EntityEnd(models.Model):
     time = models.IntegerField() # milliseconds since game start, measures when destroyed or left
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
     type = models.CharField(max_length=50, choices=EntityEndType)
+    score = models.IntegerField() # final score for the entity
 
     """
     ratings = {

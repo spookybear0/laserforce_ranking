@@ -8,6 +8,48 @@ from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA
 from laserforce_ranking.models.player import Player
 import aiohttp
 from bs4 import BeautifulSoup
+from playwright.async_api import async_playwright
+import os
+
+SITES = {
+    "Loveland": "4-19",
+    "Brisbane": "1-1",
+    "Syracuse": "4-23",
+    # skip invasion
+    "St George": "4-2",
+    "Auckland Wairau": "3-3",
+    "Detroit": "4-6",
+    "Lasergame Říčany": "20-7",
+    "PowerLaser Stuttgart": "21-8",
+    "LaserTag Darmstadt": "21-70",
+    "Wollongong Revolution": "1-58",
+    "Auckland Game Over": "3-7",
+    "Peterborough": "7-2",
+    "Cheltanham": "7-13",
+    "Sydney Underworld": "1-64",
+    "Huddersfield": "7-8",
+    "Lasergame Beroun": "20-18"
+}
+
+# some may be inaccurate
+SITE_TIMEZONES = {
+    "4-19": "+07:00",  # America/Denver
+    "1-1": "+10:00",   # Australia/Brisbane
+    "4-23": "-05:00",  # America/New_York
+    "4-2": "+07:00",   # America/Denver
+    "3-3": "+13:00",   # Pacific/Auckland
+    "4-6": "-05:00",   # America/New_York
+    "20-7": "+02:00",  # Europe/Prague
+    "21-8": "+02:00",  # Europe/Berlin
+    "21-70": "+02:00", # Europe/Berlin
+    "1-58": "+11:00",  # Australia/Sydney
+    "3-7": "+13:00",   # Pacific/Auckland
+    "7-2": "+00:00",   # Europe/London
+    "7-13": "+00:00",  # Europe/London
+    "1-64": "+11:00",  # Australia/Sydney
+    "7-8": "+00:00",   # Europe/London
+    "20-18": "+02:00"  # Europe/Prague
+}
 
 def element_to_color(element: str) -> str:
     conversion = {
@@ -47,7 +89,6 @@ async def import_legacy_tdf():
     for game_type in ["sm5", "laserball"]:
         i = 1
         while True:
-            print(i, game_type)
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"https://laserforce.spoo.uk/api/game/{game_type}/{i}/tdf") as resp:
                     if resp.status == 404 or "404 - Not Found" in (await resp.text()):
@@ -58,7 +99,6 @@ async def import_legacy_tdf():
                             i += 1
                             continue
                     
-                    print(await resp.text())
                     data = await resp.json()
 
                     # save tdf to disk
@@ -73,39 +113,72 @@ async def import_legacy_tdf():
 
 
 async def scrape_lfstats_tdf():
-    SITES = {
-        "Loveland": "4-19",
-        "Brisbane": "1-1",
-        "Syracuse": "4-23",
-        # skip invasion
-        "St George": "4-2",
-        "Auckland Wairau": "3-3",
-        "Detroit": "4-6",
-        "Lasergame Říčany": "20-7",
-        "PowerLaser Stuttgart": "21-8",
-        "LaserTag Darmstadt": "21-70",
-        "Wollongong Revolution": "1-58",
-        "Auckland Game Over": "3-7",
-        "Peterborough": "7-2",
-        "Cheltanham": "7-13",
-        "Sydney Underworld": "1-64",
-        "Huddersfield": "7-8",
-        "Lasergame Beroun": "20-18"
-    }
-
     # scrape https://lfstats.com/games?scope=social&center=<center>
     # pagninated list 
 
-    async with aiohttp.ClientSession() as session:
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        context = await browser.new_context()
+        page = await context.new_page()
+
         for center, site_id in SITES.items():
             print(f"Scraping {center} ({site_id})")
-            async with session.get(f"https://lfstats.com/games?scope=social&center={site_id}") as resp:
-                html = await resp.text()
-                soup = BeautifulSoup(html, "html.parser")
+            await page.goto(f"https://lfstats.com/games?scope=social&center={site_id}")
+            page_num = 0
+            while True:
+                # Wait for the page to load
+                await page.wait_for_selector(".p-2.align-middle.whitespace-nowrap")
+                # Find all links to tdfs
+                links = await page.query_selector_all(".p-2.align-middle.whitespace-nowrap a")
+                hrefs = [(await link.get_attribute("href")).split("/")[-1] for link in links]
 
-                # find all links to tdfs
-                links = soup.find_all(class_="text-blue-700")
-                print(links)
+                print(f"Found {len(hrefs)} tdfs on page {page_num} for {center} ({site_id})")
+                for href in hrefs:
+                    # check if we already have this tdf
+                    tdf_name = f"{href}.tdf"
+                    tdf_path = Path(f"tdfs/{tdf_name}")
+
+                    if os.path.exists(tdf_path):
+                        print(f"Already have {tdf_name}, skipping")
+                        continue
+
+                    # get tdf from link
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(f"https://lfstats-modern-archive.s3.us-west-1.amazonaws.com/{href}.tdf") as tdf_resp:
+                            if tdf_resp.status == 404 or "404 - Not Found" in (await tdf_resp.text()):
+                                continue
+
+                            data = await tdf_resp.text()
+
+                            # save tdf to disk
+
+                            if not tdf_path.exists():
+                                os.makedirs(tdf_path.parent, exist_ok=True)
+
+                            # Remove extra blank lines
+                            data = "\n".join(line for line in data.splitlines() if line.strip())
+
+                            with open(tdf_path, "w", encoding="utf-16") as f:
+                                f.write(data)
+
+                # Check if there is a next page, if so, navigate to it
+                next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
+                if next_button:
+                    await next_button.click()
+                    await page.wait_for_timeout(1000)  # Wait for the next page to load
+                    page_num += 1 
+                else:
+                    print(f"Finished scraping {center} ({site_id})")
+                    break
+
+        await browser.close()
+
+async def mass_parse_tdfs():
+    tdf_dir = Path("tdfs")
+    for tdf_file in tdf_dir.glob("*.tdf"):
+        print(f"Parsing {tdf_file}")
+        if await parse_tdf(tdf_file):
+            return
 
 # tdf parsing
 
@@ -143,13 +216,26 @@ async def parse_tdf(file_location: Path):
             case "0": # general info
                 file_version = data[1]
                 program_version = data[2]
-                site = data[3] # site id, ex: 4-43 (4 is north america)
+                site = data[3] # site id, ex: 4-43
             case "1": # mission info
                 mission_type = int(data[1]) # site dependant enum
                 mission_name = data[2] # mission name in system, dependant on site
                 start_time = data[3] # ex: 20260719204954 -> 2026-07-19 20:49:54
                 mission_duration = int(data[4]) # milliseconds
                 penalty_amount = int(data[5]) # score added for each penalty (ex: 0, -1000)
+
+                # convert to datetime with timezone
+                start_time_formatted = f"{start_time[0:4]}-{start_time[4:6]}-{start_time[6:8]} {start_time[8:10]}:{start_time[10:12]}:{start_time[12:14]}"
+
+                # add timezone for site
+                timezone = SITE_TIMEZONES.get(site, "UTC")
+                start_time_formatted += f" {timezone}"
+
+                # check if we already have this game in the database, if so, skip it
+                if await SM5Game.objects.filter(site_id=site, start_time=start_time_formatted).aexists(): \
+                    #or await LaserballGame.objects.filter(site_id=site, start_time=start_time_formatted).aexists():
+                    print(f"Game {file_location.name} already exists in the database, skipping")
+                    return
             case "2": # team info
                 index = int(data[1])
                 name = data[2]
@@ -157,13 +243,13 @@ async def parse_tdf(file_location: Path):
                 color_name = data[4]
                 real_color_name = element_to_color(color_name)
 
-                teams.append(Team(
+                teams[index] = Team(
                     index=index,
                     name=name,
                     color_enum=color_enum,
                     color_name=color_name,
                     real_color_name=real_color_name
-                ))
+                )
             case "3": # entity start
                 time = int(data[1]) # ms since start
                 entity_id = data[2] # ex: #ZRbsz (member) or @71 (battlesuit/base)
@@ -177,7 +263,7 @@ async def parse_tdf(file_location: Path):
 
                 team = teams.get(team_index)
 
-                entity_starts.append(EntityStart(
+                entity_starts[entity_id] = EntityStart(
                     time=time,
                     entity_id=entity_id,
                     type=entity_type,
@@ -187,7 +273,7 @@ async def parse_tdf(file_location: Path):
                     role=role,
                     battlesuit=battlesuit,
                     member_id=member_id
-                ))
+                )
             case "4": # event
                 time = int(data[1])
                 event_type = EventType(data[2])
@@ -224,7 +310,7 @@ async def parse_tdf(file_location: Path):
             case "6": # entity end
                 time = int(data[1])
                 entity_id = data[2]
-                entity_end_type = EntityEndType(data[3])
+                entity_end_type = EntityEndType(int(data[3]))
                 score = int(data[4])
 
                 entity_start = entity_starts.get(entity_id)
@@ -237,7 +323,6 @@ async def parse_tdf(file_location: Path):
                 )
 
                 entity_ends.append(entity_end)
-                entity_start.entity_end = entity_end
             case "7": # sm5 stats
                 entity_id = data[1]
                 shots_hit = int(data[2])
@@ -299,12 +384,22 @@ async def parse_tdf(file_location: Path):
                 time = int(data[1])
                 entity_id = data[2]
                 player_state_type = PlayerStateType(int(data[3]))
+
+                entity_start = entity_starts.get(entity_id)
         
                 player_states.append(PlayerState(
                     time=time,
                     entity=entity_start,
                     state=player_state_type
                 ))
+
+    # combine entity_ends.score onto team.score
+
+    for entity_end in entity_ends:
+        if entity_end.entity.team:
+            if entity_end.entity.team.score is None:
+                entity_end.entity.team.score = 0
+            entity_end.entity.team.score += entity_end.score
 
     # seperate into team1 and team2
     # there is no specification which color team1 or team2 is
@@ -314,7 +409,7 @@ async def parse_tdf(file_location: Path):
 
     index = 1
 
-    for t in teams:
+    for t in teams.values():
         if not t.color_name or not t.color_enum or t.name == "Neutral":
             continue
 
@@ -327,8 +422,8 @@ async def parse_tdf(file_location: Path):
 
     # get team sizes
 
-    team1_size = len([e for e in entity_starts if e.team == team1 and e.type == EntityType.PLAYER])
-    team2_size = len([e for e in entity_starts if e.team == team2 and e.type == EntityType.PLAYER])
+    team1_size = len([e for e in entity_starts.values() if e.team == team1 and e.type == EntityType.PLAYER])
+    team2_size = len([e for e in entity_starts.values() if e.team == team2 and e.type == EntityType.PLAYER])
 
     if force_ended_early:
         print("Game ended early, skipping ranking") # TODO: log
@@ -344,7 +439,7 @@ async def parse_tdf(file_location: Path):
         "mission_type": mission_type,
         "mission_name": mission_name,
         "force_ended_early": force_ended_early,
-        "start_time": start_time,
+        "start_time": start_time_formatted,
         "mission_duration": mission_duration,
         "penalty_amount": penalty_amount,
         "teams": teams,
@@ -372,31 +467,31 @@ async def parse_tdf(file_location: Path):
         print(f"Unknown mission type: {mission_type} ({mission_name})")
         return
 
-    for e in entity_starts:
+    for entity_id, e in entity_starts.items():
         # is a player and logged in
-        if e.entity_id.startswith("@") and e.name == e.battlesuit:
+        if entity_id.startswith("@") and e.name == e.battlesuit:
             continue
 
         db_member_id = e.member_id if e.member_id else ""
 
         if e.type == EntityType.PLAYER:
             # update player name if we have a new one and we have entity_id
-            if await Player.filter(entity_id=e.entity_id).exists() and (
-                    await Player.filter(entity_id=e.entity_id).first()).codename != e.name:
-                player = await Player.filter(entity_id=e.entity_id).first()
+            if await Player.objects.filter(entity_id=entity_id).aexists() and (
+                    await Player.objects.filter(entity_id=entity_id).afirst()).codename != e.name:
+                player = await Player.objects.filter(entity_id=entity_id).afirst()
                 player.codename = e.name
                 player.player_id = db_member_id
-                await player.save()
+                await player.asave()
             # update player_id if we have entity_id and don't have player_id
-            elif await Player.filter(entity_id=e.entity_id).exists() and (
-                    await Player.filter(entity_id=e.entity_id).first()).player_id == "":
-                player = await Player.filter(entity_id=e.entity_id).first()
+            elif await Player.objects.filter(entity_id=entity_id).aexists() and (
+                    await Player.objects.filter(entity_id=entity_id).afirst()).player_id == "":
+                player = await Player.objects.filter(entity_id=entity_id).afirst()
                 player.player_id = db_member_id
-                await player.save()
+                await player.asave()
             # create new player if we don't have a name or entity_id
-            elif not await Player.filter(codename=e.name).exists() and not await Player.filter(
-                    entity_id=e.entity_id).exists():
-                await Player.create(player_id=db_member_id, codename=e.name, entity_id=e.entity_id)
+            elif not await Player.objects.filter(codename=e.name).aexists() and not await Player.objects.filter(
+                    entity_id=entity_id).aexists():
+                await Player.objects.acreate(player_id=db_member_id, codename=e.name, entity_id=entity_id)
 
 
 async def process_sm5(
@@ -410,8 +505,8 @@ async def process_sm5(
     start_time: str,
     mission_duration: int,
     penalty_amount: int,
-    teams: List[Team],
-    entity_starts: List[EntityStart],
+    teams: Dict[int, Team],
+    entity_starts: Dict["str", EntityStart],
     events: List[Event],
     scores: List[Score],
     entity_ends: List[EntityEnd],
@@ -424,6 +519,8 @@ async def process_sm5(
 ):
     # special points
 
+    # TODO: fix special points being negative
+
     # key: player entity id, value: special points
     # this is needed because tdf doesn't save the ending special points
     # and leaderboards usually have this info
@@ -432,15 +529,15 @@ async def process_sm5(
     # key: player entity id, value: whether the player can gain specials (False if heavy or has rapid fire on)
     player_can_gain_specials: Dict[str, bool] = {}
 
-    for entity_start in entity_starts:
+    for entity_id, entity_start in entity_starts.items():
         if entity_start.type == EntityType.PLAYER:
             # if this is a player, determine if they can gain specials (heavies can't gain specials and scouts can't gain specials until they get rapid fire)
 
-            player_special_points[entity_start.entity_id] = 0
+            player_special_points[entity_id] = 0
             if entity_start.role == IntRole.HEAVY:
-                player_can_gain_specials[entity_start.entity_id] = False
+                player_can_gain_specials[entity_id] = False
             else:
-                player_can_gain_specials[entity_start.entity_id] = True
+                player_can_gain_specials[entity_id] = True
 
     for event in events:
         # handle special points
@@ -478,6 +575,61 @@ async def process_sm5(
             if entity_starts[event.entity1].role == IntRole.SCOUT:
                 # rapid fire turned off, specials can be gained again
                 player_can_gain_specials[event.entity1] = True
+    
+    # create sm5 game
+
+    game = SM5Game(
+        site_id=site_id,
+        tdf_name=tdf_name,
+        file_version=file_version,
+        software_version=software_version,
+        mission_type=mission_type,
+        mission_name=mission_name,
+        ranked=True,
+        force_ended_early=force_ended_early,
+        start_time=start_time,
+        mission_duration=mission_duration,
+        penalty_amount=penalty_amount,
+        last_team_standing=None,
+        team1_size=team1_size,
+        team2_size=team2_size
+    )
+
+    await game.asave()
+
+    print(f"Saving game {game.id} to database")
+    for team in teams.values():
+        team.game = game
+        await team.asave()
+    await game.teams.aset(teams.values())
+    for entity_start in entity_starts.values():
+        entity_start.game = game
+        await entity_start.asave()
+    await game.entity_starts.aset(entity_starts.values())
+    for event in events:
+        event.game = game
+        await event.asave()
+    await game.events.aset(events)
+    for score in scores:
+        score.game = game
+        await score.asave()
+    await game.scores.aset(scores)
+    for entity_end in entity_ends:
+        entity_end.game = game
+        entity_end.entity.entity_end = entity_end
+        await entity_end.asave()
+    await game.entity_ends.aset(entity_ends)
+    for player_state in player_states:
+        player_state.game = game
+        await player_state.asave()
+    await game.player_states.aset(player_states)
+    for sm5_stat in sm5_stats:
+        sm5_stat.special_points = player_special_points.get(sm5_stat.entity.entity_id, 0)
+        sm5_stat.entity = entity_starts[sm5_stat.entity.entity_id]
+        sm5_stat.entity_end = sm5_stat.entity.entity_end
+        sm5_stat.game = game
+        await sm5_stat.asave()
+    await game.sm5_stats.aset(sm5_stats)
 
     # determine if the game should be ranked automatically
 
@@ -485,8 +637,8 @@ async def process_sm5(
 
     # 5 < team size < 7 and teams are not of unequal size (ratings are not tested for unequal team sizes)
 
-    team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").count()
-    team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").count()
+    team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").acount()
+    team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").acount()
 
     if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
         ranked = False
@@ -495,7 +647,7 @@ async def process_sm5(
     # ex: a standard sm5 team has 1 commander, 1 heavy, 1 scout, 1 medic, 1 ammo, and 1-3 scouts
 
     # for each team
-    for t in teams:
+    for t in teams.values():
         total_count = 0
         commander_count = 0
         heavy_count = 0
@@ -503,7 +655,7 @@ async def process_sm5(
         ammo_count = 0
         medic_count = 0
 
-        for e in entity_starts:
+        for e in entity_starts.values():
             if e.type == EntityType.PLAYER and e.team == t:
                 total_count += 1
                 if e.role == IntRole.COMMANDER:
@@ -523,47 +675,23 @@ async def process_sm5(
         if commander_count != 1 or heavy_count != 1 or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
             ranked = False
 
-    
-    
-    # create sm5 game
-
-    game = SM5Game(
-        site_id=site_id,
-        tdf_name=tdf_name,
-        file_version=file_version,
-        software_version=software_version,
-        mission_type=mission_type,
-        mission_name=mission_name,
-        ranked=ranked,
-        force_ended_early=force_ended_early,
-        start_time=start_time,
-        mission_duration=mission_duration,
-        penalty_amount=penalty_amount,
-        teams=teams,
-        entity_starts=entity_starts,
-        events=events,
-        player_states=player_states,
-        scores=scores,
-        entity_ends=entity_ends,
-        sm5_stats=sm5_stats,
-        last_team_standing=None
-    )
+    game.ranked = ranked
 
     # get last team_standing
     alive_player_count = {}
-    entities = await game.entity_starts.all()
 
-    for entity in entities:
-        player = await SM5Stats.filter(entity__id=entity.id).first()
+    async for entity in game.entity_starts.filter(type=EntityType.PLAYER).prefetch_related("team").all():
+        player = await SM5Stats.objects.filter(entity__id=entity.id).afirst()
 
         if player and player.lives_left > 0:
-            alive_player_count[(await entity.team).enum] = True
+            alive_player_count[entity.team.color_enum] = alive_player_count.get(entity.team.color_enum, 0) + 1
 
     # If there isn't exactly one team with alive players at the end, this wasn't an elimination game.
     if len(alive_player_count) == 1:
-        game.last_team_standing = await game.entity_starts.filter(team__enum=list(alive_player_count.keys())[0]).first().team
-    
-    
+        entity_start = await game.entity_starts.filter(team__color_enum=list(alive_player_count.keys())[0]).afirst()
+        from asgiref.sync import sync_to_async
+        game.last_team_standing = await sync_to_async(lambda: entity_start.team)()
+
 
     # doubles %
 
@@ -573,13 +701,12 @@ async def process_sm5(
     # rankings
 
     if ranked:
-
         if await update_sm5_rankings(game):
             pass#logger.info(f"Updated player rankings for game {game.id}")
         else:
             pass#logger.error(f"Failed to update player rankings for game {game.id}")
     else:  # still need to add current_rating and previous_rating
-        for entity_end in await game.entity_ends.filter(entity__type=EntityType.PLAYER).all():
+        async for entity_end in game.entity_ends.filter(entity__type=EntityType.PLAYER).all():
             entity_start = entity_end.entity
             entity_id = entity_start.entity_id
             if entity_id.startswith("@"):
@@ -620,9 +747,9 @@ async def process_sm5(
                 entity_end.previous_role_rating_mu, entity_end.current_role_rating_mu, \
                 entity_end.previous_site_role_rating_mu, entity_end.current_site_role_rating_mu = SIGMA
 
-            await entity_end.save()
+            await entity_end.asave()
 
-    await game.save()
+    await game.asave()
 
 async def process_laserball(
     site_id: str,

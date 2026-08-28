@@ -31,7 +31,7 @@ class SM5Stats(models.Model):
     missiled_team = models.IntegerField()
 
     # custom addition that's not in the tdf
-    special_points = models.IntegerField()
+    special_points = models.IntegerField(null=True) # add after game save
 
     @property
     def bases_destroyed(self) -> int:
@@ -87,17 +87,18 @@ class SM5Game(Game):
         medic_death_time = await self.get_medic_death_time(team)
 
         # go through every resupply
-        resupplies = await self.events \
+        resupplies = [event async for event in self.events \
             .filter(type__in=[EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]) \
             .filter(
                 time__lte=medic_death_time if medic_death_time is not None else self.mission_duration
-            ).all()
+            ).all()]
 
         groups = {}
 
         for resupply in resupplies:
             entity1 = await self.entity_starts.filter(entity_id=resupply.entity1).afirst()
-            entity1_team = await entity1.team
+            from asgiref.sync import sync_to_async
+            entity1_team = await sync_to_async(lambda: entity1.team)()
 
             if entity1_team.name != team.name:
                 continue
