@@ -22,6 +22,8 @@ class Team(models.Model):
     real_color_name = models.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
     score = models.IntegerField() # total score for the team, useful for getting fast info
 
+    entity_starts = models.ManyToManyField("EntityStart", related_name="teams")
+
     @property
     def enum(self) -> TeamType:
         return NAME_TO_TEAM[self.color_name]
@@ -40,7 +42,7 @@ class EntityStart(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     level = models.IntegerField() # LF level, 0 in games without levels
     role = models.IntegerField(choices=IntRole)
-    battlesuit = models.CharField(max_length=50) # name of the battlesuit (only different if logged in)
+    battlesuit = models.CharField(max_length=50, null=True) # name of the battlesuit (only different if logged in)
     member_id = models.CharField(max_length=50, null=True) # member id of the player, if included in the tdf, otherwise null
     entity_end = models.OneToOneField("EntityEnd", on_delete=models.SET_NULL, null=True, blank=True) # the entity end for this entity, if it exists
 
@@ -101,22 +103,42 @@ class EntityEnd(models.Model):
 
     """
     ratings = {
-        "global": {
-            "mu": float,
-            "sigma": float,
+        "previous": {
+            "global": {
+                "mu": float,
+                "sigma": float,
+            },
+            "global_role": {
+                "mu": float,
+                "sigma": float,
+            },
+            "site": {
+                "mu": float,
+                "sigma": float,
+            },
+            "site_role": {
+                "mu": float,
+                "sigma": float,
+            },
         },
-        "global_role": {
-            "mu": float,
-            "sigma": float,
-        },
-        "arena": {
-            "mu": float,
-            "sigma": float,
-        },
-        "arena_role": {
-            "mu": float,
-            "sigma": float,
-        },
+        "current": {
+            "global": {
+                "mu": float,
+                "sigma": float,
+            },
+            "global_role": {
+                "mu": float,
+                "sigma": float,
+            },
+            "site": {
+                "mu": float,
+                "sigma": float,
+            },
+            "site_role": {
+                "mu": float,
+                "sigma": float,
+            },
+        }
     }
     """
     ratings = models.JSONField(null=True) # current and previous ratings, if available
@@ -158,6 +180,8 @@ class Game(models.Model):
     player_states = models.ManyToManyField(PlayerState, related_name="games")
     scores = models.ManyToManyField(Score, related_name="games")
     entity_ends = models.ManyToManyField(EntityEnd, related_name="games")
+
+    winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, related_name="won_games")
 
     team1_size = models.IntegerField(null=True) # quick and dirty way to get team sizes
     team2_size = models.IntegerField(null=True) # quick and dirty way to get team sizes

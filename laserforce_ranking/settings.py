@@ -57,7 +57,6 @@ ROOT_URLCONF = "laserforce_ranking.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -67,6 +66,14 @@ TEMPLATES = [
             ],
         },
     },
+    {
+        "BACKEND": "django.template.backends.jinja2.Jinja2",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "environment": "laserforce_ranking.jinja2.environment",
+        },
+    }
 ]
 
 WSGI_APPLICATION = "laserforce_ranking.wsgi.application"

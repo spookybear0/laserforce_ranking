@@ -1,55 +1,17 @@
 from pathlib import Path
-from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole
+from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITES, SITE_TIMEZONES, TeamType
 from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, Score
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
 from typing import Optional, List, Dict
-from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA
+from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA, BLANK_RATING
 from laserforce_ranking.models.player import Player
 import aiohttp
-from bs4 import BeautifulSoup
+from django.db import transaction
 from playwright.async_api import async_playwright
+from asgiref.sync import sync_to_async
 import os
-
-SITES = {
-    "Loveland": "4-19",
-    "Brisbane": "1-1",
-    "Syracuse": "4-23",
-    # skip invasion
-    "St George": "4-2",
-    "Auckland Wairau": "3-3",
-    "Detroit": "4-6",
-    "Lasergame Říčany": "20-7",
-    "PowerLaser Stuttgart": "21-8",
-    "LaserTag Darmstadt": "21-70",
-    "Wollongong Revolution": "1-58",
-    "Auckland Game Over": "3-7",
-    "Peterborough": "7-2",
-    "Cheltanham": "7-13",
-    "Sydney Underworld": "1-64",
-    "Huddersfield": "7-8",
-    "Lasergame Beroun": "20-18"
-}
-
-# some may be inaccurate
-SITE_TIMEZONES = {
-    "4-19": "+07:00",  # America/Denver
-    "1-1": "+10:00",   # Australia/Brisbane
-    "4-23": "-05:00",  # America/New_York
-    "4-2": "+07:00",   # America/Denver
-    "3-3": "+13:00",   # Pacific/Auckland
-    "4-6": "-05:00",   # America/New_York
-    "20-7": "+02:00",  # Europe/Prague
-    "21-8": "+02:00",  # Europe/Berlin
-    "21-70": "+02:00", # Europe/Berlin
-    "1-58": "+11:00",  # Australia/Sydney
-    "3-7": "+13:00",   # Pacific/Auckland
-    "7-2": "+00:00",   # Europe/London
-    "7-13": "+00:00",  # Europe/London
-    "1-64": "+11:00",  # Australia/Sydney
-    "7-8": "+00:00",   # Europe/London
-    "20-18": "+02:00"  # Europe/Prague
-}
+import traceback
 
 def element_to_color(element: str) -> str:
     conversion = {
@@ -112,71 +74,82 @@ async def import_legacy_tdf():
             i += 1
 
 
-async def scrape_lfstats_tdf():
+async def scrape_lfstats_tdf(site_id: Optional[str] = None):
     # scrape https://lfstats.com/games?scope=social&center=<center>
     # pagninated list 
-
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         context = await browser.new_context()
         page = await context.new_page()
 
-        for center, site_id in SITES.items():
-            print(f"Scraping {center} ({site_id})")
+        print(f"Scraping {site_id}")
+        if site_id:
             await page.goto(f"https://lfstats.com/games?scope=social&center={site_id}")
-            page_num = 0
-            while True:
-                # Wait for the page to load
-                await page.wait_for_selector(".p-2.align-middle.whitespace-nowrap")
-                # Find all links to tdfs
-                links = await page.query_selector_all(".p-2.align-middle.whitespace-nowrap a")
-                hrefs = [(await link.get_attribute("href")).split("/")[-1] for link in links]
+        else:
+            await page.goto(f"https://lfstats.com/games?scope=social")
 
-                print(f"Found {len(hrefs)} tdfs on page {page_num} for {center} ({site_id})")
-                for href in hrefs:
-                    # check if we already have this tdf
-                    tdf_name = f"{href}.tdf"
-                    tdf_path = Path(f"tdfs/{tdf_name}")
+        # Wait for the page to load
+        await page.wait_for_selector(".p-2.align-middle.whitespace-nowrap")
 
-                    if os.path.exists(tdf_path):
-                        print(f"Already have {tdf_name}, skipping")
-                        continue
+        # print page content
 
-                    # get tdf from link
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(f"https://lfstats-modern-archive.s3.us-west-1.amazonaws.com/{href}.tdf") as tdf_resp:
-                            if tdf_resp.status == 404 or "404 - Not Found" in (await tdf_resp.text()):
-                                continue
+        # click on start_date to sort by oldest first
 
-                            data = await tdf_resp.text()
+        started = await page.query_selector("thead[data-slot='table-header'] > tr > th:nth-child(3) > button")
+        if started:
+            await started.click()
+            await page.wait_for_timeout(2000)
 
-                            # save tdf to disk
+        page_num = 0
+        while True:
+            # Find all links to tdfs
+            links = await page.query_selector_all(".p-2.align-middle.whitespace-nowrap a")
+            hrefs = [(await link.get_attribute("href")).split("/")[-1] for link in links]
 
-                            if not tdf_path.exists():
-                                os.makedirs(tdf_path.parent, exist_ok=True)
+            print(f"Found {len(hrefs)} tdfs on page {page_num} for {site_id}")
+            for href in hrefs:
+                # check if we already have this tdf
+                tdf_name = f"{href}.tdf"
+                tdf_path = Path(f"tdfs/{tdf_name}")
 
-                            # Remove extra blank lines
-                            data = "\n".join(line for line in data.splitlines() if line.strip())
+                if os.path.exists(tdf_path):
+                    print(f"Already have {tdf_name}, skipping")
+                    continue
 
-                            with open(tdf_path, "w", encoding="utf-16") as f:
-                                f.write(data)
+                # get tdf from link
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(f"https://lfstats-modern-archive.s3.us-west-1.amazonaws.com/{href}.tdf") as tdf_resp:
+                        if tdf_resp.status == 404 or "404 - Not Found" in (await tdf_resp.text()):
+                            continue
 
-                # Check if there is a next page, if so, navigate to it
-                next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
-                if next_button:
-                    await next_button.click()
-                    await page.wait_for_timeout(1000)  # Wait for the next page to load
-                    page_num += 1 
-                else:
-                    print(f"Finished scraping {center} ({site_id})")
-                    break
+                        data = await tdf_resp.text()
+
+                        # save tdf to disk
+
+                        if not tdf_path.exists():
+                            os.makedirs(tdf_path.parent, exist_ok=True)
+
+                        # Remove extra blank lines
+                        data = "\n".join(line for line in data.splitlines() if line.strip())
+
+                        with open(tdf_path, "w", encoding="utf-16") as f:
+                            f.write(data)
+
+            # Check if there is a next page, if so, navigate to it
+            next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
+            if next_button:
+                await next_button.click()
+                await page.wait_for_timeout(1000)  # Wait for the next page to load
+                page_num += 1 
+            else:
+                print(f"Finished scraping {site_id}")
+                break
 
         await browser.close()
 
 async def mass_parse_tdfs():
     tdf_dir = Path("tdfs")
     for tdf_file in tdf_dir.glob("*.tdf"):
-        print(f"Parsing {tdf_file}")
         if await parse_tdf(tdf_file):
             return
 
@@ -186,6 +159,8 @@ async def parse_tdf(file_location: Path):
     # first we will process the general information about the game, then we will
     # process the more specific game type
     # current types allowed: sm5, laserball
+
+    print(f"Parsing {file_location}")
 
     file = open(file_location, "r", encoding="utf-16")
 
@@ -221,8 +196,8 @@ async def parse_tdf(file_location: Path):
                 mission_type = int(data[1]) # site dependant enum
                 mission_name = data[2] # mission name in system, dependant on site
                 start_time = data[3] # ex: 20260719204954 -> 2026-07-19 20:49:54
-                mission_duration = int(data[4]) # milliseconds
-                penalty_amount = int(data[5]) # score added for each penalty (ex: 0, -1000)
+                mission_duration = int(data[4] if len(data) > 4 else 900000) # how long the game can last if it doesn't end early, in milliseconds
+                penalty_amount = int(data[5] if len(data) > 5 else -1000) # score added for each penalty (ex: 0, -1000)
 
                 # convert to datetime with timezone
                 start_time_formatted = f"{start_time[0:4]}-{start_time[4:6]}-{start_time[6:8]} {start_time[8:10]}:{start_time[10:12]}:{start_time[12:14]}"
@@ -258,7 +233,7 @@ async def parse_tdf(file_location: Path):
                 team_index = int(data[5])
                 level = int(data[6])
                 role = int(data[7]) # "category"
-                battlesuit = data[8]
+                battlesuit = data[8] if len(data) > 8 else None
                 member_id = data[9] if len(data) > 9 else None
 
                 team = teams.get(team_index)
@@ -428,10 +403,56 @@ async def parse_tdf(file_location: Path):
     if force_ended_early:
         print("Game ended early, skipping ranking") # TODO: log
         return
+    
+    # players
+
+    for entity_id, e in entity_starts.items():
+        # is a player and logged in
+        if entity_id.startswith("@") and e.name == e.battlesuit:
+            continue
+
+        db_member_id = e.member_id if e.member_id else None
+
+        if e.type == EntityType.PLAYER:
+            # update player name if we have a new one and we have entity_id
+            if await Player.objects.filter(entity_id=entity_id).aexists() and (
+                    await Player.objects.filter(entity_id=entity_id).afirst()).codename != e.name:
+                player = await Player.objects.filter(entity_id=entity_id).afirst()
+                player.codename = e.name
+                player.player_id = db_member_id
+                await player.asave()
+            # update player_id if we have entity_id and don't have player_id
+            elif await Player.objects.filter(entity_id=entity_id).aexists() and (
+                    await Player.objects.filter(entity_id=entity_id).afirst()).player_id == "":
+                player = await Player.objects.filter(entity_id=entity_id).afirst()
+                player.player_id = db_member_id
+
+                split_ = db_member_id.split("-")
+                home_site = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else None
+                player.home_site = home_site
+
+                await player.asave()
+            # create new player if we don't have a name or entity_id
+            elif not await Player.objects.filter(codename=e.name).aexists() and not await Player.objects.filter(
+                    entity_id=entity_id).aexists():
+                
+                if db_member_id:
+                    split_ = db_member_id.split("-")
+                    home_site = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else None
+                else:
+                    home_site = None
+
+                ratings = {
+                    "global": BLANK_RATING,
+                }
+                ratings[site] = BLANK_RATING
+
+                await Player.objects.acreate(player_id=db_member_id, codename=e.name, entity_id=entity_id, home_site=home_site, ratings=ratings)
 
     # find game type
 
     base_args = {
+        "file_location": file_location,
         "site_id": site,
         "tdf_name": file_location.name,
         "file_version": file_version,
@@ -467,34 +488,9 @@ async def parse_tdf(file_location: Path):
         print(f"Unknown mission type: {mission_type} ({mission_name})")
         return
 
-    for entity_id, e in entity_starts.items():
-        # is a player and logged in
-        if entity_id.startswith("@") and e.name == e.battlesuit:
-            continue
-
-        db_member_id = e.member_id if e.member_id else ""
-
-        if e.type == EntityType.PLAYER:
-            # update player name if we have a new one and we have entity_id
-            if await Player.objects.filter(entity_id=entity_id).aexists() and (
-                    await Player.objects.filter(entity_id=entity_id).afirst()).codename != e.name:
-                player = await Player.objects.filter(entity_id=entity_id).afirst()
-                player.codename = e.name
-                player.player_id = db_member_id
-                await player.asave()
-            # update player_id if we have entity_id and don't have player_id
-            elif await Player.objects.filter(entity_id=entity_id).aexists() and (
-                    await Player.objects.filter(entity_id=entity_id).afirst()).player_id == "":
-                player = await Player.objects.filter(entity_id=entity_id).afirst()
-                player.player_id = db_member_id
-                await player.asave()
-            # create new player if we don't have a name or entity_id
-            elif not await Player.objects.filter(codename=e.name).aexists() and not await Player.objects.filter(
-                    entity_id=entity_id).aexists():
-                await Player.objects.acreate(player_id=db_member_id, codename=e.name, entity_id=entity_id)
-
 
 async def process_sm5(
+    file_location: Path,
     site_id: str,
     tdf_name: str,
     file_version: str,
@@ -517,241 +513,325 @@ async def process_sm5(
     team2_size: int,
     sm5_stats: List[SM5Stats],
 ):
-    # special points
+    try:
+        # special points
 
-    # TODO: fix special points being negative
+        # key: player entity id, value: special points
+        # this is needed because tdf doesn't save the ending special points
+        # and leaderboards usually have this info
+        # we'll update this dict as we parse events and then save the final values to the database when we parse the entity end events
+        player_special_points: Dict[str, int] = {}
+        # key: player entity id, value: whether the player can gain specials (False if heavy or has rapid fire on)
+        player_can_gain_specials: Dict[str, bool] = {}
 
-    # key: player entity id, value: special points
-    # this is needed because tdf doesn't save the ending special points
-    # and leaderboards usually have this info
-    # we'll update this dict as we parse events and then save the final values to the database when we parse the entity end events
-    player_special_points: Dict[str, int] = {}
-    # key: player entity id, value: whether the player can gain specials (False if heavy or has rapid fire on)
-    player_can_gain_specials: Dict[str, bool] = {}
+        for entity_id, entity_start in entity_starts.items():
+            if entity_start.type == EntityType.PLAYER:
+                # if this is a player, determine if they can gain specials (heavies can't gain specials and scouts can't gain specials until they get rapid fire)
 
-    for entity_id, entity_start in entity_starts.items():
-        if entity_start.type == EntityType.PLAYER:
-            # if this is a player, determine if they can gain specials (heavies can't gain specials and scouts can't gain specials until they get rapid fire)
+                player_special_points[entity_id] = 0
+                if IntRole(entity_start.role) == IntRole.HEAVY:
+                    player_can_gain_specials[entity_id] = False
+                else:
+                    player_can_gain_specials[entity_id] = True
 
-            player_special_points[entity_id] = 0
-            if entity_start.role == IntRole.HEAVY:
-                player_can_gain_specials[entity_id] = False
-            else:
-                player_can_gain_specials[entity_id] = True
+        for event in events:
+            # handle special points
+            if player_can_gain_specials.get(event.entity1, True): # if player can gain specials (not heavy or doesn't have rapid fire on)
+                match event.type:
+                    # give specials
+                    case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
+                        # only enemies (damaged/downed opponent still is used for teammates)
+                        if entity_starts[event.entity1].team.name != entity_starts[event.entity2].team.name:
+                            player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 1, 99)
+                    case EventType.MISSILE_DOWN_OPPONENT:
+                        if entity_starts[event.entity1].team.name != entity_starts[event.entity2].team.name:
+                            player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 2, 99)
 
-    for event in events:
-        # handle special points
-        if player_can_gain_specials.get(event.entity1, True): # if player can gain specials (not heavy or doesn't have rapid fire on)
-            match event.type:
-                # give specials
-                case EventType.DAMAGED_OPPONENT | EventType.DOWNED_OPPONENT:
-                    # only enemies (damaged/downed opponent still is used for teammates)
-                    if entity_starts[event.entity1].team != entity_starts[event.entity1].team:
-                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 1, 99)
-                case EventType.MISSILE_DOWN_OPPONENT:
-                    if entity_starts[event.entity1].team != entity_starts[event.entity1].team:
-                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 2, 99)
+                    # remove specials
+                    case EventType.ACTIVATE_NUKE:
+                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 20, 99)
+                    case EventType.AMMO_BOOST:
+                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 15, 99)
+                    case EventType.LIFE_BOOST:
+                        player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
 
-                # remove specials
-                case EventType.ACTIVATE_NUKE:
-                    player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 20, 99)
-                case EventType.AMMO_BOOST:
-                    player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 15, 99)
-                case EventType.LIFE_BOOST:
-                    player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
+            # scouts can get sp from bases even with rapid
+            if event.type in [EventType.DESTROY_BASE, EventType.MISSILE_BASE_DESTROY, EventType.BASE_AWARDED] and IntRole(entity_starts[event.entity1].role) != IntRole.HEAVY:
+                player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 5, 99)
 
-        # scouts can get sp from bases even with rapid
-        if event.type in [EventType.DESTROY_BASE, EventType.MISSILE_BASE_DESTROY, EventType.BASE_AWARDED] and entity_starts[event.entity1].role != IntRole.HEAVY:
-            player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 5, 99)
+            # scout activated rapid
+            if event.type == EventType.ACTIVATE_RAPID_FIRE:
+                # rapid fire turned on, specials can't be gained until it's turned off
+                player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
+                player_can_gain_specials[event.entity1] = False
 
-        # scout activated rapid
-        if event.type == EventType.ACTIVATE_RAPID_FIRE:
-            # rapid fire turned on, specials can't be gained until it's turned off
-            player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
-            player_can_gain_specials[event.entity1] = False
+            # scout deactivated rapid from being resupplied ammo or lives
+            if event.type in [EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]:
+                if IntRole(entity_starts[event.entity2].role) == IntRole.SCOUT:
+                    # rapid fire turned off, specials can be gained again
+                    player_can_gain_specials[event.entity2] = True
 
-        # scout deactivated rapid from being resupplied ammo or lives
-        if event.type in [EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]:
-            if entity_starts[event.entity1].role == IntRole.SCOUT:
-                # rapid fire turned off, specials can be gained again
-                player_can_gain_specials[event.entity1] = True
-    
-    # create sm5 game
+        print(player_special_points)
+        
+        # create sm5 game
 
-    game = SM5Game(
-        site_id=site_id,
-        tdf_name=tdf_name,
-        file_version=file_version,
-        software_version=software_version,
-        mission_type=mission_type,
-        mission_name=mission_name,
-        ranked=True,
-        force_ended_early=force_ended_early,
-        start_time=start_time,
-        mission_duration=mission_duration,
-        penalty_amount=penalty_amount,
-        last_team_standing=None,
-        team1_size=team1_size,
-        team2_size=team2_size
-    )
+        game = SM5Game(
+            site_id=site_id,
+            tdf_name=tdf_name,
+            file_version=file_version,
+            software_version=software_version,
+            mission_type=mission_type,
+            mission_name=mission_name,
+            ranked=True,
+            force_ended_early=force_ended_early,
+            start_time=start_time,
+            mission_duration=mission_duration,
+            penalty_amount=penalty_amount,
+            last_team_standing=None,
+            team1_size=team1_size,
+            team2_size=team2_size
+        )
 
-    await game.asave()
+        await game.asave()
 
-    print(f"Saving game {game.id} to database")
-    for team in teams.values():
-        team.game = game
-        await team.asave()
-    await game.teams.aset(teams.values())
-    for entity_start in entity_starts.values():
-        entity_start.game = game
-        await entity_start.asave()
-    await game.entity_starts.aset(entity_starts.values())
-    for event in events:
-        event.game = game
-        await event.asave()
-    await game.events.aset(events)
-    for score in scores:
-        score.game = game
-        await score.asave()
-    await game.scores.aset(scores)
-    for entity_end in entity_ends:
-        entity_end.game = game
-        entity_end.entity.entity_end = entity_end
-        await entity_end.asave()
-    await game.entity_ends.aset(entity_ends)
-    for player_state in player_states:
-        player_state.game = game
-        await player_state.asave()
-    await game.player_states.aset(player_states)
-    for sm5_stat in sm5_stats:
-        sm5_stat.special_points = player_special_points.get(sm5_stat.entity.entity_id, 0)
-        sm5_stat.entity = entity_starts[sm5_stat.entity.entity_id]
-        sm5_stat.entity_end = sm5_stat.entity.entity_end
-        sm5_stat.game = game
-        await sm5_stat.asave()
-    await game.sm5_stats.aset(sm5_stats)
+        print(f"Saving game {game.id} to database")
+        for team in teams.values():
+            team.game = game
+            await team.asave()
+        await game.teams.aset(teams.values())
+        for entity_start in entity_starts.values():
+            entity_start.game = game
+            await entity_start.asave()
+            await sync_to_async(entity_start.team.entity_starts.add)(entity_start)
+            await entity_start.team.asave() # save team to database first
+        await game.entity_starts.aset(entity_starts.values())
+        for event in events:
+            event.game = game
+            await event.asave()
+        await game.events.aset(events)
+        for score in scores:
+            score.game = game
+            score.entity.game = game
+            await score.entity.asave() # save entity to database first
+            await score.asave()
+        await game.scores.aset(scores)
+        for entity_end in entity_ends:
+            entity_end.game = game
+            entity_end.entity.entity_end = entity_end
+            await entity_end.asave()
+        await game.entity_ends.aset(entity_ends)
+        for player_state in player_states:
+            player_state.game = game
+            await player_state.asave()
+        await game.player_states.aset(player_states)
+        for sm5_stat in sm5_stats:
+            sm5_stat.special_points = player_special_points.get(sm5_stat.entity.entity_id, 0)
+            sm5_stat.entity = entity_starts[sm5_stat.entity.entity_id]
+            sm5_stat.entity_end = sm5_stat.entity.entity_end
+            sm5_stat.game = game
+            await sm5_stat.asave()
+        await game.sm5_stats.aset(sm5_stats)
 
-    # determine if the game should be ranked automatically
+        # determine if the game should be ranked automatically
 
-    ranked = True
+        ranked = True
 
-    # 5 < team size < 7 and teams are not of unequal size (ratings are not tested for unequal team sizes)
+        # 5 < team size < 7 and teams are not of unequal size (ratings are not tested for unequal team sizes)
 
-    team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").acount()
-    team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").acount()
+        team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").acount()
+        team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").acount()
 
-    if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
-        ranked = False
-
-    # also check that our roles are correct
-    # ex: a standard sm5 team has 1 commander, 1 heavy, 1 scout, 1 medic, 1 ammo, and 1-3 scouts
-
-    # for each team
-    for t in teams.values():
-        total_count = 0
-        commander_count = 0
-        heavy_count = 0
-        scout_count = 0
-        ammo_count = 0
-        medic_count = 0
-
-        for e in entity_starts.values():
-            if e.type == EntityType.PLAYER and e.team == t:
-                total_count += 1
-                if e.role == IntRole.COMMANDER:
-                    commander_count += 1
-                elif e.role == IntRole.HEAVY:
-                    heavy_count += 1
-                elif e.role == IntRole.SCOUT:
-                    scout_count += 1
-                elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
-                    ammo_count += 1
-                elif e.role == IntRole.MEDIC:
-                    medic_count += 1
-
-        if total_count == 0:  # probably a neutral team
-            continue
-
-        if commander_count != 1 or heavy_count != 1 or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
+        if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
             ranked = False
 
-    game.ranked = ranked
+        # also check that our roles are correct
+        # ex: a standard sm5 team has 1 commander, 1 heavy, 1 scout, 1 medic, 1 ammo, and 1-3 scouts
 
-    # get last team_standing
-    alive_player_count = {}
+        # for each team
+        for t in teams.values():
+            total_count = 0
+            commander_count = 0
+            heavy_count = 0
+            scout_count = 0
+            ammo_count = 0
+            medic_count = 0
 
-    async for entity in game.entity_starts.filter(type=EntityType.PLAYER).prefetch_related("team").all():
-        player = await SM5Stats.objects.filter(entity__id=entity.id).afirst()
+            for e in entity_starts.values():
+                if e.type == EntityType.PLAYER and e.team == t:
+                    total_count += 1
+                    if e.role == IntRole.COMMANDER:
+                        commander_count += 1
+                    elif e.role == IntRole.HEAVY:
+                        heavy_count += 1
+                    elif e.role == IntRole.SCOUT:
+                        scout_count += 1
+                    elif e.role == IntRole.AMMO: # sometimes we have 2 ammos, but for ranking purposes we only want games with 1
+                        ammo_count += 1
+                    elif e.role == IntRole.MEDIC:
+                        medic_count += 1
 
-        if player and player.lives_left > 0:
-            alive_player_count[entity.team.color_enum] = alive_player_count.get(entity.team.color_enum, 0) + 1
-
-    # If there isn't exactly one team with alive players at the end, this wasn't an elimination game.
-    if len(alive_player_count) == 1:
-        entity_start = await game.entity_starts.filter(team__color_enum=list(alive_player_count.keys())[0]).afirst()
-        from asgiref.sync import sync_to_async
-        game.last_team_standing = await sync_to_async(lambda: entity_start.team)()
-
-
-    # doubles %
-
-    game.team1_double_percent = await game._get_team_doubles_percent(team1)
-    game.team2_double_percent = await game._get_team_doubles_percent(team2)
-
-    # rankings
-
-    if ranked:
-        if await update_sm5_rankings(game):
-            pass#logger.info(f"Updated player rankings for game {game.id}")
-        else:
-            pass#logger.error(f"Failed to update player rankings for game {game.id}")
-    else:  # still need to add current_rating and previous_rating
-        async for entity_end in game.entity_ends.filter(entity__type=EntityType.PLAYER).all():
-            entity_start = entity_end.entity
-            entity_id = entity_start.entity_id
-            if entity_id.startswith("@"):
+            if total_count == 0:  # probably a neutral team
                 continue
 
-            player = await Player.objects.filter(entity_id=entity_id).afirst()
+            if commander_count != 1 or heavy_count != 1 or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
+                ranked = False
 
-            try:
-                # global
-                entity_end.previous_rating_mu = await player.get_rating().mu
-                entity_end.previous_rating_sigma = await player.get_rating().sigma
-                entity_end.current_rating_mu = await player.get_rating().mu
-                entity_end.current_rating_sigma = await player.get_rating().sigma
+        game.ranked = ranked
 
-                entity_end.previous_role_rating_mu = await player.get_rating(role=entity_start.role).mu
-                entity_end.previous_role_rating_sigma = await player.get_rating(role=entity_start.role).sigma
-                entity_end.current_role_rating_mu = await player.get_rating(role=entity_start.role).mu
-                entity_end.current_role_rating_sigma = await player.get_rating(role=entity_start.role).sigma
+        # get last team_standing
+        alive_player_count = {}
 
-                # site-specific
-                entity_end.previous_site_rating_mu = await player.get_rating(site=game.site_id).mu
-                entity_end.previous_site_rating_sigma = await player.get_rating(site=game.site_id).sigma
-                entity_end.current_site_rating_mu = await player.get_rating(site=game.site_id).mu
-                entity_end.current_site_rating_sigma = await player.get_rating(site=game.site_id).sigma
+        async for entity in game.entity_starts.filter(type=EntityType.PLAYER).prefetch_related("team").all():
+            player = await SM5Stats.objects.filter(entity__id=entity.id).afirst()
 
-                entity_end.previous_site_role_rating_mu = await player.get_rating(role=entity_start.role, site=game.site_id).mu
-                entity_end.previous_site_role_rating_sigma = await player.get_rating(role=entity_start.role, site=game.site_id).sigma
-                entity_end.current_site_role_rating_mu = await player.get_rating(role=entity_start.role, site=game.site_id).mu
-                entity_end.current_site_role_rating_sigma = await player.get_rating(role=entity_start.role, site=game.site_id).sigma
-            except AttributeError:
-                entity_end.previous_rating_mu, entity_end.current_rating_mu, \
-                entity_end.previous_site_rating_mu, entity_end.current_site_rating_mu, \
-                entity_end.previous_role_rating_mu, entity_end.current_role_rating_mu, \
-                entity_end.previous_site_role_rating_mu, entity_end.current_site_role_rating_mu = MU
-                
-                entity_end.previous_rating_mu, entity_end.current_rating_mu, \
-                entity_end.previous_site_rating_mu, entity_end.current_site_rating_mu, \
-                entity_end.previous_role_rating_mu, entity_end.current_role_rating_mu, \
-                entity_end.previous_site_role_rating_mu, entity_end.current_site_role_rating_mu = SIGMA
+            if player and player.lives_left > 0:
+                alive_player_count[entity.team.color_enum] = alive_player_count.get(entity.team.color_enum, 0) + 1
 
-            await entity_end.asave()
+        # If there isn't exactly one team with alive players at the end, this wasn't an elimination game.
+        if len(alive_player_count) == 1:
+            entity_start = await game.entity_starts.filter(team__color_enum=list(alive_player_count.keys())[0]).afirst()
+            game.last_team_standing = await sync_to_async(lambda: entity_start.team)()
 
-    await game.asave()
+
+        # doubles %
+
+        game.team1_double_percent = await game._get_team_doubles_percent(team1)
+        game.team2_double_percent = await game._get_team_doubles_percent(team2)
+
+        # winner
+
+        # get all teams in the game.
+        teams = await game.get_teams()
+
+        scores = {team: team.score for team in teams}
+
+        # adjust scores if a team was eliminated.
+        if game.last_team_standing:
+            scores[game.last_team_standing] += 10000
+
+        # determine the winner based on the updated scores.
+        max_score = max(scores.values())
+        winning_teams = [team for team, score in scores.items() if score == max_score]
+
+        if len(winning_teams) == 1:
+            winner = winning_teams[0]
+        else: # Tie or no clear winner
+            winner = None
+
+        game.winner = winner
+
+        # rankings
+
+        if ranked:
+            if await update_sm5_rankings(game):
+                pass#logger.info(f"Updated player rankings for game {game.id}")
+            else:
+                pass#logger.error(f"Failed to update player rankings for game {game.id}")
+        else:  # still need to add current_rating and previous_rating
+            async for entity_end in game.entity_ends.filter(entity__type=EntityType.PLAYER).all():
+                entity_start = await sync_to_async(lambda: entity_end.entity)()
+                entity_id = entity_start.entity_id
+                if entity_id.startswith("@"):
+                    entity_end.ratings = {
+                        "global": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        },
+                        "global_role": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        },
+                        "site": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        },
+                        "site_role": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        }
+                    }
+
+                player = await Player.objects.filter(entity_id=entity_id).afirst()
+
+                try:
+                    global_ratings = await player.get_rating()
+                    global_role_ratings = await player.get_rating(role=entity_start.role)
+                    site_ratings = await player.get_rating(site=game.site_id)
+                    site_role_ratings = await player.get_rating(role=entity_start.role, site=game.site_id)
+
+                    entity_end.ratings = {
+                        "global": {
+                            "mu": global_ratings.mu,
+                            "sigma": global_ratings.sigma
+                        },
+                        "global_role": {
+                            "mu": global_role_ratings.mu,
+                            "sigma": global_role_ratings.sigma
+                        },
+                        "site": {
+                            "mu": site_ratings.mu,
+                            "sigma": site_ratings.sigma
+                        },
+                        "site_role": {
+                            "mu": site_role_ratings.mu,
+                            "sigma": site_role_ratings.sigma
+                        }
+                    }
+                except AttributeError:
+                    entity_end.ratings = {
+                        "global": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        },
+                        "global_role": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        },
+                        "site": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        },
+                        "site_role": {
+                            "mu": MU,
+                            "sigma": SIGMA
+                        }
+                    }
+
+                await entity_end.asave()
+
+        await game.asave()
+    except BaseException as e:
+        print(f"Error processing game {file_location.name} or got cut off. Deleting...")
+        traceback.print_exc()
+        if game is not None and game.pk is not None:
+            await game.adelete()
+        # delete all teams, entity_starts, events, scores, entity_ends, player_states, sm5_stats
+        for team in teams.values():
+            if team.pk is not None:
+                await team.adelete()
+        for entity_start in entity_starts.values():
+            if entity_start.pk is not None:
+                await entity_start.adelete()
+        for event in events:
+            if event.pk is not None:
+                await event.adelete()
+        for score in scores:
+            if score.pk is not None:
+                await score.adelete()
+        for entity_end in entity_ends:
+            if entity_end.pk is not None:
+                await entity_end.adelete()
+        for player_state in player_states:
+            if player_state.pk is not None:
+                await player_state.adelete()
+        for sm5_stat in sm5_stats:
+            if sm5_stat.pk is not None:
+                await sm5_stat.adelete()
+        raise e
+        
 
 async def process_laserball(
+    file_location: Path,
     site_id: str,
     tdf_name: str,
     file_version: str,

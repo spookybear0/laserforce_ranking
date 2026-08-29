@@ -3,12 +3,14 @@ import math
 import random
 import statistics
 from typing import List, Tuple, Union, Optional
-from .models.game import Game
+from copy import deepcopy
 from .models.sm5 import SM5Game
+from .models.types import EntityType, IntRole
 
-from openskill.models import PlackettLuceRating as Rating, PlackettLuce
+from openskill.models import PlackettLuceRating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
 
+from django.db.models import Q
 SM5_RANK_VERSION = 1
 LASERBALL_RANK_VERSION = 1
 
@@ -76,11 +78,11 @@ SM5_MEDIC_WEIGHT_MU = 1
 SM5_MEDIC_WEIGHT_SIGMA = 2 # give more uncertainty weight to medic players since their role is less combat focused
 
 SM5_ROLE_WEIGHT_MULTIPLIERS = {
-    #IntRole.COMMANDER: (SM5_COMMANDER_WEIGHT_MU, SM5_COMMANDER_WEIGHT_SIGMA),
-    #IntRole.HEAVY: (SM5_HEAVY_WEIGHT_MU, SM5_HEAVY_WEIGHT_SIGMA),
-    #IntRole.SCOUT: (SM5_SCOUT_WEIGHT_MU, SM5_SCOUT_WEIGHT_SIGMA),
-    #IntRole.AMMO: (SM5_AMMO_WEIGHT_MU, SM5_AMMO_WEIGHT_SIGMA),
-    #IntRole.MEDIC: (SM5_MEDIC_WEIGHT_MU, SM5_MEDIC_WEIGHT_SIGMA),
+    IntRole.COMMANDER: (SM5_COMMANDER_WEIGHT_MU, SM5_COMMANDER_WEIGHT_SIGMA),
+    IntRole.HEAVY: (SM5_HEAVY_WEIGHT_MU, SM5_HEAVY_WEIGHT_SIGMA),
+    IntRole.SCOUT: (SM5_SCOUT_WEIGHT_MU, SM5_SCOUT_WEIGHT_SIGMA),
+    IntRole.AMMO: (SM5_AMMO_WEIGHT_MU, SM5_AMMO_WEIGHT_SIGMA),
+    IntRole.MEDIC: (SM5_MEDIC_WEIGHT_MU, SM5_MEDIC_WEIGHT_SIGMA),
 }
 
 # laserball
@@ -98,8 +100,371 @@ LB_GOAL_WEIGHT_SIGMA = 1.5  # uncertainty weight for goals in laserball
 LB_ASSIST_WEIGHT_MU = 0.75  # skill weight for assists in laserball
 LB_ASSIST_WEIGHT_SIGMA = 0.75  # uncertainty weight for assists in laserball
 
-async def update_sm5_rankings(game: SM5Game):
-    pass # TODO: rankings for sm5 games
 
-async def update_laserball_rankings(game: Game):
+class CustomPlackettLuce(PlackettLuce):
+    def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:
+        # Check Arguments
+        self._check_teams(teams)
+
+        n = len(teams)
+
+        # uneven team adjustment is only implemented for 2 teams
+
+        # 2 Player Case
+        if n == 2:
+            teams_ratings = self._calculate_team_ratings(teams)
+            a = teams_ratings[0]
+            b = teams_ratings[1]
+
+            # CUSTOM ADDITION: per-body feed cost.
+            # In SM5 a player both scores points and concedes ("feeds") them,
+            # so a body's worth is measured against an ABSENT player, not a
+            # zero-skill floor. Subtracting zeta per body cancels exactly when
+            # team sizes are equal (even matchups are unchanged) and removes
+            # the +mu "existence bonus" an extra body otherwise gets.
+            # Unlike the previous mu-inflation approach this does NOT mutate
+            # the rating objects passed in.
+            zeta = FEED * self.mu
+            mu_a = a.mu - len(teams[0]) * zeta
+            mu_b = b.mu - len(teams[1]) * zeta
+
+            total_player_count = len(teams[0]) + len(teams[1])
+
+            result = phi_major(
+                (mu_a - mu_b)
+                / math.sqrt(
+                    total_player_count * self.beta ** 2
+                    + a.sigma_squared
+                    + b.sigma_squared
+                )
+            )
+
+            return [result, 1 - result]
+
+        # TODO: Implement uneven team adjustment for 3 and 4 teams
+        return PlackettLuce.predict_win(self, teams)
+
+
+model = CustomPlackettLuce(MU, SIGMA, BETA, KAPPA, tau=TAU)
+Rating = PlackettLuceRating
+
+def introle_to_name(role: int):
+    from .models.types import IntRole
+    return IntRole(role).to_role().value
+
+BLANK_RATING = {
+    "sm5": {
+        "mu": MU,
+        "sigma": SIGMA
+    },
+    "commander": {
+        "mu": MU,
+        "sigma": SIGMA
+    },
+    "heavy": {
+        "mu": MU,
+        "sigma": SIGMA
+    },
+    "scout": {
+        "mu": MU,
+        "sigma": SIGMA
+    },
+    "ammo": {
+        "mu": MU,
+        "sigma": SIGMA
+    },
+    "medic": {
+        "mu": MU,
+        "sigma": SIGMA
+    },
+}
+
+async def update_sm5_rankings(game: SM5Game) -> bool:
+    """
+    Updates the sm5 ratings for a game
+    it first calculates the individual player ratings
+    then it calculates the team ratings
+    then it updates the player ratings through openskill
+
+    returns: True if successful, False if not
+    it could return False if the game is not ranked
+    """
+    if not game.ranked:
+        return False
+    
+    print(f"Updating SM5 rankings for game {game.id}...")
+    
+    from .models import Event, Player, EventType, IntRole, EntityStart
+
+    # need to update previous rating and for each entity end object
+
+    async for entity_end in game.entity_ends.filter(entity__type=EntityType.PLAYER).select_related("entity").all():
+        player = await Player.objects.filter(entity_id=entity_end.entity.entity_id).afirst()
+
+        if player:
+            ratings = player.ratings
+        else:
+            ratings = deepcopy(BLANK_RATING)
+
+        entity_end.ratings = {
+            "previous": {
+                "global": {
+                    "mu": ratings["global"]["sm5"]["mu"],
+                    "sigma": ratings["global"]["sm5"]["sigma"]
+                },
+                "global_role": {
+                    "mu": ratings["global"][introle_to_name(entity_end.entity.role)]["mu"],
+                    "sigma": ratings["global"][introle_to_name(entity_end.entity.role)]["sigma"]
+                },
+                "site": {
+                    "mu": ratings[game.site_id]["sm5"]["mu"],
+                    "sigma": ratings[game.site_id]["sm5"]["sigma"]
+                },
+                "site_role": {
+                    "mu": ratings[game.site_id][introle_to_name(entity_end.entity.role)]["mu"],
+                    "sigma": ratings[game.site_id][introle_to_name(entity_end.entity.role)]["sigma"]
+                }
+            }
+        }
+
+        await entity_end.asave()
+
+    # go through all events for each game
+    
+    async def process_event(event: Event):
+        if event.type in [EventType.DAMAGED_OPPONENT, EventType.DOWNED_OPPONENT]:
+            hit_mu = SM5_HIT_WEIGHT_MU
+            hit_sigma = SM5_HIT_WEIGHT_SIGMA
+            medic_hit_mu = SM5_HIT_MEDIC_WEIGHT_MU
+            medic_hit_sigma = SM5_HIT_MEDIC_WEIGHT_SIGMA
+        elif event.type in [EventType.MISSILE_DAMAGE_OPPONENT, EventType.MISSILE_DOWN_OPPONENT]:
+            hit_mu = SM5_MISSILE_WEIGHT_MU
+            hit_sigma = SM5_MISSILE_WEIGHT_SIGMA
+            medic_hit_mu = SM5_MISSILE_MEDIC_WEIGHT_MU
+            medic_hit_sigma = SM5_MISSILE_MEDIC_WEIGHT_SIGMA
+        else:
+            return
+
+        shooter = await EntityStart.objects.filter(entity_id=event.entity1).afirst()
+        shooter_player = await Player.objects.filter(entity_id=shooter.entity_id).afirst()
+        if shooter_player:
+            shooter_rating = shooter_player.ratings
+        else:
+            shooter_rating = deepcopy(BLANK_RATING)
+
+        target = await EntityStart.objects.filter(entity_id=event.entity2).afirst()
+        target_player = await Player.objects.filter(entity_id=target.entity_id).afirst()
+        if target_player:
+            target_rating = target_player.ratings
+        else:
+            target_rating = deepcopy(BLANK_RATING)
+
+        # global
+
+        global_out = model.rate(
+            [
+                [Rating(shooter_rating["global"]["sm5"]["mu"], shooter_rating["global"]["sm5"]["sigma"])],
+                [Rating(target_rating["global"]["sm5"]["mu"], target_rating["global"]["sm5"]["sigma"])]
+            ],
+            ranks=[0, 1]
+        )
+
+        # role specific global
+
+        global_role_out = model.rate(
+            [
+                [Rating(shooter_rating["global"][introle_to_name(shooter.role)]["mu"], shooter_rating["global"][introle_to_name(shooter.role)]["sigma"])],
+                [Rating(target_rating["global"][introle_to_name(target.role)]["mu"], target_rating["global"][introle_to_name(target.role)]["sigma"])]
+            ],
+            ranks=[0, 1]
+        )
+
+        # site specific
+
+        site_out = model.rate(
+            [
+                [Rating(shooter_rating[game.site_id]["sm5"]["mu"], shooter_rating[game.site_id]["sm5"]["sigma"])],
+                [Rating(target_rating[game.site_id]["sm5"]["mu"], target_rating[game.site_id]["sm5"]["sigma"])]
+            ],
+            ranks=[0, 1]
+        )
+
+        # site specific role
+
+        site_role_out = model.rate(
+            [
+                [Rating(shooter_rating[game.site_id][introle_to_name(shooter.role)]["mu"], shooter_rating[game.site_id][introle_to_name(shooter.role)]["sigma"])],
+                [Rating(target_rating[game.site_id][introle_to_name(target.role)]["mu"], target_rating[game.site_id][introle_to_name(target.role)]["sigma"])]
+            ],
+            ranks=[0, 1]
+        )
+
+        # update shooter ratings
+
+        # weights
+
+        weight_mu = hit_mu
+        weight_sigma = hit_sigma
+        # medic hits are important, so give them more weight
+        if IntRole(target.role) == IntRole.MEDIC:
+            weight_mu = medic_hit_mu
+            weight_sigma = medic_hit_sigma
+
+        role_weight = SM5_ROLE_WEIGHT_MULTIPLIERS.get(shooter.role, (1, 1))
+        role_weight_mu = role_weight[0]
+        role_weight_sigma = role_weight[1]
+
+        shooter_rating["global"]["sm5"].update({
+            "mu": (global_out[0][0].mu - shooter_rating["global"]["sm5"]["mu"]) * weight_mu + shooter_rating["global"]["sm5"]["mu"],
+            "sigma": (global_out[0][0].sigma - shooter_rating["global"]["sm5"]["sigma"]) * weight_sigma + shooter_rating["global"]["sm5"]["sigma"]
+        })
+        shooter_rating["global"][introle_to_name(shooter.role)].update({
+            "mu": (global_role_out[0][0].mu - shooter_rating["global"][introle_to_name(shooter.role)]["mu"]) * weight_mu * role_weight_mu + shooter_rating["global"][introle_to_name(shooter.role)]["mu"],
+            "sigma": (global_role_out[0][0].sigma - shooter_rating["global"][introle_to_name(shooter.role)]["sigma"]) * weight_sigma * role_weight_sigma + shooter_rating["global"][introle_to_name(shooter.role)]["sigma"]
+        })
+        shooter_rating[game.site_id]["sm5"].update({
+            "mu": (site_out[0][0].mu - shooter_rating[game.site_id]["sm5"]["mu"]) * weight_mu + shooter_rating[game.site_id]["sm5"]["mu"],
+            "sigma": (site_out[0][0].sigma - shooter_rating[game.site_id]["sm5"]["sigma"]) * weight_sigma + shooter_rating[game.site_id]["sm5"]["sigma"]
+        })
+        shooter_rating[game.site_id][introle_to_name(shooter.role)].update({
+            "mu": (site_role_out[0][0].mu - shooter_rating[game.site_id][introle_to_name(shooter.role)]["mu"]) * weight_mu * role_weight_mu + shooter_rating[game.site_id][introle_to_name(shooter.role)]["mu"],
+            "sigma": (site_role_out[0][0].sigma - shooter_rating[game.site_id][introle_to_name(shooter.role)]["sigma"]) * weight_sigma * role_weight_sigma + shooter_rating[game.site_id][introle_to_name(shooter.role)]["sigma"]
+        })
+
+        # update target ratings
+
+        # weights
+
+        # don't penalize medics extra just for being medic
+        if IntRole(target.role) == IntRole.MEDIC:
+            weight_mu = hit_mu
+            weight_sigma = hit_sigma
+
+        role_weight = SM5_ROLE_WEIGHT_MULTIPLIERS.get(introle_to_name(target.role), (1, 1))
+        role_weight_mu = role_weight[0]
+        role_weight_sigma = role_weight[1]
+
+        target_rating["global"]["sm5"].update({
+            "mu": (global_out[1][0].mu - target_rating["global"]["sm5"]["mu"]) * weight_mu + target_rating["global"]["sm5"]["mu"],
+            "sigma": (global_out[1][0].sigma - target_rating["global"]["sm5"]["sigma"]) * weight_sigma + target_rating["global"]["sm5"]["sigma"]
+        })
+        target_rating["global"][introle_to_name(target.role)].update({
+            "mu": (global_role_out[1][0].mu - target_rating["global"][introle_to_name(target.role)]["mu"]) * weight_mu * role_weight_mu + target_rating["global"][introle_to_name(target.role)]["mu"],
+            "sigma": (global_role_out[1][0].sigma - target_rating["global"][introle_to_name(target.role)]["sigma"]) * weight_sigma * role_weight_sigma + target_rating["global"][introle_to_name(target.role)]["sigma"]
+        })
+        target_rating[game.site_id]["sm5"].update({
+            "mu": (site_out[1][0].mu - target_rating[game.site_id]["sm5"]["mu"]) * weight_mu + target_rating[game.site_id]["sm5"]["mu"],
+            "sigma": (site_out[1][0].sigma - target_rating[game.site_id]["sm5"]["sigma"]) * weight_sigma + target_rating[game.site_id]["sm5"]["sigma"]
+        })
+        target_rating[game.site_id][introle_to_name(target.role)].update({
+            "mu": (site_role_out[1][0].mu - target_rating[game.site_id][introle_to_name(target.role)]["mu"]) * weight_mu * role_weight_mu + target_rating[game.site_id][introle_to_name(target.role)]["mu"],
+            "sigma": (site_role_out[1][0].sigma - target_rating[game.site_id][introle_to_name(target.role)]["sigma"]) * weight_sigma * role_weight_sigma + target_rating[game.site_id][introle_to_name(target.role)]["sigma"]
+        })
+        
+        # save ratings
+
+        if shooter_player:
+            shooter_player.ratings = shooter_rating
+            await shooter_player.asave()
+
+        if target_player:
+            target_player.ratings = target_rating
+            await target_player.asave()
+    
+    async for event in game.events.filter(
+        type__in=[EventType.DAMAGED_OPPONENT, EventType.DOWNED_OPPONENT,
+            EventType.MISSILE_DAMAGE_OPPONENT,
+            EventType.MISSILE_DOWN_OPPONENT, EventType.RESUPPLY_LIVES,
+            EventType.RESUPPLY_AMMO]
+    ).order_by("time").all():  # only get the events that we need
+        await process_event(event)
+
+    # rate game
+
+    team1 = []
+    team2 = []
+
+    teams = await game.get_teams()
+
+    async for player in game.entity_starts.filter(type=EntityType.PLAYER).select_related("team").all():
+        team_color = player.team.color_name
+        if team_color == (teams[0].color_name):
+            team1.append(await Player.objects.filter(entity_id=player.entity_id).afirst())
+        else:
+            team2.append(await Player.objects.filter(entity_id=player.entity_id).afirst())
+
+    # general ratings
+    team1_general = list(map(lambda x: Rating(x.ratings["global"]["sm5"]["mu"], x.ratings["global"]["sm5"]["sigma"]), team1))
+    team2_general = list(map(lambda x: Rating(x.ratings["global"]["sm5"]["mu"], x.ratings["global"]["sm5"]["sigma"]), team2))
+
+    if game.winner == teams[0].enum:
+        team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[0, 1])
+    else:
+        team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[1, 0])
+
+    for player, rating in zip(team1, team1_general_new):
+        player.ratings["global"]["sm5"]["mu"] = rating.mu
+        player.ratings["global"]["sm5"]["sigma"] = rating.sigma
+        await player.asave()
+
+    for player, rating in zip(team2, team2_general_new):
+        player.ratings["global"]["sm5"]["mu"] = rating.mu
+        player.ratings["global"]["sm5"]["sigma"] = rating.sigma
+        await player.asave()
+
+    # site-specific ratings
+    team1_site = list(map(lambda x: Rating(x.ratings[game.site_id]["sm5"]["mu"], x.ratings[game.site_id]["sm5"]["sigma"]), team1))
+    team2_site = list(map(lambda x: Rating(x.ratings[game.site_id]["sm5"]["mu"], x.ratings[game.site_id]["sm5"]["sigma"]), team2))
+
+    if game.winner == teams[0].enum:
+        team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[0, 1])
+    else:
+        team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[1, 0])
+
+    for player, rating in zip(team1, team1_site_new):
+        player.ratings[game.site_id]["sm5"]["mu"] = rating.mu
+        player.ratings[game.site_id]["sm5"]["sigma"] = rating.sigma
+        await player.asave()
+
+    for player, rating in zip(team2, team2_site_new):
+        player.ratings[game.site_id]["sm5"]["mu"] = rating.mu
+        player.ratings[game.site_id]["sm5"]["sigma"] = rating.sigma
+        await player.asave()
+
+    # need to update current rating and for each entity end object
+
+    async for entity_end in game.entity_ends.filter(entity__type=EntityType.PLAYER).select_related("entity").all():
+        player = await Player.objects.filter(entity_id=entity_end.entity.entity_id).afirst()
+
+        if player:
+            ratings = player.ratings
+        else:
+            ratings = deepcopy(BLANK_RATING)
+
+        entity_end.ratings.update({
+            "current": {
+                "global": {
+                    "mu": ratings["global"]["sm5"]["mu"],
+                    "sigma": ratings["global"]["sm5"]["sigma"]
+                },
+                "global_role": {
+                    "mu": ratings["global"][introle_to_name(entity_end.entity.role)]["mu"],
+                    "sigma": ratings["global"][introle_to_name(entity_end.entity.role)]["sigma"]
+                },
+                "site": {
+                    "mu": ratings[game.site_id]["sm5"]["mu"],
+                    "sigma": ratings[game.site_id]["sm5"]["sigma"]
+                },
+                "site_role": {
+                    "mu": ratings[game.site_id][introle_to_name(entity_end.entity.role)]["mu"],
+                    "sigma": ratings[game.site_id][introle_to_name(entity_end.entity.role)]["sigma"]
+                }
+            }
+        })
+
+        await entity_end.asave()
+
+    return True
+
+async def update_laserball_rankings(game: "Game"):
     pass # TODO: rankings for laserball games

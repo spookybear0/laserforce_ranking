@@ -3,6 +3,79 @@ from enum import Enum, IntEnum
 from django.db import models
 import re
 
+COMPETITIVE_SITES = {
+    "Loveland": "4-19",
+    "Brisbane": "1-1",
+    "Syracuse": "4-23",
+    "Invasion": "4-43",
+    "St George": "4-2",
+    "Auckland Wairau": "3-3",
+    "Detroit": "4-6",
+    "Lasergame Říčany": "20-7",
+    "PowerLaser Stuttgart": "21-8",
+    "LaserTag Darmstadt": "21-70",
+    "Wollongong Revolution": "1-58",
+    "Auckland Game Over": "3-7",
+    "Peterborough": "7-2",
+    "Cheltenham": "7-13",
+    "Sydney Underworld": "1-64",
+    "Huddersfield": "7-8",
+    "Lasergame Beroun": "20-18",
+}
+
+SITES = {
+    **COMPETITIVE_SITES,
+    "Lost Worlds": "4-80",
+    "Carmichael": "4-3",
+}
+
+ID_TO_SITE = {value: key for key, value in SITES.items()}
+
+IPL_NAME_TO_SITE_ID = {
+    "Loveland Laser Tag Fun Center": "4-19",
+    "Laserforce Brisbane, QLD, AU": "1-1",
+    "The Fun Warehouse, Syracuse": "4-23",
+    "Invasion Laser Tag, San Marcos, CA, US": "4-43",
+    "Laser Mania, St George, UT, USA": "4-2",
+    "Laserforce Auckland": "3-3",
+    "Revolution Laser Tag & Arcade, MI, USA": "4-6",
+    "Ricany Lasergame, Ricany, CZ": "20-7",
+    "PowerLaser, Stuttgart, Germany": "21-8",
+    "Lasertag Deutschland 1, Darmstadt, Germany": "21-70",
+    "Revolution Laser Arena, Wollongong, NSW, AU": "1-58",
+    "Game Over, Albany, NZ": "3-7",
+    "Laserforce Peterborough": "7-2",
+    "Funky Laser, Cheltenham, UK": "7-13",
+    "Underworld Laser, Menai, NSW, AU": "1-64",
+    "LaserZone, Huddersfield, UK": "7-8",
+    "Lasergame Beroun, Czech Republic": "20-18",
+    "Lost Worlds Entertainment, City of Industry, CA": "4-80",
+    "Lasertag Of Carmichael": "4-3",
+}
+
+ID_TO_IPL_NAME = {value: key for key, value in IPL_NAME_TO_SITE_ID.items()}
+
+# some may be inaccurate
+SITE_TIMEZONES = {
+    "4-19": "+07:00",  # America/Denver
+    "1-1": "+10:00",   # Australia/Brisbane
+    "4-23": "-05:00",  # America/New_York
+    "4-43": "-07:00",  # America/Denver
+    "4-2": "+07:00",   # America/Denver
+    "3-3": "+13:00",   # Pacific/Auckland
+    "4-6": "-05:00",   # America/New_York
+    "20-7": "+02:00",  # Europe/Prague
+    "21-8": "+02:00",  # Europe/Berlin
+    "21-70": "+02:00", # Europe/Berlin
+    "1-58": "+11:00",  # Australia/Sydney
+    "3-7": "+13:00",   # Pacific/Auckland
+    "7-2": "+00:00",   # Europe/London
+    "7-13": "+00:00",  # Europe/London
+    "1-64": "+11:00",  # Australia/Sydney
+    "7-8": "+00:00",   # Europe/London
+    "20-18": "+02:00"  # Europe/Prague
+}
+
 @dataclass
 class RgbColor:
     """An RGB value, with each component having a value between 0 and 255."""
@@ -271,7 +344,7 @@ class IntRole(models.IntegerChoices):
             4: "Ammo",
             5: "Medic"
         }
-        return names.get(self.value, "Base")
+        return names.get(self.value, "Other")
 
     @classmethod
     def from_role(cls, role: Role) -> int:
@@ -302,6 +375,7 @@ class PlayerStateType(models.IntegerChoices):
 class EntityType(models.TextChoices):
     PLAYER = "player"
     TARGET = "standard-target"
+    GENERATOR_TARGET = "generator-target"
     BEACON = "beacon"
     REFEREE = "referee"
 

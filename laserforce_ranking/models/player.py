@@ -1,5 +1,6 @@
 from django.db import models
-from .types import Permission, IntRole
+from .types import Permission, IntRole, ID_TO_IPL_NAME
+from .game import Game
 from typing import Optional
 from laserforce_ranking.rating import Rating
 
@@ -7,36 +8,64 @@ from laserforce_ranking.rating import Rating
 Player.ratings specification:
 [
     "global": {
-        "sm5_mu": float,
-        "sm5_sigma": float,
-        "commander_mu": float,
-        "commander_sigma": float,
-        "heavy_mu": float,
-        "heavy_sigma": float,
-        "scout_mu": float,
-        "scout_sigma": float,
-        "ammo_mu": float,
-        "ammo_sigma": float,
-        "medic_mu": float,
-        "medic_sigma": float,
-        "laserball_mu": float,
-        "laserball_sigma": float,
+        "sm5": {
+            "mu": float,
+            "sigma": float
+        },
+        "commander": {
+            "mu": float,
+            "sigma": float
+        },
+        "heavy": {
+            "mu": float,
+            "sigma": float
+        },
+        "scout": {
+            "mu": float,
+            "sigma": float
+        },
+        "ammo": {
+            "mu": float,
+            "sigma": float
+        },
+        "medic": {
+            "mu": float,
+            "sigma": float
+        },
+        "laserball": {
+            "mu": float,
+            "sigma": float
+        }
     }
     site_id(int): {
-        "sm5_mu": float,
-        "sm5_sigma": float,
-        "commander_mu": float,
-        "commander_sigma": float,
-        "heavy_mu": float,
-        "heavy_sigma": float,
-        "scout_mu": float,
-        "scout_sigma": float,
-        "ammo_mu": float,
-        "ammo_sigma": float,
-        "medic_mu": float,
-        "medic_sigma": float,
-        "laserball_mu": float,
-        "laserball_sigma": float,
+        "sm5": {
+            "mu": float,
+            "sigma": float
+        },
+        "commander": {
+            "mu": float,
+            "sigma": float
+        },
+        "heavy": {
+            "mu": float,
+            "sigma": float
+        },
+        "scout": {
+            "mu": float,
+            "sigma": float
+        },
+        "ammo": {
+            "mu": float,
+            "sigma": float
+        },
+        "medic": {
+            "mu": float,
+            "sigma": float
+        },
+        "laserball": {
+            "mu": float,
+            "sigma": float
+        }
     }
     ... (for every arena played in)
 }
@@ -45,8 +74,10 @@ Player.ratings specification:
 class Player(models.Model):
     entity_id = models.CharField(max_length=15, unique=True)
     codename = models.CharField(max_length=50)
-    player_id = models.CharField(max_length=50, unique=True)
+    player_id = models.CharField(max_length=50, unique=True, null=True) # iplaylaserforce player id
     ratings = models.JSONField(default=dict)
+    # first site played at, found from iplaylaserforce
+    home_site = models.CharField(max_length=50, null=True) # site id (ex: 4-43)
 
     # general db stuff
 
@@ -58,7 +89,23 @@ class Player(models.Model):
 
     # TODO: rfid
 
-    async def get_rating(self, game_type: str, role: Optional[IntRole], site: Optional[str]):
+    @property
+    def home_site_name(self):
+        if self.home_site is None:
+            return "Unknown Site"
+        return ID_TO_IPL_NAME.get(self.home_site, self.home_site)
+    
+    async def get_game_count(self, site: Optional[str] = None):
+        """
+        Get the number of games played by the player, optionally filtered by site.
+        """
+        
+        if site is None:
+            return await Game.objects.filter(entityend__entity__entity_id=self.entity_id).acount()
+        else:
+            return await Game.objects.filter(entityend__entity__entity_id=self.entity_id, site_id=site).acount()
+
+    async def get_rating(self, game_type: str="sm5", role: Optional[IntRole]=None, site: Optional[str]=None):
         """
         Get specified rating from the player.ratings json object
         """
@@ -69,12 +116,12 @@ class Player(models.Model):
             key_1 = site
 
         if role is None:
-            key_2 = f"{game_type.lower()}_"
+            key_2 = game_type.lower()
         else:
-            key_2 = f"{role.name.lower()}_"
+            key_2 = role.name.lower()
        
-        mu = self.ratings[key_1][f"{key_2}_mu"]
-        sigma = self.ratings[key_1][f"{key_2}_sigma"]
+        mu = self.ratings[key_1][key_2]["mu"]
+        sigma = self.ratings[key_1][key_2]["sigma"]
 
         return Rating(mu, sigma)
         
