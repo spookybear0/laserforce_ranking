@@ -1,11 +1,10 @@
-import itertools
 import math
-import random
-import statistics
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, TYPE_CHECKING
 from copy import deepcopy
 from .models.sm5 import SM5Game
-from .models.types import EntityType, IntRole
+from .models.types import EntityType, IntRole, GameType
+if TYPE_CHECKING:
+    from .models import Player, Game
 
 from openskill.models import PlackettLuceRating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
@@ -412,6 +411,25 @@ async def update_sm5_rankings(game: SM5Game) -> bool:
         player.ratings["global"]["sm5"]["sigma"] = rating.sigma
         await player.asave()
 
+    # general role-specific ratings
+    team1_general_role = list(map(lambda x: Rating(x.ratings["global"][introle_to_name(x.role)]["mu"], x.ratings["global"][introle_to_name(x.role)]["sigma"]), team1))
+    team2_general_role = list(map(lambda x: Rating(x.ratings["global"][introle_to_name(x.role)]["mu"], x.ratings["global"][introle_to_name(x.role)]["sigma"]), team2))
+
+    if game.winner == teams[0].enum:
+        team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[0, 1])
+    else:
+        team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[1, 0])
+    
+    for player, rating in zip(team1, team1_general_role_new):
+        player.ratings["global"][introle_to_name(player.role)]["mu"] = rating.mu
+        player.ratings["global"][introle_to_name(player.role)]["sigma"] = rating.sigma
+        await player.asave()
+    
+    for player, rating in zip(team2, team2_general_role_new):
+        player.ratings["global"][introle_to_name(player.role)]["mu"] = rating.mu
+        player.ratings["global"][introle_to_name(player.role)]["sigma"] = rating.sigma
+        await player.asave()
+
     # site-specific ratings
     team1_site = list(map(lambda x: Rating(x.ratings[game.site_id]["sm5"]["mu"], x.ratings[game.site_id]["sm5"]["sigma"]), team1))
     team2_site = list(map(lambda x: Rating(x.ratings[game.site_id]["sm5"]["mu"], x.ratings[game.site_id]["sm5"]["sigma"]), team2))
@@ -429,6 +447,21 @@ async def update_sm5_rankings(game: SM5Game) -> bool:
     for player, rating in zip(team2, team2_site_new):
         player.ratings[game.site_id]["sm5"]["mu"] = rating.mu
         player.ratings[game.site_id]["sm5"]["sigma"] = rating.sigma
+        await player.asave()
+
+    # site-specific role ratings
+
+    team1_site_role = list(map(lambda x: Rating(x.ratings[game.site_id][introle_to_name(x.role)]["mu"], x.ratings[game.site_id][introle_to_name(x.role)]["sigma"]), team1))
+    team2_site_role = list(map(lambda x: Rating(x.ratings[game.site_id][introle_to_name(x.role)]["mu"], x.ratings[game.site_id][introle_to_name(x.role)]["sigma"]), team2))
+    
+    if game.winner == teams[0].enum:
+        team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[0, 1])
+    else:
+        team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[1, 0])
+
+    for player, rating in zip(team1, team1_site_role_new):
+        player.ratings[game.site_id][introle_to_name(player.role)]["mu"] = rating.mu
+        player.ratings[game.site_id][introle_to_name(player.role)]["sigma"] = rating.sigma
         await player.asave()
 
     # need to update current rating and for each entity end object

@@ -1,7 +1,9 @@
 from django.db import models
 from .game import Game, Team
-from .types import TeamType, IntRole, EventType
+from .types import TeamType, IntRole, EventType, SM5_ENEMY_TEAM
 from typing import Optional
+from asgiref.sync import sync_to_async
+import math
 
 class SM5Stats(models.Model):
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
@@ -40,7 +42,129 @@ class SM5Stats(models.Model):
         return int(str(score)[-1]) if score is not None else 0
     
     async def mvp_points(self) -> float:
-        pass # TODO: implement
+        """
+        mvp points according to lfstats.com
+
+        NOTE: this is a function, while LaserballStats.mvp_points is a property
+        """
+
+        entity = await sync_to_async(lambda: self.entity)()
+        entity_end = await sync_to_async(lambda: self.entity_end)()
+
+        score: int = entity_end.score
+        game: SM5Game = await SM5Game.filter(entity_starts__id=entity.id).afirst()
+
+        total_points = 0
+
+        # accuracy: .1 point for every 1% of accuracy, rounded up
+
+        accuracy = (self.shots_hit / self.shots_fired) if self.shots_fired != 0 else 0
+        total_points += math.ceil(accuracy * 10)
+
+        # medic hits: 1 point for every medic hit, -1 for your own medic hits
+
+        total_points += self.medic_hits - self.own_medic_hits
+
+        # elims: minimum 4 points if your team eliminates the other team, increased by 1/60 for each of second of game time remaining above 3 minutes.
+        # ^ UPDATE: changed by the committee to from 1 point for every 60 seconds of game time above 1 minute.
+
+        # check if team eliminated the other team
+
+        mission_end = await game.events.filter(type=EventType.MISSION_END).afirst()
+
+        if mission_end is not None:
+            mission_length = mission_end.time
+
+            if game.last_team_standing.name == entity.team.name:
+                total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
+
+        # cancel opponent nukes: 3 points for every opponent nuke canceled
+
+        total_points += self.nuke_cancels * 3
+
+        # cancel own nukes: -3 points for every own nuke canceled
+
+        total_points -= self.own_nuke_cancels * 3
+
+        # get missiled: -1 point for every time you get missiled
+
+        total_points -= self.times_missiled
+
+        # get eliminated: -1 point for getting elimated (doesn't apply to medics)
+
+        if self.lives_left <= 0 and entity.role != IntRole.MEDIC:
+            total_points -= 1
+
+        # commander specific points:
+
+        if entity.role == IntRole.COMMANDER:
+            # missile opponent: 1 point for every missile on an opponent
+
+            total_points += self.missiled_opponent
+
+            # nukes: 1 point for every nuke detonated
+
+            total_points += self.nukes_detonated
+
+            # nukes canceled: -1 point for every nuke that you activated that was canceled
+
+            total_points -= self.own_nuke_cancels
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 10000
+
+            if score > 10000:
+                total_points += (score - 10000) / 1000
+
+        # heavy specific points:
+        elif entity.role == IntRole.HEAVY:
+            # missiles: 2 points for every missile hit
+
+            total_points += self.missiled_opponent * 2
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 7000
+
+            if score > 7000:
+                total_points += (score - 7000) / 1000
+
+        # scout specific points:
+        elif entity.role == IntRole.SCOUT:
+            # hits vs 3 hit (commander/heavy): .2 points for every hit vs 3 hit
+
+            total_points += self.shot_3_hits * .2
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 6000
+
+            if score > 6000:
+                total_points += (score - 6000) / 1000
+
+        # ammo specific points:
+        elif entity.role == IntRole.AMMO:
+            # ammo boosts: 3 point for every ammo boost
+
+            total_points += self.ammo_boosts * 3
+
+            # score bonus: 1 point (fractionally) for every 1000 points of score over 5000
+
+            if score > 3000:
+                total_points += (score - 3000) / 1000
+
+        # medic specific points:
+        elif entity.role == IntRole.MEDIC:
+            # life boosts: 3 points for every life boost
+
+            total_points += self.life_boosts * 3
+
+            # survival bonus: 2 points for being alive at the end of the game
+
+            if self.lives_left > 0:
+                total_points += 2
+
+            # score bonus: 2 points (fractionally) for every 1000 points of score over 2000
+
+            if score > 2000:
+                total_points += ((score - 2000) / 1000) * 2
+
+        return total_points
 
 class SM5Game(Game):
     sm5_stats = models.ManyToManyField(SM5Stats)

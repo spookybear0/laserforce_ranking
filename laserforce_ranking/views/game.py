@@ -13,7 +13,6 @@ class GameView(DetailView):
         """
         Override get_object to fetch the player based on the provided ID.
         """
-        print(f"Fetching game with tdf_name: {self.kwargs.get('tdf_name')}")  # Debugging output
         tdf_name = self.kwargs.get("tdf_name")
         return Game.objects.get(tdf_name=tdf_name)
     

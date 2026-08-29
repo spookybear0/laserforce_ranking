@@ -32,8 +32,6 @@ class PlayerListView(ListView):
         site = "global" if self.request.GET.get("site", "") == "" else self.request.GET.get("site")
 
         if db_field in ["ratings", "-ratings"]:
-            print(f"Sorting by rating, site: {site}")
-
             db_field = f"{db_field}__{site}"
 
         games = (
@@ -58,8 +56,6 @@ class PlayerListView(ListView):
         # depending on what mode is selected, show the appropriate rating
         # and let frontend access it using player.rating
 
-        print(site)
-
         return Player.objects.annotate(
             rating=ExpressionWrapper(
                 F(f"ratings__{site}__{self.request.GET.get('mode', 'sm5')}__mu") - \
@@ -82,12 +78,10 @@ class PlayerListView(ListView):
         context["current_site"] = self.request.GET.get("site")
         context["sites"] = SITES
         context["competitive_sites"] = COMPETITIVE_SITES
-        print(self.request.GET)
         return context
 
     def render_to_response(self, context, **response_kwargs):
         # Intercept HTMX requests to return only the partial fragment
         if self.request.htmx:
             self.template_name = "partials/player_table.html"
-        print(context)
         return super().render_to_response(context, **response_kwargs)

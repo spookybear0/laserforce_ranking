@@ -529,7 +529,7 @@ async def process_sm5(
                 # if this is a player, determine if they can gain specials (heavies can't gain specials and scouts can't gain specials until they get rapid fire)
 
                 player_special_points[entity_id] = 0
-                if IntRole(entity_start.role) == IntRole.HEAVY:
+                if entity_start.role == IntRole.HEAVY:
                     player_can_gain_specials[entity_id] = False
                 else:
                     player_can_gain_specials[entity_id] = True
@@ -556,7 +556,7 @@ async def process_sm5(
                         player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) - 10, 99)
 
             # scouts can get sp from bases even with rapid
-            if event.type in [EventType.DESTROY_BASE, EventType.MISSILE_BASE_DESTROY, EventType.BASE_AWARDED] and IntRole(entity_starts[event.entity1].role) != IntRole.HEAVY:
+            if event.type in [EventType.DESTROY_BASE, EventType.MISSILE_BASE_DESTROY, EventType.BASE_AWARDED] and entity_starts[event.entity1].role != IntRole.HEAVY:
                 player_special_points[event.entity1] = min(player_special_points.get(event.entity1, 0) + 5, 99)
 
             # scout activated rapid
@@ -567,11 +567,9 @@ async def process_sm5(
 
             # scout deactivated rapid from being resupplied ammo or lives
             if event.type in [EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]:
-                if IntRole(entity_starts[event.entity2].role) == IntRole.SCOUT:
+                if entity_starts[event.entity2].role == IntRole.SCOUT:
                     # rapid fire turned off, specials can be gained again
                     player_can_gain_specials[event.entity2] = True
-
-        print(player_special_points)
         
         # create sm5 game
 

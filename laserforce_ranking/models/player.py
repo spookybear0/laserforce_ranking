@@ -1,8 +1,9 @@
 from django.db import models
-from .types import Permission, IntRole, ID_TO_IPL_NAME
+from .types import Permission, IntRole, ID_TO_IPL_NAME, GameType
 from .game import Game
 from typing import Optional
 from laserforce_ranking.rating import Rating
+from django_enum import EnumField
 
 """
 Player.ratings specification:
@@ -85,7 +86,7 @@ class Player(models.Model):
 
     # account stuff
     password = models.CharField(max_length=255, null=True) # hashed password
-    permissions = models.IntegerField(choices=Permission, default=Permission.USER)
+    permissions = EnumField(Permission, default=Permission.USER)
 
     # TODO: rfid
 
@@ -105,7 +106,7 @@ class Player(models.Model):
         else:
             return await Game.objects.filter(entityend__entity__entity_id=self.entity_id, site_id=site).acount()
 
-    async def get_rating(self, game_type: str="sm5", role: Optional[IntRole]=None, site: Optional[str]=None):
+    async def get_rating(self, game_type: Optional[GameType]=GameType.SM5, site: Optional[str]=None, role: Optional[IntRole]=None):
         """
         Get specified rating from the player.ratings json object
         """
@@ -116,7 +117,7 @@ class Player(models.Model):
             key_1 = site
 
         if role is None:
-            key_2 = game_type.lower()
+            key_2 = game_type.value.lower()
         else:
             key_2 = role.name.lower()
        

@@ -1,0 +1,36 @@
+<div class="bg-base-100 rounded-2xl shadow-xl p-4 sm:p-10 mb-8" style="margin-right: calc(var(--spacing) * 8)" hx-swap="outerHTML" id="team-table-{{ team_index }}">
+    <h1 class="text-xl sm:text-2xl font-bold">Team {{ team_index }}</h1>
+    <div class="overflow-x-auto">
+        <table class="table w-full table-sm">
+            <thead>
+                <tr>
+                    <th>Codename</th>
+                    <th>Rating</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody id="team-table-body-{{ team_index }}">
+                <tr draggable="true" data-player-id="#aaa" class="cursor-move">
+                    <td>Spooky</td>
+                    <td>3.464</td>
+                    <td>
+                        {% with codename='Spooky' + team_index %}
+                            {% include 'partials/matchmaker/role_dropdown.html' %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% for player in team %}
+                <tr draggable="true" data-player-id="{{ player.entity_id[1:] }}" class="cursor-move">
+                    <td><a href="/teams/{{ team.id }}" class="link link-primary">{{ team.name }}</a></td>
+                    <td>{{ team.members|length }}</td>
+                    <td>{{ team.games_played }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-base-content/50">No players in this team</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -5,6 +5,7 @@ from datetime import datetime
 from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType
 from dataclasses import dataclass
 import re
+from django_enum import EnumField
 
 def suffix(date: int) -> str:
     return {1: "st", 2: "nd", 3: "rd"}.get(date % 20, "th")
@@ -37,11 +38,11 @@ class EntityStart(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
     time = models.IntegerField() # milliseconds since game start, measures when initalized
     entity_id = models.CharField(max_length=50) # ex: #ZRbsz (member) or @71 (battlesuit/base)
-    type = models.CharField(max_length=50, choices=EntityType)
+    type = EnumField(EntityType)
     name = models.CharField(max_length=50) # name of the entity, usually a codename, battlesuit name, or target name
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     level = models.IntegerField() # LF level, 0 in games without levels
-    role = models.IntegerField(choices=IntRole)
+    role = EnumField(IntRole) # role of the player, if applicable, otherwise 0
     battlesuit = models.CharField(max_length=50, null=True) # name of the battlesuit (only different if logged in)
     member_id = models.CharField(max_length=50, null=True) # member id of the player, if included in the tdf, otherwise null
     entity_end = models.OneToOneField("EntityEnd", on_delete=models.SET_NULL, null=True, blank=True) # the entity end for this entity, if it exists
@@ -65,7 +66,7 @@ class EntityStart(models.Model):
 class Event(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
     time = models.IntegerField()  # time in milliseconds
-    type = models.CharField(choices=EventType)
+    type = EnumField(EventType)
     # The first entity involved in the action, typically the one performing the action.
     # Can be empty in some cases, for example global events such as "* Mission Start *".
     entity1 = models.CharField(50, default="")
@@ -83,7 +84,7 @@ class PlayerState(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
     time = models.IntegerField() # time in milliseconds
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
-    state = models.IntegerField(choices=PlayerStateType)
+    state = EnumField(PlayerStateType) # state of the player
 
 # delta score updates
 class Score(models.Model):
@@ -98,7 +99,7 @@ class EntityEnd(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE)
     time = models.IntegerField() # milliseconds since game start, measures when destroyed or left
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
-    type = models.CharField(max_length=50, choices=EntityEndType)
+    type = EnumField(EntityEndType) # how the entity ended
     score = models.IntegerField() # final score for the entity
 
     """

@@ -27,7 +27,9 @@ urlpatterns = [
     path("games", views.GameListView.as_view(), name="game_list"),
     path("players/<str:entity_id>", views.PlayerView.as_view(), name="player_detail"),
     path("about", views.AboutView.as_view(), name="about"),
-    path("games/<str:tdf_name>", views.GameView.as_view(), name="game_detail")
+    path("games/<str:tdf_name>", views.GameView.as_view(), name="game_detail"),
+    path("matchmaker", views.MatchmakerView.as_view(), name="matchmaker"),
+    path("matchmaker/players", views.MatchmakerPlayersView.as_view(), name="matchmaker_players"),
 ]
 
 if settings.DEBUG:

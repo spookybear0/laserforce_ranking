@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Matchmaker | LF Ranking{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col flex-1 min-h-0">
+    <h1 class="text-3xl sm:text-4xl font-bold mb-8 shrink">Matchmaker</h1>
+    <div class="flex flex-col md:flex-row gap-4 justify-evenly flex-1 min-h-0">
+        <!-- Buttons -->
+        <div class="flex flex-col gap-4">
+            <button class="btn btn-primary w-full md:w-auto">Matchmake</button>
+            <button class="btn btn-secondary w-full md:w-auto">Add Unrated Player</button>
+            <button class="btn btn-secondary w-full md:w-auto">Add Team</button>
+            <button class="btn btn-secondary w-full md:w-auto">Remove Team</button>
+            <!--mode dropdown sm5, laserball-->
+            <div class="dropdown w-full md:w-auto">
+                <label tabindex="0" class="btn btn-ghost w-full">Mode<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg></label>
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a>SM5</a></li>
+                    <li><a>Laserball</a></li>
+                </ul>
+            </div>
+            <!--site dropdown-->
+            <div class="dropdown w-full md:w-auto">
+                <label tabindex="0" class="btn btn-ghost w-full">Site<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg></label>
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                    
+                </ul>
+            </div>
+            <!--matchmake with roles checkbox-->
+            <div class="form-control w-full md:w-auto text-center">
+                <label class="label cursor-pointer justify-center"></label>
+                    <span class="label-text">Roles</span>
+                    <input type="checkbox" class="toggle toggle-primary" checked />
+                </label>
+            </div>
+        </div>
+
+        <!-- Player Table -->
+        <div class="w-full md:w-1/4 min-w-0 min-h-0">
+            {% include 'partials/matchmaker/player_table.html' %}
+        </div>
+
+        <!-- Team Tables -->
+        <div class="w-full md:w-5/8 min-w-0 min-h-0">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="min-w-0">
+                    {% with team_index="1" %}
+                        {% include 'partials/matchmaker/team_table.html' %}
+                    {% endwith %}
+                </div>
+                <div class="min-w-0">
+                    {% with team_index="2" %}
+                        {% include 'partials/matchmaker/team_table.html' %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

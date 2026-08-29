@@ -5,3 +5,4 @@ from .player_list import PlayerListView
 from .player import PlayerView
 from .about import AboutView
 from .game import GameView
+from .matchmaker import MatchmakerView, MatchmakerPlayersView

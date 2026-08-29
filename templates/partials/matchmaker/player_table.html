@@ -1,0 +1,55 @@
+<div
+    id="player-table"
+    class="w-full h-full min-h-0 bg-base-100 rounded-2xl shadow-xl p-4 sm:p-10 flex flex-col"
+>
+    <h1 class="text-xl sm:text-2xl font-bold mb-4 shrink-0">
+        Players
+    </h1>
+
+    <input
+        id="player-search"
+        type="search"
+        name="search"
+        value="{{ request.GET.get('search', '') }}"
+        placeholder="Search players..."
+        class="input input-bordered w-full mb-4 shrink-0"
+        autocomplete="off"
+        hx-get="{{ url('matchmaker_players') }}"
+        hx-trigger="input changed delay:500ms"
+        hx-target="#player-table"
+        hx-swap="outerHTML"
+    >
+
+    <div class="overflow-x-auto h-full min-h-0 flex-1">
+        <table class="table w-full table-sm">
+            <thead class="sticky top-0 bg-base-100 z-10">
+                <tr>
+                    <th>Codename</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for player in players %}
+                <tr draggable="true" data-player-id="{{ player.entity_id }}" class="cursor-move">
+                    <td>
+                        <a
+                            href="/players/{{ player.entity_id[1:] }}"
+                            class="link link-primary"
+                        >
+                            {{ player.codename }}
+                        </a>
+                    </td>
+                    <td>{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2" class="text-center py-4 text-base-content/50">
+                        No players found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

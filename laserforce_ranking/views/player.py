@@ -30,7 +30,6 @@ class PlayerView(DetailView):
                 self.object.entity_id,
             )
         )
-        print(f"player entity_id: {self.object.entity_id}")
         context["player_entity_id"] = self.object.entity_id
 
         return context

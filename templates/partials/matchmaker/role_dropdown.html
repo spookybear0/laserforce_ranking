@@ -1,0 +1,32 @@
+
+<div class="flex items-center space-x-2">
+    <img id="role-image-{{codename}}" src="{{ static('sm5/roles/scout.png') }}" alt="Scout" width="24" height="24">
+    <select id="role-select-{{codename}}" class="border rounded p-1" onchange="updateRoleImage(this, '{{codename}}')">
+        <option value="commander">Commander</option>
+        <option value="heavy">Heavy</option>
+        <option value="scout" selected>Scout</option>
+        <option value="ammo">Ammo</option>
+        <option value="medic">Medic</option>
+        <option value="none">None</option>
+    </select>
+</div>
+
+<script>
+    function updateRoleImage(selectElement, codename) {
+        const selectedRole = selectElement.value;
+        const image = document.getElementById('role-image-' + codename);
+
+        if (selectedRole === 'none') {
+            image.src = '';
+            image.alt = '';
+            return;
+        }
+
+        if (image) {
+            image.src = `/assets/sm5/roles/${selectedRole}.png`;
+            image.alt = selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1);
+        } else {
+            console.error("Could not find image element with ID: role-image-" + codename);
+        }
+    }
+</script>
