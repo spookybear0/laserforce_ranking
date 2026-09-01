@@ -6,3 +6,4 @@ from .player import PlayerView
 from .about import AboutView
 from .game import GameView
 from .matchmaker import MatchmakerView, MatchmakerPlayersView
+from .upload_tdf import UploadTDFView

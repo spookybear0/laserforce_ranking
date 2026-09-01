@@ -86,7 +86,7 @@
             <tbody id="player-table">
                 {% for player in players %}
                 <tr>
-                    <td><a href="/players/{{ player.entity_id[1:] }}" class="link link-primary">{{ player }}</a></td>
+                    <td><a href="/players/{{ player.entity_id[1:] }}" class="link link-primary">{{ player.codename }}</a></td>
                     <td>{{ player.home_site_name }}</td>
                     <td>{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
                     <td>{{ player.games }}</td>

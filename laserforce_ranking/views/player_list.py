@@ -37,7 +37,7 @@ class PlayerListView(ListView):
         games = (
             Game.objects
             .filter(
-                entityend__entity__entity_id=OuterRef("entity_id")
+                entity_ends__entity__entity_id=OuterRef("entity_id")
             )
         )
 
@@ -46,7 +46,7 @@ class PlayerListView(ListView):
 
         games = (
             games
-            .values("entityend__entity__entity_id")
+            .values("entity_ends__entity__entity_id")
             .annotate(
                 count=Count("id", distinct=True)
             )

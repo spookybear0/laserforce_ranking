@@ -151,7 +151,7 @@ def introle_to_name(role: int):
     from .models.types import IntRole
     return IntRole(role).to_role().value
 
-BLANK_RATING = {
+BLANK_RATING_PER_SITE = {
     "sm5": {
         "mu": MU,
         "sigma": SIGMA
@@ -176,7 +176,61 @@ BLANK_RATING = {
         "mu": MU,
         "sigma": SIGMA
     },
+    "laserball": {
+        "mu": MU,
+        "sigma": SIGMA
+    }
 }
+
+BLANK_ENTITY_RATING = {
+    "previous": {
+        "global": {
+            "mu": MU,
+            "sigma": SIGMA
+        },
+        "global_role": {
+            "mu": MU,
+            "sigma": SIGMA
+        },
+        "site": {
+            "mu": MU,
+            "sigma": SIGMA
+        },
+        "site_role": {
+            "mu": MU,
+            "sigma": SIGMA
+        }
+    },
+    "current": {
+        "global": {
+            "mu": MU,
+            "sigma": SIGMA
+        },
+        "global_role": {
+            "mu": MU,
+            "sigma": SIGMA
+        },
+        "site": {
+            "mu": MU,
+            "sigma": SIGMA
+        },
+        "site_role": {
+            "mu": MU,
+            "sigma": SIGMA
+        }
+    }
+}
+
+# Player object that we use when a player isn't logged in.
+# we just assume the default rating for that player, and we don't save the rating back to the database
+# (the rating has high uncertainty)
+# TODO: possibly allow this rating to change throughout the game to improve the accuracy as the game goes on
+class FakeDefaultPlayer:
+    def __init__(self, site_id: int):
+        self.ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), site_id: deepcopy(BLANK_RATING_PER_SITE)}
+
+    async def asave(self):
+        pass
 
 async def update_sm5_rankings(game: SM5Game) -> bool:
     """
@@ -203,7 +257,8 @@ async def update_sm5_rankings(game: SM5Game) -> bool:
         if player:
             ratings = player.ratings
         else:
-            ratings = deepcopy(BLANK_RATING)
+            ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
+
 
         entity_end.ratings = {
             "previous": {
@@ -249,14 +304,14 @@ async def update_sm5_rankings(game: SM5Game) -> bool:
         if shooter_player:
             shooter_rating = shooter_player.ratings
         else:
-            shooter_rating = deepcopy(BLANK_RATING)
+            shooter_rating = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
 
         target = await EntityStart.objects.filter(entity_id=event.entity2).afirst()
         target_player = await Player.objects.filter(entity_id=target.entity_id).afirst()
         if target_player:
             target_rating = target_player.ratings
         else:
-            target_rating = deepcopy(BLANK_RATING)
+            target_rating = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
 
         # global
 
@@ -385,83 +440,90 @@ async def update_sm5_rankings(game: SM5Game) -> bool:
 
     teams = await game.get_teams()
 
-    async for player in game.entity_starts.filter(type=EntityType.PLAYER).select_related("team").all():
-        team_color = player.team.color_name
+    async for entity_start in game.entity_starts.filter(type=EntityType.PLAYER).select_related("team").all():
+        team_color = entity_start.team.color_name
         if team_color == (teams[0].color_name):
-            team1.append(await Player.objects.filter(entity_id=player.entity_id).afirst())
+            player = await Player.objects.filter(entity_id=entity_start.entity_id).afirst()
+            team1.append((player if player else FakeDefaultPlayer(game.site_id), entity_start))
         else:
-            team2.append(await Player.objects.filter(entity_id=player.entity_id).afirst())
+            player = await Player.objects.filter(entity_id=entity_start.entity_id).afirst()
+            team2.append((player if player else FakeDefaultPlayer(game.site_id), entity_start))
 
     # general ratings
-    team1_general = list(map(lambda x: Rating(x.ratings["global"]["sm5"]["mu"], x.ratings["global"]["sm5"]["sigma"]), team1))
-    team2_general = list(map(lambda x: Rating(x.ratings["global"]["sm5"]["mu"], x.ratings["global"]["sm5"]["sigma"]), team2))
+    team1_general = list(map(lambda pair: Rating(pair[0].ratings["global"]["sm5"]["mu"], pair[0].ratings["global"]["sm5"]["sigma"]), team1))
+    team2_general = list(map(lambda pair: Rating(pair[0].ratings["global"]["sm5"]["mu"], pair[0].ratings["global"]["sm5"]["sigma"]), team2))
 
     if game.winner == teams[0].enum:
         team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[0, 1])
     else:
         team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[1, 0])
 
-    for player, rating in zip(team1, team1_general_new):
+    for (player, es), rating in zip(team1, team1_general_new):
         player.ratings["global"]["sm5"]["mu"] = rating.mu
         player.ratings["global"]["sm5"]["sigma"] = rating.sigma
         await player.asave()
 
-    for player, rating in zip(team2, team2_general_new):
+    for (player, es), rating in zip(team2, team2_general_new):
         player.ratings["global"]["sm5"]["mu"] = rating.mu
         player.ratings["global"]["sm5"]["sigma"] = rating.sigma
         await player.asave()
 
     # general role-specific ratings
-    team1_general_role = list(map(lambda x: Rating(x.ratings["global"][introle_to_name(x.role)]["mu"], x.ratings["global"][introle_to_name(x.role)]["sigma"]), team1))
-    team2_general_role = list(map(lambda x: Rating(x.ratings["global"][introle_to_name(x.role)]["mu"], x.ratings["global"][introle_to_name(x.role)]["sigma"]), team2))
+    team1_general_role = list(map(lambda pair: Rating(pair[0].ratings["global"][introle_to_name(pair[1].role)]["mu"], pair[0].ratings["global"][introle_to_name(pair[1].role)]["sigma"]), team1))
+    team2_general_role = list(map(lambda pair: Rating(pair[0].ratings["global"][introle_to_name(pair[1].role)]["mu"], pair[0].ratings["global"][introle_to_name(pair[1].role)]["sigma"]), team2))
 
     if game.winner == teams[0].enum:
         team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[0, 1])
     else:
         team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[1, 0])
     
-    for player, rating in zip(team1, team1_general_role_new):
-        player.ratings["global"][introle_to_name(player.role)]["mu"] = rating.mu
-        player.ratings["global"][introle_to_name(player.role)]["sigma"] = rating.sigma
+    for (player, es), rating in zip(team1, team1_general_role_new):
+        player.ratings["global"][introle_to_name(es.role)]["mu"] = rating.mu
+        player.ratings["global"][introle_to_name(es.role)]["sigma"] = rating.sigma
         await player.asave()
     
-    for player, rating in zip(team2, team2_general_role_new):
-        player.ratings["global"][introle_to_name(player.role)]["mu"] = rating.mu
-        player.ratings["global"][introle_to_name(player.role)]["sigma"] = rating.sigma
+    for (player, es), rating in zip(team2, team2_general_role_new):
+        player.ratings["global"][introle_to_name(es.role)]["mu"] = rating.mu
+        player.ratings["global"][introle_to_name(es.role)]["sigma"] = rating.sigma
         await player.asave()
 
     # site-specific ratings
-    team1_site = list(map(lambda x: Rating(x.ratings[game.site_id]["sm5"]["mu"], x.ratings[game.site_id]["sm5"]["sigma"]), team1))
-    team2_site = list(map(lambda x: Rating(x.ratings[game.site_id]["sm5"]["mu"], x.ratings[game.site_id]["sm5"]["sigma"]), team2))
+    team1_site = list(map(lambda pair: Rating(pair[0].ratings[game.site_id]["sm5"]["mu"], pair[0].ratings[game.site_id]["sm5"]["sigma"]), team1))
+    team2_site = list(map(lambda pair: Rating(pair[0].ratings[game.site_id]["sm5"]["mu"], pair[0].ratings[game.site_id]["sm5"]["sigma"]), team2))
 
     if game.winner == teams[0].enum:
         team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[0, 1])
     else:
         team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[1, 0])
 
-    for player, rating in zip(team1, team1_site_new):
+    for (player, es), rating in zip(team1, team1_site_new):
         player.ratings[game.site_id]["sm5"]["mu"] = rating.mu
         player.ratings[game.site_id]["sm5"]["sigma"] = rating.sigma
         await player.asave()
 
-    for player, rating in zip(team2, team2_site_new):
+    for (player, es), rating in zip(team2, team2_site_new):
         player.ratings[game.site_id]["sm5"]["mu"] = rating.mu
         player.ratings[game.site_id]["sm5"]["sigma"] = rating.sigma
         await player.asave()
 
     # site-specific role ratings
 
-    team1_site_role = list(map(lambda x: Rating(x.ratings[game.site_id][introle_to_name(x.role)]["mu"], x.ratings[game.site_id][introle_to_name(x.role)]["sigma"]), team1))
-    team2_site_role = list(map(lambda x: Rating(x.ratings[game.site_id][introle_to_name(x.role)]["mu"], x.ratings[game.site_id][introle_to_name(x.role)]["sigma"]), team2))
+    team1_site_role = list(map(lambda pair: Rating(pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["mu"], pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["sigma"]), team1))
+    team2_site_role = list(map(lambda pair: Rating(pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["mu"], pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["sigma"]), team2))
     
     if game.winner == teams[0].enum:
         team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[0, 1])
     else:
         team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[1, 0])
 
-    for player, rating in zip(team1, team1_site_role_new):
-        player.ratings[game.site_id][introle_to_name(player.role)]["mu"] = rating.mu
-        player.ratings[game.site_id][introle_to_name(player.role)]["sigma"] = rating.sigma
+    for (player, es), rating in zip(team1, team1_site_role_new):
+        player.ratings[game.site_id][introle_to_name(es.role)]["mu"] = rating.mu
+        player.ratings[game.site_id][introle_to_name(es.role)]["sigma"] = rating.sigma
+        await player.asave()
+
+    for (player, es), rating in zip(team2, team2_site_role_new):
+        player.ratings[game.site_id][introle_to_name(es.role)]["mu"] = rating.mu
+        player.ratings[game.site_id][introle_to_name(es.role)]["sigma"] = rating.sigma
         await player.asave()
 
     # need to update current rating and for each entity end object
@@ -472,7 +534,7 @@ async def update_sm5_rankings(game: SM5Game) -> bool:
         if player:
             ratings = player.ratings
         else:
-            ratings = deepcopy(BLANK_RATING)
+            ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
 
         entity_end.ratings.update({
             "current": {

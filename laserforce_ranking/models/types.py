@@ -73,7 +73,9 @@ SITE_TIMEZONES = {
     "7-13": "+00:00",  # Europe/London
     "1-64": "+11:00",  # Australia/Sydney
     "7-8": "+00:00",   # Europe/London
-    "20-18": "+02:00"  # Europe/Prague
+    "20-18": "+02:00",  # Europe/Prague
+    "4-80": "-08:00",  # America/Los_Angeles
+    "4-3": "-08:00",   # America/Los_Angeles
 }
 
 @dataclass
@@ -145,7 +147,6 @@ class _TeamDefinition:
         return self.color == color
 
     def __len__(self):
-        # Tortoise uses the length of the enum value.
         return len(self.color)
 
     def __str__(self):
@@ -178,6 +179,9 @@ class TeamType(Enum):
                              dim_color=RgbColor(red=68, green=68, blue=0), plain_color="rgb(255, 215, 0)")
     PURPLE = _TeamDefinition(color="purple", element="Purple", css_class="purple-team", css_color_name="#A020F0",
                              dim_color=RgbColor(red=34, green=0, blue=68), plain_color="rgb(160, 32, 240)")
+    # powerlaser stuttgart has a pink team
+    PINK = _TeamDefinition(color="pink", element="Pink", css_class="pink-team", css_color_name="#FF69B4",
+                           dim_color=RgbColor(red=68, green=17, blue=34), plain_color="rgb(255, 105, 180)")
 
     def __call__(cls, value, *args, **kw):
         if type(value) is str:
@@ -260,6 +264,8 @@ NAME_TO_TEAM = {
     # laserball ramps
     "Yellow": TeamType.YELLOW,
     "Purple": TeamType.PURPLE,
+    # powerlaser stuttgart
+    "Pink": TeamType.PINK,
 }
 
 

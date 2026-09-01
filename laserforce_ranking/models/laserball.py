@@ -1,19 +1,20 @@
 from django.db import models
 
 class LaserballStats(models.Model):
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="laserball_stats")
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
-    goals = models.IntegerField()
-    assists = models.IntegerField()
-    passes = models.IntegerField()
-    steals = models.IntegerField()
-    clears = models.IntegerField()
-    blocks = models.IntegerField()
-    shots_fired = models.IntegerField()
-    shots_hit = models.IntegerField()
-    started_with_ball = models.IntegerField()
-    times_stolen = models.IntegerField()
-    times_blocked = models.IntegerField()
-    passes_received = models.IntegerField()
+    goals = models.PositiveSmallIntegerField()
+    assists = models.PositiveSmallIntegerField()
+    passes = models.PositiveSmallIntegerField()
+    steals = models.PositiveSmallIntegerField()
+    clears = models.PositiveSmallIntegerField()
+    blocks = models.PositiveSmallIntegerField()
+    shots_fired = models.PositiveSmallIntegerField()
+    shots_hit = models.PositiveSmallIntegerField()
+    started_with_ball = models.PositiveSmallIntegerField()
+    times_stolen = models.PositiveSmallIntegerField()
+    times_blocked = models.PositiveSmallIntegerField()
+    passes_received = models.PositiveSmallIntegerField()
 
     @property
     def mvp_points(self) -> float:
@@ -35,3 +36,10 @@ class LaserballStats(models.Model):
         See also: https://www.iplaylaserforce.com/games/laserball/.
         """
         return (self.goals + self.assists) * 10000 + min(self.steals, 99) * 100 + min(self.blocks, 99)
+
+    def __str__(self):
+        return f"LaserballStats for {self.entity}"
+    
+    class Meta:
+        verbose_name = "Laserball stat"
+        verbose_name_plural = "Laserball stats"

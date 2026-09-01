@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Game {{ game.start_time }} | LF Ranking{% endblock %}
+{% block title %}{{ ID_TO_SITE[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} | LF Ranking{% endblock %}
 
 {% block content %}
 
-<div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left">
-    <h1 class="text-4xl font-bold">{{ game.start_time }}</h1>
+<div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col gap-2">
+    <h1 class="text-4xl font-bold">Game @ {{ game.start_time.strftime('%H:%M') }}</h1>
+    <p class="text-base text-base-content/70">
+        {{ ID_TO_SITE[game.site_id] }} - {{ game.start_time.strftime('%b {}, %Y'.format(day_no_leading_zero)) }} - {{ game.mission_duration.seconds // 60 }}:{{ '%02d' % (game.mission_duration.seconds % 60) }}
+    </p>
+    <p class="text-base text-base-content/70"><a href="/api/tdf/{{game.tdf_name}}" class="text-blue-500 hover:underline">{{ game.tdf_name }}</a></p>
 </div>
 
 {% endblock %}

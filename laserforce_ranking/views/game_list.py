@@ -1,4 +1,4 @@
-from laserforce_ranking.models import SITES, Game
+from laserforce_ranking.models import SITES, Game, ID_TO_SITE
 from django.views.generic import ListView
 from django.shortcuts import render
 import random
@@ -6,6 +6,8 @@ from django.core.paginator import Paginator
 
 def get_games(request, player_entity_id=None):
     sort_by = request.GET.get("sort", "start_time")
+    game_type = request.GET.get("mode", "sm5")
+    print(f"Sort by: {sort_by}, Game type: {game_type}, Player entity ID: {player_entity_id}")
 
     if not player_entity_id and request.GET.get("player"):
         player_entity_id = request.GET.get("player")
@@ -15,8 +17,8 @@ def get_games(request, player_entity_id=None):
         "-start_time": "-start_time",
         "site": "site",
         "-site": "-site",
-        "length": "length",
-        "-length": "-length",
+        "duration": "duration",
+        "-duration": "-duration",
         "outcome": "outcome",
         "-outcome": "-outcome",
         "score": "score",
@@ -30,7 +32,7 @@ def get_games(request, player_entity_id=None):
     # Player filter
     if player_entity_id:
         games = games.filter(
-            entityend__entity__entity_id=player_entity_id
+            entity_ends__entity__entity_id=player_entity_id
         ).distinct()
 
     # Site filter
@@ -52,6 +54,7 @@ def get_game_table_context(request, player_entity_id=None):
         "page_obj": page_obj,
         "current_sort": request.GET.get("sort", "start_time"),
         "sites": SITES,
+        "id_to_site": ID_TO_SITE,
         "current_page": request.GET.get("page", 1),
         "current_site": request.GET.get("site"),
         "current_mode": request.GET.get("mode", "sm5"),

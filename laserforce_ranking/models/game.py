@@ -6,6 +6,7 @@ from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, Playe
 from dataclasses import dataclass
 import re
 from django_enum import EnumField
+from django.urls import reverse
 
 def suffix(date: int) -> str:
     return {1: "st", 2: "nd", 3: "rd"}.get(date % 20, "th")
@@ -14,10 +15,10 @@ def strftime_ordinal(format: str, time_: datetime) -> str:
     return time_.strftime(format).replace("{S}", str(time_.day) + suffix(time_.day))
 
 class Team(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
-    index = models.IntegerField()
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="teams")
+    index = models.PositiveSmallIntegerField()
     name = models.CharField(50)
-    color_enum = models.IntegerField() # no idea what this enum is
+    color_enum = models.PositiveSmallIntegerField() # no idea what this enum is
     color_name = models.CharField(50)
 
     real_color_name = models.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
@@ -33,15 +34,18 @@ class Team(models.Model):
     def short_name(self):
         """Returns the name without 'Team' in it to keep it short."""
         return re.sub(r"\s*Team\s*", "", self.name)
+    
+    def __str__(self):
+        return f"{self.name} (Game {self.game.id})"
 
 class EntityStart(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="entity_starts")
     time = models.IntegerField() # milliseconds since game start, measures when initalized
     entity_id = models.CharField(max_length=50) # ex: #ZRbsz (member) or @71 (battlesuit/base)
     type = EnumField(EntityType)
     name = models.CharField(max_length=50) # name of the entity, usually a codename, battlesuit name, or target name
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    level = models.IntegerField() # LF level, 0 in games without levels
+    level = models.SmallIntegerField() # LF level, 0 in games without levels
     role = EnumField(IntRole) # role of the player, if applicable, otherwise 0
     battlesuit = models.CharField(max_length=50, null=True) # name of the battlesuit (only different if logged in)
     member_id = models.CharField(max_length=50, null=True) # member id of the player, if included in the tdf, otherwise null
@@ -62,9 +66,12 @@ class EntityStart(models.Model):
             entity1=self.entity_id
         ).acount()
         return penalty_count
+    
+    def __str__(self):
+        return f"{self.name} ({self.entity_id}) - {self.type.name} - Game {self.game.id}"
 
 class Event(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="events")
     time = models.IntegerField()  # time in milliseconds
     type = EnumField(EventType)
     # The first entity involved in the action, typically the one performing the action.
@@ -79,24 +86,36 @@ class Event(models.Model):
     # activates a nuke.
     entity2 = models.CharField(50, default="")
 
+    def __str__(self):
+        return f"{self.type.name}: {self.entity1} {self.action} {self.entity2} - Game {self.game.id}"
+    
+    class Meta:
+        ordering = ["time"] # order events by time
+
 # player status updates
 class PlayerState(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="player_states")
     time = models.IntegerField() # time in milliseconds
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
     state = EnumField(PlayerStateType) # state of the player
 
+    def __str__(self):
+        return f"{self.state.name} - {self.entity.name} - Game {self.game.id}"
+
 # delta score updates
 class Score(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="scores")
     time = models.IntegerField() # time in milliseconds
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
     old = models.IntegerField() # old score
-    delta = models.IntegerField() # change in score
+    delta = models.SmallIntegerField() # change in score
     new = models.IntegerField() # new score
 
+    def __str__(self):
+        return f"{self.entity.name} - {self.old} -> {self.new} (delta: {self.delta}) - Game {self.game.id}"
+
 class EntityEnd(models.Model):
-    game = models.ForeignKey("Game", on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="entity_ends")
     time = models.IntegerField() # milliseconds since game start, measures when destroyed or left
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
     type = EnumField(EntityEndType) # how the entity ended
@@ -143,6 +162,10 @@ class EntityEnd(models.Model):
     }
     """
     ratings = models.JSONField(null=True) # current and previous ratings, if available
+    video = models.URLField(null=True) # video of the game from this player's perspective, if available
+
+    def __str__(self):
+        return f"{self.entity.name} - {self.type.name} - Game {self.game.id}"
 
 @dataclass
 class PlayerInfo:
@@ -159,33 +182,34 @@ class PlayerInfo:
 # base game type for a laserforce game imported from tdf
 class Game(models.Model):
     id = models.AutoField(primary_key=True)
-    site_id = models.CharField(max_length=50) # continent-arena (ex: 4-43)
+    site_id = models.SlugField() # continent-arena (ex: 4-43)
     tdf_name = models.CharField(max_length=100) # name of tdf in filesystem for storage
     file_version = models.CharField(max_length=20) # version is a decimal number, we can just store it as a string
     software_version = models.CharField(max_length=20)  # ^
-    mission_type = models.IntegerField() # mission type, depends on site
+    mission_type = models.PositiveSmallIntegerField() # mission type, depends on site
     mission_name = models.CharField(max_length=100)
     ranked = models.BooleanField() # will this game affect player ratings and stats.
     force_ended_early = models.BooleanField() # did someone stop this game with the end game button
-    # Real-life time when the game started. Keep in mind that MySQL does not store timezone information, so this is
-    # a DATETIME(6) field. It has microsecond precision but no concept of timezone, so when you read it as a datetime
-    # object, it will be the local time at the location where it was played, but timezone set to UTC.
-    # Likewise, when you initialize this value with a datetime object, set the timezone to UTC and the time to whatever
-    # it was at the local site to prevent headaches.
+    # Real-life time when the game started. With timezone of the local arena.
     start_time = models.DateTimeField()
-    mission_duration = models.IntegerField() # how long the game can last if it doesn't end early, in milliseconds
-    penalty_amount = models.IntegerField() # how much score is added for each penalty, can be negative (ex: 0, -1000)
-    teams = models.ManyToManyField(Team, related_name="games")
-    entity_starts = models.ManyToManyField(EntityStart, related_name="games")
-    events = models.ManyToManyField(Event, related_name="games")
-    player_states = models.ManyToManyField(PlayerState, related_name="games")
-    scores = models.ManyToManyField(Score, related_name="games")
-    entity_ends = models.ManyToManyField(EntityEnd, related_name="games")
+    mission_duration = models.DurationField() # how long the game can last if it doesn't end early
+    duration = models.DurationField() # how long the game actually lasted, can be less than mission_duration if it ended early
+    penalty_amount = models.SmallIntegerField() # how much score is added for each penalty, can be negative (ex: 0, -1000)
+
+    # FORIEGN KEYS AND RELATED NAMES
+    # teams is a related name for the Team model, which has a foreign key to this model
+    # entity_starts is a related name for the EntityStart model, which has a foreign key to this model
+    # events is a related name for the Event model, which has a foreign key to this model
+    # player_states is a related name for the PlayerState model, which has a foreign key to this model
+    # scores is a related name for the Score model, which has a foreign key to this model
+    # entity_ends is a related name for the EntityEnd model, which has a foreign key to this model
+    
+    video = models.URLField(null=True) # video of the game (usually just scoreboard), if available
 
     winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, related_name="won_games")
 
-    team1_size = models.IntegerField(null=True) # quick and dirty way to get team sizes
-    team2_size = models.IntegerField(null=True) # quick and dirty way to get team sizes
+    team1_size = models.PositiveSmallIntegerField(null=True) # quick and dirty way to get team sizes
+    team2_size = models.PositiveSmallIntegerField(null=True) # quick and dirty way to get team sizes
 
     log_time = models.DateTimeField(auto_now_add=True)
 
@@ -212,19 +236,8 @@ class Game(models.Model):
 
         return strftime_ordinal(f"%A, %B {'{S}'}, %Y at %{zero_pad}I:%M %p", self.start_time)
     
+    def get_absolute_url(self):
+        return reverse("game_detail", kwargs={"tdf_name": self.tdf_name})
 
-    async def get_game_duration(self) -> int:
-        """Returns the ACTUAL mission duration time in milliseconds.
-
-        If the MISSION_END event exists, returns the time of that event. Otherwise, returns the time of the last event,
-        this happens when the game ends unnaturally.
-        """
-        # find "mission_end event"
-        end_event = await self.events.filter(type=EventType.MISSION_END).afirst()
-
-        if end_event:
-            return end_event.time
-        
-        last_event = await self.events.order_by("-time").afirst()
-
-        return last_event.time
+    def __str__(self):
+        return f"Game {self.id} - {self.mission_name} at {self.site_id} on {self.start_time}"

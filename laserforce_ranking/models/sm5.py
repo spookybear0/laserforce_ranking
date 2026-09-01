@@ -1,39 +1,40 @@
 from django.db import models
 from .game import Game, Team
-from .types import TeamType, IntRole, EventType, SM5_ENEMY_TEAM
+from .types import TeamType, IntRole, EventType, SM5_ENEMY_TEAM, ID_TO_SITE
 from typing import Optional
 from asgiref.sync import sync_to_async
 import math
 
 class SM5Stats(models.Model):
+    game = models.ForeignKey("SM5Game", on_delete=models.CASCADE, related_name="sm5_stats")
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
     entity_end = models.ForeignKey("EntityEnd", on_delete=models.CASCADE)
-    shots_hit = models.IntegerField()
-    shots_fired = models.IntegerField()
-    times_zapped = models.IntegerField()
-    times_missiled = models.IntegerField()
-    missile_hits = models.IntegerField()
-    nukes_detonated = models.IntegerField()
-    nukes_activated = models.IntegerField()
-    nuke_cancels = models.IntegerField()
-    medic_hits = models.IntegerField()
-    own_medic_hits = models.IntegerField()
-    medic_nukes = models.IntegerField()
-    scout_rapid_fires = models.IntegerField()
-    life_boosts = models.IntegerField()
-    ammo_boosts = models.IntegerField()
-    lives_left = models.IntegerField()
-    shots_left = models.IntegerField()
-    penalties = models.IntegerField()
-    shot_3_hits = models.IntegerField()
-    own_nuke_cancels = models.IntegerField()
-    shot_opponent = models.IntegerField()
-    shot_team = models.IntegerField()
-    missiled_opponent = models.IntegerField()
-    missiled_team = models.IntegerField()
+    shots_hit = models.PositiveSmallIntegerField()
+    shots_fired = models.PositiveSmallIntegerField()
+    times_zapped = models.PositiveSmallIntegerField()
+    times_missiled = models.PositiveSmallIntegerField()
+    missile_hits = models.PositiveSmallIntegerField()
+    nukes_detonated = models.PositiveSmallIntegerField()
+    nukes_activated = models.PositiveSmallIntegerField()
+    nuke_cancels = models.PositiveSmallIntegerField()
+    medic_hits = models.PositiveSmallIntegerField()
+    own_medic_hits = models.PositiveSmallIntegerField()
+    medic_nukes = models.PositiveSmallIntegerField()
+    scout_rapid_fires = models.PositiveSmallIntegerField()
+    life_boosts = models.PositiveSmallIntegerField()
+    ammo_boosts = models.PositiveSmallIntegerField()
+    lives_left = models.PositiveSmallIntegerField()
+    shots_left = models.PositiveSmallIntegerField()
+    penalties = models.PositiveSmallIntegerField()
+    shot_3_hits = models.PositiveSmallIntegerField()
+    own_nuke_cancels = models.PositiveSmallIntegerField()
+    shot_opponent = models.PositiveSmallIntegerField()
+    shot_team = models.PositiveSmallIntegerField()
+    missiled_opponent = models.PositiveSmallIntegerField()
+    missiled_team = models.PositiveSmallIntegerField()
 
     # custom addition that's not in the tdf
-    special_points = models.IntegerField(null=True) # add after game save
+    special_points = models.PositiveSmallIntegerField(null=True) # add after game save
 
     @property
     def bases_destroyed(self) -> int:
@@ -56,10 +57,10 @@ class SM5Stats(models.Model):
 
         total_points = 0
 
-        # accuracy: .1 point for every 1% of accuracy, rounded up
+        # accuracy: .1 point for every 1% of accuracy
 
         accuracy = (self.shots_hit / self.shots_fired) if self.shots_fired != 0 else 0
-        total_points += math.ceil(accuracy * 10)
+        total_points += round(accuracy * 10)
 
         # medic hits: 1 point for every medic hit, -1 for your own medic hits
 
@@ -76,7 +77,7 @@ class SM5Stats(models.Model):
             mission_length = mission_end.time
 
             if game.last_team_standing.name == entity.team.name:
-                total_points += round(max(4, 4 + (game.mission_duration - mission_length - 180 * 1000) / 1000 / 60), 2)
+                total_points += round(max(4, 4 + (game.mission_duration.total_seconds() - mission_length / 1000 - 180) / 60), 2)
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled
 
@@ -105,10 +106,6 @@ class SM5Stats(models.Model):
             # nukes: 1 point for every nuke detonated
 
             total_points += self.nukes_detonated
-
-            # nukes canceled: -1 point for every nuke that you activated that was canceled
-
-            total_points -= self.own_nuke_cancels
 
             # score bonus: 1 point (fractionally) for every 1000 points of score over 10000
 
@@ -165,11 +162,21 @@ class SM5Stats(models.Model):
                 total_points += ((score - 2000) / 1000) * 2
 
         return total_points
+    
+    def __str__(self):
+        return f"SM5Stats for {self.entity} in game {self.entity.game}"
+    
+    class Meta:
+        verbose_name = "SM5 stat"
+        verbose_name_plural = "SM5 stats"
 
 class SM5Game(Game):
-    sm5_stats = models.ManyToManyField(SM5Stats)
+    # SM5 specific fields
+
+    # sm5_stats is a related name for SM5Stats, which is a one-to-many relationship with SM5Game
+
     last_team_standing = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, related_name="last_team_standing")
-    rank_version = models.IntegerField(default=0)
+    rank_version = models.PositiveSmallIntegerField(default=0)
 
     # precalculatead percentage of doubles (resupplies within 3 seconds to the same target) for each team,
     # since this is a costly calculation and we want to show it on the game page
@@ -200,7 +207,7 @@ class SM5Game(Game):
             .filter(entity__team=team, entity__role=IntRole.MEDIC) \
             .afirst()
 
-        if medic_death_event and medic_death_event.time < await self.get_game_duration():
+        if medic_death_event and medic_death_event.time < self.duration.seconds * 1000:
             return medic_death_event.time
         return None
     
@@ -219,7 +226,7 @@ class SM5Game(Game):
         resupplies = [event async for event in self.events \
             .filter(type__in=[EventType.RESUPPLY_AMMO, EventType.RESUPPLY_LIVES]) \
             .filter(
-                time__lte=medic_death_time if medic_death_time is not None else self.mission_duration
+                time__lte=medic_death_time if medic_death_time is not None else self.mission_duration.total_seconds() * 1000
             ).all()]
 
         groups = {}
@@ -266,3 +273,10 @@ class SM5Game(Game):
         #logger.debug(f"Team {team.name} had {double_events} double events out of {total} total events")
 
         return double_events / total if total > 0 else 0
+    
+    def __str__(self):
+        return f"SM5Game {self.id} at {ID_TO_SITE.get(self.site_id, self.site_id)} on {self.start_time}"
+    
+    class Meta:
+        verbose_name = "SM5 game"
+        verbose_name_plural = "SM5 games"

@@ -65,11 +65,11 @@
                         </button>
                     </th>
                     <th>
-                        <button hx-get="{{ url('game_list') }}?sort={% if current_sort == 'length' %}-length{% else %}length{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode'], [name='player']" class="btn btn-ghost">
+                        <button hx-get="{{ url('game_list') }}?sort={% if current_sort == 'duration' %}-duration{% else %}duration{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode'], [name='player']" class="btn btn-ghost">
                             Length
-                            {% if current_sort == 'length' %}
+                            {% if current_sort == 'duration' %}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
-                            {% elif current_sort == '-length' %}
+                            {% elif current_sort == '-duration' %}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
                             {% else %}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
@@ -105,9 +105,9 @@
             <tbody id="game-table-body">
                 {% for game in games %}
                 <tr>
-                    <td><a href="/games/{{ game.tdf_name }}" class="link link-primary">{{ game.start_time }}</a></td>
-                    <td>{{ game.site_id }}</td>
-                    <td>{{ game.get_game_duration() // 1000 // 60 }}:{{ '%02d' % (game.get_game_duration() / 1000 % 60) }}</td>
+                    <td><a href="/games/{{ game.tdf_name }}" class="link link-primary">Game @ {{ game.start_time.strftime('%H:%M') }}</a></td>
+                    <td>{{ id_to_site[game.site_id] }}</td>
+                    <td>{{ game.duration.seconds // 60 }}:{{ '%02d' % (game.duration.seconds % 60) }}</td>
                     <td>{{ game }}</td>
                     <td>{{ game }}</td>
                 </tr>
@@ -120,7 +120,7 @@
         </table>
     </div>
     <div class="flex justify-between mt-4">
-        <button hx-get="{{ url('game_list') }}?sort={{ current_sort }}&page={% if page_obj.has_previous() %}{{ page_obj.previous_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}" class="btn btn-outline" {% if not page_obj.has_previous() %}disabled{% endif %}>Previous</button>
-        <button hx-get="{{ url('game_list') }}?sort={{ current_sort }}&page={% if page_obj.has_next() %}{{ page_obj.next_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}" class="btn btn-outline" {% if not page_obj.has_next() %}disabled{% endif %}>Next</button>
+        <button hx-get="{{ url('game_list') }}?sort={{ current_sort }}&page={% if page_obj.has_previous() %}{{ page_obj.previous_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}"  hx-get="{{ url('game_list')}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode'], [name='player']" class="btn btn-outline" {% if not page_obj.has_previous() %}disabled{% endif %}>Previous</button>
+        <button hx-get="{{ url('game_list') }}?sort={{ current_sort }}&page={% if page_obj.has_next() %}{{ page_obj.next_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}"  hx-get="{{ url('game_list')}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode'], [name='player']" class="btn btn-outline" {% if not page_obj.has_next() %}disabled{% endif %}>Next</button>
     </div>
 </div>

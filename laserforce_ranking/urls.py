@@ -19,7 +19,9 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from .views import api
 
+# main site
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.IndexView.as_view(), name="index"),
@@ -30,6 +32,12 @@ urlpatterns = [
     path("games/<str:tdf_name>", views.GameView.as_view(), name="game_detail"),
     path("matchmaker", views.MatchmakerView.as_view(), name="matchmaker"),
     path("matchmaker/players", views.MatchmakerPlayersView.as_view(), name="matchmaker_players"),
+    path("util/upload_tdf", views.UploadTDFView.as_view(), name="upload_tdf"),
+]
+
+# /api
+urlpatterns += [
+    path("api/tdf/<str:tdf_name>", api.get_tdf, name="api_get_tdf"),
 ]
 
 if settings.DEBUG:

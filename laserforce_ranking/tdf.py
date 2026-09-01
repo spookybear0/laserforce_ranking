@@ -4,7 +4,7 @@ from laserforce_ranking.models.game import Game, Team, EntityStart, Event, Entit
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
 from typing import Optional, List, Dict
-from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA, BLANK_RATING
+from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA, BLANK_RATING_PER_SITE
 from laserforce_ranking.models.player import Player
 import aiohttp
 from django.db import transaction
@@ -12,6 +12,8 @@ from playwright.async_api import async_playwright
 from asgiref.sync import sync_to_async
 import os
 import traceback
+from datetime import timedelta, datetime
+from django.utils import timezone
 
 def element_to_color(element: str) -> str:
     conversion = {
@@ -175,6 +177,7 @@ async def parse_tdf(file_location: Path):
     player_states = []
 
     force_ended_early = True # if the game ended early, this will be set to false if the game ended naturally
+    end_event = None
 
     while True:
         line = file.readline()
@@ -195,20 +198,18 @@ async def parse_tdf(file_location: Path):
             case "1": # mission info
                 mission_type = int(data[1]) # site dependant enum
                 mission_name = data[2] # mission name in system, dependant on site
-                start_time = data[3] # ex: 20260719204954 -> 2026-07-19 20:49:54
-                mission_duration = int(data[4] if len(data) > 4 else 900000) # how long the game can last if it doesn't end early, in milliseconds
+                start_time = data[3] # ex: 20260719204954 -> 2026-07-19 20:49:54 +07:00
+                mission_duration = timedelta(milliseconds=int(data[4]) if len(data) > 4 else 900000) # how long the game can last if it doesn't end early, in milliseconds
                 penalty_amount = int(data[5] if len(data) > 5 else -1000) # score added for each penalty (ex: 0, -1000)
 
-                # convert to datetime with timezone
-                start_time_formatted = f"{start_time[0:4]}-{start_time[4:6]}-{start_time[6:8]} {start_time[8:10]}:{start_time[10:12]}:{start_time[12:14]}"
+                # TODO: Fix timezones so they show correctly on others' computers
+                # tdf file has local timezone, and we have the site timezone. database converts into utc and saves
 
-                # add timezone for site
-                timezone = SITE_TIMEZONES.get(site, "UTC")
-                start_time_formatted += f" {timezone}"
+                # convert to datetime with timezone
+                start_time_formatted = datetime.strptime(start_time + SITE_TIMEZONES.get(site, "+00:00"), "%Y%m%d%H%M%S%z")
 
                 # check if we already have this game in the database, if so, skip it
-                if await SM5Game.objects.filter(site_id=site, start_time=start_time_formatted).aexists(): \
-                    #or await LaserballGame.objects.filter(site_id=site, start_time=start_time_formatted).aexists():
+                if await Game.objects.filter(site_id=site, start_time=start_time_formatted).aexists():
                     print(f"Game {file_location.name} already exists in the database, skipping")
                     return
             case "2": # team info
@@ -256,16 +257,19 @@ async def parse_tdf(file_location: Path):
                 action = data[4] if len(data) > 4 else ""
                 entity2 = data[5] if len(data) > 5 else ""
 
-                if event_type == EventType.MISSION_END:  # game ended naturally
-                    force_ended_early = False
-
-                events.append(Event(
+                event = Event(
                     time=time,
                     type=event_type,
                     entity1=entity1,
                     action=action,
                     entity2=entity2
-                ))       
+                )
+
+                events.append(event) 
+
+                if event_type == EventType.MISSION_END:  # game ended naturally\
+                    end_event = event
+                    force_ended_early = False
             case "5": # score deltas
                 time = int(data[1])
                 entity_id = data[2]
@@ -408,7 +412,7 @@ async def parse_tdf(file_location: Path):
 
     for entity_id, e in entity_starts.items():
         # is a player and logged in
-        if entity_id.startswith("@") and e.name == e.battlesuit:
+        if entity_id.startswith("@") and (e.name == e.battlesuit or e.battlesuit is None or e.battlesuit == ""):
             continue
 
         db_member_id = e.member_id if e.member_id else None
@@ -443,18 +447,44 @@ async def parse_tdf(file_location: Path):
                     home_site = None
 
                 ratings = {
-                    "global": BLANK_RATING,
+                    "global": BLANK_RATING_PER_SITE,
                 }
-                ratings[site] = BLANK_RATING
+                ratings[site] = BLANK_RATING_PER_SITE
 
                 await Player.objects.acreate(player_id=db_member_id, codename=e.name, entity_id=entity_id, home_site=home_site, ratings=ratings)
+
+    # get actual mission duration
+
+    if end_event:
+        duration = timedelta(milliseconds=end_event.time)
+    else:
+        last_event = events[-1]
+        duration = timedelta(milliseconds=last_event.time)
+
+    # before we save this game, change the file name into the correct format
+    # ex: 4-80-20260830003930.tdf
+
+    file.close()
+
+    new_tdf_name = f"{site}-{start_time}.tdf"
+
+    if new_tdf_name != file_location.name:
+        # move the file to the new name
+        new_file_location = file_location.parent / new_tdf_name
+
+        if not new_file_location.exists():
+            file_location.rename(new_file_location)
+            print(f"Renamed {file_location.name} to {new_tdf_name}")
+        else:
+            print(f"File {new_tdf_name} already exists, skipping game import")
+            return
 
     # find game type
 
     base_args = {
         "file_location": file_location,
         "site_id": site,
-        "tdf_name": file_location.name,
+        "tdf_name": new_tdf_name,
         "file_version": file_version,
         "software_version": program_version,
         "mission_type": mission_type,
@@ -462,6 +492,7 @@ async def parse_tdf(file_location: Path):
         "force_ended_early": force_ended_early,
         "start_time": start_time_formatted,
         "mission_duration": mission_duration,
+        "duration": duration,
         "penalty_amount": penalty_amount,
         "teams": teams,
         "entity_starts": entity_starts,
@@ -499,7 +530,8 @@ async def process_sm5(
     mission_name: str,
     force_ended_early: bool,
     start_time: str,
-    mission_duration: int,
+    mission_duration: timedelta,
+    duration: timedelta,
     penalty_amount: int,
     teams: Dict[int, Team],
     entity_starts: Dict["str", EntityStart],
@@ -580,10 +612,11 @@ async def process_sm5(
             software_version=software_version,
             mission_type=mission_type,
             mission_name=mission_name,
-            ranked=True,
+            ranked=ranked,
             force_ended_early=force_ended_early,
             start_time=start_time,
             mission_duration=mission_duration,
+            duration=duration,
             penalty_amount=penalty_amount,
             last_team_standing=None,
             team1_size=team1_size,
@@ -636,8 +669,10 @@ async def process_sm5(
 
         # 5 < team size < 7 and teams are not of unequal size (ratings are not tested for unequal team sizes)
 
-        team1_len = await game.entity_ends.filter(entity__team=team1, entity__type="player").acount()
-        team2_len = await game.entity_ends.filter(entity__team=team2, entity__type="player").acount()
+        team1_len = await game.entity_ends.filter(entity__team=team1, entity__type=EntityType.PLAYER).acount()
+        team2_len = await game.entity_ends.filter(entity__team=team2, entity__type=EntityType.PLAYER).acount()
+
+        print(f"Team 1 size: {team1_len}, Team 2 size: {team2_len}")
 
         if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
             ranked = False
@@ -656,6 +691,7 @@ async def process_sm5(
 
             for e in entity_starts.values():
                 if e.type == EntityType.PLAYER and e.team == t:
+                    print(f"Entity {e.entity_id} has role {e.role}")
                     total_count += 1
                     if e.role == IntRole.COMMANDER:
                         commander_count += 1
@@ -673,6 +709,8 @@ async def process_sm5(
 
             if commander_count != 1 or heavy_count != 1 or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
                 ranked = False
+
+        print(f"Game {game.id} ranked: {ranked}")
 
         game.ranked = ranked
 
@@ -699,9 +737,9 @@ async def process_sm5(
         # winner
 
         # get all teams in the game.
-        teams = await game.get_teams()
+        teams_ = await game.get_teams()
 
-        scores = {team: team.score for team in teams}
+        scores = {team: team.score for team in teams_}
 
         # adjust scores if a team was eliminated.
         if game.last_team_standing:
@@ -838,7 +876,8 @@ async def process_laserball(
     mission_name: str,
     force_ended_early: bool,
     start_time: str,
-    mission_duration: int,
+    mission_duration: timedelta,
+    duration: timedelta,
     penalty_amount: int,
     teams: List[Team],
     entity_starts: List[EntityStart],

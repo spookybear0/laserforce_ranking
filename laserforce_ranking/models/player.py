@@ -4,6 +4,7 @@ from .game import Game
 from typing import Optional
 from laserforce_ranking.rating import Rating
 from django_enum import EnumField
+from django.urls import reverse
 
 """
 Player.ratings specification:
@@ -75,10 +76,10 @@ Player.ratings specification:
 class Player(models.Model):
     entity_id = models.CharField(max_length=15, unique=True)
     codename = models.CharField(max_length=50)
-    player_id = models.CharField(max_length=50, unique=True, null=True) # iplaylaserforce player id
+    player_id = models.SlugField(unique=True, null=True) # iplaylaserforce player id (ex: 4-43-1265)
     ratings = models.JSONField(default=dict)
-    # first site played at, found from iplaylaserforce
-    home_site = models.CharField(max_length=50, null=True) # site id (ex: 4-43)
+    # where membership was created
+    home_site = models.SlugField(null=True) # site id (ex: 4-43)
 
     # general db stuff
 
@@ -125,7 +126,9 @@ class Player(models.Model):
         sigma = self.ratings[key_1][key_2]["sigma"]
 
         return Rating(mu, sigma)
-        
+    
+    def get_absolute_url(self):
+        return reverse("player_detail", kwargs={"entity_id": self.entity_id})
 
     def __str__(self):
-        return self.codename
+        return f"Player {self.codename} ({self.entity_id}, {self.player_id})"
