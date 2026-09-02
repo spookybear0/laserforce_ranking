@@ -1,7 +1,7 @@
 from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import Environment
-from .models.types import SITES, ID_TO_SITE, COMPETITIVE_SITES, SITE_TIMEZONES, IPL_NAME_TO_SITE_ID
+from .models.types import SITES, ID_TO_SITE, COMPETITIVE_SITES, SITE_TIMEZONES, IPL_NAME_TO_SITE_ID, IntRole
 import os
 
 if os.name == "nt":
@@ -18,12 +18,14 @@ def environment(**options):
         {
             "url": reverse,
             "static": static,
+            "zip": zip,
             "day_no_leading_zero": day_no_leading_zero,
             "SITES": SITES,
             "ID_TO_SITE": ID_TO_SITE,
             "COMPETITIVE_SITES": COMPETITIVE_SITES,
             "SITE_TIMEZONES": SITE_TIMEZONES,
             "IPL_NAME_TO_SITE_ID": IPL_NAME_TO_SITE_ID,
+            "IntRole": IntRole,
         }
     )
 

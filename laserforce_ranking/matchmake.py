@@ -281,8 +281,8 @@ async def matchmake_advanced(players: List["Player"], num_teams: int, mode: Game
 
             if role in map1 and role in map2:
 
-                r1 = await map1[role].get_rating(mode, site, role).ordinal()
-                r2 = await map2[role].get_rating(mode, site, role).ordinal()
+                r1 = (await map1[role].get_rating(mode, site, role)).ordinal()
+                r2 = (await map2[role].get_rating(mode, site, role)).ordinal()
 
                 diff += weight * abs(r1 - r2)
 
@@ -295,7 +295,7 @@ async def matchmake_advanced(players: List["Player"], num_teams: int, mode: Game
         strength = 0
 
         for p, r in zip(team, roles):
-            strength += await p.get_rating(mode, site, r).ordinal()
+            strength += (await p.get_rating(mode, site, r)).ordinal()
 
         return strength
 
@@ -318,7 +318,7 @@ async def matchmake_advanced(players: List["Player"], num_teams: int, mode: Game
                 win_balance += abs(win - ideal) ** 2
 
             if USE_ROLE_MATCHUPS:
-                matchup_score += role_matchup_diff(
+                matchup_score += await role_matchup_diff(
                     t1,
                     roles[teams.index(t1)],
                     t2,
@@ -424,7 +424,7 @@ async def matchmake_advanced(players: List["Player"], num_teams: int, mode: Game
 
     if any(abs(win[0] - 0.5) > 0.05 if win != 0 else 0 for win in win_chances):
         #logger.info(f"Win chances for teams are imbalanced: {win_chances}, redoing matchmaking (attempt {_attempts}/3)")
-        return matchmake_advanced(players, num_teams, mode=mode, _attempts=_attempts)
+        return await matchmake_advanced(players, num_teams, mode=mode, _attempts=_attempts)
 
     return teams, roles
 
@@ -435,8 +435,6 @@ async def get_win_chance(team1: List["Player"], team2: List["Player"], mode: Gam
     """
 
     #logger.debug(f"Getting win chance for {team1} vs {team2}")
-
-    mode = mode.value
 
     if roles:
         team1 = [await p.get_rating(mode, site, r) for p, r in zip(team1, roles[0])]
@@ -450,21 +448,28 @@ async def get_win_chance(team1: List["Player"], team2: List["Player"], mode: Gam
     return model.predict_win([team1, team2])
 
 
-async def get_win_chances(all_teams: List[List["Player"]], mode: GameType = GameType.SM5, site: str="global", roles: Optional[List[List[IntRole]]]=None) -> List[float]:
-    win_chances = []
+async def get_win_chances(
+    all_teams: List[List["Player"]],
+    mode: GameType = GameType.SM5,
+    site: str = "global",
+    roles: Optional[List[List[IntRole]]] = None,
+) -> List[List[Optional[float]]]:
 
-    for i in range(len(all_teams)):
-        for j in range(i + 1, len(all_teams)):
-            first_team = all_teams[i]
-            second_team = all_teams[j]
+    n = len(all_teams)
+    win_chances = [[None] * n for _ in range(n)]
 
-            #logger.info(f"Calculating win chance for teams {i + 1} and {j + 1}")
+    for i in range(n):
+        for j in range(i + 1, n):
+            match_roles = [roles[i], roles[j]] if roles else None
 
-            win_chances.append(await get_win_chance(first_team, second_team, mode, site, roles[i:j+1] if roles else None))
+            team1_chance, team2_chance = await get_win_chance(
+                all_teams[i],
+                all_teams[j],
+                mode,
+                site,
+                match_roles,
+            )
 
-    if len(all_teams) <= 3:
-        win_chances.append(0)
-    if len(all_teams) == 2:
-        win_chances.append(0)
-
+            win_chances[i][j] = team1_chance
+            win_chances[j][i] = team2_chance
     return win_chances

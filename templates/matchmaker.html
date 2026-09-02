@@ -2,60 +2,368 @@
 
 {% block title %}Matchmaker | LF Ranking{% endblock %}
 
+{% block head %}
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
+
+<script>
+    roles_enabled = true;
+    unrated_player_count = 0;
+    team_count = 2;
+
+    function updateRoleImage(element, codename, role) {
+        const image = document.getElementById('role-image-' + codename);
+        const row = image.closest('tr');
+    
+        row.dataset.role = role;
+    
+        if (role === 'none') {
+            image.src = '';
+            image.alt = 'None';
+        } else {
+            image.src = `/assets/sm5/roles/${role}.png`;
+            image.alt = role.charAt(0).toUpperCase() + role.slice(1);
+        }
+    
+        document.activeElement.blur();
+        updateTeams();
+    }
+
+    function addUnratedPlayer() {
+        entity_id = `unrated-${unrated_player_count}`;
+        codename = `Unrated Player`;
+        unrated_player_count += 1;
+        html = `
+        <tr data-entity-id="${entity_id}" data-role="scout" class="cursor-move">
+            <td class="py-2">${codename}</td>
+            <td class="py-2">0.00</td>
+            <td class="py-2 ${roles_enabled ? '' : 'hidden'}">
+                <div class="dropdown">
+                    <label tabindex="0" class="btn btn-circle btn-ghost flex items-center m-0 w-6 h-6">
+                        <img id="role-image-${entity_id}" src="/assets/sm5/roles/scout.png" alt="scout" width="28" height="28">
+                    </label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-16">
+                        <li>
+                            <a onclick="updateRoleImage(this, '${entity_id}', 'commander')">
+                                <img src="{{ static('sm5/roles/commander.png') }}" alt="Commander" width="28" height="28">
+                            </a>
+                        </li>
+                        <li>
+                            <a onclick="updateRoleImage(this, '${entity_id}', 'heavy')">
+                                <img src="{{ static('sm5/roles/heavy.png') }}" alt="Heavy" width="28" height="28">
+                            </a>
+                        </li>
+                        <li>
+                            <a onclick="updateRoleImage(this, '${entity_id}', 'scout')">
+                                <img src="{{ static('sm5/roles/scout.png') }}" alt="Scout" width="28" height="28">
+                            </a>
+                        </li>
+                        <li>
+                            <a onclick="updateRoleImage(this, '${entity_id}', 'ammo')">
+                                <img src="{{ static('sm5/roles/ammo.png') }}" alt="Ammo" width="28" height="28">
+                            </a>
+                        </li>
+                        <li>
+                            <a onclick="updateRoleImage(this, '${entity_id}', 'medic')">
+                                <img src="{{ static('sm5/roles/medic.png') }}" alt="Medic" width="28" height="28">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        `
+
+        // add to team1
+        document.getElementById('team-table-body-0').insertAdjacentHTML('beforeend', html);
+    }
+
+    function update() {
+        htmx.ajax('POST', '{{ url("matchmaker_update") }}', {
+            target: '#player-table',
+            swap: 'outerHTML'
+        });
+    }
+
+    function updateTeams() {
+        htmx.ajax('POST', '{{ url("matchmaker_teams") }}', {
+            target: '#teams',
+            swap: 'outerHTML'
+        });
+    }
+
+    function selectMode(mode, element) {
+        const dropdown = element.closest('.dropdown');
+    
+        dropdown.dataset.mode = element.dataset.mode;
+        document.getElementById('mode-label').textContent = mode;
+    
+        document.activeElement.blur();
+    
+        update();
+    }
+    
+    function selectSite(site, element) {
+        const dropdown = element.closest('.dropdown');
+    
+        dropdown.dataset.siteId = element.dataset.siteId;
+        document.getElementById('site-label').textContent = site;
+    
+        document.activeElement.blur();
+    
+        update();
+    }
+
+    function toggleRoles(checkbox) {
+        roles_enabled = checkbox.checked;
+        const showRoles = checkbox.checked;
+        const roleCells = document.querySelectorAll('[id^="team-table-body-"] td:nth-child(3), [id^="team-table-head-"] th:nth-child(3)');
+    
+        roleCells.forEach(cell => {
+            console.log('Toggling role cell visibility:', cell, 'Show roles:', showRoles);
+            if (showRoles) {
+                cell.classList.remove('hidden');
+            }
+            else {
+                cell.classList.add('hidden');
+            }
+        });
+
+        updateTeams();
+    }
+
+
+    function initializeSortable() {
+        function onEnd(evt) {
+            if (roles_enabled) {
+                if (evt.from.id === 'player-table-body' && evt.to.id.startsWith('team-table-body-')) {
+                    // add role
+                    evt.item.querySelector('td:nth-child(3)').classList.remove('hidden'); // Show the role dropdown
+                } else if (evt.from.id.startsWith('team-table-body-') && evt.to.id === 'player-table-body') {
+                    // Item was moved back to the player list
+                    evt.item.querySelector('td:nth-child(3)').classList.add('hidden'); // Hide the role dropdown
+                }
+            } else {
+                evt.item.querySelector('td:nth-child(3)').classList.add('hidden'); // Ensure role dropdown is hidden
+            }
+            updateTeams();
+        }
+
+        new Sortable(document.getElementById('team-table-body-0'), {
+            group: 'shared',
+            animation: 100,
+            onEnd: onEnd
+        });
+
+        new Sortable(document.getElementById('team-table-body-1'), {
+            group: 'shared',
+            animation: 100,
+            onEnd: onEnd
+        });
+
+        new Sortable(document.getElementById('player-table-body'), {
+            group: 'shared',
+            animation: 100,
+            onEnd: onEnd
+        });
+    }
+
+    function getTeamState() {
+        return [...document.querySelectorAll('[id^="team-table-body-"]')]
+            .map(teamBody =>
+                [...teamBody.querySelectorAll('tr[data-entity-id]')]
+                    .map(row => ({
+                        entity_id: row.dataset.entityId,
+                        role: row.dataset.role
+                    }))
+            );
+    }
+
+    function displayWinChances() {
+        console.log('Win chances:', window.win_chances);
+
+        if (!window.win_chances) {
+            console.warn('Win chances data is not available.');
+            return;
+        }
+
+        if (team_count == 2) {
+            const team1Chance = window.win_chances[0][1] * 100;
+            const team2Chance = window.win_chances[1][0] * 100;
+
+            document.getElementById('team-win-chance-0').textContent = `${team1Chance.toFixed(2)}%`;
+            document.getElementById('team-win-chance-1').textContent = `${team2Chance.toFixed(2)}%`;
+        }
+        else if (team_count == 3) {
+            document.getElementById('team-win-chance-0').textContent =
+            `vs Team 2 - ${(window.win_chances[0][1] * 100).toFixed(2)}%<br>
+            vs Team 3 - ${(window.win_chances[0][2] * 100).toFixed(2)}%`;
+            
+            document.getElementById('team-win-chance-1').textContent =
+            `vs Team 1 - ${(window.win_chances[1][0] * 100).toFixed(2)}%<br>
+            vs Team 3 - ${(window.win_chances[1][2] * 100).toFixed(2)}%`;
+
+            document.getElementById('team-win-chance-2').textContent =
+            `vs Team 1 - ${(window.win_chances[2][0] * 100).toFixed(2)}%<br>
+            vs Team 2 - ${(window.win_chances[2][1] * 100).toFixed(2)}%`;
+        }
+        else if (team_count == 4) {
+            document.getElementById('team-win-chance-0').textContent =
+            `vs Team 2 - ${(window.win_chances[0][1] * 100).toFixed(2)}%<br>
+            vs Team 3 - ${(window.win_chances[0][2] * 100).toFixed(2)}%<br>
+            vs Team 4 - ${(window.win_chances[0][3] * 100).toFixed(2)}%`;
+
+            document.getElementById('team-win-chance-1').textContent =
+            `vs Team 1 - ${(window.win_chances[1][0] * 100).toFixed(2)}%<br>
+            vs Team 3 - ${(window.win_chances[1][2] * 100).toFixed(2)}%<br>
+            vs Team 4 - ${(window.win_chances[1][3] * 100).toFixed(2)}%`;
+
+            document.getElementById('team-win-chance-2').textContent =
+            `vs Team 1 - ${(window.win_chances[2][0] * 100).toFixed(2)}%<br>
+            vs Team 2 - ${(window.win_chances[2][1] * 100).toFixed(2)}%<br>
+            vs Team 4 - ${(window.win_chances[2][3] * 100).toFixed(2)}%`;
+        }
+    }
+
+    function loaded() {
+        initializeSortable();
+        selectMode("SM5", document.querySelector('[data-mode="sm5"]'));
+        selectSite("Global", document.querySelector('[data-site-id="global"]'));
+        roles_enabled = document.getElementById('roles-toggle').checked;
+        setTimeout(displayWinChances, 500);
+    }
+
+    document.addEventListener('DOMContentLoaded', loaded);
+    document.addEventListener('htmx:afterSwap', function (event) {
+        if (event.target.id === 'teams') {
+            initializeSortable();
+            displayWinChances();
+        }
+    });
+    document.addEventListener('htmx:configRequest', function (event) {
+        event.detail.parameters.mode = document.querySelector('[data-mode]').dataset.mode;
+        event.detail.parameters.site = document.querySelector('[data-site-id]').dataset.siteId;
+        event.detail.parameters.teams = JSON.stringify(getTeamState());
+        event.detail.parameters.roles = document.getElementById('roles-toggle').checked ? 'true' : 'false';
+    });
+
+</script>
+
+{% endblock %}
+
 {% block content %}
 
-<div class="flex flex-col flex-1 min-h-0">
-    <h1 class="text-3xl sm:text-4xl font-bold mb-8 shrink">Matchmaker</h1>
-    <div class="flex flex-col md:flex-row gap-4 justify-evenly flex-1 min-h-0">
+<div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
+    <h1 class="text-3xl sm:text-4xl font-bold mb-8">Matchmaker</h1>
+    <div class="flex flex-col md:flex-row gap-4 md:justify-evenly md:flex-1 md:min-h-0">
         <!-- Buttons -->
         <div class="flex flex-col gap-4">
-            <button class="btn btn-primary w-full md:w-auto">Matchmake</button>
-            <button class="btn btn-secondary w-full md:w-auto">Add Unrated Player</button>
-            <button class="btn btn-secondary w-full md:w-auto">Add Team</button>
-            <button class="btn btn-secondary w-full md:w-auto">Remove Team</button>
+            <button
+                class="btn btn-primary w-full md:w-auto"
+                hx-post="{{ url('matchmaker_teams') }}?matchmake=true"
+                hx-target="#teams"
+                hx-swap="outerHTML"
+            >
+                Matchmake
+            </button>
+            <button class="btn btn-primary w-full md:w-auto" onclick="addUnratedPlayer()">Add Unrated Player</button>
+            <button class="btn btn-success w-full md:w-auto" disabled>Add Team</button>
             <!--mode dropdown sm5, laserball-->
             <div class="dropdown w-full md:w-auto">
-                <label tabindex="0" class="btn btn-ghost w-full">Mode<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg></label>
+                <label
+                tabindex="0"
+                class="btn btn-accent btn-soft w-full"
+            >
+                <span id="mode-label">Mode</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </label>
+            
                 <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                    <li><a>SM5</a></li>
-                    <li><a>Laserball</a></li>
+                    <li>
+                        <a
+                            data-matchmaker-update
+                            data-mode="sm5"
+                            onclick="selectMode('SM5', this)"
+                        >
+                            SM5
+                        </a>
+                    </li>
+            
+                    <li>
+                        <a
+                            data-matchmaker-update
+                            data-mode="laserball"
+                            onclick="selectMode('Laserball', this)"
+                        >
+                            Laserball
+                        </a>
+                    </li>
                 </ul>
             </div>
-            <!--site dropdown-->
+            <!-- site dropdown -->
             <div class="dropdown w-full md:w-auto">
-                <label tabindex="0" class="btn btn-ghost w-full">Site<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg></label>
-                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                    
+                <label tabindex="0" class="btn btn-accent btn-soft w-full">
+                    <span id="site-label">Site</span>
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="16" height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                </label>
+
+                <ul tabindex="0"
+                    class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                    <li>
+                        <a
+                            data-matchmaker-update
+                            data-site-id="global"
+                            onclick="selectSite('Global', this)"
+                        >
+                            Global
+                        </a>
+                    </li>
+                    {% for site, site_id in SITES.items() %}
+                    <li>
+                        <a
+                            data-matchmaker-update
+                            data-site-id="{{ site_id }}"
+                            onclick="selectSite('{{ site }}', this)"
+                        >
+                            {{ site }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
                 </ul>
             </div>
             <!--matchmake with roles checkbox-->
             <div class="form-control w-full md:w-auto text-center">
-                <label class="label cursor-pointer justify-center"></label>
+                <label class="label cursor-pointer justify-center">
                     <span class="label-text">Roles</span>
-                    <input type="checkbox" class="toggle toggle-primary" checked />
+                    <input id="roles-toggle" type="checkbox" class="toggle toggle-primary" checked onchange="toggleRoles(this)">
                 </label>
             </div>
         </div>
 
         <!-- Player Table -->
-        <div class="w-full md:w-1/4 min-w-0 min-h-0">
+        <div class="w-full md:w-1/4 min-w-0 min-h-0 sm:w-1/2">
             {% include 'partials/matchmaker/player_table.html' %}
         </div>
 
         <!-- Team Tables -->
         <div class="w-full md:w-5/8 min-w-0 min-h-0">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="min-w-0">
-                    {% with team_index="1" %}
-                        {% include 'partials/matchmaker/team_table.html' %}
-                    {% endwith %}
-                </div>
-                <div class="min-w-0">
-                    {% with team_index="2" %}
-                        {% include 'partials/matchmaker/team_table.html' %}
-                    {% endwith %}
-                </div>
-            </div>
+            {% with teams=teams, roles=roles, roles_enabled=roles_enabled %}
+                {% include 'partials/matchmaker/teams.html' %}
+            {% endwith %}
         </div>
     </div>
 </div>

@@ -29,7 +29,7 @@
 
             <select name="site" hx-get="{{ url('game_list')}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}" hx-target="#game-table" hx-include="[name='site'], [name='mode'], [name='player']" class="select select-primary">
                 <option value="" {% if not current_site %}selected{% endif %}>All Sites</option>
-                {% for site in sites %}
+                {% for site in SITES %}
                     <option value="{{ site }}" {% if current_site == site %}selected{% endif %}>{{ site }}</option>
                 {% endfor %}
             </select>
@@ -106,7 +106,7 @@
                 {% for game in games %}
                 <tr>
                     <td><a href="/games/{{ game.tdf_name }}" class="link link-primary">Game @ {{ game.start_time.strftime('%H:%M') }}</a></td>
-                    <td>{{ id_to_site[game.site_id] }}</td>
+                    <td>{{ ID_TO_SITE[game.site_id] }}</td>
                     <td>{{ game.duration.seconds // 60 }}:{{ '%02d' % (game.duration.seconds % 60) }}</td>
                     <td>{{ game }}</td>
                     <td>{{ game }}</td>

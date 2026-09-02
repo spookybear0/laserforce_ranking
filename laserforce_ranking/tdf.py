@@ -625,7 +625,6 @@ async def process_sm5(
 
         await game.asave()
 
-        print(f"Saving game {game.id} to database")
         for team in teams.values():
             team.game = game
             await team.asave()
@@ -672,8 +671,6 @@ async def process_sm5(
         team1_len = await game.entity_ends.filter(entity__team=team1, entity__type=EntityType.PLAYER).acount()
         team2_len = await game.entity_ends.filter(entity__team=team2, entity__type=EntityType.PLAYER).acount()
 
-        print(f"Team 1 size: {team1_len}, Team 2 size: {team2_len}")
-
         if team1_len > 7 or team2_len > 7 or team1_len < 5 or team2_len < 5 or team1_len != team2_len:
             ranked = False
 
@@ -691,7 +688,6 @@ async def process_sm5(
 
             for e in entity_starts.values():
                 if e.type == EntityType.PLAYER and e.team == t:
-                    print(f"Entity {e.entity_id} has role {e.role}")
                     total_count += 1
                     if e.role == IntRole.COMMANDER:
                         commander_count += 1
@@ -710,7 +706,6 @@ async def process_sm5(
             if commander_count != 1 or heavy_count != 1 or ammo_count != 1 or medic_count != 1 or scout_count < 1 or scout_count > 3:
                 ranked = False
 
-        print(f"Game {game.id} ranked: {ranked}")
 
         game.ranked = ranked
 

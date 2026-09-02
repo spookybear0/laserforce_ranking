@@ -1,6 +1,6 @@
 <div
     id="player-table"
-    class="w-full h-full min-h-0 bg-base-100 rounded-2xl shadow-xl p-4 sm:p-10 flex flex-col"
+    class="w-full sm:h-full min-h-0 bg-base-100 rounded-2xl shadow-xl p-4 sm:p-6 flex flex-col"
 >
     <h1 class="text-xl sm:text-2xl font-bold mb-4 shrink-0">
         Players
@@ -20,19 +20,25 @@
         hx-swap="outerHTML"
     >
 
-    <div class="overflow-x-auto h-full min-h-0 flex-1">
+    <div class="overflow-x-auto overflow-y-auto max-h-[240px] sm:max-h-none sm:flex-1 min-h-0">
         <table class="table w-full table-sm">
             <thead class="sticky top-0 bg-base-100 z-10">
                 <tr>
                     <th>Codename</th>
                     <th>Rating</th>
+                    <th class="hidden">Role</th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="player-table-body">
                 {% for player in players %}
-                <tr draggable="true" data-player-id="{{ player.entity_id }}" class="cursor-move">
-                    <td>
+                <tr
+                    draggable="true"
+                    data-entity-id="{{ player.entity_id }}"
+                    data-role="scout"
+                    class="cursor-move"
+                >
+                    <td class="py-2">
                         <a
                             href="/players/{{ player.entity_id[1:] }}"
                             class="link link-primary"
@@ -40,11 +46,20 @@
                             {{ player.codename }}
                         </a>
                     </td>
-                    <td>{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
+
+                    <td class="py-2">
+                        {{ "%.3f"|format((player.rating if player.rating else 0.0)) }}
+                    </td>
+
+                    <td class="py-2 hidden">
+                        {% with identifier=player.entity_id, role=IntRole.SCOUT %}
+                            {% include 'partials/matchmaker/role_dropdown.html' %}
+                        {% endwith %}
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="2" class="text-center py-4 text-base-content/50">
+                    <td colspan="3" class="text-center py-4 text-base-content/50">
                         No players found
                     </td>
                 </tr>

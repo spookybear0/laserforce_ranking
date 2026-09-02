@@ -1,36 +1,42 @@
-<div class="bg-base-100 rounded-2xl shadow-xl p-4 sm:p-10 mb-8" style="margin-right: calc(var(--spacing) * 8)" hx-swap="outerHTML" id="team-table-{{ team_index }}">
-    <h1 class="text-xl sm:text-2xl font-bold">Team {{ team_index }}</h1>
-    <div class="overflow-x-auto">
-        <table class="table w-full table-sm">
-            <thead>
+<div class="bg-base-100 rounded-2xl shadow-xl p-4 sm:p-10 mb-4 w-full me-8" hx-swap="outerHTML" id="team-table-{{ team_index }}">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl sm:text-2xl font-bold">Team {{ (team_index|int)+1 }}</h1>
+        <!--win chance %-->
+        <h2 class="text-lg sm:text-md font-semibold text-base-content/70" id="team-win-chance-{{ team_index }}">
+
+        </h2>
+        <button class="btn btn-sm btn-error" hx-target="#teams" hx-swap="outerHTML" disabled>
+            Remove Team
+        </button>
+    </div>
+    <div class="py-4">
+        <table class="table w-full table-sm table-fixed">
+            <thead class="team-table-head" id="team-table-head-{{ team_index }}">
                 <tr>
                     <th>Codename</th>
                     <th>Rating</th>
-                    <th>Role</th>
+                    <th {% if not roles_enabled %}class="hidden"{% endif %}>Role</th>
                 </tr>
             </thead>
-            <tbody id="team-table-body-{{ team_index }}">
-                <tr draggable="true" data-player-id="#aaa" class="cursor-move">
-                    <td>Spooky</td>
-                    <td>3.464</td>
-                    <td>
-                        {% with codename='Spooky' + team_index %}
+            <tbody class="team-table-body" id="team-table-body-{{ team_index }}">
+                {% for player, role in zip(team, roles) %}
+                <tr data-entity-id="{{ player.entity_id }}" data-role="{{ role.name.lower() if role else 'other' }}" class="cursor-move">
+                    <td class="py-2">
+                        {% if not player.entity_id.startswith('unrated-') %}
+                        <a href="/players/{{ player.entity_id[1:] }}" class="link link-primary">{{ player.codename }}</a>
+                        {% else %}
+                        {{ player.codename }}
+                        {% endif %}
+                    </td>
+                    <td class="py-2">{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
+                    <td class="py-2 {% if not roles_enabled %}hidden{% endif %}">
+                        {% with identifier=player.entity_id, role=role if role else IntRole.OTHER %}
                             {% include 'partials/matchmaker/role_dropdown.html' %}
                         {% endwith %}
-                    </td>
-                </tr>
-                {% for player in team %}
-                <tr draggable="true" data-player-id="{{ player.entity_id[1:] }}" class="cursor-move">
-                    <td><a href="/teams/{{ team.id }}" class="link link-primary">{{ team.name }}</a></td>
-                    <td>{{ team.members|length }}</td>
-                    <td>{{ team.games_played }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="3" class="text-center py-4 text-base-content/50">No players in this team</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+<script>window.win_chances = {{ win_chances|tojson }};</script>

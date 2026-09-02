@@ -2,7 +2,7 @@ from django.db import models
 from .types import Permission, IntRole, ID_TO_IPL_NAME, GameType
 from .game import Game
 from typing import Optional
-from laserforce_ranking.rating import Rating
+from laserforce_ranking.rating import Rating, MU, SIGMA
 from django_enum import EnumField
 from django.urls import reverse
 
@@ -121,6 +121,11 @@ class Player(models.Model):
             key_2 = game_type.value.lower()
         else:
             key_2 = role.name.lower()
+
+        # check if site exists in ratings
+        # if its not, return default rating
+        if key_1 not in self.ratings:
+            return Rating(MU, SIGMA)
        
         mu = self.ratings[key_1][key_2]["mu"]
         sigma = self.ratings[key_1][key_2]["sigma"]

@@ -32,6 +32,8 @@ urlpatterns = [
     path("games/<str:tdf_name>", views.GameView.as_view(), name="game_detail"),
     path("matchmaker", views.MatchmakerView.as_view(), name="matchmaker"),
     path("matchmaker/players", views.MatchmakerPlayersView.as_view(), name="matchmaker_players"),
+    path("matchmaker/teams", views.MatchmakerTeamsView.as_view(), name="matchmaker_teams"),
+    path("matchmaker/update", views.MatchmakerUpdateView.as_view(), name="matchmaker_update"),
     path("util/upload_tdf", views.UploadTDFView.as_view(), name="upload_tdf"),
 ]
 

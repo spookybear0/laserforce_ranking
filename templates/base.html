@@ -27,8 +27,9 @@
             }
         });
       </script>
+      {% block head %}{% endblock %}
 </head>
-<body class="bg-base-200 h-screen overflow-hidden">
+<body class="bg-base-200 h-screen" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div class="drawer lg:drawer-open h-full">
         <input id="main-drawer" type="checkbox" class="drawer-toggle inline" />
         <script>
@@ -49,7 +50,7 @@
                 </label>
                 <div class="px-4">Laserforce Ranking</div>
             </nav>
-            <div class="container mx-auto p-8 flex-1 min-h-0 w-full flex flex-col">
+            <div class="container mx-auto p-8 flex-1 min-h-0 w-full flex flex-col sm:overflow-auto">
                 {% block content %}{% endblock %}
             </div>
         </div>

@@ -1,0 +1,4 @@
+{% with teams=teams, roles=roles, roles_enabled=roles_enabled %}
+    {% include 'partials/matchmaker/teams.html' %}
+{% endwith %}
+{% include 'partials/matchmaker/player_table.html' %}

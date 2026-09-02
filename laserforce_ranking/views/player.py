@@ -14,7 +14,6 @@ class PlayerView(DetailView):
         """
         Override get_object to fetch the player based on the provided ID.
         """
-        print(f"Fetching player with ID: {self.kwargs.get('entity_id')}")  # Debugging output
         entity_id = self.kwargs.get("entity_id")
 
         entity_id = "#" + entity_id
