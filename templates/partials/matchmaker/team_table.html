@@ -2,12 +2,14 @@
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl sm:text-2xl font-bold">Team {{ (team_index|int)+1 }}</h1>
         <!--win chance %-->
-        <h2 class="text-lg sm:text-md font-semibold text-base-content/70" id="team-win-chance-{{ team_index }}">
 
-        </h2>
-        <button class="btn btn-sm btn-error" hx-target="#teams" hx-swap="outerHTML" disabled>
-            Remove Team
-        </button>
+            <h2 class="text-lg sm:text-md font-semibold text-base-content/70" id="team-win-chance-{{ team_index }}">
+
+            </h2>
+            <button class="btn btn-sm btn-error" hx-target="#teams" hx-swap="outerHTML" disabled>
+                Remove Team
+            </button>
+
     </div>
     <div class="py-4">
         <table class="table w-full table-sm table-fixed">

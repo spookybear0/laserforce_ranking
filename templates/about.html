@@ -8,12 +8,139 @@
 
 <div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left">
     <h1 class="text-4xl font-bold">About</h1>
-    <p class="py-6 text-base-content/70">This site was made for Invasion Laser Tag members to track and compare their stats to others while providing a more fair and balanced matchmaking system for SM5 and Laserball. The project is made for fun but improvements will continue to be made.</p>
-    <p class="py-6 text-base-content/70">Made with Python (PyPy) 3.10 and Django. The ranking system uses a heavily modified version of Microsoft's TrueSkill algorithm.</p>
-    <p class="py-6 text-base-content/70">The goal is to create a more balanced matchmaking system for SM5 and Laserball to create more fair, fun, and competitive games. Games where teams are evenly matched are more fun for everyone. This project also serves as a way to track your stats and see how you compare to other players.</p>
-    <p class="py-6 text-base-content/70">TrueSkill a Bayesian ranking system that takes into account the number of players, the number of teams, and the number of players per team. It is also used in games such as Halo 5. For this use case, the algorithm is modified to take into account player performance for each game. The reason for this is so that you can't just be carried by your team to a higher rank. This ranking system is used for both SM5 and Laserball to create more fair and balanced games. </p>
-    <p class="py-6 text-base-content/70">This project is open source, meaning the code is free to use and modify (with the restrictions of the licensing). You can find the code on my GitHub page <a href="https://github.com/spookybear0/laserforce_ranking">here</a>. If you have any questions about usage or want to contribute in the form of code or suggestions, please contact me at <a href="mailto:chloecarroll103@gmail.com">chloecarroll103@gmail.com</a>.</p>
-    <p class="py-6 text-base-content/70">API documentation can be found <a>here</a>.</p>
+    <p class="py-6 text-base-content/70">
+    This site was made for competitive Space Marines 5 and Laserball players to track and compare their
+    stats to others while providing a fair and balanced matchmaking system.
+    This project is made for fun but improvements will continue to be made.
+    <br><br>
+    Made with Python (PyPy) 3.10, Django, tailwind, daisyui, and htmx. The ranking system uses a heavily modified version of Microsoft's TrueSkill algorithm.
+    <br><br>
+    The goal is to create a more balanced matchmaking system for SM5 and Laserball to create more fair, fun, and 
+    competitive games. Games where teams are evenly matched are more fun for everyone. This project also serves
+    as a way to track your stats and see how you compare to other players.
+
+    <br><br>
+    This project is open source, meaning the code is free to use and modify (with the restrictions of the licensing).
+    You can find the source code on <a class="link link-primary" href="https://github.com/spookybear0/laserforce_ranking">GitHub</a>.
+    If you have any questions about usage or want to contribute in the form of code or suggestions,
+    please contact me at <a class="link link-primary" href="mailto:chloecarroll103@gmail.com">chloecarroll103@gmail.com</a> or on discord @spookybear0. 
+    <!--<br><br>
+    API documentation can be found <a class="link link-primary">here</a>.-->
+    </p>
+    <h2 class="text-2xl font-bold">Ranking System</h2>
+    <p class="py-6 text-base-content/70">
+        The ranking system is based on a modified version of Microsoft's TrueSkill algorithm, which is a Bayesian ranking system. 
+        TrueSkill evaluates player skill by considering the number of players, teams, and players per team. Our modifications 
+        enhance the algorithm to account for individual player performance in each game, ensuring that skill is determined by 
+        both individual contributions and team success.
+
+        <br><br>
+        Individual performance is assessed by treating every in-game action as a separate event. For instance, actions like 
+        zapping or missiling an opponent are considered events between two players. The winner of the event gains skill points, 
+        while the loser loses skill points. The amount of skill gained or lost depends on the skill levels of the players involved 
+        and the significance of the event. This approach prevents players from being carried to higher ranks solely by their team 
+        and ensures that skill is earned through meaningful contributions. You can think of each event as a mini-game, similar to 
+        a chess match, where the winner gains points and the loser loses points.
+
+        <br><br>
+        In addition to individual performance, team performance is also a critical factor. Team performance is calculated based 
+        on the outcome of the game and the skill levels of all players involved. This ensures that teamwork and the ability to 
+        contribute to a team's success are reflected in the rankings.
+
+        <br><br>
+
+        The system maintains multiple ratings for each player:
+        
+        <ul class="list-disc list-inside space-y-2 mt-3 text-base-content/80">
+            <li>
+                <strong class="text-base-content">Global Rating:</strong>
+                A general measure of a player's overall skill across all games.
+            </li>
+            <li>
+                <strong class="text-base-content">Arena-Specific Rating:</strong>
+                A rating specific to each arena, accounting for differences in
+                player performance between arenas.
+            </li>
+            <li>
+                <strong class="text-base-content">Role-Specific Ratings:</strong>
+                Ratings for specific roles within each game type, currently
+                supported only for SM5.
+            </li>
+        </ul>
+        <br>
+    </p>
+
+    <p class="py-6 text-base-content/70">
+        For example, because we track multiple ratings for each player 
+        we can matchmake games for a member night in a given arena and ignore
+        performance in other arenas.
+        <br><br>
+        The ranking system is designed to be dynamic, with ratings updated after each game based on the latest performance data. 
+        This ensures that the rankings accurately reflect the current skill levels of players, allowing for fair and competitive 
+        matchmaking.
+        <br><br>
+        This ranking system is designed to provide a fair and accurate representation of player skill, enabling balanced and 
+        competitive games in both Space Marines 5 and Laserball. By combining individual and team performance metrics, the system 
+        ensures that players are matched in a way that promotes fun, fairness, and competitiveness.
+    </p>
+
+    <h2 class="text-2xl font-bold">Matchmaking</h2>
+    <p class="py-6 text-base-content/70">
+        The matchmaking system is designed to create balanced and competitive games by assigning roles and evaluating team compositions. Here's how it works:
+
+        <br><br>
+
+        First, players are assigned roles based on their performance and preferences.
+        There's also an element of randomness to ensure that players are not always assigned the same role, which adds variety to the games 
+        and means that if you're not happy with the teams you can always re-roll the matchmaking to get a different set of teams.
+
+        <br><br>
+
+        Next, the system shuffles the players and evaluates different combinations to find the best possible matchups.
+        It considers factors like win balance and role matchups/strength (if enabled).
+        This process ensures that teams are not only balanced in terms of skill but teams also have
+        role matchups that are fair.
+
+        <br><br>
+
+        If the system detects that the teams are imbalanced, with a win chance difference greater than 5%,
+        it will redo the matchmaking process up to ten times times to improve balance.
+        The system runs up to 2000 iterations to find the best possible team compositions 
+        (this number was chosen due to diminishing returns, as the best possible matchups are usually found early on)
+
+        <br><br>
+
+        The matchmaker also includes customizable options like enabling site-specific ratings, role specific-ratings, role assignments, and different game types.
+    </p>
+    
+    <h2 class="text-2xl font-bold">Acknowledgements</h2>
+    <p class="py-6 text-base-content/70">
+        <ul class="list-disc list-inside space-y-2 text-base-content/80">
+            <li>
+                <strong class="text-base-content">EboMike:</strong>
+                For numerous contribtions to the original project.
+            </li>
+            <li>
+                <strong class="text-base-content">Invasion Laser Tag:</strong>
+                For allowing me to upload games played at their arena since 2023.
+            </li>
+            <li>
+                <strong class="text-base-content">LFStats:</strong>
+                For providing tdf files from sites around the world.
+            </li>
+            <li>
+                <strong class="text-base-content">Microsoft:</strong>
+                For developing the TrueSkill algorithm, which serves as the foundation for our ranking system.
+            </li>
+            <li>
+                <strong class="text-base-content">Open Source Contributors:</strong>
+                For writing and maintaining the libraries and tools that this projects relies on.
+            </li>
+            <li>
+                <strong class="text-base-content">The Laserforce Community:</strong>
+                For their support, feedback, and contributions to the project.
+            </li>
+    </p>
 </div>
 
 {% endblock %}

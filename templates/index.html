@@ -1,44 +1,125 @@
 {% extends 'base.html' %}
 
-{% block title %}Index | LF Ranking{% endblock %}
+{% block title %}Home | LF Ranking{% endblock %}
 
 {% block content %}
 
+<div class="flex flex-col gap-8">
 
-<!-- Hero Header Component -->
-<div class="hero bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-center">
-    <div class="hero-content">
-        <div class="max-w-md">
-            <h1 class="text-5xl font-bold text-primary">{{ title }}</h1>
-            <p class="py-6 text-base-content/70">Welcome to our application! We handle the backend so you can focus on building amazing things.</p>
-            <button class="btn btn-primary">Get Started</button>
-            <button class="btn btn-outline btn-secondary ml-2">Learn More</button>
-        </div>
-    </div>
-</div>
+    <!-- Hero -->
+    <div class="hero bg-base-100 rounded-2xl shadow-xl p-8 sm:p-12 lg:p-16">
+        <div class="hero-content text-center">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">
+                    Laserforce Ranking
+                </h1>
 
-<!-- Stats Grid Component -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Stat Card 1 -->
-    <div class="card bg-base-100 shadow-md">
-        <div class="card-body">
-            <h2 class="card-title text-secondary">Our Active Team</h2>
-            <p class="text-4xl font-extrabold">{{ team_count }} Members</p>
-            <p class="text-sm text-base-content/50">Growing every single day.</p>
-            <div class="card-actions justify-end">
-                <button class="btn btn-sm btn-ghost">View Team</button>
+                <p class="py-6 text-base sm:text-lg text-base-content/70">
+                    Rankings, statistics, and matchmaking for competitive
+                    Laserforce. Track your performance, compare players,
+                    and build balanced teams.
+                </p>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-3">
+                    <a href="{{ url('about') }}"
+                       class="btn btn-outline">
+                        Learn More
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Stat Card 2 -->
-    <div class="card bg-base-100 shadow-md">
-        <div class="card-body">
-            <h2 class="card-title text-success">System Status</h2>
-            <div class="badge badge-success gap-2">Online</div>
-            <p class="text-sm text-base-content/50">All Python backend systems are operational.</p>
+    <!-- Features -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Rankings -->
+        <div class="bg-base-100 rounded-2xl shadow-xl p-6 sm:p-10">
+            <h2 class="text-2xl font-bold mb-3">
+                Player Rankings
+            </h2>
+
+            <p class="text-base-content/70 mb-6">
+                See how players stack up based on their performance in
+                competitive Laserforce games.
+            </p>
+
+            <a href="{{ url('player_list') }}"
+               class="btn btn-secondary">
+                View Rankings
+            </a>
+        </div>
+
+
+        <!-- Matchmaker -->
+        <div class="bg-base-100 rounded-2xl shadow-xl p-6 sm:p-10">
+            <h2 class="text-2xl font-bold mb-3">
+                Balanced Matchmaking
+            </h2>
+
+            <p class="text-base-content/70 mb-6">
+                Create competitive teams using player ratings, roles,
+                and game-specific information.
+            </p>
+
+            <a href="{{ url('matchmaker') }}"
+               class="btn btn-primary">
+                Open Matchmaker
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Statistics -->
+    <div class="bg-base-100 rounded-2xl shadow-xl p-6 sm:p-10 lg:p-12">
+
+        <div class="mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold">
+                Statistics
+            </h2>
+            <p class="mt-2 text-base-content/60">
+                A look at the competitive Laserforce data tracked by LF Ranking.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+
+            <div class="bg-base-200 rounded-xl p-5 sm:p-6">
+                <div class="text-sm text-base-content/60">
+                    Ranked Games
+                </div>
+                <div class="text-3xl sm:text-4xl font-bold mt-2">
+                    {{ total_ranked_games }}
+                </div>
+            </div>
+
+            <div class="bg-base-200 rounded-xl p-5 sm:p-6">
+                <div class="text-sm text-base-content/60">
+                    Players
+                </div>
+                <div class="text-3xl sm:text-4xl font-bold mt-2">
+                    {{ total_players }}
+                </div>
+            </div>
+            <div class="bg-base-200 rounded-xl p-5 sm:p-6">
+                <div class="text-sm text-base-content/60">
+                    Sites
+                </div>
+                <div class="text-3xl sm:text-4xl font-bold mt-2">
+                    {{ SITES|length }}
+                </div>
+            </div>
+            <div class="bg-base-200 rounded-xl p-5 sm:p-6">
+                <div class="text-sm text-base-content/60">
+                    Predictive Accuracy
+                </div>
+                <div class="text-3xl sm:text-4xl font-bold mt-2">
+                    (not yet tracked)
+                </div>
+            </div>
         </div>
     </div>
+
 </div>
 
 {% endblock %}

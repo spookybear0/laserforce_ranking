@@ -1,4 +1,4 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, Tuple, TYPE_CHECKING
 from laserforce_ranking.rating import model, GameType, IntRole
 import itertools
 import math
@@ -204,7 +204,19 @@ async def matchmake_teams_with_roles_best_players(players: List["Player"], num_t
 
     return best_teams, best_roles
 
-async def matchmake_advanced(players: List["Player"], num_teams: int, mode: GameType = GameType.SM5, site: str="global", *, _attempts: int=0) -> List[List["Player"]]:
+async def matchmake_advanced(players: List["Player"], num_teams: int, mode: GameType = GameType.SM5, site: str="global", *, _attempts: int=0) -> Tuple[List[List["Player"]], List[List[IntRole]]]:
+    """
+    Algorithm: Advanced Matchmaker
+
+    1. Assign unique roles (commander, heavy, ammo, medic) to the players with the highest rating for that role
+    2. Assign the remaining players as scouts
+    3. Shuffle the players and repeat the process until the best combination is found (if using the matchmaker)
+    4. Evaluate the teams based on win balance, role matchups, role strength, and synergy (if enabled)
+    5. If the teams are imbalanced (win chance difference > 5%), redo matchmaking up to 10 times
+    6. Return the best teams found after 2000 iterations
+
+    """
+
     #logger.info(f"Starting advanced matchmaking for {len(players)} players into {num_teams} teams in mode {mode_str} (attempt {_attempts})")
 
     if not 2 <= num_teams <= 4:
@@ -429,7 +441,7 @@ async def matchmake_advanced(players: List["Player"], num_teams: int, mode: Game
     return teams, roles
 
 
-async def get_win_chance(team1: List["Player"], team2: List["Player"], mode: GameType = GameType.SM5, site: str="global", roles: Optional[List[List[IntRole]]]=None) -> float:
+async def get_win_chance(team1: List["Player"], team2: List["Player"], mode: GameType = GameType.SM5, site: str="global", roles: Optional[List[List[IntRole]]]=None) -> List[float]:
     """
     Gets win chance for two teams
     """
