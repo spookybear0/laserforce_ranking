@@ -9,7 +9,13 @@
     <p class="text-base text-base-content/70">
         {{ ID_TO_SITE[game.site_id] }} - {{ game.start_time.strftime('%b {}, %Y'.format(day_no_leading_zero)) }} - {{ game.mission_duration.seconds // 60 }}:{{ '%02d' % (game.mission_duration.seconds % 60) }}
     </p>
-    <p class="text-base text-base-content/70"><a href="/api/tdf/{{game.tdf_name}}" class="text-blue-500 hover:underline">{{ game.tdf_name }}</a></p>
+    <p class="text-base text-base-content/70 mb-4"><a href="/api/tdf/{{game.tdf_name}}" class="text-blue-500 hover:underline">{{ game.tdf_name }}</a></p>
+
+    {% for team in teams %}
+        {% with team=team, index=loop.index0, win_chances=win_chances %}
+            {% include 'partials/game_team.html' %}
+        {% endwith %}
+    {% endfor %}
 </div>
 
 {% endblock %}

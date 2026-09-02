@@ -86,7 +86,7 @@ class MatchmakerTeamsView(TemplateView):
         mode = self.request.POST.get("mode", "sm5").strip()
         site = self.request.POST.get("site", "global").strip()
         roles_enabled = self.request.POST.get("roles", "false").strip().lower() == "true"
-        matchmake = request.POST.get("matchmake", "false").strip().lower() == "true"
+        matchmake = request.GET.get("matchmake", "false").strip().lower() == "true"
 
         entity_ids = [player["entity_id"] for team in teams for player in team]
 

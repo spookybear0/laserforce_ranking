@@ -434,7 +434,7 @@ async def matchmake_advanced(players: List["Player"], num_teams: int, mode: Game
     
     win_chances = await get_win_chances(teams, mode=mode, roles=roles)
 
-    if any(abs(win[0] - 0.5) > 0.05 if win != 0 else 0 for win in win_chances):
+    if any(abs(win - 0.5) > 0.05 for row in win_chances for win in row if win is not None):
         #logger.info(f"Win chances for teams are imbalanced: {win_chances}, redoing matchmaking (attempt {_attempts}/3)")
         return await matchmake_advanced(players, num_teams, mode=mode, _attempts=_attempts)
 

@@ -1,10 +1,10 @@
 import math
 from typing import List, Tuple, Union, Optional, TYPE_CHECKING
 from copy import deepcopy
-from .models.sm5 import SM5Game
 from .models.types import EntityType, IntRole, GameType
 if TYPE_CHECKING:
     from .models import Player, Game
+    from .models.sm5 import SM5Game
 
 from openskill.models import PlackettLuceRating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
@@ -232,7 +232,7 @@ class FakeDefaultPlayer:
     async def asave(self):
         pass
 
-async def update_sm5_rankings(game: SM5Game) -> bool:
+async def update_sm5_rankings(game: "SM5Game") -> bool:
     """
     Updates the sm5 ratings for a game
     it first calculates the individual player ratings

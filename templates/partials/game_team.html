@@ -1,0 +1,68 @@
+<div class="container mx-auto bg-base-200 rounded-2xl shadow-xl p-10 mb-8" hx-swap="outerHTML" id="player-table">
+    <div class="flex flex-col gap-2">
+        <!--add unranked tag-->
+        <div class="flex flex-row gap-2 justify-between items-center">
+            <h1 class="text-2xl font-bold" style="color: {{ team.enum.css_color_name }}">
+                {{ team.name }} - {{ team.score + game.get_team_score_adjustment(team.enum) }}
+                <span class="text-base-content/50 text-xl">({{ "%.2f" % (win_chances[index]*100) }}%)</span>
+            </h1>
+            <h2 class="text-xl font-bold">Doubles: {{ "%.2f" % (team.doubles_percent*100) }}%</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table w-full table-sm">
+                <!--won tag-->
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Codename</th>
+                        <th>Score</th>
+                        <th><a href="https://lfstats.com/about-sm5#:~:text=MVP%20Points%20System" target="_blank" class="link link-primary">MVP</a></th>
+                        {% if game.ranked %}
+                            <th>Rating</th>
+                            <th>Rating Diff</th>
+                        {% endif %}
+                        <th>Spec</th>
+                        <th>K/D Ratio</th>
+                        <th>Accuracy</th>
+                        <th>Medic Hits</th>
+                        <th>Lives</th>
+                        <th>Shots</th>
+                        <th>Msls</th>
+                        <th>Msld</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for entity in team.entity_starts.filter(type=EntityType.PLAYER).select_related('entity_end', 'sm5_stats').order_by('-entity_end__score') %}
+                    <tr>
+                        <td><img src="{{ static('sm5/roles/' + entity.role.name.lower() + '.png') }}" alt="{{ entity.role.value }}" class="w-6 h-6"></td>
+                        <td>
+                            {% if entity.type == EntityType.PLAYER %}
+                            <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ sync_to_async(get_codename)(entity) }}</a>
+                            {% else %}
+                            {{ entity.name }}
+                            {% endif %}
+                        </td>
+                        <td>{{ entity.entity_end.score }}</td>
+                        <td>{{ "%.2f" % entity.sm5_stats.mvp_points() }}</td>
+                        {% if game.ranked %}
+                            <td>0.00</td>
+                            <td>+0.00</td>
+                        {% endif %}
+                        <td>{{ entity.sm5_stats.special_points }}</td>
+                        <td>{{ "%.2f" % entity.sm5_stats.kd_ratio }} ({{ entity.sm5_stats.shot_opponent }}/{{ entity.sm5_stats.times_zapped }})</td>
+                        <td>{{ "%.2f" % (entity.sm5_stats.accuracy*100) }}%</td>
+                        <td>{{ entity.sm5_stats.medic_hits_str }}</td>
+                        <td>{{ entity.sm5_stats.lives_left }}</td>
+                        <td>{{ entity.sm5_stats.shots_left }}</td>
+                        <td>{{ entity.sm5_stats.missiled_opponent }}</td>
+                        <td>{{ entity.sm5_stats.times_missiled }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

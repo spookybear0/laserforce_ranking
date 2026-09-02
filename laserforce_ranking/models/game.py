@@ -2,11 +2,13 @@ from django.db import models
 from abc import abstractmethod
 import sys
 from datetime import datetime
-from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType
+from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType, GameType
+from laserforce_ranking.rating import Rating, MU, SIGMA
 from dataclasses import dataclass
 import re
 from django_enum import EnumField
 from django.urls import reverse
+from typing import List, Optional
 
 def suffix(date: int) -> str:
     return {1: "st", 2: "nd", 3: "rd"}.get(date % 20, "th")
@@ -22,6 +24,7 @@ class Team(models.Model):
     color_name = models.CharField(50)
 
     real_color_name = models.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
+    doubles_percent = models.FloatField(null=True) # sm5 only, percent of doubles in the team, useful for getting fast info
     score = models.IntegerField() # total score for the team, useful for getting fast info
 
     entity_starts = models.ManyToManyField("EntityStart", related_name="teams")
@@ -49,7 +52,10 @@ class EntityStart(models.Model):
     role = EnumField(IntRole) # role of the player, if applicable, otherwise 0
     battlesuit = models.CharField(max_length=50, null=True) # name of the battlesuit (only different if logged in)
     member_id = models.CharField(max_length=50, null=True) # member id of the player, if included in the tdf, otherwise null
-    entity_end = models.OneToOneField("EntityEnd", on_delete=models.SET_NULL, null=True, blank=True) # the entity end for this entity, if it exists
+    entity_end = models.OneToOneField("EntityEnd", on_delete=models.SET_NULL, null=True) # the entity end for this entity, if it exists
+
+    sm5_stats = models.OneToOneField("SM5Stats", on_delete=models.SET_NULL, null=True) # the sm5 stats for this entity, if it exists
+    laserball_stats = models.OneToOneField("LaserballStats", on_delete=models.SET_NULL, null=True) # the laserball stats for this entity, if it exists
 
     async def get_current_codename(self) -> str:
         # if the player has changed their name since the game, get the current name
@@ -164,6 +170,33 @@ class EntityEnd(models.Model):
     ratings = models.JSONField(null=True) # current and previous ratings, if available
     video = models.URLField(null=True) # video of the game from this player's perspective, if available
 
+    async def get_rating(self, timeframe: Optional[str] = None, use_site: bool=True, consider_roles: bool=True) -> Rating:
+        """
+        Returns the rating of the player at the end of the game.
+        The timeframe can be "previous", "current", or None.
+
+        "previous" will return the rating before the game started.
+        "current" will return the rating after the game ended.
+        None will return the current rating of the player, which may have changed since the game ended.
+
+        consider_roles is only applicable for sm5, and it will use the role ratings instead of the overall ratings if set to True.
+        """
+        if not self.ratings:
+            return Rating(mu=MU, sigma=SIGMA)
+        
+        key = "site_role" if consider_roles else "site" if use_site else "global_role" if consider_roles else "global"
+
+        if timeframe in ["previous", "current"]:
+            return Rating(**self.ratings[timeframe][key])
+        else:
+            # get current rating from database
+            from .player import Player
+            player = await Player.objects.filter(entity_id=self.entity.entity_id).afirst()
+            if player:
+                return await player.get_rating(self.game.type, self.game.site_id, self.entity.role)
+            else:
+                return Rating(mu=MU, sigma=SIGMA)
+
     def __str__(self):
         return f"{self.entity.name} - {self.type.name} - Game {self.game.id}"
 
@@ -222,20 +255,82 @@ class Game(models.Model):
         For example, "laserball" or "sm5".
         """
         raise NotImplementedError("Subclasses must implement short_type property")
-
-    def get_timestamp(self, time_zone: str = "America/Los_Angeles") -> str:
-        """
-        Returns the timestamp of the game in the specified time zone
-        """
-
-        # get zero pad modifier for os
-        if sys.platform == "win32":
-            zero_pad = "#"
-        else:
-            zero_pad = "-"
-
-        return strftime_ordinal(f"%A, %B {'{S}'}, %Y at %{zero_pad}I:%M %p", self.start_time)
     
+    @property
+    def type(self) -> GameType:
+        """
+        Returns the type of the game.
+        This is used for the API and should be a short string that describes the game type.
+        For example, "laserball" or "sm5".
+        """
+        return GameType(self.short_type)
+    
+    async def get_win_chance(self, timeframe: Optional[str] = None, consider_site: bool = True, consider_roles: bool = True) -> List[float]:
+        """
+        Calculates the win chance for the game based on the players' ratings.
+        The timeframe can be "before", "after", or None.
+
+        "before" will use the previous ratings of the players and show the prediciton based on data only up to the start of the game.
+        "after" will use ratings recorded directly after the game ended, so it will include the game itself in the prediction.
+        None will use the current ratings of the players, so it will include all games played by the players up to now.
+
+        consider_roles is only applicable for sm5, and it will use the role ratings instead of the overall ratings if set to True.
+
+        Returns the win chance in the format [team1, team2] / [red, green] / [red, blue]
+        """
+
+        # game modes without roles
+        if self.short_type in ["laserball"]:
+            consider_roles = False
+        
+        timeframe = {
+            "before": "previous",
+            "after": "current"
+        }.get(timeframe, None)
+
+        teams = await self.get_teams()
+
+        # get the win chance for red team
+        # this is based on the previous_elo of the player's entity_end
+
+        # get all the entity_ends for the red team
+
+        entity_ends_team1 = [entity_end async for entity_end in self.entity_ends.filter(entity__team__color_name=teams[0].color_name, entity__type=EntityType.PLAYER)]
+
+        # get the previous elo for each player
+
+        elos_team1 = [await entity_end.get_rating(timeframe, consider_site, consider_roles) for entity_end in entity_ends_team1]
+
+        # get all the entity_ends for the green team
+
+        entity_ends_team2 = [entity_end async for entity_end in self.entity_ends.filter(entity__team__color_name=teams[1].color_name, entity__type=EntityType.PLAYER)]
+
+        # get the previous elo for each player
+
+        elos_team2 = [await entity_end.get_rating(timeframe, consider_site, consider_roles) for entity_end in entity_ends_team2]
+
+        # get the win chance
+
+        from laserforce_ranking.matchmake import model
+        return model.predict_win([
+            elos_team1,
+            elos_team2
+        ])
+    
+    async def get_win_chance_before_game(self, consider_site: bool=True, consider_roles: bool=True) -> List[float]:
+        """
+        Returns the win chance before the game started.
+        This is based on the previous ratings of the players.
+        """
+        return await self.get_win_chance("before", consider_site, consider_roles)
+    
+    async def get_win_chance_after_game(self, consider_site: bool=True, consider_roles: bool=True) -> List[float]:
+        """
+        Returns the win chance after the game ended.
+        This is based on the ratings of the players after the game ended.
+        """
+        return await self.get_win_chance("after", consider_site, consider_roles)
+
     def get_absolute_url(self):
         return reverse("game_detail", kwargs={"tdf_name": self.tdf_name})
 

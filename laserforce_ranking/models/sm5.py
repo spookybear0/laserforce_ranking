@@ -50,10 +50,11 @@ class SM5Stats(models.Model):
         """
 
         entity = await sync_to_async(lambda: self.entity)()
+        await sync_to_async(lambda: entity.team)()  # Prefetch team
         entity_end = await sync_to_async(lambda: self.entity_end)()
 
         score: int = entity_end.score
-        game: SM5Game = await SM5Game.filter(entity_starts__id=entity.id).afirst()
+        game: SM5Game = await SM5Game.objects.filter(entity_starts__id=entity.id).prefetch_related("last_team_standing").afirst()
 
         total_points = 0
 
@@ -76,7 +77,9 @@ class SM5Stats(models.Model):
         if mission_end is not None:
             mission_length = mission_end.time
 
-            if game.last_team_standing.name == entity.team.name:
+            last_team_standing = game.last_team_standing
+
+            if last_team_standing and last_team_standing.name == entity.team.name:
                 total_points += round(max(4, 4 + (game.mission_duration.total_seconds() - mission_length / 1000 - 180) / 60), 2)
 
         # cancel opponent nukes: 3 points for every opponent nuke canceled
@@ -163,6 +166,28 @@ class SM5Stats(models.Model):
 
         return total_points
     
+    @property
+    def kd_ratio(self) -> float:
+        return self.shot_opponent / self.times_zapped if self.times_zapped != 0 else math.inf
+
+    @property
+    def accuracy(self) -> float:
+        return self.shots_hit / self.shots_fired if self.shots_fired != 0 else 0
+    
+    @property
+    def medic_hits_str(self) -> str:
+        """Returns the medic hits in the format that is used by LaserForce.
+
+        This is shown as medic_hits_by_tagging_and_missiling/medic_hits_by_nuking/own_medic_hits
+
+        Example: 3/6/-1 (3 hits through tags/missiles, 2 nukes, one tag on the own medic)
+
+        Any component that is 0 will not be shown (except for the first one, which is always shown).
+        """
+        nuke_hits_str = f"/{self.medic_nukes}" if self.medic_nukes else ""
+        own_medic_hits_str = f"/-{self.own_medic_hits}" if self.own_medic_hits else ""
+        return f"{self.medic_hits}{nuke_hits_str}{own_medic_hits_str}"
+
     def __str__(self):
         return f"SM5Stats for {self.entity} in game {self.entity.game}"
     
@@ -178,15 +203,25 @@ class SM5Game(Game):
     last_team_standing = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, related_name="last_team_standing")
     rank_version = models.PositiveSmallIntegerField(default=0)
 
-    # precalculatead percentage of doubles (resupplies within 3 seconds to the same target) for each team,
-    # since this is a costly calculation and we want to show it on the game page
-    team1_double_percent = models.FloatField(null=True)
-    team2_double_percent = models.FloatField(null=True)
+    @property
+    def short_type(self) -> str:
+        return "sm5"
 
-    def get_team_score_adjustment(self, team: TeamType) -> int:
+    async def get_team_score_adjustment(self, team: TeamType) -> int:
         """Returns how many points should be added to the team score in addition to the sum of the players' scores."""
         # The only adjustment currently is the 10k bonus for a team that eliminates another team.
-        return 10000 if team == self.last_team_standing else 0
+        last_team_standing = await sync_to_async(lambda: self.last_team_standing)()
+        return 10000 if team == last_team_standing else 0
+    
+    def get_team_score_adjustment_str(self, team: TeamType) -> str:
+        """Returns a string explaining how many points should be added to the team score in addition to the sum of the players' scores."""
+        adjustment = self.get_team_score_adjustment(team)
+        if adjustment == 0:
+            return ""
+        elif adjustment > 0:
+            return f" (+{adjustment})"
+        else:
+            return f" ({adjustment})"
     
     # get_unranked_reason():
 

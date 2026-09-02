@@ -4,7 +4,7 @@ from laserforce_ranking.models.game import Game, Team, EntityStart, Event, Entit
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
 from typing import Optional, List, Dict
-from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA, BLANK_RATING_PER_SITE
+from .rating import SM5_RANK_VERSION, update_sm5_rankings, MU, SIGMA, BLANK_RATING_PER_SITE, BLANK_ENTITY_RATING
 from laserforce_ranking.models.player import Player
 import aiohttp
 from django.db import transaction
@@ -612,7 +612,7 @@ async def process_sm5(
             software_version=software_version,
             mission_type=mission_type,
             mission_name=mission_name,
-            ranked=ranked,
+            ranked=False, # will be updated later
             force_ended_early=force_ended_early,
             start_time=start_time,
             mission_duration=mission_duration,
@@ -649,6 +649,7 @@ async def process_sm5(
             entity_end.game = game
             entity_end.entity.entity_end = entity_end
             await entity_end.asave()
+            await entity_end.entity.asave()
         await game.entity_ends.aset(entity_ends)
         for player_state in player_states:
             player_state.game = game
@@ -658,8 +659,10 @@ async def process_sm5(
             sm5_stat.special_points = player_special_points.get(sm5_stat.entity.entity_id, 0)
             sm5_stat.entity = entity_starts[sm5_stat.entity.entity_id]
             sm5_stat.entity_end = sm5_stat.entity.entity_end
+            sm5_stat.entity.sm5_stats = sm5_stat
             sm5_stat.game = game
             await sm5_stat.asave()
+            await sm5_stat.entity.asave()
         await game.sm5_stats.aset(sm5_stats)
 
         # determine if the game should be ranked automatically
@@ -726,8 +729,9 @@ async def process_sm5(
 
         # doubles %
 
-        game.team1_double_percent = await game._get_team_doubles_percent(team1)
-        game.team2_double_percent = await game._get_team_doubles_percent(team2)
+        for team in teams.values():
+            team.doubles_percent = await game._get_team_doubles_percent(team)
+            await team.asave()
 
         # winner
 
@@ -763,24 +767,7 @@ async def process_sm5(
                 entity_start = await sync_to_async(lambda: entity_end.entity)()
                 entity_id = entity_start.entity_id
                 if entity_id.startswith("@"):
-                    entity_end.ratings = {
-                        "global": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        },
-                        "global_role": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        },
-                        "site": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        },
-                        "site_role": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        }
-                    }
+                    entity_end.ratings = BLANK_ENTITY_RATING
 
                 player = await Player.objects.filter(entity_id=entity_id).afirst()
 

@@ -1,7 +1,10 @@
 from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import Environment
-from .models.types import SITES, ID_TO_SITE, COMPETITIVE_SITES, SITE_TIMEZONES, IPL_NAME_TO_SITE_ID, IntRole
+from .models import Player
+from .models.types import SITES, ID_TO_SITE, COMPETITIVE_SITES, SITE_TIMEZONES, IPL_NAME_TO_SITE_ID, IntRole, EntityType
+from django.db.models import Sum, Avg
+from asgiref.sync import sync_to_async
 import os
 
 if os.name == "nt":
@@ -26,6 +29,11 @@ def environment(**options):
             "SITE_TIMEZONES": SITE_TIMEZONES,
             "IPL_NAME_TO_SITE_ID": IPL_NAME_TO_SITE_ID,
             "IntRole": IntRole,
+            "EntityType": EntityType,
+            "Player": Player,
+            "Sum": Sum,
+            "Avg": Avg,
+            "sync_to_async": sync_to_async,
         }
     )
 
