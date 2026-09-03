@@ -2,6 +2,43 @@
 
 {% block title %}{{ ID_TO_SITE[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} | LF Ranking{% endblock %}
 
+
+{% block meta_description %}SM5 game on LF Ranking
+{{ ID_TO_SITE[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} on {{ game.start_time.strftime("%b %d, %Y") }}{% if game.ranked %} · Ranked{% endif %}{% endblock %}
+
+{% block og_title %}{{ teams[0].name }} {{ teams[0].score }} - {{ teams[1].name }} {{ teams[1].score }} | LF Ranking{% endblock %}
+
+{% block og_description %}SM5 · {{ game.site_id }} · {{ game.start_time.strftime("%b %d, %Y") }} {% if game.ranked %}· Ranked{% endif %}{% endblock %}
+
+{% block og_image %}
+<meta
+    property="og:image"
+    content="{{ request.build_absolute_uri(
+        url('game_embed', kwargs={'tdf_name': game.tdf_name})
+    ) }}"
+>
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+{% endblock %}
+
+{% block twitter_title %}
+    {{ teams[0].name }} {{ teams[0].score }} - {{ teams[1].name }} {{ teams[1].score }} | LF Ranking
+{% endblock %}
+
+{% block twitter_description %}
+    SM5 · {{ game.site_id }} · {{ game.start_time.strftime("%b %d, %Y") }}
+    {% if game.ranked %}· Ranked{% endif %}
+{% endblock %}
+
+{% block twitter_image %}
+<meta
+    name="twitter:image"
+    content="{{ request.build_absolute_uri(
+        url('game_embed', kwargs={'tdf_name': game.tdf_name})
+    ) }}"
+>
+{% endblock %}
+
 {% block content %}
 
 <div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col gap-2">

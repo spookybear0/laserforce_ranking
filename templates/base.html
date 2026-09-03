@@ -4,6 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LF Ranking{% endblock %}</title>
+    
+    <meta
+        name="description"
+        content="{% block meta_description %}Laserforce rankings, games, player ratings, and matchmaking.{% endblock %}"
+    >
+
+    <meta property="og:site_name" content="Laserforce Ranking">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}LF Ranking{% endblock %}">
+    <meta
+        property="og:description"
+        content="{% block og_description %}Laserforce rankings, games, player ratings, and matchmaking.{% endblock %}"
+    >
+    <meta
+        property="og:url"
+        content="{{ request.build_absolute_uri(request.path) }}"
+    >
+
+
+    {% block og_image %}
+    {% endblock %}
+
+    <!-- Twitter / Discord-compatible large preview -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}LF Ranking{% endblock %}">
+    <meta
+        name="twitter:description"
+        content="{% block twitter_description %}Laserforce rankings, games, player ratings, and matchmaking.{% endblock %}"
+    >
+
+    {% block twitter_image %}
+    {% endblock %}
 
     <link href="{{ static('css/output.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>

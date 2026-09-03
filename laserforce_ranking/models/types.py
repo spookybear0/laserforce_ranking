@@ -86,6 +86,11 @@ class RgbColor:
     blue: int
 
     @property
+    def rgb_tuple(self) -> tuple[int, int, int]:
+        """Returns the color as a tuple of (red, green, blue)."""
+        return self.red, self.green, self.blue
+
+    @property
     def rgb_value(self) -> str:
         """Returns the color as an RGB string to plug into HTML or CSS."""
         return "#%02x%02x%02x" % (self.red, self.green, self.blue)
@@ -164,24 +169,24 @@ class _TeamDefinition:
 class TeamType(Enum):
     # neutral team, sometimes None is used instead of this
     NEUTRAL = _TeamDefinition(color="neutral", element="Neutral", css_class="neutral-team", css_color_name="white",
-                              dim_color=RgbColor(red=68, green=68, blue=68), plain_color="rgb(255, 255, 255)")
+                              dim_color=RgbColor(red=68, green=68, blue=68), plain_color=RgbColor(red=255, green=255, blue=255))
     NONE = _TeamDefinition(color="none", element="None", css_class="none-team", css_color_name="white",
-                           dim_color=RgbColor(red=68, green=68, blue=68), plain_color="rgb(255, 255, 255)")
+                           dim_color=RgbColor(red=68, green=68, blue=68), plain_color=RgbColor(red=255, green=255, blue=255))
 
     RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered",
-                          dim_color=RgbColor(red=68, green=17, blue=0), plain_color="rgb(255, 69, 0)")
+                          dim_color=RgbColor(red=68, green=17, blue=0), plain_color=RgbColor(red=255, green=69, blue=0))
     GREEN = _TeamDefinition(color="green", element="Earth", css_class="earth-team", css_color_name="greenyellow",
-                            dim_color=RgbColor(red=43, green=60, blue=12), plain_color="rgb(173, 255, 47)")
+                            dim_color=RgbColor(red=43, green=60, blue=12), plain_color=RgbColor(red=173, green=255, blue=47))
     BLUE = _TeamDefinition(color="blue", element="Ice", css_class="ice-team", css_color_name="#0096FF",
-                           dim_color=RgbColor(red=0, green=37, blue=68), plain_color="rgb(0, 150, 255)")
+                           dim_color=RgbColor(red=0, green=37, blue=68), plain_color=RgbColor(red=0, green=150, blue=255))
     # new additions for laserball ramps mode
     YELLOW = _TeamDefinition(color="yellow", element="Yellow", css_class="yellow-team", css_color_name="gold",
-                             dim_color=RgbColor(red=68, green=68, blue=0), plain_color="rgb(255, 215, 0)")
+                             dim_color=RgbColor(red=68, green=68, blue=0), plain_color=RgbColor(red=255, green=215, blue=0))
     PURPLE = _TeamDefinition(color="purple", element="Purple", css_class="purple-team", css_color_name="#A020F0",
-                             dim_color=RgbColor(red=34, green=0, blue=68), plain_color="rgb(160, 32, 240)")
+                             dim_color=RgbColor(red=34, green=0, blue=68), plain_color=RgbColor(red=160, green=32, blue=240))
     # powerlaser stuttgart has a pink team
     PINK = _TeamDefinition(color="pink", element="Pink", css_class="pink-team", css_color_name="#FF69B4",
-                           dim_color=RgbColor(red=68, green=17, blue=34), plain_color="rgb(255, 105, 180)")
+                           dim_color=RgbColor(red=68, green=17, blue=34), plain_color=RgbColor(red=255, green=105, blue=180))
 
     def __call__(cls, value, *args, **kw):
         if type(value) is str:
@@ -225,8 +230,8 @@ class TeamType(Enum):
         return self.value.dim_color
 
     @property
-    def plain_color(self) -> str:
-        """Color to use for this team, expressed as an Rgb() string."""
+    def plain_color(self) -> RgbColor:
+        """Color to use for this team."""
         return self.value.plain_color
 
     @property

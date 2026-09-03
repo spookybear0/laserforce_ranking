@@ -30,6 +30,7 @@ urlpatterns = [
     path("players/<str:entity_id>", views.PlayerView.as_view(), name="player_detail"),
     path("about", views.AboutView.as_view(), name="about"),
     path("games/<str:tdf_name>", views.GameView.as_view(), name="game_detail"),
+    path("games/<str:tdf_name>/embed.png", views.SM5GameEmbedImageView.as_view(), name="game_embed"),
     path("matchmaker", views.MatchmakerView.as_view(), name="matchmaker"),
     path("matchmaker/players", views.MatchmakerPlayersView.as_view(), name="matchmaker_players"),
     path("matchmaker/teams", views.MatchmakerTeamsView.as_view(), name="matchmaker_teams"),
