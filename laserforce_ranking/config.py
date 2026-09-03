@@ -19,6 +19,7 @@ default_config = {
     "db_password": "",
     "db_port": 5432,
     "db_name": "laserforce_ranking",
+    "debug": False,
     "secret_key": get_random_secret_key(),
     "sentry_dsn": "",
     "sentry_environment": "production",

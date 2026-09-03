@@ -42,19 +42,20 @@ class SM5Stats(models.Model):
         score = self.entity_end.score
         return int(str(score)[-1]) if score is not None else 0
     
-    async def mvp_points(self) -> float:
+    @property
+    def mvp_points(self) -> float:
         """
         mvp points according to lfstats.com
 
         NOTE: this is a function, while LaserballStats.mvp_points is a property
         """
 
-        entity = await sync_to_async(lambda: self.entity)()
-        await sync_to_async(lambda: entity.team)()  # Prefetch team
-        entity_end = await sync_to_async(lambda: self.entity_end)()
+        entity = self.entity
+        entity.team
+        entity_end = self.entity_end
 
         score: int = entity_end.score
-        game: SM5Game = await SM5Game.objects.filter(entity_starts__id=entity.id).prefetch_related("last_team_standing").afirst()
+        game: SM5Game = SM5Game.objects.filter(entity_starts__id=entity.id).prefetch_related("last_team_standing").first()
 
         total_points = 0
 
@@ -72,7 +73,7 @@ class SM5Stats(models.Model):
 
         # check if team eliminated the other team
 
-        mission_end = await game.events.filter(type=EventType.MISSION_END).afirst()
+        mission_end = game.events.filter(type=EventType.MISSION_END).first()
 
         if mission_end is not None:
             mission_length = mission_end.time
@@ -207,11 +208,10 @@ class SM5Game(Game):
     def short_type(self) -> str:
         return "sm5"
 
-    async def get_team_score_adjustment(self, team: TeamType) -> int:
+    def get_team_score_adjustment(self, team: TeamType) -> int:
         """Returns how many points should be added to the team score in addition to the sum of the players' scores."""
         # The only adjustment currently is the 10k bonus for a team that eliminates another team.
-        last_team_standing = await sync_to_async(lambda: self.last_team_standing)()
-        return 10000 if team == last_team_standing else 0
+        return 10000 if team == self.last_team_standing else 0
     
     def get_team_score_adjustment_str(self, team: TeamType) -> str:
         """Returns a string explaining how many points should be added to the team score in addition to the sum of the players' scores."""

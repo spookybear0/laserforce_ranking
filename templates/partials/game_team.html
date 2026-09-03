@@ -37,13 +37,13 @@
                         <td><img src="{{ static('sm5/roles/' + entity.role.name.lower() + '.png') }}" alt="{{ entity.role.value }}" class="w-6 h-6"></td>
                         <td>
                             {% if entity.type == EntityType.PLAYER and entity.entity_id.startswith('#') %}
-                            <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ sync_to_async(get_codename)(entity) }}</a>
+                            <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ get_codename(entity) }}</a>
                             {% else %}
                             {{ entity.name }}
                             {% endif %}
                         </td>
                         <td>{{ entity.entity_end.score }}</td>
-                        <td>{{ "%.2f" % entity.sm5_stats.mvp_points() }}</td>
+                        <td>{{ "%.2f" % entity.sm5_stats.mvp_points }}</td>
                         {% if game.ranked %}
                             <td>0.00</td>
                             <td>+0.00</td>

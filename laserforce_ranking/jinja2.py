@@ -14,7 +14,7 @@ else:
 
 def environment(**options):
     """Configures the Jinja2 environment with Django global functions."""
-    env = Environment(**options, enable_async=True)
+    env = Environment(**options)
 
     # inject Django helper functions into Jinja2 templates
     env.globals.update(
