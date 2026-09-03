@@ -76,7 +76,7 @@ async def import_legacy_tdf():
             i += 1
 
 
-async def scrape_lfstats_tdf(site_id: Optional[str] = None):
+async def scrape_lfstats_tdf(site_id: Optional[str] = None, page_start: int = 0):
     # scrape https://lfstats.com/games?scope=social&center=<center>
     # pagninated list 
     async with async_playwright() as p:
@@ -100,9 +100,19 @@ async def scrape_lfstats_tdf(site_id: Optional[str] = None):
         started = await page.query_selector("thead[data-slot='table-header'] > tr > th:nth-child(3) > button")
         if started:
             await started.click()
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(500)
 
-        page_num = 0
+        page_num = page_start
+
+        if page_start > 0:
+            # click on the page number button "page_start" times to get to the correct page
+            for i in range(page_start):
+                print(f"Clicking next page button to get to page {page_start} ({i+1}/{page_start})")
+                next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
+                if next_button:
+                    await next_button.click()
+                    await page.wait_for_timeout(200)
+
         while True:
             # Find all links to tdfs
             links = await page.query_selector_all(".p-2.align-middle.whitespace-nowrap a")
@@ -121,19 +131,19 @@ async def scrape_lfstats_tdf(site_id: Optional[str] = None):
                 # get tdf from link
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f"https://lfstats-modern-archive.s3.us-west-1.amazonaws.com/{href}.tdf") as tdf_resp:
-                        if tdf_resp.status == 404 or "404 - Not Found" in (await tdf_resp.text()):
+                        if tdf_resp.status == 404:
+                            print(f"Could not find {tdf_name}, skipping")
                             continue
 
-                        data = await tdf_resp.text()
+                        data = await tdf_resp.text(encoding="utf-16")
 
                         # save tdf to disk
 
                         if not tdf_path.exists():
                             os.makedirs(tdf_path.parent, exist_ok=True)
-
+                        
                         # Remove extra blank lines
                         data = "\n".join(line for line in data.splitlines() if line.strip())
-
                         with open(tdf_path, "w", encoding="utf-16") as f:
                             f.write(data)
 

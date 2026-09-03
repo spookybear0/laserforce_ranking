@@ -13,7 +13,7 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    
+
     # start tailwind watcher
     try:
         if os.name == "nt":

@@ -12,6 +12,7 @@ def is_in_ipython() -> bool:
 path = os.path.dirname(os.path.realpath(__file__))
 
 default_config = {
+    "db_sqlite": False,
     "db_host": "localhost",
     "db_user": "root",
     "db_password": "",

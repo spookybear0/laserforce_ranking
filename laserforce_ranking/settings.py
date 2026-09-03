@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-s*qycnjp%m1$qd&kctw$*dtslal#3-=y=+0&6)#mqh1a$=@+3%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["nextlaserforce.spoo.uk", "laserforce.spoo.uk"]
 
 LOGGING = {
     "version": 1,
@@ -103,13 +103,24 @@ WSGI_APPLICATION = "laserforce_ranking.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if config.get("db_sqlite", False):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
-
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config.get("db_name", "laserforce_ranking"),
+            "USER": config.get("db_user", "root"),
+            "PASSWORD": config.get("db_password", ""),
+            "HOST": config.get("db_host", "localhost"),
+            "PORT": config.get("db_port", 5432),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -314,7 +314,9 @@ class EventType(models.TextChoices):
     LIFE_BOOST = "0512"  # Arguments: "(entity 1)", " resupplies team"
     PENALTY = "0600"  # Arguments: "(entity 1)", " is penalized"
     ACHIEVEMENT = "0900"  # Arguments: "(entity 1)", " completes an achievement!"
+    WIN_TICKETS = "0901"  # Arguments: "(entity 1)", " wins ", "(int:tickets)"
     REWARD = "0902"  # Arguments: "(entity 1)", " earns a reward!"
+    CLAIM_BEACON = "0B00"  # Arguments: "(entity 1)", " claims a beacon"
     BASE_AWARDED = "0B03"  # (technically #0B03 in hex) Arguments: "(entity 1)", " is awarded ", "(entity 2)"
 
     # laserball events

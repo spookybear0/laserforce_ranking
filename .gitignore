@@ -115,6 +115,7 @@ dmypy.json
 
 
 config.json
+config_backup.json
 sm5_tdf/*
 laserball_tdf/*
 tdfs/*
