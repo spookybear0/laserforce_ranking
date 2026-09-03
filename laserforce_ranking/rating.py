@@ -8,8 +8,10 @@ if TYPE_CHECKING:
 
 from openskill.models import PlackettLuceRating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
+import logging
 
-from django.db.models import Q
+logger = logging.getLogger(__name__)
+
 SM5_RANK_VERSION = 1
 LASERBALL_RANK_VERSION = 1
 
@@ -245,7 +247,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     if not game.ranked:
         return False
     
-    print(f"Updating SM5 rankings for game {game.id}...")
+    logger.info(f"Updating SM5 rankings for game {game.tdf_name} (ID: {game.id})")
     
     from .models import Event, Player, EventType, IntRole, EntityStart
 
@@ -304,14 +306,18 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
         if shooter_player:
             shooter_rating = shooter_player.ratings
         else:
-            shooter_rating = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
+            # not logged in, we could assume the default rating
+            # but we don't want to unfairly affect the ratings of logged in players
+            # skip this event if the shooter is not logged in
+            return
 
         target = await EntityStart.objects.filter(entity_id=event.entity2).afirst()
         target_player = await Player.objects.filter(entity_id=target.entity_id).afirst()
         if target_player:
             target_rating = target_player.ratings
         else:
-            target_rating = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
+            # ^
+            return
 
         # global
 

@@ -14,6 +14,9 @@ import os
 import traceback
 from datetime import timedelta, datetime
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 def element_to_color(element: str) -> str:
     conversion = {
@@ -84,7 +87,7 @@ async def scrape_lfstats_tdf(site_id: Optional[str] = None, page_start: int = 0)
         context = await browser.new_context()
         page = await context.new_page()
 
-        print(f"Scraping {site_id}")
+        logger.info(f"Scraping lfstats tdfs for site {site_id} starting from page {page_start}")
         if site_id:
             await page.goto(f"https://lfstats.com/games?scope=social&center={site_id}")
         else:
@@ -107,7 +110,7 @@ async def scrape_lfstats_tdf(site_id: Optional[str] = None, page_start: int = 0)
         if page_start > 0:
             # click on the page number button "page_start" times to get to the correct page
             for i in range(page_start):
-                print(f"Clicking next page button to get to page {page_start} ({i+1}/{page_start})")
+                logger.info(f"Clicking next page button to get to page {page_start} ({i+1}/{page_start})")
                 next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
                 if next_button:
                     await next_button.click()
@@ -118,21 +121,21 @@ async def scrape_lfstats_tdf(site_id: Optional[str] = None, page_start: int = 0)
             links = await page.query_selector_all(".p-2.align-middle.whitespace-nowrap a")
             hrefs = [(await link.get_attribute("href")).split("/")[-1] for link in links]
 
-            print(f"Found {len(hrefs)} tdfs on page {page_num} for {site_id}")
+            logger.info(f"Found {len(hrefs)} tdfs on page {page_num} for site {site_id if site_id else 'all sites'}")
             for href in hrefs:
                 # check if we already have this tdf
                 tdf_name = f"{href}.tdf"
                 tdf_path = Path(f"tdfs/{tdf_name}")
 
                 if os.path.exists(tdf_path):
-                    print(f"Already have {tdf_name}, skipping")
+                    logger.info(f"Already have {tdf_name}, skipping")
                     continue
 
                 # get tdf from link
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f"https://lfstats-modern-archive.s3.us-west-1.amazonaws.com/{href}.tdf") as tdf_resp:
                         if tdf_resp.status == 404:
-                            print(f"Could not find {tdf_name}, skipping")
+                            logger.warning(f"TDF {tdf_name} not found (404), skipping")
                             continue
 
                         data = await tdf_resp.text(encoding="utf-16")
@@ -154,7 +157,7 @@ async def scrape_lfstats_tdf(site_id: Optional[str] = None, page_start: int = 0)
                 await page.wait_for_timeout(1000)  # Wait for the next page to load
                 page_num += 1 
             else:
-                print(f"Finished scraping {site_id}")
+                logger.info(f"No more pages found for site {site_id if site_id else 'all sites'}, stopping scrape")
                 break
 
         await browser.close()
@@ -172,7 +175,7 @@ async def parse_tdf(file_location: Path):
     # process the more specific game type
     # current types allowed: sm5, laserball
 
-    print(f"Parsing {file_location}")
+    logger.info(f"Parsing tdf file: {file_location.name}")
 
     file = open(file_location, "r", encoding="utf-16")
 
@@ -220,7 +223,7 @@ async def parse_tdf(file_location: Path):
 
                 # check if we already have this game in the database, if so, skip it
                 if await Game.objects.filter(site_id=site, start_time=start_time_formatted).aexists():
-                    print(f"Game {file_location.name} already exists in the database, skipping")
+                    logger.info(f"Game {file_location.name} already exists in the database, skipping")
                     return
             case "2": # team info
                 index = int(data[1])
@@ -414,9 +417,9 @@ async def parse_tdf(file_location: Path):
     team1_size = len([e for e in entity_starts.values() if e.team == team1 and e.type == EntityType.PLAYER])
     team2_size = len([e for e in entity_starts.values() if e.team == team2 and e.type == EntityType.PLAYER])
 
-    if force_ended_early:
-        print("Game ended early, skipping ranking") # TODO: log
-        return
+    # we still want games if ended early and it was decently long, don't rank
+    if force_ended_early and duration < timedelta(minutes=5):
+        logger.info(f"Game {file_location.name} ended early, skipping")
     
     # players
 
@@ -478,17 +481,6 @@ async def parse_tdf(file_location: Path):
 
     new_tdf_name = f"{site}-{start_time}.tdf"
 
-    if new_tdf_name != file_location.name:
-        # move the file to the new name
-        new_file_location = file_location.parent / new_tdf_name
-
-        if not new_file_location.exists():
-            file_location.rename(new_file_location)
-            print(f"Renamed {file_location.name} to {new_tdf_name}")
-        else:
-            print(f"File {new_tdf_name} already exists, skipping game import")
-            return
-
     # find game type
 
     base_args = {
@@ -526,8 +518,20 @@ async def parse_tdf(file_location: Path):
             **base_args
         )
     else:
-        print(f"Unknown mission type: {mission_type} ({mission_name})")
-        return
+        logger.warning(f"Unknown mission type: {mission_type} ({mission_name})")
+
+    # move the file to the new name if it is different
+
+    if new_tdf_name != file_location.name:
+        # move the file to the new name
+        new_file_location = file_location.parent / new_tdf_name
+
+        if not new_file_location.exists():
+            file_location.rename(new_file_location)
+            logger.info(f"Renamed {file_location.name} to {new_tdf_name}")
+        else:
+            logger.warning(f"File {new_tdf_name} already exists, skipping game import")
+            return
 
 
 async def process_sm5(
@@ -679,6 +683,9 @@ async def process_sm5(
 
         ranked = True
 
+        if force_ended_early:
+            ranked = False
+
         # 5 < team size < 7 and teams are not of unequal size (ratings are not tested for unequal team sizes)
 
         team1_len = await game.entity_ends.filter(entity__team=team1, entity__type=EntityType.PLAYER).acount()
@@ -788,48 +795,51 @@ async def process_sm5(
                     site_role_ratings = await player.get_rating(role=entity_start.role, site=game.site_id)
 
                     entity_end.ratings = {
-                        "global": {
-                            "mu": global_ratings.mu,
-                            "sigma": global_ratings.sigma
+                        "current": {
+                            "global": {
+                                "mu": global_ratings.mu,
+                                "sigma": global_ratings.sigma
+                            },
+                            "global_role": {
+                                "mu": global_role_ratings.mu,
+                                "sigma": global_role_ratings.sigma
+                            },
+                            "site": {
+                                "mu": site_ratings.mu,
+                                "sigma": site_ratings.sigma
+                            },
+                            "site_role": {
+                                "mu": site_role_ratings.mu,
+                                "sigma": site_role_ratings.sigma
+                            }
                         },
-                        "global_role": {
-                            "mu": global_role_ratings.mu,
-                            "sigma": global_role_ratings.sigma
-                        },
-                        "site": {
-                            "mu": site_ratings.mu,
-                            "sigma": site_ratings.sigma
-                        },
-                        "site_role": {
-                            "mu": site_role_ratings.mu,
-                            "sigma": site_role_ratings.sigma
+                        "previous": {
+                            "global": {
+                                "mu": global_ratings.mu,
+                                "sigma": global_ratings.sigma
+                            },
+                            "global_role": {
+                                "mu": global_role_ratings.mu,
+                                "sigma": global_role_ratings.sigma
+                            },
+                            "site": {
+                                "mu": site_ratings.mu,
+                                "sigma": site_ratings.sigma
+                            },
+                            "site_role": {
+                                "mu": site_role_ratings.mu,
+                                "sigma": site_role_ratings.sigma
+                            }
                         }
                     }
                 except AttributeError:
-                    entity_end.ratings = {
-                        "global": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        },
-                        "global_role": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        },
-                        "site": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        },
-                        "site_role": {
-                            "mu": MU,
-                            "sigma": SIGMA
-                        }
-                    }
+                    entity_end.ratings = BLANK_ENTITY_RATING
 
                 await entity_end.asave()
 
         await game.asave()
     except BaseException as e:
-        print(f"Error processing game {file_location.name} or got cut off. Deleting...")
+        logger.error(f"Error processing game {file_location.name} or got cut off. Deleting...")
         traceback.print_exc()
         if game is not None and game.pk is not None:
             await game.adelete()

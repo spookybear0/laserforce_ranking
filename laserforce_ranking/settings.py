@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from .config import config
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,24 +22,42 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-s*qycnjp%m1$qd&kctw$*dtslal#3-=y=+0&6)#mqh1a$=@+3%"
+SECRET_KEY = config["secret_key"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config.get("debug", True)
 
-ALLOWED_HOSTS = ["nextlaserforce.spoo.uk", "laserforce.spoo.uk"]
+ALLOWED_HOSTS = ["nextlaserforce.spoo.uk", "laserforce.spoo.uk", "localhost"]
+
+if not DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": config.get("redis", "redis://localhost"),
+        }
+    }
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+        },
+        "simple": {
+            "format": "%(levelname)s %(message)s",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
     "root": {
         "handlers": ["console"],
-        "level": "DEBUG",
+        "level": "DEBUG" if DEBUG else "INFO",
     },
     "loggers": {
         "asyncio": {

@@ -5,8 +5,13 @@ from laserforce_ranking.models import Player, GameType, IntRole, Role
 from laserforce_ranking.rating import Rating, MU, SIGMA
 from laserforce_ranking.matchmake import matchmake_advanced, matchmake_teams, get_win_chances
 from django.db.models import F, Value, FloatField, ExpressionWrapper, Q
+from django.db.models.fields.json import KT
+from django.db.models.functions import Cast
 import json
 from asgiref.sync import sync_to_async
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 class FakePlayer:
     """
@@ -16,11 +21,13 @@ class FakePlayer:
         self.codename = "Unrated Player"
         self.entity_id = entity_id
         self.rating = Rating(mu=MU, sigma=SIGMA).ordinal()
+        logger.debug(f"Created FakePlayer with entity_id: {entity_id}")
     
     async def get_rating(self, mode: GameType, site: str, role: IntRole = None) -> Rating:
         """
         Returns a default rating for unrated players.
         """
+        logger.debug(f"Getting default rating for FakePlayer with entity_id: {self.entity_id}")
         return Rating(mu=MU, sigma=SIGMA)
 
 class MatchmakerView(View):
@@ -28,14 +35,16 @@ class MatchmakerView(View):
         """
         Handle GET requests for the matchmaker page.
         """
-
+        logger.info("Handling GET request for MatchmakerView")
         players = Player.objects.annotate(
             rating=ExpressionWrapper(
-                F(f"ratings__global__sm5__mu") - \
-                F(f"ratings__global__sm5__sigma") * Value(3, output_field=FloatField()),
-                output_field=FloatField()
+                Cast(KT(f"ratings__global__sm5__mu"), FloatField())
+                - Cast(KT(f"ratings__global__sm5__sigma"), FloatField()) * Value(3.0),
+                output_field=FloatField(),
             ),
         ).order_by('-rating')
+
+        logger.debug(f"Retrieved {players.count()} players for matchmaker view")
 
         context = {
             "players": players,
@@ -57,18 +66,21 @@ class MatchmakerPlayersView(ListView):
         mode = self.request.GET.get("mode", "sm5").strip()
         site = self.request.GET.get("site", "global").strip()
 
+        logger.info(f"Fetching players with search: '{search}', mode: '{mode}', site: '{site}'")
+
         players = Player.objects.annotate(
             rating=ExpressionWrapper(
-                F(f"ratings__{site}__{mode}__mu") - \
-                F(f"ratings__{site}__{mode}__sigma") * Value(3, output_field=FloatField()),
-                output_field=FloatField()
-            ),
+                Cast(KT(f"ratings__{site}__{mode}__mu"), FloatField())
+                - Cast(KT(f"ratings__{site}__{mode}__sigma"), FloatField()) * Value(3.0),
+                output_field=FloatField(),
+            )
         ).order_by('-rating')
 
         if search:
             players = players.filter(
                 Q(codename__icontains=search)
             )
+            logger.debug(f"Filtered players based on search: {search}")
 
         return players
     
@@ -80,6 +92,7 @@ class MatchmakerTeamsView(TemplateView):
         """
         Handle POST requests for generating teams based on selected players.
         """
+        logger.info("Handling POST request for MatchmakerTeamsView")
         context = self.get_context_data(**kwargs)
 
         teams = json.loads(self.request.POST.get("teams", "[]"))
@@ -88,15 +101,19 @@ class MatchmakerTeamsView(TemplateView):
         roles_enabled = self.request.POST.get("roles", "false").strip().lower() == "true"
         matchmake = request.GET.get("matchmake", "false").strip().lower() == "true"
 
+        logger.debug(f"Received teams: {teams}, mode: {mode}, site: {site}, roles_enabled: {roles_enabled}, matchmake: {matchmake}")
+
         entity_ids = [player["entity_id"] for team in teams for player in team]
 
         players = {player.entity_id: player async for player in Player.objects.filter(entity_id__in=entity_ids).annotate(
             rating=ExpressionWrapper(
-                F(f"ratings__{site}__{mode}__mu") - \
-                F(f"ratings__{site}__{mode}__sigma") * Value(3, output_field=FloatField()),
-                output_field=FloatField()
-            ),
+                Cast(KT(f"ratings__{site}__{mode}__mu"), FloatField())
+                - Cast(KT(f"ratings__{site}__{mode}__sigma"), FloatField()) * Value(3.0),
+                output_field=FloatField(),
+            )
         ).order_by('-rating')}
+
+        logger.debug(f"Fetched players for entity_ids: {entity_ids}")
 
         new_teams = []
         new_roles = []
@@ -111,21 +128,16 @@ class MatchmakerTeamsView(TemplateView):
             new_teams = [[], []]
             new_roles = [[], []]
 
-        # matchmake
-
         if matchmake:
+            logger.info("Performing matchmaking")
             if roles_enabled:
                 new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site)
             else:
                 new_teams = await matchmake_teams(list(players.values()), 2, GameType(mode), site)
 
-        # we need to sort the new teams by role
-        # commander, heavy, scout, ammo, medic
-
         if roles_enabled:
             for i, team in enumerate(new_teams):
                 sorted_team = sorted(zip(team, new_roles[i]), key=lambda x: x[1].value)
-
                 new_teams[i], new_roles[i] = zip(*sorted_team) if sorted_team else ([], [])
 
         context["teams"] = new_teams
@@ -133,8 +145,8 @@ class MatchmakerTeamsView(TemplateView):
         context["roles_enabled"] = roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
                 if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
-            
 
+        logger.debug("Matchmaking completed and context updated")
 
         return self.render_to_response(context)
     
@@ -146,7 +158,7 @@ class MatchmakerUpdateView(TemplateView):
         """
         Updates player and team tables
         """
-
+        logger.info("Handling POST request for MatchmakerUpdateView")
         context = self.get_context_data(**kwargs)
 
         teams = json.loads(self.request.POST.get("teams", "[]"))
@@ -154,15 +166,18 @@ class MatchmakerUpdateView(TemplateView):
         site = request.POST.get("site", "global").strip()
         roles_enabled = request.POST.get("roles", "false").strip().lower() == "true"
 
+        logger.debug(f"Received teams: {teams}, mode: {mode}, site: {site}, roles_enabled: {roles_enabled}")
+
         rating_expr = ExpressionWrapper(
-            F(f"ratings__{site}__{mode}__mu") - \
-            F(f"ratings__{site}__{mode}__sigma") * Value(3, output_field=FloatField()),
-            output_field=FloatField()
+            Cast(KT(f"ratings__{site}__{mode}__mu"), FloatField())
+            - Cast(KT(f"ratings__{site}__{mode}__sigma"), FloatField()) * Value(3.0),
+            output_field=FloatField(),
         )
 
-        # teams
         entity_ids = [player["entity_id"] for team in teams for player in team]
         players = {player.entity_id: player async for player in Player.objects.filter(entity_id__in=entity_ids).annotate(rating=rating_expr)}
+
+        logger.debug(f"Fetched players for entity_ids: {entity_ids}")
 
         new_teams = []
         new_roles = []
@@ -183,5 +198,7 @@ class MatchmakerUpdateView(TemplateView):
         context["roles_enabled"] = roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
             if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
+
+        logger.debug("Updated context with new teams and players")
 
         return self.render_to_response(context)

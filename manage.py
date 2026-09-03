@@ -29,7 +29,7 @@ def main():
                 stderr=subprocess.PIPE,
             )
     except Exception as e:
-        print(f"Error starting tailwind watcher: {e}")
+        print(f"ERROR starting tailwind watcher: {e}")
 
     execute_from_command_line(sys.argv)
 

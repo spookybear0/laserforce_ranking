@@ -36,7 +36,7 @@
                     <tr>
                         <td><img src="{{ static('sm5/roles/' + entity.role.name.lower() + '.png') }}" alt="{{ entity.role.value }}" class="w-6 h-6"></td>
                         <td>
-                            {% if entity.type == EntityType.PLAYER %}
+                            {% if entity.type == EntityType.PLAYER and entity.entity_id.startswith('#') %}
                             <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ sync_to_async(get_codename)(entity) }}</a>
                             {% else %}
                             {{ entity.name }}

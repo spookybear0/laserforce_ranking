@@ -1,3 +1,4 @@
+from django.core.management.utils import get_random_secret_key
 import json
 import sys
 import os
@@ -14,10 +15,11 @@ path = os.path.dirname(os.path.realpath(__file__))
 default_config = {
     "db_sqlite": False,
     "db_host": "localhost",
-    "db_user": "root",
+    "db_user": "laserforce_ranking",
     "db_password": "",
-    "db_port": 3306,
-    "db_name": "laserforce_rw26",
+    "db_port": 5432,
+    "db_name": "laserforce_ranking",
+    "secret_key": get_random_secret_key(),
     "sentry_dsn": "",
     "sentry_environment": "production",
     "redis": "redis://localhost",
