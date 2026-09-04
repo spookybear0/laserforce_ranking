@@ -11,8 +11,8 @@
     unrated_player_count = 0;
     team_count = 2;
 
-    function updateRoleImage(element, codename, role) {
-        const image = document.getElementById('role-image-' + codename);
+    function updateRoleImage(element, entity_id, role) {
+        const image = document.getElementById('role-image-' + entity_id);
         const row = image.closest('tr');
     
         row.dataset.role = role;
@@ -29,12 +29,22 @@
         updateTeams();
     }
 
+    function lockPlayerToPosition(element, entity_id, lock) {
+        const label = document.getElementById('lock-label-' + entity_id);
+        const row = label.closest('tr');
+
+        row.dataset.lock = lock;
+        label.innerText = element.innerText;
+
+        document.activeElement.blur();
+    }
+
     function addUnratedPlayer() {
         entity_id = `unrated-${unrated_player_count}`;
         codename = `Unrated Player`;
         unrated_player_count += 1;
         html = `
-        <tr data-entity-id="${entity_id}" data-role="scout" class="cursor-move">
+        <tr data-entity-id="${entity_id}" data-role="scout" data-lock="none" class="cursor-move">
             <td class="py-2">${codename}</td>
             <td class="py-2">0.00</td>
             <td class="py-2 ${roles_enabled ? '' : 'hidden'}">
@@ -118,14 +128,21 @@
         roles_enabled = checkbox.checked;
         const showRoles = checkbox.checked;
         const roleCells = document.querySelectorAll('[id^="team-table-body-"] td:nth-child(3), [id^="team-table-head-"] th:nth-child(3)');
+        const roleLockCells = document.querySelectorAll('[id^="team-table-body-"] td:nth-child(4), [id^="team-table-head-"] th:nth-child(4)');
     
         roleCells.forEach(cell => {
-            console.log('Toggling role cell visibility:', cell, 'Show roles:', showRoles);
             if (showRoles) {
-                cell.classList.remove('hidden');
+            cell.classList.remove('hidden');
+            } else {
+            cell.classList.add('hidden');
             }
-            else {
-                cell.classList.add('hidden');
+        });
+
+        roleLockCells.forEach(cell => {
+            if (showRoles) {
+            cell.classList.remove('hidden');
+            } else {
+            cell.classList.add('hidden');
             }
         });
 
@@ -139,12 +156,15 @@
                 if (evt.from.id === 'player-table-body' && evt.to.id.startsWith('team-table-body-')) {
                     // add role
                     evt.item.querySelector('td:nth-child(3)').classList.remove('hidden'); // Show the role dropdown
+                    evt.item.querySelector('td:nth-child(4)').classList.remove('hidden'); // Show the lock dropdown
                 } else if (evt.from.id.startsWith('team-table-body-') && evt.to.id === 'player-table-body') {
                     // Item was moved back to the player list
                     evt.item.querySelector('td:nth-child(3)').classList.add('hidden'); // Hide the role dropdown
+                    evt.item.querySelector('td:nth-child(4)').classList.add('hidden'); // Hide the lock dropdown
                 }
             } else {
                 evt.item.querySelector('td:nth-child(3)').classList.add('hidden'); // Ensure role dropdown is hidden
+                evt.item.querySelector('td:nth-child(4)').classList.add('hidden'); // Ensure lock dropdown is hidden
             }
             updateTeams();
         }
@@ -174,13 +194,13 @@
                 [...teamBody.querySelectorAll('tr[data-entity-id]')]
                     .map(row => ({
                         entity_id: row.dataset.entityId,
-                        role: row.dataset.role
+                        role: row.dataset.role,
+                        lock: row.dataset.lock
                     }))
             );
     }
 
     function displayWinChances() {
-        console.log('Win chances:', window.win_chances);
 
         if (!window.win_chances) {
             console.warn('Win chances data is not available.');

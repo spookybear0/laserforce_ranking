@@ -393,7 +393,7 @@ def generate_sm5_game_image(sm5game):
 
     footer = (
         f"{'RANKED' if game.ranked else 'UNRANKED'}"
-        f" · {game.duration}"
+        f" · {game.duration.total_seconds() // 60:.0f}:{game.duration.total_seconds() % 60:02.0f}/{game.mission_duration.total_seconds() // 60:.0f}:{game.mission_duration.total_seconds() % 60:02.0f}"
     )
 
     draw.text(

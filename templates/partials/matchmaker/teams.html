@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="teams" hx-swap-oob="outerHTML">
     {% for team in teams %}
         <div class="min-w-0">
-            {% with team_index=loop.index0, team=team, roles=roles[loop.index0], roles_enabled=roles_enabled %}
+            {% with team_index=loop.index0, team=team, roles=roles[loop.index0], locks=locks[loop.index0], roles_enabled=roles_enabled %}
                 {% include 'partials/matchmaker/team_table.html' %}
             {% endwith %}
         </div>

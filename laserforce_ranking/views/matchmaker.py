@@ -1,7 +1,7 @@
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.shortcuts import render
-from laserforce_ranking.models import Player, GameType, IntRole, Role
+from laserforce_ranking.models import Player, GameType, IntRole, Role, RoleLock
 from laserforce_ranking.rating import Rating, MU, SIGMA
 from laserforce_ranking.matchmake import matchmake_advanced, matchmake_teams, get_win_chances
 from django.db.models import F, Value, FloatField, ExpressionWrapper, Q
@@ -48,9 +48,10 @@ class MatchmakerView(View):
 
         context = {
             "players": players,
-            "teams": [[], []],  # Initialize with two empty teams
+            "teams": [[], []], # initialize with two empty teams
             "roles": [[], []],
-            "win_chances": [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]],  # Default win chances for two teams
+            "locks": [[], []],
+            "win_chances": [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]], # default win chances
             "roles_enabled": True
         }
 
@@ -117,6 +118,8 @@ class MatchmakerTeamsView(TemplateView):
 
         new_teams = []
         new_roles = []
+        locks = []
+        role_lock_dict = {}
 
         if teams:
             for i, team in enumerate(teams):
@@ -124,6 +127,8 @@ class MatchmakerTeamsView(TemplateView):
                     players[player["entity_id"]] if "unrated-" not in player["entity_id"] else FakePlayer(player["entity_id"]) for player in team
                 ])
                 new_roles.append([IntRole.from_role(Role(player["role"])) for player in team])
+                locks.append([player.get("lock", "none") for player in team])
+                role_lock_dict.update({player["entity_id"]: RoleLock(player.get("lock", "none")) for player in team})
         else:
             new_teams = [[], []]
             new_roles = [[], []]
@@ -131,7 +136,7 @@ class MatchmakerTeamsView(TemplateView):
         if matchmake:
             logger.info("Performing matchmaking")
             if roles_enabled:
-                new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site)
+                new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site, role_lock_dict)
             else:
                 new_teams = await matchmake_teams(list(players.values()), 2, GameType(mode), site)
 
@@ -139,9 +144,13 @@ class MatchmakerTeamsView(TemplateView):
             for i, team in enumerate(new_teams):
                 sorted_team = sorted(zip(team, new_roles[i]), key=lambda x: x[1].value)
                 new_teams[i], new_roles[i] = zip(*sorted_team) if sorted_team else ([], [])
+        
+        print(f"New teams after matchmaking: {new_teams}, New roles: {new_roles}, Locks: {locks}")
 
         context["teams"] = new_teams
         context["roles"] = new_roles
+        #context["locks"] = locks
+        context["locks"] = [[role_lock_dict.get(player.entity_id, RoleLock("none")).value for player in team] for team in new_teams]
         context["roles_enabled"] = roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
                 if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
@@ -181,6 +190,7 @@ class MatchmakerUpdateView(TemplateView):
 
         new_teams = []
         new_roles = []
+        locks = []
 
         if teams:
             for i, team in enumerate(teams):
@@ -188,13 +198,17 @@ class MatchmakerUpdateView(TemplateView):
                     players[player["entity_id"]] if "unrated-" not in player["entity_id"] else FakePlayer(player["entity_id"]) for player in team
                 ])
                 new_roles.append([IntRole.from_role(Role(player["role"])) for player in team])
+                locks.append([player.get("lock", "none") for player in team])
         else:
             new_teams = [[], []]
             new_roles = [[], []]
 
+        print(f"New teams: {new_teams}, New roles: {new_roles}, Locks: {locks}")
+
         context["players"] = Player.objects.annotate(rating=rating_expr).order_by('-rating')
         context["teams"] = new_teams
         context["roles"] = new_roles
+        context["locks"] = locks
         context["roles_enabled"] = roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
             if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]

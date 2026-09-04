@@ -36,6 +36,7 @@
                     draggable="true"
                     data-entity-id="{{ player.entity_id }}"
                     data-role="scout"
+                    data-lock="none"
                     class="cursor-move"
                 >
                     <td class="py-2">
@@ -54,6 +55,12 @@
                     <td class="py-2 hidden">
                         {% with identifier=player.entity_id, role=IntRole.SCOUT %}
                             {% include 'partials/matchmaker/role_dropdown.html' %}
+                        {% endwith %}
+                    </td>
+
+                    <td class="py-2 hidden">
+                        {% with identifier=player.entity_id %}
+                            {% include 'partials/matchmaker/lock_dropdown.html' %}
                         {% endwith %}
                     </td>
                 </tr>

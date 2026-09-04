@@ -18,11 +18,12 @@
                     <th>Codename</th>
                     <th>Rating</th>
                     <th {% if not roles_enabled %}class="hidden"{% endif %}>Role</th>
+                    <th {% if not roles_enabled %}class="hidden"{% endif %}>Lock</th>
                 </tr>
             </thead>
             <tbody class="team-table-body" id="team-table-body-{{ team_index }}">
-                {% for player, role in zip(team, roles) %}
-                <tr data-entity-id="{{ player.entity_id }}" data-role="{{ role.name.lower() if role else 'other' }}" class="cursor-move">
+                {% for player, role, lock in zip(team, roles, locks) %}
+                <tr data-entity-id="{{ player.entity_id }}" data-role="{{ role.name.lower() if role else 'other' }}" data-lock="{{ lock if lock else 'none'}}" class="cursor-move">
                     <td class="py-2">
                         {% if not player.entity_id.startswith('unrated-') %}
                         <a href="/players/{{ player.entity_id[1:] }}" class="link link-primary">{{ player.codename }}</a>
@@ -35,6 +36,12 @@
                         {% with identifier=player.entity_id, role=role if role else IntRole.OTHER %}
                             {% include 'partials/matchmaker/role_dropdown.html' %}
                         {% endwith %}
+                    </td>
+                    <td class="py-2 {% if not roles_enabled %}hidden{% endif %}">
+                        {% with identifier=player.entity_id %}
+                            {% include 'partials/matchmaker/lock_dropdown.html' %}
+                        {% endwith %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

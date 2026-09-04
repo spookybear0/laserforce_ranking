@@ -273,6 +273,47 @@ NAME_TO_TEAM = {
     "Pink": TeamType.PINK,
 }
 
+# Ways we can lock a specific player to a position or group
+# of positions during matchmaking.
+
+class RoleLock(Enum):
+    NONE = "none"
+    COMMANDER = "commander"
+    HEAVY = "heavy"
+    SCOUT = "scout"
+    AMMO = "ammo"
+    MEDIC = "medic"
+    THREE_HIT = "3-hit"
+    ONE_HIT = "1-hit"
+    RESUPPLY = "resupply"
+    NON_RESUPPLY = "non-resupply"
+    OFFENSE = "offense"
+    DEFENSE = "defense"
+
+    @property
+    def display_name(self) -> str:
+        """Returns a display name for the role lock."""
+        return self.value.replace("-", " ").title()
+    
+    @property
+    def allowed_roles(self) -> list["IntRole"]:
+        """Returns a list of roles that are allowed for this role lock."""
+        if self in [RoleLock.COMMANDER, RoleLock.HEAVY, RoleLock.SCOUT, RoleLock.AMMO, RoleLock.MEDIC]:
+            return [IntRole.from_role(Role(self.value))]
+        elif self == RoleLock.THREE_HIT:
+            return [IntRole.COMMANDER, IntRole.HEAVY]
+        elif self == RoleLock.ONE_HIT:
+            return [IntRole.SCOUT, IntRole.AMMO, IntRole.MEDIC]
+        elif self == RoleLock.RESUPPLY:
+            return [IntRole.AMMO, IntRole.MEDIC]
+        elif self == RoleLock.NON_RESUPPLY:
+            return [IntRole.COMMANDER, IntRole.HEAVY, IntRole.SCOUT]
+        elif self == RoleLock.OFFENSE:
+            return [IntRole.COMMANDER, IntRole.SCOUT]
+        elif self == RoleLock.DEFENSE:
+            return [IntRole.HEAVY, IntRole.AMMO, IntRole.MEDIC]
+        else: # no lock
+            return [IntRole.COMMANDER, IntRole.HEAVY, IntRole.SCOUT, IntRole.AMMO, IntRole.MEDIC]
 
 class Role(models.TextChoices):
     COMMANDER = "commander"

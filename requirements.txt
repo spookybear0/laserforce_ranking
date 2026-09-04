@@ -17,3 +17,4 @@ gunicorn==26.2.0
 uvicorn-worker==0.4.0
 playwright==1.62.0
 cffi==2.1.1
+pillow==12.3.0

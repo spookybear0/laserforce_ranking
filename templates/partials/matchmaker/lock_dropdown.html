@@ -1,0 +1,17 @@
+<div class="dropdown">
+    <label tabindex="0" class="btn btn-sm btn-outline m-1" id="lock-label-{{identifier}}">
+        {% if lock %}
+            {{ lock.replace('-', ' ').title() }}
+        {% else %}
+            None
+        {% endif %}
+    </label>
+    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-40">
+        {% for lock_option in RoleLock %}
+            <li>
+                <a onclick="lockPlayerToPosition(this, '{{identifier}}', '{{lock_option.value}}')">{{ lock_option.display_name }}</a>
+            </li>
+        {% endfor %}
+
+    </ul>
+</div>
