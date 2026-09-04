@@ -72,14 +72,11 @@ def get_random_roles_for_teams(
     role_locks: Optional[Dict[str, RoleLock]] = None,
 ) -> List[List[IntRole]]:
     """
-    Randomly assigns roles to each team while respecting role locks.
+    Randomly assigns roles while respecting role locks.
 
-    Each team gets one Commander, Heavy, Ammo, and Medic, with all
-    remaining players assigned as Scouts. Locked players are assigned
-    first, with players having fewer allowed roles prioritized to avoid
-    conflicts with more flexible locks.
-
-    Raises ValueError if a locked player has no valid role available.
+    Locked roles are treated as preferences, so conflicting locks are
+    allowed. Scout is unlimited and can be randomly selected whenever
+    it is included in a player's allowed roles.
     """
 
     unique_roles = [
@@ -88,7 +85,6 @@ def get_random_roles_for_teams(
         IntRole.AMMO,
         IntRole.MEDIC,
     ]
-    all_roles = unique_roles + [IntRole.SCOUT]
     result = []
 
     for team in teams:
@@ -96,35 +92,51 @@ def get_random_roles_for_teams(
         available = set(unique_roles)
         players = list(range(len(team)))
 
-        # assign locked roles first
-        locked = []
+        # assign scout locks first
         for i, player in enumerate(team):
             lock = role_locks.get(player.entity_id) if role_locks else None
+
+            if lock == RoleLock.SCOUT:
+                players.remove(i)
+
+        # collect other locks
+        locked = []
+        for i in players:
+            player = team[i]
+            lock = role_locks.get(player.entity_id) if role_locks else None
+
             if lock and lock != RoleLock.NONE:
                 locked.append((i, lock.allowed_roles))
 
         # prioritize players with fewer choices
-        locked.sort(key=lambda x: len(set(x[1]) & available))
+        locked.sort(key=lambda x: len(x[1]))
 
         for i, allowed in locked:
-            choices = list(set(allowed) & available)
+            choices = [
+                role for role in allowed
+                if role == IntRole.SCOUT or role in available
+            ]
+
             if not choices:
-                logger.warning(f"Locked player {team[i].entity_id} has no available roles, skipping lock")
                 continue
 
             role = random.choice(choices)
             roles[i] = role
-            available.remove(role)
+
+            if role in available:
+                available.remove(role)
+
             players.remove(i)
 
-        # fill remaining unique roles randomly
+        # assign remaining unique roles
         random.shuffle(players)
+
         for role in available:
             if not players:
                 break
+
             roles[players.pop()] = role
 
-        # everyone else stays scout
         result.append(roles)
 
     return result
