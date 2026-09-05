@@ -8,7 +8,7 @@
 
 {% block og_title %}{{ teams[0].name }} {{ teams[0].score }} - {{ teams[1].name }} {{ teams[1].score }} | LF Ranking{% endblock %}
 
-{% block og_description %}SM5 · {{ game.site_id }} · {{ game.start_time.strftime("%b %d, %Y") }} {% if game.ranked %}· Ranked{% endif %}{% endblock %}
+{% block og_description %}SM5 · {{ ID_TO_SITE[game.site_id] }} · {{ game.start_time.strftime("%b %d, %Y") }} {% if game.ranked %}· Ranked{% endif %}{% endblock %}
 
 {% block og_image %}
 <meta
@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block twitter_description %}
-    SM5 · {{ game.site_id }} · {{ game.start_time.strftime("%b %d, %Y") }}
+    SM5 · {{ ID_TO_SITE[game.site_id] }} · {{ game.start_time.strftime("%b %d, %Y") }}
     {% if game.ranked %}· Ranked{% endif %}
 {% endblock %}
 
@@ -42,11 +42,20 @@
 {% block content %}
 
 <div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col gap-2">
-    <h1 class="text-4xl font-bold">Game @ {{ game.start_time.strftime('%H:%M') }}</h1>
-    <p class="text-base text-base-content/70">
-        {{ ID_TO_SITE[game.site_id] }} - {{ game.start_time.strftime('%b {}, %Y'.format(day_no_leading_zero)) }} - {{ game.mission_duration.seconds // 60 }}:{{ '%02d' % (game.mission_duration.seconds % 60) }}
-    </p>
-    <p class="text-base text-base-content/70 mb-4"><a href="/api/tdf/{{game.tdf_name}}" class="text-blue-500 hover:underline">{{ game.tdf_name }}</a></p>
+    <div class="flex flex-row justify-between items-center gap-4 mb-4">
+        <div class="flex flex-col gap-2">
+            <h1 class="text-4xl font-bold">Game @ {{ game.start_time.strftime('%H:%M') }}</h1>
+            <p class="text-base text-base-content/70">
+                {{ ID_TO_SITE[game.site_id] }} - {{ game.start_time.strftime('%b {}, %Y'.format(day_no_leading_zero)) }} - {{ game.mission_duration.seconds // 60 }}:{{ '%02d' % (game.mission_duration.seconds % 60) }}
+            </p>
+            <p class="text-base text-base-content/70 mb-4"><a href="/api/tdf/{{game.tdf_name}}" class="text-blue-500 hover:underline">{{ game.tdf_name }}</a></p>
+        </div>
+        <div class="flex flex-col gap-2">
+            <!--rematchmake-->
+            <a href="/matchmaker/{{ game.tdf_name }}" class="btn btn-sm btn-outline">Rematchmake</a>
+        </div>
+    </div>
+
 
     {% for team in teams %}
         {% with team=team, index=loop.index0, win_chances=win_chances %}

@@ -1,14 +1,16 @@
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.shortcuts import render
-from laserforce_ranking.models import Player, GameType, IntRole, Role, RoleLock
+from laserforce_ranking.models import Player, GameType, IntRole, Role, RoleLock, EntityType
 from laserforce_ranking.rating import Rating, MU, SIGMA
 from laserforce_ranking.matchmake import matchmake_advanced, matchmake_teams, get_win_chances
 from django.db.models import F, Value, FloatField, ExpressionWrapper, Q
 from django.db.models.fields.json import KT
 from django.db.models.functions import Cast
+from laserforce_ranking.models import SM5Game
 import json
 from asgiref.sync import sync_to_async
+from typing import Optional
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -31,26 +33,64 @@ class FakePlayer:
         return Rating(mu=MU, sigma=SIGMA)
 
 class MatchmakerView(View):
-    def get(self, request):
+    http_method_names = ["get"]
+
+    async def get(self, request, tdf_name: Optional[str] = None):
         """
         Handle GET requests for the matchmaker page.
         """
         logger.info("Handling GET request for MatchmakerView")
-        players = Player.objects.annotate(
+        players = {player.entity_id: player async for player in Player.objects.annotate(
             rating=ExpressionWrapper(
                 Cast(KT(f"ratings__global__sm5__mu"), FloatField())
                 - Cast(KT(f"ratings__global__sm5__sigma"), FloatField()) * Value(3.0),
                 output_field=FloatField(),
             ),
-        ).order_by('-rating')
+        ).order_by('-rating')}
 
-        logger.debug(f"Retrieved {players.count()} players for matchmaker view")
+        logger.debug(f"Retrieved {len(players)} players for matchmaker view")
+
+        if tdf_name:
+            # get teams/roles from the game with the given tdf_name
+            game = await SM5Game.objects.filter(tdf_name=tdf_name).afirst()
+            print(f"Retrieved game for tdf_name {tdf_name}: {game}")
+
+            new_teams = []
+            new_roles = []
+            teams = await game.get_teams()
+            print(f"Retrieved teams from game: {teams}")
+
+            for team in teams:
+                print(f"Processing team: {team}")
+                entitys = team.entity_starts.filter(type=EntityType.PLAYER).all()
+                new_teams.append(
+                    [
+                        players[entity.entity_id] if entity.entity_id[0] == "#"
+                        else FakePlayer(entity.entity_id)
+                        async for entity in entitys
+                    ]
+                )
+                new_roles.append([
+                    entity.role
+                    async for entity in entitys
+                ])
+            
+            print(f"New teams: {new_teams}, New roles: {new_roles}")
+        else:
+            new_teams = [[], []]
+            new_roles = [[], []]
+
+        # sort by role
+
+        for i, team in enumerate(new_teams):
+            sorted_team = sorted(zip(team, new_roles[i]), key=lambda x: x[1].value)
+            new_teams[i], new_roles[i] = zip(*sorted_team) if sorted_team else ([], [])
 
         context = {
-            "players": players,
-            "teams": [[], []], # initialize with two empty teams
-            "roles": [[], []],
-            "locks": [[], []],
+            "players": players.values(),
+            "teams": new_teams,
+            "roles": new_roles,
+            "locks": [["none" for _ in team] for team in new_teams],
             "win_chances": [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]], # default win chances
             "roles_enabled": True
         }
@@ -122,7 +162,7 @@ class MatchmakerTeamsView(TemplateView):
         role_lock_dict = {}
 
         if teams:
-            for i, team in enumerate(teams):
+            for team in teams:
                 new_teams.append([
                     players[player["entity_id"]] if "unrated-" not in player["entity_id"] else FakePlayer(player["entity_id"]) for player in team
                 ])
@@ -144,12 +184,9 @@ class MatchmakerTeamsView(TemplateView):
             for i, team in enumerate(new_teams):
                 sorted_team = sorted(zip(team, new_roles[i]), key=lambda x: x[1].value)
                 new_teams[i], new_roles[i] = zip(*sorted_team) if sorted_team else ([], [])
-        
-        print(f"New teams after matchmaking: {new_teams}, New roles: {new_roles}, Locks: {locks}")
 
         context["teams"] = new_teams
         context["roles"] = new_roles
-        #context["locks"] = locks
         context["locks"] = [[role_lock_dict.get(player.entity_id, RoleLock("none")).value for player in team] for team in new_teams]
         context["roles_enabled"] = roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
@@ -193,7 +230,7 @@ class MatchmakerUpdateView(TemplateView):
         locks = []
 
         if teams:
-            for i, team in enumerate(teams):
+            for team in teams:
                 new_teams.append([
                     players[player["entity_id"]] if "unrated-" not in player["entity_id"] else FakePlayer(player["entity_id"]) for player in team
                 ])
@@ -202,8 +239,6 @@ class MatchmakerUpdateView(TemplateView):
         else:
             new_teams = [[], []]
             new_roles = [[], []]
-
-        print(f"New teams: {new_teams}, New roles: {new_roles}, Locks: {locks}")
 
         context["players"] = Player.objects.annotate(rating=rating_expr).order_by('-rating')
         context["teams"] = new_teams

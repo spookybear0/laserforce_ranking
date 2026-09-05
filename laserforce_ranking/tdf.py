@@ -417,6 +417,14 @@ async def parse_tdf(file_location: Path):
     team1_size = len([e for e in entity_starts.values() if e.team == team1 and e.type == EntityType.PLAYER])
     team2_size = len([e for e in entity_starts.values() if e.team == team2 and e.type == EntityType.PLAYER])
 
+    # get actual mission duration
+
+    if end_event:
+        duration = timedelta(milliseconds=end_event.time)
+    else:
+        last_event = events[-1]
+        duration = timedelta(milliseconds=last_event.time)
+
     # we still want games if ended early and it was decently long, don't rank
     if force_ended_early and duration < timedelta(minutes=5):
         logger.info(f"Game {file_location.name} ended early, skipping")
@@ -465,15 +473,7 @@ async def parse_tdf(file_location: Path):
                 ratings[site] = BLANK_RATING_PER_SITE
 
                 await Player.objects.acreate(player_id=db_member_id, codename=e.name, entity_id=entity_id, home_site=home_site, ratings=ratings)
-
-    # get actual mission duration
-
-    if end_event:
-        duration = timedelta(milliseconds=end_event.time)
-    else:
-        last_event = events[-1]
-        duration = timedelta(milliseconds=last_event.time)
-
+    
     # before we save this game, change the file name into the correct format
     # ex: 4-80-20260830003930.tdf
 
@@ -661,9 +661,12 @@ async def process_sm5(
         await game.scores.aset(scores)
         for entity_end in entity_ends:
             entity_end.game = game
-            entity_end.entity.entity_end = entity_end
+            entity_end.entity.game = game
+            await entity_end.entity.asave() # save entity to database first
             await entity_end.asave()
+            entity_end.entity.entity_end = entity_end
             await entity_end.entity.asave()
+            
         await game.entity_ends.aset(entity_ends)
         for player_state in player_states:
             player_state.game = game

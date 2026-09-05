@@ -3,7 +3,7 @@
         <!--add unranked tag-->
         <div class="flex flex-row gap-2 justify-between items-center">
             <h1 class="text-2xl font-bold" style="color: {{ team.enum.css_color_name }}">
-                {{ team.name }} - {{ team.score + game.get_team_score_adjustment(team.enum) }}
+                {{ team.name }} - {{ team.score + game.get_team_score_adjustment(team) }}{{ game.get_team_score_adjustment_str(team) }}
                 <span class="text-base-content/50 text-xl">({{ "%.2f" % (win_chances[index]*100) }}%)</span>
             </h1>
             <h2 class="text-xl font-bold">Doubles: {{ "%.2f" % (team.doubles_percent*100) }}%</h2>
@@ -21,12 +21,12 @@
                             <th>Rating</th>
                             <th>Rating Diff</th>
                         {% endif %}
-                        <th>Spec</th>
                         <th>K/D Ratio</th>
                         <th>Accuracy</th>
                         <th>Medic Hits</th>
                         <th>Lives</th>
                         <th>Shots</th>
+                        <th>Spec</th>
                         <th>Msls</th>
                         <th>Msld</th>
                     </tr>
@@ -48,12 +48,12 @@
                             <td>0.00</td>
                             <td>+0.00</td>
                         {% endif %}
-                        <td>{{ entity.sm5_stats.special_points }}</td>
                         <td>{{ "%.2f" % entity.sm5_stats.kd_ratio }} ({{ entity.sm5_stats.shot_opponent }}/{{ entity.sm5_stats.times_zapped }})</td>
                         <td>{{ "%.2f" % (entity.sm5_stats.accuracy*100) }}%</td>
                         <td>{{ entity.sm5_stats.medic_hits_str }}</td>
                         <td>{{ entity.sm5_stats.lives_left }}</td>
                         <td>{{ entity.sm5_stats.shots_left }}</td>
+                        <td>{{ entity.sm5_stats.special_points }}</td>
                         <td>{{ entity.sm5_stats.missiled_opponent }}</td>
                         <td>{{ entity.sm5_stats.times_missiled }}</td>
                     </tr>

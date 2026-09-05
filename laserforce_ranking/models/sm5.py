@@ -208,7 +208,7 @@ class SM5Game(Game):
     def short_type(self) -> str:
         return "sm5"
 
-    def get_team_score_adjustment(self, team: TeamType) -> int:
+    def get_team_score_adjustment(self, team: Team) -> int:
         """Returns how many points should be added to the team score in addition to the sum of the players' scores."""
         # The only adjustment currently is the 10k bonus for a team that eliminates another team.
         return 10000 if team == self.last_team_standing else 0

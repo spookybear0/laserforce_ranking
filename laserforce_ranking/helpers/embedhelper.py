@@ -3,7 +3,7 @@
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 from PIL.ImageFont import FreeTypeFont
-from laserforce_ranking.models import EntityType, Team, SM5Game, EntityStart, SM5Stats
+from laserforce_ranking.models import EntityType, Team, SM5Game, EntityStart, SM5Stats, ID_TO_SITE
 from django.conf import settings
 from pathlib import Path
 from typing import List
@@ -65,10 +65,10 @@ def draw_team(
 
     score = (
         team.score
-        + sm5game.get_team_score_adjustment(team.enum)
+        + sm5game.get_team_score_adjustment(team)
     )
 
-    score_text = str(score)
+    score_text = str(score) + sm5game.get_team_score_adjustment_str(team)
 
     bbox = draw.textbbox(
         (0, 0),
@@ -298,15 +298,9 @@ def generate_sm5_game_image(sm5game):
 
     game = sm5game
 
-    site = str(game.site_id)
+    site = ID_TO_SITE[game.site_id]
 
-    if hasattr(sm5game, "ID_TO_SITE"):
-        site = sm5game.ID_TO_SITE.get(
-            game.site_id,
-            game.site_id,
-        )
-
-    header = f"SM5 · Game #{game.pk}"
+    header = f"SM5 · {game.tdf_name}"
 
     draw.text(
         (40, 68),
