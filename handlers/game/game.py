@@ -88,7 +88,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             teams=full_stats.teams,
             game=game,
             millis_to_time=millis_to_time,
-            score_chart_labels=[t for t in arange(0, 900000 // 1000 // 60 + 0.25, 0.25)],
+            score_chart_labels=[float(t) for t in arange(0, 900000 // 1000 // 60 + 0.25, 0.25)],
             score_chart_data=score_chart_data,
             win_chance_before_game=win_chance_before_game,
             win_chance_after_game=win_chance_after_game,
@@ -136,7 +136,7 @@ async def game_index(request: Request, type: str, id: int) -> str:
             request, "game/laserball.html",
             game=game,
             teams=full_stats.teams,
-            score_chart_labels=[{"x": t, "y": await game.get_rounds_at_time(t * 60 * 1000)} for t in
+            score_chart_labels=[{"x": float(t), "y": await game.get_rounds_at_time(float(t) * 60 * 1000)} for t in
                                 arange(0, game_duration // 1000 // 60 + 0.25, 0.25)],
             score_chart_data=full_stats.score_chart_data,
             score_chart_data_rounds=full_stats.score_chart_data_rounds,
