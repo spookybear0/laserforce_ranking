@@ -81,6 +81,51 @@
                     </ul>
                 </div>
             </td>
+        <td class="py-2 {% if not roles_enabled %}hidden{% endif %}">
+            <div class="dropdown">
+                <label tabindex="0" class="btn btn-sm btn-outline m-1" id="lock-label-${entity_id}">
+                    None
+                </label>
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-40">
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'none')">None</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'commander')">Commander</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'heavy')">Heavy</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'scout')">Scout</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'ammo')">Ammo</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'medic')">Medic</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', '3-hit')">3-Hit</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', '1-hit')">1-Hit</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'resupply')">Resupply</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'non-resupply')">Non-Resupply</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'offense')">Offense</a>
+                    </li>
+                    <li>
+                        <a onclick="lockPlayerToPosition(this, '${entity_id}', 'defense')">Defense</a>
+                    </li>
+                </ul>
+            </div>
+        </td>
         </tr>
         `
 

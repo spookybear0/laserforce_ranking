@@ -293,7 +293,7 @@ class RoleLock(Enum):
     @property
     def display_name(self) -> str:
         """Returns a display name for the role lock."""
-        return self.value.replace("-", " ").title()
+        return self.value.title()
     
     @property
     def allowed_roles(self) -> list["IntRole"]:
