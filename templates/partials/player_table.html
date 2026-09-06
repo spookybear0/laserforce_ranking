@@ -88,7 +88,7 @@
                 <tr>
                     <td><a href="/players/{{ player.entity_id[1:] }}" class="link link-primary">{{ player.codename }}</a></td>
                     <td>{{ player.home_site_name }}</td>
-                    <td>{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
+                    <td title="{{player.get_all_ratings_formatted()}}">{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
                     <td>{{ player.games }}</td>
                 </tr>
                 {% else %}

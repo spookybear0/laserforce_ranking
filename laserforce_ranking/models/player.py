@@ -1,5 +1,5 @@
 from django.db import models
-from .types import Permission, IntRole, ID_TO_IPL_NAME, GameType
+from .types import Permission, IntRole, ID_TO_SITE, GameType
 from .game import Game
 from typing import Optional
 from laserforce_ranking.rating import Rating, MU, SIGMA
@@ -95,7 +95,7 @@ class Player(models.Model):
     def home_site_name(self):
         if self.home_site is None:
             return "Unknown Site"
-        return ID_TO_IPL_NAME.get(self.home_site, self.home_site)
+        return ID_TO_SITE.get(self.home_site, self.home_site)
     
     async def get_game_count(self, site: Optional[str] = None):
         """
@@ -131,6 +131,43 @@ class Player(models.Model):
         sigma = self.ratings[key_1][key_2]["sigma"]
 
         return Rating(mu, sigma)
+    
+    def get_all_ratings_formatted(self):
+        """
+        Get all ratings from the player.ratings json object and format them into a string
+
+        Global ratings before site ratings
+
+        roles in the order of: sm5, commander, heavy, scout, ammo, medic, laserball
+        """
+
+        ratings_str = ""
+
+        type_order = ["sm5", "commander", "heavy", "scout", "ammo", "medic", "laserball"]
+
+        # First, add global ratings
+        if "global" in self.ratings:
+            ratings_str += "Global:\n"
+            for game_type in type_order:
+                if game_type in self.ratings["global"]:
+                    rating = self.ratings["global"][game_type]
+                    game_type = "SM5" if game_type == "sm5" else game_type.capitalize()
+                    ratings_str += f"  {game_type}: {round(Rating(rating['mu'], rating['sigma']).ordinal(), 3)}\n"
+
+        # Then, add site-specific ratings
+        for site, site_ratings in self.ratings.items():
+            if site == "global":
+                continue
+            ratings_str += f"{ID_TO_SITE.get(site, site)}:\n"
+            for game_type in type_order:
+                if game_type in site_ratings:
+                    rating = site_ratings[game_type]
+                    game_type = "SM5" if game_type == "sm5" else game_type.capitalize()
+                    ratings_str += f"  {game_type}: {round(Rating(rating['mu'], rating['sigma']).ordinal(), 3)}\n"
+
+        return ratings_str
+
+        
     
     def get_absolute_url(self):
         return reverse("player_detail", kwargs={"entity_id": self.entity_id})
