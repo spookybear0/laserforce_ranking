@@ -21,6 +21,8 @@ default_config = {
     "sentry_dsn": "",
     "sentry_environment": "production",
     "redis": "redis://localhost",
+    "lfstats_session_token": "", # tokens for automatically uploading to lfstats.com, can be found in your browser cookies
+    "lfstats_csrf_token": "",
 }
 
 config_options = list(default_config.keys())

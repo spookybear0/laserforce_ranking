@@ -2,12 +2,15 @@ from pathlib import Path
 
 from sanic import Request, exceptions, response
 from sanic.log import logger
+from typing import Union
 
 from helpers.statshelper import sentry_trace
 from helpers.tdfhelper import parse_sm5_game, parse_laserball_game
 from shared import app
 import sentry_sdk
-
+from config import config
+import aiohttp
+import json
 
 """
 @app.get("/util/auto_upload_dl")
@@ -55,6 +58,13 @@ async def auto_upload(request: Request) -> str:
 
     logger.info("Uploaded TDF successfully!")
 
+    if config["lfstats_session_token"] and config["lfstats_csrf_token"]:
+        try:
+            await upload_to_lfstats(target_path)
+        except Exception as e:
+            logger.error(f"Failed to upload to lfstats: {e}")
+            sentry_sdk.capture_exception(e)
+
     return response.text("Uploaded!")
 
 
@@ -75,3 +85,70 @@ def _create_file_from_request(request_file, target_path: str):
 
     # Copy the entire contents of the request file into the target file.
     open(target_path, "wb").write(request_file.body)
+
+async def upload_to_lfstats(file_path: Union[Path, str]):
+    path = Path(file_path)
+
+    cookies = {
+        "__Secure-authjs.callback-url": "https%3A%2F%2Flfstats.com%2Fupload",
+        "__Secure-authjs.session-token": config["lfstats_session_token"],
+        "__Host-authjs.csrf-token": config["lfstats_csrf_token"],
+    }
+
+    async with aiohttp.ClientSession(cookies=cookies) as session:
+
+        # go to /upload to find presigned url
+
+        body = json.dumps(
+            [[path.name], None],
+            separators=(",", ":"),
+        )
+
+        ROUTER_STATE = (
+            '["",{"children":["upload",{"children":["__PAGE__",{},null,null,4096]},'
+            'null,null,4096]},null,null,4112]'
+        )
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) "
+                "Gecko/20100101 Firefox/155.0"
+            ),
+            "Accept": "text/x-component",
+            "Referer": "https://lfstats.com/upload",
+            "next-action": "6017cf7a3ca428c82dc065fd19656a709ea0ce1fc8",
+            "next-router-state-tree": ROUTER_STATE,
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Origin": "https://lfstats.com",
+        }
+
+        logger.info(f"Uploading {path.name} to lfstats.com")
+
+        async with session.post(
+            "https://lfstats.com/upload",
+            data=body,
+            headers=headers,
+        ) as response:
+
+            response.raise_for_status()
+            result = await response.text()
+
+        # get presigned url
+
+        result = json.loads(result.split("1:", 1)[1])
+        presigned_url = result["uploads"][0]["url"]
+
+        # PUT to S3
+
+        with path.open("rb") as f:
+            async with session.put(
+                presigned_url,
+                data=f,
+                headers={
+                    "Content-Type": "application/octet-stream",
+                },
+            ) as response:
+
+                response.raise_for_status()
+
+                logger.info(f"Uploaded {path.name} to lfstats.com successfully!")

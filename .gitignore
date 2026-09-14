@@ -114,7 +114,6 @@ dmypy.json
 .pyre/
 
 
-config.json
 sm5_tdf/*
 laserball_tdf/*
 tdfs/*
@@ -135,4 +134,4 @@ sitemap.xml
 assets/css/tailwind.css
 assets/css/output.css
 assets/css/tailwindcss.exe
-config_backup.json
+config*.json
