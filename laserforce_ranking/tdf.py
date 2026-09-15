@@ -237,7 +237,8 @@ async def parse_tdf(file_location: Path):
                     name=name,
                     color_enum=color_enum,
                     color_name=color_name,
-                    real_color_name=real_color_name
+                    real_color_name=real_color_name,
+                    is_neutral=(color_enum == 0 or "Neutral" in name or "None" in color_name)
                 )
             case "3": # entity start
                 time = int(data[1]) # ms since start
@@ -522,7 +523,7 @@ async def parse_tdf(file_location: Path):
             file_location.rename(new_file_location)
             logger.info(f"Renamed {file_location.name} to {new_tdf_name}")
         else:
-            logger.warning(f"File {new_tdf_name} already exists, skipping game import")
+            logger.warning(f"File {new_tdf_name} already exists")
             return
 
 

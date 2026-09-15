@@ -2,7 +2,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import Environment
 from .models import Player
-from .models.types import SITES, ID_TO_SITE, COMPETITIVE_SITES, SITE_TIMEZONES, IPL_NAME_TO_SITE_ID, IntRole, EntityType, RoleLock
+from .models.types import SITES, ID_TO_SITE, COMPETITIVE_SITES, SITE_TIMEZONES, IPL_NAME_TO_SITE_ID, IntRole, EntityType, RoleLock, NAME_TO_TEAM
 from django.db.models import Sum, Avg
 from asgiref.sync import sync_to_async
 import os
@@ -28,6 +28,7 @@ def environment(**options):
             "COMPETITIVE_SITES": COMPETITIVE_SITES,
             "SITE_TIMEZONES": SITE_TIMEZONES,
             "IPL_NAME_TO_SITE_ID": IPL_NAME_TO_SITE_ID,
+            "NAME_TO_TEAM": NAME_TO_TEAM,
             "IntRole": IntRole,
             "EntityType": EntityType,
             "RoleLock": RoleLock,

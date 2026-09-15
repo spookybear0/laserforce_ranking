@@ -168,9 +168,9 @@ class _TeamDefinition:
 
 class TeamType(Enum):
     # neutral team, sometimes None is used instead of this
-    NEUTRAL = _TeamDefinition(color="neutral", element="Neutral", css_class="neutral-team", css_color_name="white",
+    NEUTRAL = _TeamDefinition(color="neutral", element="Neutral", css_class="neutral-team", css_color_name="#9ca3af",
                               dim_color=RgbColor(red=68, green=68, blue=68), plain_color=RgbColor(red=255, green=255, blue=255))
-    NONE = _TeamDefinition(color="none", element="None", css_class="none-team", css_color_name="white",
+    NONE = _TeamDefinition(color="none", element="None", css_class="none-team", css_color_name="#9ca3af",
                            dim_color=RgbColor(red=68, green=68, blue=68), plain_color=RgbColor(red=255, green=255, blue=255))
 
     RED = _TeamDefinition(color="red", element="Fire", css_class="fire-team", css_color_name="orangered",
@@ -257,6 +257,7 @@ NAME_TO_TEAM = {
     # neutral/none
     "Neutral": TeamType.NEUTRAL,
     None: TeamType.NONE,
+    "Unknown": TeamType.NONE,
     "None": TeamType.NONE,
     # real teams
     "Fire": TeamType.RED,

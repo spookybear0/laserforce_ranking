@@ -23,6 +23,8 @@ class Team(models.Model):
     color_enum = models.PositiveSmallIntegerField() # no idea what this enum is
     color_name = models.CharField(50)
 
+    is_neutral = models.BooleanField() # sm5 only, if the team is neutral (ex: "Neutral", defined by color_enum = 0)
+
     real_color_name = models.CharField(50) # this isn't in the tdf, but it's useful for the api (ex: "Fire" -> "Red")
     doubles_percent = models.FloatField(null=True) # sm5 only, percent of doubles in the team, useful for getting fast info
     score = models.IntegerField() # total score for the team, useful for getting fast info

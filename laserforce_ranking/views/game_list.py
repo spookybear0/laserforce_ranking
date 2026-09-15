@@ -1,8 +1,33 @@
-from laserforce_ranking.models import SITES, Game, ID_TO_SITE
+from laserforce_ranking.models import SITES, Game, ID_TO_SITE, SM5Game, Team
 from django.views.generic import ListView
 from django.shortcuts import render
+from django.db.models import Case, When, Value, CharField, F, Q, Max, Min, OuterRef, Subquery, IntegerField
 import random
 from django.core.paginator import Paginator
+
+# team score subqueries
+
+active_teams_subquery = Team.objects.filter(
+    game=OuterRef("pk")
+).exclude(
+    color_enum=0
+).annotate(
+    adjusted_score=(
+        F("score")
+        + Case(
+            # only do +10000 for sm5 games and if there's a last team standing and this team is the last team standing
+            When(Q(game__sm5game__isnull=False) & Q(game__sm5game__last_team_standing_id=F("pk")), then=Value(10000)),
+            default=Value(0),
+            output_field=IntegerField()
+        )
+    )
+)
+
+highest_score_sub = active_teams_subquery.order_by("-adjusted_score").values("adjusted_score")[:1]
+lowest_score_sub  = active_teams_subquery.order_by("adjusted_score").values("adjusted_score")[:1]
+
+highest_name_sub  = active_teams_subquery.order_by("-adjusted_score").values("color_name")[:1]
+lowest_name_sub   = active_teams_subquery.order_by("adjusted_score").values("color_name")[:1]
 
 def get_games(request, player_entity_id=None):
     sort_by = request.GET.get("sort", "start_time")
@@ -20,13 +45,50 @@ def get_games(request, player_entity_id=None):
         "-duration": "-duration",
         "outcome": "outcome",
         "-outcome": "-outcome",
-        "score": "score",
-        "-score": "-score",
+        "score": "score_difference",
+        "-score": "-score_difference",
     }
 
     db_field = allowed_fields.get(sort_by, "start_time")
 
-    games = Game.objects.all()
+    if game_type == "sm5":
+        games = SM5Game.objects.annotate(
+            high_score=Subquery(highest_score_sub),
+            low_score=Subquery(lowest_score_sub),
+            # team names
+            high_score_team=Subquery(highest_name_sub),
+            low_score_team=Subquery(lowest_name_sub),
+        ).annotate(
+            # this is just the difference
+            score_difference=F("high_score") - F("low_score"),
+
+            outcome=Case(
+                # if there is no last team standing, outcome was based on score
+                When(winner__isnull=False, then=Value("Draw")),
+                When(last_team_standing__isnull=False, then=Value("Score")),
+                When(last_team_standing__isnull=True, then=Value("Elimination")),
+                default=Value("Unknown"),
+                output_field=CharField()
+            ),
+        )
+    else: # laserball
+        games = Game.objects.annotate(
+            high_score=Subquery(highest_score_sub),
+            low_score=Subquery(lowest_score_sub),
+            # team names
+            high_score_team=Subquery(highest_name_sub),
+            low_score_team=Subquery(lowest_name_sub),
+        ).annotate(
+            # this is just the difference
+            score_difference=F("high_score") - F("low_score"),
+
+            outcome=Case(
+                When(winner__isnull=False, then=Value("Draw")),
+                default=Value("Score"),
+                output_field=CharField()
+            )
+        )
+
 
     # Player filter
     if player_entity_id:
