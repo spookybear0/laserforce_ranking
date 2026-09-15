@@ -265,7 +265,7 @@ async def matchmake_advanced(
 
     1. Assign unique roles (commander, heavy, ammo, medic) to the players with the highest rating for that role
     2. Assign the remaining players as scouts
-    3. Shuffle the players and repeat the process until the best combination is found (if using the matchmaker)
+    3. Shuffle the players and repeat the process until the best combination is found
     4. Evaluate the teams based on win balance, role matchups, role strength, and synergy (if enabled)
     5. If the teams are imbalanced (win chance difference > 5%), redo matchmaking up to 10 times
     6. Return the best teams found after 2000 iterations

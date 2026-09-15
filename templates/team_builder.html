@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Matchmaker | LF Ranking{% endblock %}
+{% block title %}Team Builder | LF Ranking{% endblock %}
 
 {% block head %}
 
@@ -136,14 +136,14 @@
     }
 
     function update() {
-        htmx.ajax('POST', '{{ url("matchmaker_update") }}', {
+        htmx.ajax('POST', '{{ url("team_builder_update") }}', {
             target: '#player-table',
             swap: 'outerHTML'
         });
     }
 
     function updateTeams() {
-        htmx.ajax('POST', '{{ url("matchmaker_teams") }}', {
+        htmx.ajax('POST', '{{ url("team_builder_teams") }}', {
             target: '#teams',
             swap: 'outerHTML'
         });
@@ -321,13 +321,13 @@
 {% block content %}
 
 <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
-    <h1 class="text-3xl sm:text-4xl font-bold mb-8">Matchmaker</h1>
+    <h1 class="text-3xl sm:text-4xl font-bold mb-8">Team Builder</h1>
     <div class="flex flex-col md:flex-row gap-4 md:justify-evenly md:flex-1 md:min-h-0">
         <!-- Buttons -->
         <div class="flex flex-col gap-4">
             <button
                 class="btn btn-primary w-full md:w-auto"
-                hx-post="{{ url('matchmaker_teams') }}?matchmake=true"
+                hx-post="{{ url('team_builder_teams') }}?matchmake=true"
                 hx-target="#teams"
                 hx-swap="outerHTML"
             >
@@ -352,7 +352,6 @@
                 <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
                     <li>
                         <a
-                            data-matchmaker-update
                             data-mode="sm5"
                             onclick="selectMode('SM5', this)"
                         >
@@ -362,7 +361,6 @@
             
                     <li>
                         <a
-                            data-matchmaker-update
                             data-mode="laserball"
                             onclick="selectMode('Laserball', this)"
                         >
@@ -391,7 +389,6 @@
                     class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
                     <li>
                         <a
-                            data-matchmaker-update
                             data-site-id="global"
                             onclick="selectSite('Global', this)"
                         >
@@ -401,7 +398,6 @@
                     {% for site in SITES %}
                     <li>
                         <a
-                            data-matchmaker-update
                             data-site-id="{{ site.id }}"
                             onclick="selectSite('{{ site.name }}', this)"
                         >
@@ -423,13 +419,13 @@
 
         <!-- Player Table -->
         <div class="w-full md:w-1/4 min-w-0 min-h-0 sm:w-1/2">
-            {% include 'partials/matchmaker/player_table.html' %}
+            {% include 'partials/team_builder/player_table.html' %}
         </div>
 
         <!-- Team Tables -->
         <div class="w-full md:w-5/8 min-w-0 min-h-0">
             {% with teams=teams, roles=roles, roles_enabled=roles_enabled %}
-                {% include 'partials/matchmaker/teams.html' %}
+                {% include 'partials/team_builder/teams.html' %}
             {% endwith %}
         </div>
     </div>

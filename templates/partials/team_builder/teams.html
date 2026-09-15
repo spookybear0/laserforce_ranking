@@ -2,7 +2,7 @@
     {% for team in teams %}
         <div class="min-w-0">
             {% with team_index=loop.index0, team=team, roles=roles[loop.index0], locks=locks[loop.index0], roles_enabled=roles_enabled %}
-                {% include 'partials/matchmaker/team_table.html' %}
+                {% include 'partials/team_builder/team_table.html' %}
             {% endwith %}
         </div>
     {% endfor %}

@@ -1,0 +1,4 @@
+{% with teams=teams, roles=roles, roles_enabled=roles_enabled %}
+    {% include 'partials/team_builder/teams.html' %}
+{% endwith %}
+{% include 'partials/team_builder/player_table.html' %}

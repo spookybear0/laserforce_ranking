@@ -32,14 +32,14 @@ class FakePlayer:
         logger.debug(f"Getting default rating for FakePlayer with entity_id: {self.entity_id}")
         return Rating(mu=MU, sigma=SIGMA)
 
-class MatchmakerView(View):
+class TeamBuilderView(View):
     http_method_names = ["get"]
 
     async def get(self, request, tdf_name: Optional[str] = None):
         """
-        Handle GET requests for the matchmaker page.
+        Handle GET requests for the team_builder page.
         """
-        logger.info("Handling GET request for MatchmakerView")
+        logger.info("Handling GET request for TeamBuilderView")
         players = {player.entity_id: player async for player in Player.objects.annotate(
             rating=ExpressionWrapper(
                 Cast(KT(f"ratings__global__sm5__mu"), FloatField())
@@ -48,7 +48,7 @@ class MatchmakerView(View):
             ),
         ).order_by('-rating')}
 
-        logger.debug(f"Retrieved {len(players)} players for matchmaker view")
+        logger.debug(f"Retrieved {len(players)} players for team_builder view")
 
         if tdf_name:
             # get teams/roles from the game with the given tdf_name
@@ -95,11 +95,11 @@ class MatchmakerView(View):
             "roles_enabled": True
         }
 
-        return render(request, "matchmaker.html", context=context)
+        return render(request, "team_builder.html", context=context)
     
-class MatchmakerPlayersView(ListView):
+class TeamBuilderPlayersView(ListView):
     model = Player
-    template_name = "partials/matchmaker/player_table.html"
+    template_name = "partials/team_builder/player_table.html"
     context_object_name = "players"
 
     def get_queryset(self):
@@ -125,15 +125,15 @@ class MatchmakerPlayersView(ListView):
 
         return players
     
-class MatchmakerTeamsView(TemplateView):
-    template_name = "partials/matchmaker/teams.html"
+class TeamBuilderTeamsView(TemplateView):
+    template_name = "partials/team_builder/teams.html"
     http_method_names = ["post"]
 
     async def post(self, request, *args, **kwargs):
         """
         Handle POST requests for generating teams based on selected players.
         """
-        logger.info("Handling POST request for MatchmakerTeamsView")
+        logger.info("Handling POST request for TeamBuilderTeamsView")
         context = self.get_context_data(**kwargs)
 
         teams = json.loads(self.request.POST.get("teams", "[]"))
@@ -202,15 +202,15 @@ class MatchmakerTeamsView(TemplateView):
 
         return self.render_to_response(context)
     
-class MatchmakerUpdateView(TemplateView):
-    template_name = "partials/matchmaker/update.html"
+class TeamBuilderUpdateView(TemplateView):
+    template_name = "partials/team_builder/update.html"
     http_method_names = ["post"]
 
     async def post(self, request, *args, **kwargs):
         """
         Updates player and team tables
         """
-        logger.info("Handling POST request for MatchmakerUpdateView")
+        logger.info("Handling POST request for TeamBuilderUpdateView")
         context = self.get_context_data(**kwargs)
 
         teams = json.loads(self.request.POST.get("teams", "[]"))

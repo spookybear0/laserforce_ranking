@@ -34,12 +34,12 @@
                     <td class="py-2">{{ "%.3f"|format((player.rating if player.rating else 0.0)) }}</td>
                     <td class="py-2 {% if not roles_enabled %}hidden{% endif %}">
                         {% with identifier=player.entity_id, role=role if role else IntRole.OTHER %}
-                            {% include 'partials/matchmaker/role_dropdown.html' %}
+                            {% include 'partials/team_builder/role_dropdown.html' %}
                         {% endwith %}
                     </td>
                     <td class="py-2 {% if not roles_enabled %}hidden{% endif %}">
                         {% with identifier=player.entity_id %}
-                            {% include 'partials/matchmaker/lock_dropdown.html' %}
+                            {% include 'partials/team_builder/lock_dropdown.html' %}
                         {% endwith %}
                     </td>
                 </tr>

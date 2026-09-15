@@ -14,7 +14,7 @@
         placeholder="Search players..."
         class="input input-bordered w-full mb-4 shrink-0"
         autocomplete="off"
-        hx-get="{{ url('matchmaker_players') }}"
+        hx-get="{{ url('team_builder_players') }}"
         hx-trigger="input changed delay:500ms"
         hx-target="#player-table"
         hx-swap="outerHTML"
@@ -54,13 +54,13 @@
 
                     <td class="py-2 hidden">
                         {% with identifier=player.entity_id, role=IntRole.SCOUT %}
-                            {% include 'partials/matchmaker/role_dropdown.html' %}
+                            {% include 'partials/team_builder/role_dropdown.html' %}
                         {% endwith %}
                     </td>
 
                     <td class="py-2 hidden">
                         {% with identifier=player.entity_id %}
-                            {% include 'partials/matchmaker/lock_dropdown.html' %}
+                            {% include 'partials/team_builder/lock_dropdown.html' %}
                         {% endwith %}
                     </td>
                 </tr>
