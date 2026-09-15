@@ -66,7 +66,7 @@ class MatchmakerView(View):
                 new_teams.append(
                     [
                         players[entity.entity_id] if entity.entity_id[0] == "#"
-                        else FakePlayer(entity.entity_id)
+                        else FakePlayer(f"unrated-{entity.entity_id}")
                         async for entity in entitys
                     ]
                 )
@@ -154,6 +154,11 @@ class MatchmakerTeamsView(TemplateView):
             )
         ).order_by('-rating')}
 
+        # add fake players for unrated players
+        for entity_id in entity_ids:
+            if "unrated-" in entity_id and entity_id not in players:
+                players[entity_id] = FakePlayer(entity_id)
+
         logger.debug(f"Fetched players for entity_ids: {entity_ids}")
 
         new_teams = []
@@ -175,6 +180,7 @@ class MatchmakerTeamsView(TemplateView):
 
         if matchmake:
             logger.info("Performing matchmaking")
+            print(list(players.values()))
             if roles_enabled:
                 new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site, role_lock_dict)
             else:

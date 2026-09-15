@@ -21,7 +21,6 @@ class GameView(DetailView):
     async def sm5(self, game: Game, context):
         context["rematchmake_obj"] = {}
         context["teams"] = [team async for team in game.teams.order_by("-score")][:2]
-        context["get_codename"] = lambda entity: Player.objects.get(entity_id=entity.entity_id).codename
         context["win_chances"] = await game.get_win_chance_before_game(consider_site=False, consider_roles=False)
 
         if game.ranked:

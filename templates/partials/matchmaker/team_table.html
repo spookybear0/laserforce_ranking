@@ -25,7 +25,7 @@
                 {% for player, role, lock in zip(team, roles, locks) %}
                 <tr data-entity-id="{{ player.entity_id }}" data-role="{{ role.name.lower() if role else 'other' }}" data-lock="{{ lock if lock else 'none'}}" class="cursor-move">
                     <td class="py-2">
-                        {% if not player.entity_id.startswith('unrated-') %}
+                        {% if not player.entity_id.startswith('unrated-') and player.codename != 'Unrated Player' %}
                         <a href="/players/{{ player.entity_id[1:] }}" class="link link-primary">{{ player.codename }}</a>
                         {% else %}
                         {{ player.codename }}
