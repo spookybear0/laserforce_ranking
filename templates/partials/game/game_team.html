@@ -3,7 +3,7 @@
         <!--add unranked tag-->
         <div class="flex flex-row gap-2 justify-between items-center">
             <h1 class="text-2xl font-bold" style="color: {{ team.enum.css_color_name }}">
-                {{ team.name }} - {{ team.score + game.get_team_score_adjustment(team) }}{{ game.get_team_score_adjustment_str(team) }}
+                {{ team.name }}: {{ team.score + game.get_team_score_adjustment(team) }}{{ game.get_team_score_adjustment_str(team) }}
                 <span class="text-base-content/50 text-xl">({{ "%.2f" % (win_chances[index]*100) }}%)</span>
             </h1>
             <h2 class="text-xl font-bold">Doubles: {{ "%.2f" % (team.doubles_percent*100) }}%</h2>
@@ -13,13 +13,12 @@
                 <!--won tag-->
                 <thead>
                     <tr>
-                        <th>Role</th>
                         <th>Codename</th>
+                        <th>Role</th>
                         <th>Score</th>
                         <th><a href="https://lfstats.com/about-sm5#:~:text=MVP%20Points%20System" target="_blank" class="link link-primary">MVP</a></th>
                         {% if game.ranked %}
                             <th>Rating</th>
-                            <th>Rating Diff</th>
                         {% endif %}
                         <th>K/D Ratio</th>
                         <th>Accuracy</th>
@@ -34,19 +33,24 @@
                 <tbody>
                 {% for entity in team.entity_starts.filter(type=EntityType.PLAYER).select_related('entity_end', 'sm5_stats').order_by('-entity_end__score') %}
                     <tr>
-                        <td><img src="{{ static('sm5/roles/' + entity.role.name.lower() + '.png') }}" alt="{{ entity.role.value }}" class="w-6 h-6"></td>
                         <td>
                             {% if entity.type == EntityType.PLAYER and entity.entity_id.startswith('#') %}
-                            <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ get_codename(entity) }}</a>
+                            <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ entity.name }}</a>
                             {% else %}
                             {{ entity.name }}
                             {% endif %}
                         </td>
+                        <td><img src="{{ static('sm5/roles/' + entity.role.name.lower() + '.png') }}" alt="{{ entity.role.value }}" class="w-6 h-6"></td>
                         <td>{{ entity.entity_end.score }}</td>
                         <td>{{ "%.2f" % entity.sm5_stats.mvp_points }}</td>
                         {% if game.ranked %}
-                            <td>0.00</td>
-                            <td>+0.00</td>
+                            <td>
+                                {{ "{:.2f}".format(ratings[entity.entity_id]["current"]) }} 
+                                {% set rating_change = ratings[entity.entity_id]["current"] - ratings[entity.entity_id]["previous"] %}
+                                <span style="color: {% if rating_change > 0 %}greenyellow{% elif rating_change < 0 %}orangered{% else %}gray{% endif %};">
+                                    ({% if rating_change > 0 %}+{% endif %}{{ "%.2f" % rating_change }})
+                                </span>
+                            </td>
                         {% endif %}
                         <td>{{ "%.2f" % entity.sm5_stats.kd_ratio }} ({{ entity.sm5_stats.shot_opponent }}/{{ entity.sm5_stats.times_zapped }})</td>
                         <td>{{ "%.2f" % (entity.sm5_stats.accuracy*100) }}%</td>

@@ -24,6 +24,22 @@ class GameView(DetailView):
         context["get_codename"] = lambda entity: Player.objects.get(entity_id=entity.entity_id).codename
         context["win_chances"] = await game.get_win_chance_before_game(consider_site=False, consider_roles=False)
 
+        if game.ranked:
+            # get entity end ratings ahead of time
+            context["ratings"] = {}
+
+            for team in context["teams"]:
+                async for entity in team.entity_starts.prefetch_related("entity_end").all():
+                    context["ratings"][entity.entity_id] = {
+                        "current": (
+                            await entity.entity_end.get_rating("current", use_site=False, consider_roles=False)
+                        ).ordinal(),
+                        "previous": (
+                            await entity.entity_end.get_rating("previous", use_site=False, consider_roles=False)
+                        ).ordinal(),
+                    }
+                    
+
     async def laserball(self, game, context):
         pass
     

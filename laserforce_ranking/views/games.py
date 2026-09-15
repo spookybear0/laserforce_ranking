@@ -30,7 +30,7 @@ highest_name_sub  = active_teams_subquery.order_by("-adjusted_score").values("co
 lowest_name_sub   = active_teams_subquery.order_by("adjusted_score").values("color_name")[:1]
 
 def get_games(request, player_entity_id=None):
-    sort_by = request.GET.get("sort", "start_time")
+    sort_by = request.GET.get("sort", "-start_time")
     game_type = request.GET.get("mode", "sm5")
 
     if not player_entity_id and request.GET.get("player"):
@@ -49,7 +49,7 @@ def get_games(request, player_entity_id=None):
         "-score": "-score_difference",
     }
 
-    db_field = allowed_fields.get(sort_by, "start_time")
+    db_field = allowed_fields.get(sort_by, "-start_time")
 
     if game_type == "sm5":
         games = SM5Game.objects.annotate(
