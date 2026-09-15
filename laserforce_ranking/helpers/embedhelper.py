@@ -310,7 +310,7 @@ def generate_sm5_game_image(sm5game):
     )
 
     if game.start_time:
-        date_text = game.start_time.strftime(
+        date_text = game.local_start_time.strftime(
             "%b %d, %Y · %H:%M"
         )
 

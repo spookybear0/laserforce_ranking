@@ -311,7 +311,7 @@ class SM5Game(Game):
     
     def __str__(self):
         site_name = SITE_BY_ID.get(self.site_id, self.site_id).name if self.site_id else "Unknown Site"
-        return f"SM5Game {self.id} at {site_name} on {self.start_time}"
+        return f"SM5Game {self.id} at {site_name} on {self.local_start_time.strftime('%Y-%m-%d %H:%M:%S')} (local)"
     
     class Meta:
         verbose_name = "SM5 game"

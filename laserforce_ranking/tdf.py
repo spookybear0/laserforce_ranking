@@ -1,5 +1,5 @@
 from pathlib import Path
-from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITES, TeamType
+from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITE_BY_ID, TeamType
 from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, Score
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
@@ -219,7 +219,8 @@ async def parse_tdf(file_location: Path):
                 # tdf file has local timezone, and we have the site timezone. database converts into utc and saves
 
                 # convert to datetime with timezone
-                start_time_formatted = datetime.strptime(start_time + SITES[site].timezone_offset if SITES.get(site) else "+00:00", "%Y%m%d%H%M%S%z")
+                start_time_formatted = datetime.strptime(start_time, "%Y%m%d%H%M%S")
+                start_time_formatted = timezone.make_aware(start_time_formatted, timezone=SITE_BY_ID[site].timezone)
 
                 # check if we already have this game in the database, if so, skip it
                 if await Game.objects.filter(site_id=site, start_time=start_time_formatted).aexists():
@@ -439,7 +440,7 @@ async def parse_tdf(file_location: Path):
 
         if e.type == EntityType.PLAYER:
             # update player name if we have a new one
-            if player := await Player.objects.filter(entity_id=entity_id).afirst() and player.codename != e.name:
+            if (player := await Player.objects.filter(entity_id=entity_id).afirst()) and player.codename != e.name:
                 # add previous codename to previous_codenames if it doesn't already exist
 
                 if player.codename and player.codename not in player.previous_codenames:
@@ -450,7 +451,7 @@ async def parse_tdf(file_location: Path):
 
                 await player.asave()
             # give player their player_id if we don't have it yet
-            elif player := await Player.objects.filter(entity_id=entity_id, player_id__isnull=True).afirst() and e.member_id:
+            elif (player := await Player.objects.filter(entity_id=entity_id, player_id__isnull=True).afirst()) and e.member_id:
                 player.player_id = e.member_id
                 split_ = e.member_id.split("-")
                 player.home_site_id = f"{split_[0]}-{split_[1]}"

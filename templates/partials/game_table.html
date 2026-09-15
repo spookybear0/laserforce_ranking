@@ -117,10 +117,10 @@
             <tbody id="game-table-body">
                 {% for game in games %}
                 <tr>
-                    <td style="color: {{ NAME_TO_TEAM[game.high_score_team].css_color_name }}"><a href="/games/{{ game.tdf_name }}" class="link">Game @ {{ game.start_time.strftime('%H:%M') }}</a></td>
+                    <td style="color: {{ NAME_TO_TEAM[game.high_score_team].css_color_name }}"><a href="/games/{{ game.tdf_name }}" class="link">Game @ <time datetime="{{ game.start_time.isoformat() }}" data-timezone="{{ game.site.timezone }}" class="local-time-only">{{ game.start_time.strftime('%H:%M') }}</time></a></td>
                     <td>{{ SITE_BY_ID[game.site_id].name }}</td>
                     <td>{{ game.duration.seconds // 60 }}:{{ '%02d' % (game.duration.seconds % 60) }}</td>
-                    <td>{{ game.start_time.strftime('%b %d, %Y %H:%M') }}</td>
+                    <td><time datetime="{{ game.start_time.isoformat() }}" data-timezone="{{ game.site.timezone }}" class="local-time-full">{{ game.start_time.strftime('%b %d, %Y %H:%M') }}</time></td>
                     <td>{{ game.outcome }}</td>
                     <td>
                         <span style="color: {{ NAME_TO_TEAM[game.high_score_team].css_color_name }}">{{ game.high_score }}</span> 

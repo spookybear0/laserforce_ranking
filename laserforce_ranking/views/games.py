@@ -39,8 +39,8 @@ def get_games(request, player_entity_id=None):
     allowed_fields = {
         "start_time": "start_time",
         "-start_time": "-start_time",
-        "site": "site",
-        "-site": "-site",
+        "site": "site_id",
+        "-site": "-site_id",
         "duration": "duration",
         "-duration": "-duration",
         "outcome": "outcome",

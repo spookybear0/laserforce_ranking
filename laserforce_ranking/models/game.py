@@ -9,6 +9,7 @@ import re
 from django_enum import EnumField
 from django.urls import reverse
 from typing import List, Optional
+from zoneinfo import ZoneInfo
 
 def suffix(date: int) -> str:
     return {1: "st", 2: "nd", 3: "rd"}.get(date % 20, "th")
@@ -276,6 +277,10 @@ class Game(models.Model):
         """
         return SITE_BY_ID[self.site_id]
     
+    @property
+    def local_start_time(self):
+        return self.start_time.astimezone(self.site.timezone)
+    
     async def get_win_chance(self, timeframe: Optional[str] = None, consider_site: bool = True, consider_roles: bool = True) -> List[float]:
         """
         Calculates the win chance for the game based on the players' ratings.
@@ -346,4 +351,4 @@ class Game(models.Model):
         return reverse("game_detail", kwargs={"tdf_name": self.tdf_name})
 
     def __str__(self):
-        return f"Game {self.id} - {self.mission_name} at {self.site_id} on {self.start_time}"
+        return f"Game {self.id} - {self.mission_name} at {self.site_id} on {self.local_start_time} (local)"

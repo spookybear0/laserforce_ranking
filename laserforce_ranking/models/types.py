@@ -1,6 +1,7 @@
 from typing import Optional, Union
 from dataclasses import dataclass
 from enum import Enum, IntEnum
+from zoneinfo import ZoneInfo
 from django.db import models
 import re
 
@@ -21,8 +22,7 @@ class Site:
     id: str
     name: str
     ipl_name: str
-    timezone_offset: Optional[str] = None
-    timezone_name: Optional[str] = None
+    timezone: Optional[ZoneInfo] = None 
     competitive: bool = True
 
     def __str__(self):
@@ -36,152 +36,133 @@ SITES = [
         id="4-19",
         name="Loveland",
         ipl_name="Loveland Laser Tag Fun Center",
-        timezone_offset="+07:00",
-        timezone_name="America/Denver",
+        timezone=ZoneInfo("America/Denver"),
         competitive=True
     ),
     Site(
         id="1-1",
         name="Brisbane",
         ipl_name="Laserforce Brisbane, QLD, AU",
-        timezone_offset="+10:00",
-        timezone_name="Australia/Brisbane",
+        timezone=ZoneInfo("Australia/Brisbane"),
         competitive=True
     ),
     Site(
         id="4-23",
         name="Syracuse",
         ipl_name="The Fun Warehouse, Syracuse",
-        timezone_offset="-05:00",
-        timezone_name="America/New_York",
+        timezone=ZoneInfo("America/New_York"),
         competitive=True
     ),
     Site(
         id="4-43",
         name="Invasion",
         ipl_name="Invasion Laser Tag, San Marcos, CA, US",
-        timezone_offset="-07:00",
-        timezone_name="America/Denver",
+        timezone=ZoneInfo("America/Los_Angeles"),
         competitive=True
     ),
     Site(
         id="4-2",
         name="St George",
         ipl_name="Laser Mania, St George, UT, USA",
-        timezone_offset="+07:00",
-        timezone_name="America/Denver",
+        timezone=ZoneInfo("America/Denver"),
         competitive=True
     ),
     Site(
         id="3-3",
         name="Auckland Wairau",
         ipl_name="Laserforce Auckland",
-        timezone_offset="+13:00",
-        timezone_name="Pacific/Auckland",
+        timezone=ZoneInfo("Pacific/Auckland"),
         competitive=True
     ),
     Site(
         id="4-6",
         name="Detroit",
         ipl_name="Revolution Laser Tag & Arcade, MI, USA",
-        timezone_offset="-05:00",
-        timezone_name="America/New_York",
+        timezone=ZoneInfo("America/New_York"),
         competitive=True
     ),
     Site(
         id="20-7",
         name="Lasergame Říčany",
         ipl_name="Ricany Lasergame, Ricany, CZ",
-        timezone_offset="+02:00",
-        timezone_name="Europe/Prague",
+        timezone=ZoneInfo("Europe/Prague"),
         competitive=True
     ),
     Site(
         id="21-8",
         name="PowerLaser Stuttgart",
         ipl_name="PowerLaser, Stuttgart, Germany",
-        timezone_offset="+02:00",
-        timezone_name="Europe/Berlin",
+        timezone=ZoneInfo("Europe/Berlin"),
         competitive=True
     ),
     Site(
         id="21-70",
         name="LaserTag Darmstadt",
         ipl_name="Lasertag Deutschland 1, Darmstadt, Germany",
-        timezone_offset="+02:00",
-        timezone_name="Europe/Berlin",
+        timezone=ZoneInfo("Europe/Berlin"),
         competitive=True
     ),
     Site(
         id="1-58",
         name="Wollongong Revolution",
         ipl_name="Revolution Laser Arena, Wollongong, NSW, AU",
-        timezone_offset="+11:00",
-        timezone_name="Australia/Sydney",
+        timezone=ZoneInfo("Australia/Sydney"),
         competitive=True
     ),
     Site(
         id="3-7",
         name="Auckland Game Over",
         ipl_name="Game Over, Albany, NZ",
-        timezone_offset="+13:00",
-        timezone_name="Pacific/Auckland",
+        timezone=ZoneInfo("Pacific/Auckland"),
         competitive=True
     ),
     Site(
         id="7-2",
         name="Peterborough",
         ipl_name="Laserforce Peterborough",
-        timezone_offset="+00:00",
-        timezone_name="Europe/London",
+        timezone=ZoneInfo("Europe/London"),
         competitive=True
     ),
     Site(
         id="7-13",
         name="Cheltenham",
         ipl_name="Funky Laser, Cheltenham, UK",
-        timezone_offset="+00:00",
-        timezone_name="Europe/London",
+        timezone=ZoneInfo("Europe/London"),
         competitive=True
     ),
     Site(
         id="1-64",
         name="Sydney Underworld",
         ipl_name="Underworld Laser, Menai, NSW, AU",
-        timezone_offset="+11:00",
-        timezone_name="Australia/Sydney",
+        timezone=ZoneInfo("Australia/Sydney"),
         competitive=True
     ),
     Site(
         id="7-8",
         name="Huddersfield",
         ipl_name="LaserZone, Huddersfield, UK",
-        timezone_offset="+00:00",
-        timezone_name="Europe/London",
+        timezone=ZoneInfo("Europe/London"),
         competitive=True
     ),
     Site(
         id="20-18",
         name="Lasergame Beroun",
         ipl_name="Lasergame Beroun, Czech Republic",
-        timezone_offset="+02:00",
-        timezone_name="Europe/Prague",
+        timezone=ZoneInfo("Europe/Prague"),
         competitive=True
     ),
     Site(
         id="4-80",
         name="Lost Worlds",
         ipl_name="Lost Worlds Entertainment, City of Industry, CA",
-        timezone_offset="-08:00",
-        timezone_name="America/Los_Angeles",
+        timezone=ZoneInfo("America/Los_Angeles"),
         competitive=True
     ),
     Site(
         id="4-3",
         name="Carmichael",
         ipl_name="Lasertag Of Carmichael",
-        timezone_offset="-08:00",
-        timezone_name="America/Los_Angeles",
+        timezone=ZoneInfo("America/Los_Angeles"),
         competitive=False
     ),
 ]

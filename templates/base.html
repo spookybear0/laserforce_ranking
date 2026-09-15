@@ -39,27 +39,9 @@
 
     <link href="{{ static('css/output.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const drawerCheckbox = document.getElementById('main-drawer');
-            
-            if (drawerCheckbox) {
-                // get state from storage
-                const isDrawerOpen = localStorage.getItem('drawer-open');
-                
-                // open if never set
-                if (isDrawerOpen !== null) {
-                    drawerCheckbox.checked = isDrawerOpen === 'true';
-                }
-        
-                // when toggled, save new state
-                drawerCheckbox.addEventListener('change', (e) => {
-                    localStorage.setItem('drawer-open', e.target.checked);
-                });
-            }
-        });
-      </script>
-      {% block head %}{% endblock %}
+    <script src="{{ static('js/base.js') }}"></script>
+
+    {% block head %}{% endblock %}
 </head>
 <body class="bg-base-200 h-screen" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div class="drawer lg:drawer-open h-full">
