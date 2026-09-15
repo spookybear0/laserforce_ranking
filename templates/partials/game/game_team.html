@@ -4,7 +4,9 @@
         <div class="flex flex-row gap-2 justify-between items-center">
             <h1 class="text-2xl font-bold" style="color: {{ team.enum.css_color_name }}">
                 {{ team.name }}: {{ team.score + game.get_team_score_adjustment(team) }}{{ game.get_team_score_adjustment_str(team) }}
-                <span class="text-base-content/50 text-xl">({{ "%.2f" % (win_chances[index]*100) }}%)</span>
+                {% if game.ranked %}
+                    <span class="text-base-content/50 text-xl">({{ "%.2f" % (win_chances[index]*100) }}%)</span>
+                {% endif %}
             </h1>
             <h2 class="text-xl font-bold">Doubles: {{ "%.2f" % (team.doubles_percent*100) }}%</h2>
         </div>
@@ -32,7 +34,7 @@
                 </thead>
                 <tbody>
                 {% for entity in team.entity_starts.filter(type=EntityType.PLAYER).select_related('entity_end', 'sm5_stats').order_by('-entity_end__score') %}
-                    <tr>
+                    <tr class="{% if entity.sm5_stats.lives_left == 0 %}opacity-65{% endif %}">
                         <td>
                             {% if entity.type == EntityType.PLAYER and entity.entity_id.startswith('#') %}
                             <a href="/players/{{ entity.entity_id[1:] }}" class="link link-primary">{{ entity.name }}</a>

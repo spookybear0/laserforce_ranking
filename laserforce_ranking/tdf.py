@@ -446,6 +446,10 @@ async def parse_tdf(file_location: Path):
                 if player.codename and player.codename not in player.previous_codenames:
                     player.previous_codenames.append(player.codename)
 
+                # if the new codename is in previous_codenames, remove it
+                if e.name in player.previous_codenames:
+                    player.previous_codenames.remove(e.name)
+
                 player.codename = e.name
                 player.player_id = e.member_id 
 

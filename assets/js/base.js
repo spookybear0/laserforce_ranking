@@ -1,12 +1,21 @@
 function localizeTimes() {
+    const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     document.querySelectorAll(".local-time-full").forEach(element => {
         const date = new Date(element.dateTime);
+
+        const gameTimeZone = element.dataset.timezone;
 
         element.textContent = date.toLocaleString([], {
             dateStyle: "medium",
             timeStyle: "short",
             hourCycle: "h23"
         });
+
+        // show that the time has been converted to user's local timezone if the game timezone is different from the browser timezone
+        if (gameTimeZone && gameTimeZone !== browserTimeZone) {
+            element.classList.add("font-bold");
+        }
     });
     document.querySelectorAll(".local-time-only").forEach(element => {
         const date = new Date(element.dateTime);

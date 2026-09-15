@@ -113,7 +113,7 @@ def get_game_table_context(request, player_entity_id=None):
     return {
         "games": page_obj.object_list,
         "page_obj": page_obj,
-        "current_sort": request.GET.get("sort", "start_time"),
+        "current_sort": request.GET.get("sort", "-start_time"),
         "current_page": request.GET.get("page", 1),
         "current_site": request.GET.get("site"),
         "current_mode": request.GET.get("mode", "sm5"),
