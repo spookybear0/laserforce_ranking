@@ -341,11 +341,12 @@ class EventType(models.TextChoices):
     DOWNED_OPPONENT = "0206"  # Arguments: "(entity 1)", " zaps ", "(entity 2)"
     DAMANGED_TEAM = "0207"  # unused?
     DOWNED_TEAM = "0208"  # unused?
+    WARBOT_ZAP = "0209"  # Arguments: "(entity 1)", " zaps ", "(entity 2)". Entity 1 is a warbot, entity 2 is a player
     LOCKING = "0300"  # (aka missile start) Arguments: "(entity 1)", " locking ", "(entity 2)"
-    MISSILE_BASE_MISS = "0301"
+    MISSILE_BASE_MISS = "0301" # you have to be really bad to trigger this event
     MISSILE_BASE_DAMAGE = "0302" # not used in sm5
     MISSILE_BASE_DESTROY = "0303"  # Arguments: "(entity 1)", " destroys ", "(entity 2)"
-    MISSILE_MISS = "0304"
+    MISSILE_MISS = "0304" # Arguments: "(entity 1)", " misses ", "(entity 2)"
     MISSILE_DAMAGE_OPPONENT = "0305"  # unused? theres no way for a missile to not down/destroy in sm5
     MISSILE_DOWN_OPPONENT = "0306"  # Arguments: "(entity 1)", " missiles ", "(entity 2)"
     MISSILE_DAMAGE_TEAM = "0307"  # unused?
@@ -432,11 +433,21 @@ class EntityType(models.TextChoices):
     GENERATOR_TARGET = "generator-target"
     BEACON = "beacon"
     REFEREE = "referee"
+    WARBOT = "warbot" # zap players with 209 events
+    FLAG = "flag"
+    PHASER_STATION = "phaser-station"
+    GALLERY_TARGET = "gallery-target"
+    SERPENT = "serpent"
+    RELOAD = "reload"
+    VORTEX = "vortex"
+    MINI_TARGET = "mini-target"
+    UNKNOWN = "unknown"
 
 class EntityEndType(models.IntegerChoices):
-    ENDED_EARLY = 1
-    ENDED_NORMAL = 2
-    ELIMATED = 4
+    KICKED = 1
+    MISSION_COMPLETED = 2
+    ELIMINATED = 4
+    KICKED_BY_REFEREE = 17 # legacy, livesLeft should be set to 0 in this case
 
 class Permission(models.IntegerChoices):
     USER = 0

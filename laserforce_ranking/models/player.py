@@ -76,6 +76,7 @@ Player.ratings specification:
 class Player(models.Model):
     entity_id = models.CharField(max_length=15, unique=True)
     codename = models.CharField(max_length=50)
+    previous_codenames = models.JSONField(default=list) # list of previous codenames for AKA list
     player_id = models.SlugField(unique=True, null=True) # iplaylaserforce player id (ex: 4-43-1265)
     ratings = models.JSONField(default=dict)
     # where membership was created

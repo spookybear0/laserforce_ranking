@@ -436,43 +436,35 @@ async def parse_tdf(file_location: Path):
         if entity_id.startswith("@") and (e.name == e.battlesuit or e.battlesuit is None or e.battlesuit == ""):
             continue
 
-        db_member_id = e.member_id if e.member_id else None
-
         if e.type == EntityType.PLAYER:
-            # update player name if we have a new one and we have entity_id
-            if await Player.objects.filter(entity_id=entity_id).aexists() and (
-                    await Player.objects.filter(entity_id=entity_id).afirst()).codename != e.name:
-                player = await Player.objects.filter(entity_id=entity_id).afirst()
+            # update player name if we have a new one
+            if player := await Player.objects.filter(entity_id=entity_id).afirst() and player.codename != e.name:
                 player.codename = e.name
-                player.player_id = db_member_id
-                await player.asave()
-            # update player_id if we have entity_id and don't have player_id
-            elif await Player.objects.filter(entity_id=entity_id).aexists() and (
-                    await Player.objects.filter(entity_id=entity_id).afirst()).player_id == "":
-                player = await Player.objects.filter(entity_id=entity_id).afirst()
-                player.player_id = db_member_id
-
-                split_ = db_member_id.split("-")
-                home_site = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else None
-                player.home_site = home_site
+                player.player_id = e.member_id 
 
                 await player.asave()
-            # create new player if we don't have a name or entity_id
-            elif not await Player.objects.filter(codename=e.name).aexists() and not await Player.objects.filter(
-                    entity_id=entity_id).aexists():
-                
-                if db_member_id:
-                    split_ = db_member_id.split("-")
-                    home_site = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else None
+            # give player their player_id if we don't have it yet
+            elif player := await Player.objects.filter(entity_id=entity_id, player_id__isnull=True).afirst() and e.member_id:
+                player.player_id = e.member_id
+                split_ = e.member_id.split("-")
+                player.home_site = f"{split_[0]}-{split_[1]}"
+
+                await player.asave()
+            # create new player if we don't their entity_id
+            elif not await Player.objects.filter(entity_id=entity_id).aexists():
+                if e.member_id:
+                    split_ = e.member_id.split("-")
+                    home_site = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else site
                 else:
-                    home_site = None
+                    # for now set home site to this game site, but we will update it later when we get their player_id from the database
+                    home_site = site
 
                 ratings = {
                     "global": BLANK_RATING_PER_SITE,
                 }
                 ratings[site] = BLANK_RATING_PER_SITE
 
-                await Player.objects.acreate(player_id=db_member_id, codename=e.name, entity_id=entity_id, home_site=home_site, ratings=ratings)
+                await Player.objects.acreate(player_id=e.member_id, codename=e.name, entity_id=entity_id, home_site=home_site, ratings=ratings)
     
     # before we save this game, change the file name into the correct format
     # ex: 4-80-20260830003930.tdf
