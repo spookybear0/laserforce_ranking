@@ -3,7 +3,7 @@
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 from PIL.ImageFont import FreeTypeFont
-from laserforce_ranking.models import EntityType, Team, SM5Game, EntityStart, SM5Stats, ID_TO_SITE
+from laserforce_ranking.models import EntityType, Team, SM5Game, EntityStart, SM5Stats, SITE_BY_ID
 from django.conf import settings
 from pathlib import Path
 from typing import List
@@ -298,7 +298,7 @@ def generate_sm5_game_image(sm5game):
 
     game = sm5game
 
-    site = ID_TO_SITE[game.site_id]
+    site = SITE_BY_ID[game.site_id].name
 
     header = f"SM5 · {game.tdf_name}"
 

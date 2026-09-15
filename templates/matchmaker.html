@@ -396,14 +396,14 @@
                             Global
                         </a>
                     </li>
-                    {% for site, site_id in SITES.items() %}
+                    {% for site in SITES %}
                     <li>
                         <a
                             data-matchmaker-update
-                            data-site-id="{{ site_id }}"
-                            onclick="selectSite('{{ site }}', this)"
+                            data-site-id="{{ site.id }}"
+                            onclick="selectSite('{{ site.name }}', this)"
                         >
-                            {{ site }}
+                            {{ site.name }}
                         </a>
                     </li>
                     {% endfor %}

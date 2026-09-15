@@ -1,81 +1,203 @@
+from typing import Optional, Union
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 from django.db import models
 import re
 
+@dataclass(frozen=True)
+class Site:
+    """
+    Represents a Laserforce site with its associated information.
+
+    Attributes:
+        id (str): The unique identifier for the site (e.g., "4-19").
+        name (str): The short name of the site (e.g., "Loveland").
+        ipl_name (str): The long name of the site that IPL shows (e.g., "Loveland Laser Tag Fun Center").
+        timezone_offset (str): The timezone offset for the site in the format "+HH:MM" or "-HH:MM".
+        timezone_name (str): The name of the timezone for the site (e.g., "America/Denver").
+        competitive (bool): Indicates whether the site is considered competitive, this means we store tdfs for it. Defaults to True.
+            the point of storing non-competitve sites is if a player's home site is not competitive, we can still show it on their profile.
+    """
+    id: str
+    name: str
+    ipl_name: str
+    timezone_offset: Optional[str] = None
+    timezone_name: Optional[str] = None
+    competitive: bool = True
+
+    def __str__(self):
+        return f"{self.name} ({self.id})"
+    
+    def __repr__(self):
+        return f"Site(id={self.id}, name={self.name}, ipl_name={self.ipl_name}, timezone_offset={self.timezone_offset}, timezone_name={self.timezone_name}, competitive={self.competitive})"
+
+SITES = [
+    Site(
+        id="4-19",
+        name="Loveland",
+        ipl_name="Loveland Laser Tag Fun Center",
+        timezone_offset="+07:00",
+        timezone_name="America/Denver",
+        competitive=True
+    ),
+    Site(
+        id="1-1",
+        name="Brisbane",
+        ipl_name="Laserforce Brisbane, QLD, AU",
+        timezone_offset="+10:00",
+        timezone_name="Australia/Brisbane",
+        competitive=True
+    ),
+    Site(
+        id="4-23",
+        name="Syracuse",
+        ipl_name="The Fun Warehouse, Syracuse",
+        timezone_offset="-05:00",
+        timezone_name="America/New_York",
+        competitive=True
+    ),
+    Site(
+        id="4-43",
+        name="Invasion",
+        ipl_name="Invasion Laser Tag, San Marcos, CA, US",
+        timezone_offset="-07:00",
+        timezone_name="America/Denver",
+        competitive=True
+    ),
+    Site(
+        id="4-2",
+        name="St George",
+        ipl_name="Laser Mania, St George, UT, USA",
+        timezone_offset="+07:00",
+        timezone_name="America/Denver",
+        competitive=True
+    ),
+    Site(
+        id="3-3",
+        name="Auckland Wairau",
+        ipl_name="Laserforce Auckland",
+        timezone_offset="+13:00",
+        timezone_name="Pacific/Auckland",
+        competitive=True
+    ),
+    Site(
+        id="4-6",
+        name="Detroit",
+        ipl_name="Revolution Laser Tag & Arcade, MI, USA",
+        timezone_offset="-05:00",
+        timezone_name="America/New_York",
+        competitive=True
+    ),
+    Site(
+        id="20-7",
+        name="Lasergame Říčany",
+        ipl_name="Ricany Lasergame, Ricany, CZ",
+        timezone_offset="+02:00",
+        timezone_name="Europe/Prague",
+        competitive=True
+    ),
+    Site(
+        id="21-8",
+        name="PowerLaser Stuttgart",
+        ipl_name="PowerLaser, Stuttgart, Germany",
+        timezone_offset="+02:00",
+        timezone_name="Europe/Berlin",
+        competitive=True
+    ),
+    Site(
+        id="21-70",
+        name="LaserTag Darmstadt",
+        ipl_name="Lasertag Deutschland 1, Darmstadt, Germany",
+        timezone_offset="+02:00",
+        timezone_name="Europe/Berlin",
+        competitive=True
+    ),
+    Site(
+        id="1-58",
+        name="Wollongong Revolution",
+        ipl_name="Revolution Laser Arena, Wollongong, NSW, AU",
+        timezone_offset="+11:00",
+        timezone_name="Australia/Sydney",
+        competitive=True
+    ),
+    Site(
+        id="3-7",
+        name="Auckland Game Over",
+        ipl_name="Game Over, Albany, NZ",
+        timezone_offset="+13:00",
+        timezone_name="Pacific/Auckland",
+        competitive=True
+    ),
+    Site(
+        id="7-2",
+        name="Peterborough",
+        ipl_name="Laserforce Peterborough",
+        timezone_offset="+00:00",
+        timezone_name="Europe/London",
+        competitive=True
+    ),
+    Site(
+        id="7-13",
+        name="Cheltenham",
+        ipl_name="Funky Laser, Cheltenham, UK",
+        timezone_offset="+00:00",
+        timezone_name="Europe/London",
+        competitive=True
+    ),
+    Site(
+        id="1-64",
+        name="Sydney Underworld",
+        ipl_name="Underworld Laser, Menai, NSW, AU",
+        timezone_offset="+11:00",
+        timezone_name="Australia/Sydney",
+        competitive=True
+    ),
+    Site(
+        id="7-8",
+        name="Huddersfield",
+        ipl_name="LaserZone, Huddersfield, UK",
+        timezone_offset="+00:00",
+        timezone_name="Europe/London",
+        competitive=True
+    ),
+    Site(
+        id="20-18",
+        name="Lasergame Beroun",
+        ipl_name="Lasergame Beroun, Czech Republic",
+        timezone_offset="+02:00",
+        timezone_name="Europe/Prague",
+        competitive=True
+    ),
+    Site(
+        id="4-80",
+        name="Lost Worlds",
+        ipl_name="Lost Worlds Entertainment, City of Industry, CA",
+        timezone_offset="-08:00",
+        timezone_name="America/Los_Angeles",
+        competitive=True
+    ),
+    Site(
+        id="4-3",
+        name="Carmichael",
+        ipl_name="Lasertag Of Carmichael",
+        timezone_offset="-08:00",
+        timezone_name="America/Los_Angeles",
+        competitive=False
+    ),
+]
+
+SITE_BY_ID = {site.id: site for site in SITES}
+SITE_BY_NAME = {site.name: site for site in SITES}
+SITE_BY_IPL_NAME = {
+    site.ipl_name: site
+    for site in SITES
+    if site.ipl_name is not None
+}
+
 COMPETITIVE_SITES = {
-    "Loveland": "4-19",
-    "Brisbane": "1-1",
-    "Syracuse": "4-23",
-    "Invasion": "4-43",
-    "St George": "4-2",
-    "Auckland Wairau": "3-3",
-    "Detroit": "4-6",
-    "Lasergame Říčany": "20-7",
-    "PowerLaser Stuttgart": "21-8",
-    "LaserTag Darmstadt": "21-70",
-    "Wollongong Revolution": "1-58",
-    "Auckland Game Over": "3-7",
-    "Peterborough": "7-2",
-    "Cheltenham": "7-13",
-    "Sydney Underworld": "1-64",
-    "Huddersfield": "7-8",
-    "Lasergame Beroun": "20-18",
-}
-
-SITES = {
-    **COMPETITIVE_SITES,
-    "Lost Worlds": "4-80",
-    "Carmichael": "4-3",
-}
-
-ID_TO_SITE = {value: key for key, value in SITES.items()}
-
-IPL_NAME_TO_SITE_ID = {
-    "Loveland Laser Tag Fun Center": "4-19",
-    "Laserforce Brisbane, QLD, AU": "1-1",
-    "The Fun Warehouse, Syracuse": "4-23",
-    "Invasion Laser Tag, San Marcos, CA, US": "4-43",
-    "Laser Mania, St George, UT, USA": "4-2",
-    "Laserforce Auckland": "3-3",
-    "Revolution Laser Tag & Arcade, MI, USA": "4-6",
-    "Ricany Lasergame, Ricany, CZ": "20-7",
-    "PowerLaser, Stuttgart, Germany": "21-8",
-    "Lasertag Deutschland 1, Darmstadt, Germany": "21-70",
-    "Revolution Laser Arena, Wollongong, NSW, AU": "1-58",
-    "Game Over, Albany, NZ": "3-7",
-    "Laserforce Peterborough": "7-2",
-    "Funky Laser, Cheltenham, UK": "7-13",
-    "Underworld Laser, Menai, NSW, AU": "1-64",
-    "LaserZone, Huddersfield, UK": "7-8",
-    "Lasergame Beroun, Czech Republic": "20-18",
-    "Lost Worlds Entertainment, City of Industry, CA": "4-80",
-    "Lasertag Of Carmichael": "4-3",
-}
-
-ID_TO_IPL_NAME = {value: key for key, value in IPL_NAME_TO_SITE_ID.items()}
-
-# some may be inaccurate
-SITE_TIMEZONES = {
-    "4-19": "+07:00",  # America/Denver
-    "1-1": "+10:00",   # Australia/Brisbane
-    "4-23": "-05:00",  # America/New_York
-    "4-43": "-07:00",  # America/Denver
-    "4-2": "+07:00",   # America/Denver
-    "3-3": "+13:00",   # Pacific/Auckland
-    "4-6": "-05:00",   # America/New_York
-    "20-7": "+02:00",  # Europe/Prague
-    "21-8": "+02:00",  # Europe/Berlin
-    "21-70": "+02:00", # Europe/Berlin
-    "1-58": "+11:00",  # Australia/Sydney
-    "3-7": "+13:00",   # Pacific/Auckland
-    "7-2": "+00:00",   # Europe/London
-    "7-13": "+00:00",  # Europe/London
-    "1-64": "+11:00",  # Australia/Sydney
-    "7-8": "+00:00",   # Europe/London
-    "20-18": "+02:00",  # Europe/Prague
-    "4-80": "-08:00",  # America/Los_Angeles
-    "4-3": "-08:00",   # America/Los_Angeles
+    site.id: site
+    for site in SITES
+    if site.competitive
 }
 
 @dataclass

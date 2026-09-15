@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class PlayerListView(ListView):
     model = Player
-    template_name = "player_list.html"
+    template_name = "players.html"
     context_object_name = "players"
     paginate_by = 10  # Adjust as needed
 
@@ -24,8 +24,8 @@ class PlayerListView(ListView):
         allowed_fields = {
             "codename": "codename",
             "-codename": "-codename",
-            "home_site": "home_site",
-            "-home_site": "-home_site",
+            "home_site_id": "home_site_id",
+            "-home_site_id": "-home_site_id",
             "ratings": "ratings",
             "-ratings": "-ratings",
             "games": "games",
@@ -91,8 +91,6 @@ class PlayerListView(ListView):
         context["current_page"] = self.request.GET.get("page", 1)
         context["current_mode"] = self.request.GET.get("mode", "sm5")
         context["current_site"] = self.request.GET.get("site")
-        context["sites"] = SITES
-        context["competitive_sites"] = COMPETITIVE_SITES
         logger.debug(f"Context data prepared: {context}")
         return context
 

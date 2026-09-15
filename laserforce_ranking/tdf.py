@@ -1,5 +1,5 @@
 from pathlib import Path
-from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITES, SITE_TIMEZONES, TeamType
+from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITES, TeamType
 from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, Score
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
@@ -219,7 +219,7 @@ async def parse_tdf(file_location: Path):
                 # tdf file has local timezone, and we have the site timezone. database converts into utc and saves
 
                 # convert to datetime with timezone
-                start_time_formatted = datetime.strptime(start_time + SITE_TIMEZONES.get(site, "+00:00"), "%Y%m%d%H%M%S%z")
+                start_time_formatted = datetime.strptime(start_time + SITES[site].timezone_offset if SITES.get(site) else "+00:00", "%Y%m%d%H%M%S%z")
 
                 # check if we already have this game in the database, if so, skip it
                 if await Game.objects.filter(site_id=site, start_time=start_time_formatted).aexists():
@@ -440,6 +440,11 @@ async def parse_tdf(file_location: Path):
         if e.type == EntityType.PLAYER:
             # update player name if we have a new one
             if player := await Player.objects.filter(entity_id=entity_id).afirst() and player.codename != e.name:
+                # add previous codename to previous_codenames if it doesn't already exist
+
+                if player.codename and player.codename not in player.previous_codenames:
+                    player.previous_codenames.append(player.codename)
+
                 player.codename = e.name
                 player.player_id = e.member_id 
 
@@ -448,24 +453,24 @@ async def parse_tdf(file_location: Path):
             elif player := await Player.objects.filter(entity_id=entity_id, player_id__isnull=True).afirst() and e.member_id:
                 player.player_id = e.member_id
                 split_ = e.member_id.split("-")
-                player.home_site = f"{split_[0]}-{split_[1]}"
+                player.home_site_id = f"{split_[0]}-{split_[1]}"
 
                 await player.asave()
             # create new player if we don't their entity_id
             elif not await Player.objects.filter(entity_id=entity_id).aexists():
                 if e.member_id:
                     split_ = e.member_id.split("-")
-                    home_site = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else site
+                    home_site_id = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else site
                 else:
                     # for now set home site to this game site, but we will update it later when we get their player_id from the database
-                    home_site = site
+                    home_site_id = site
 
                 ratings = {
                     "global": BLANK_RATING_PER_SITE,
                 }
                 ratings[site] = BLANK_RATING_PER_SITE
 
-                await Player.objects.acreate(player_id=e.member_id, codename=e.name, entity_id=entity_id, home_site=home_site, ratings=ratings)
+                await Player.objects.acreate(player_id=e.member_id, codename=e.name, entity_id=entity_id, home_site_id=home_site_id, ratings=ratings)
     
     # before we save this game, change the file name into the correct format
     # ex: 4-80-20260830003930.tdf

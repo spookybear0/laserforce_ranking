@@ -3,7 +3,7 @@ from django.views.generic.detail import DetailView
 from django.shortcuts import render
 from laserforce_ranking.models import Player
 from laserforce_ranking.models import SITES
-from laserforce_ranking.views.game_list import get_game_table_context
+from laserforce_ranking.views.games import get_game_table_context
 
 class PlayerView(DetailView):
     model = Player

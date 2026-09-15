@@ -25,8 +25,8 @@ from .views import api
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.IndexView.as_view(), name="index"),
-    path("players", views.PlayerListView.as_view(), name="player_list"),
-    path("games", views.GameListView.as_view(), name="game_list"),
+    path("players", views.PlayerListView.as_view(), name="players"),
+    path("games", views.GameListView.as_view(), name="games"),
     path("players/<str:entity_id>", views.PlayerView.as_view(), name="player_detail"),
     path("about", views.AboutView.as_view(), name="about"),
     path("games/<str:tdf_name>", views.GameView.as_view(), name="game_detail"),
@@ -36,6 +36,7 @@ urlpatterns = [
     path("matchmaker/teams", views.MatchmakerTeamsView.as_view(), name="matchmaker_teams"),
     path("matchmaker/update", views.MatchmakerUpdateView.as_view(), name="matchmaker_update"),
     path("matchmaker/<str:tdf_name>", views.MatchmakerView.as_view(), name="matchmaker_rematchmake"),
+    path("sites/", views.SiteListView.as_view(), name="sites"),
     path("util/upload_tdf", views.UploadTDFView.as_view(), name="upload_tdf"),
 ]
 

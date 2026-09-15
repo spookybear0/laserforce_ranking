@@ -1,4 +1,4 @@
-from laserforce_ranking.models import SITES, Game, ID_TO_SITE, SM5Game, Team
+from laserforce_ranking.models import SITE_BY_ID, Game, SM5Game, Team
 from django.views.generic import ListView
 from django.shortcuts import render
 from django.db.models import Case, When, Value, CharField, F, Q, Max, Min, OuterRef, Subquery, IntegerField
@@ -99,7 +99,7 @@ def get_games(request, player_entity_id=None):
     # Site filter
     site = request.GET.get("site")
     if site:
-        games = games.filter(site_id=SITES[site])
+        games = games.filter(site_id=SITE_BY_ID[site].id)
 
     return games.order_by(db_field)
 
@@ -121,7 +121,7 @@ def get_game_table_context(request, player_entity_id=None):
     }
 
 class GameListView(ListView):
-    template_name = "game_list.html"
+    template_name = "games.html"
     context_object_name = "games"
     paginate_by = 10  # Adjust as needed
 

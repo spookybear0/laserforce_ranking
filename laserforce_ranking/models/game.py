@@ -2,7 +2,7 @@ from django.db import models
 from abc import abstractmethod
 import sys
 from datetime import datetime
-from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType, GameType
+from .types import TeamType, NAME_TO_TEAM, EntityType, IntRole, EventType, PlayerStateType, EntityEndType, GameType, Site, SITE_BY_ID
 from laserforce_ranking.rating import Rating, MU, SIGMA
 from dataclasses import dataclass
 import re
@@ -266,6 +266,15 @@ class Game(models.Model):
         For example, "laserball" or "sm5".
         """
         return GameType(self.short_type)
+    
+    @property
+    def site(self) -> Site:
+        """
+        Returns the site of the game.
+        This is used for the API and should be a short string that describes the site.
+        For example, "4-43" or "5-12".
+        """
+        return SITE_BY_ID[self.site_id]
     
     async def get_win_chance(self, timeframe: Optional[str] = None, consider_site: bool = True, consider_roles: bool = True) -> List[float]:
         """

@@ -1,6 +1,6 @@
 from django.db import models
 from .game import Game, Team
-from .types import TeamType, IntRole, EventType, SM5_ENEMY_TEAM, ID_TO_SITE
+from .types import TeamType, IntRole, EventType, SM5_ENEMY_TEAM, SITE_BY_ID
 from typing import Optional
 from asgiref.sync import sync_to_async
 import math
@@ -310,7 +310,8 @@ class SM5Game(Game):
         return double_events / total if total > 0 else 0
     
     def __str__(self):
-        return f"SM5Game {self.id} at {ID_TO_SITE.get(self.site_id, self.site_id)} on {self.start_time}"
+        site_name = SITE_BY_ID.get(self.site_id, self.site_id).name if self.site_id else "Unknown Site"
+        return f"SM5Game {self.id} at {site_name} on {self.start_time}"
     
     class Meta:
         verbose_name = "SM5 game"

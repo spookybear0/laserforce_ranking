@@ -1,7 +1,7 @@
 from django.db import models
-from .types import Permission, IntRole, ID_TO_SITE, GameType
+from .types import Permission, IntRole, SITE_BY_ID, GameType, Site
 from .game import Game
-from typing import Optional
+from typing import Optional, Union
 from laserforce_ranking.rating import Rating, MU, SIGMA
 from django_enum import EnumField
 from django.urls import reverse
@@ -80,7 +80,7 @@ class Player(models.Model):
     player_id = models.SlugField(unique=True, null=True) # iplaylaserforce player id (ex: 4-43-1265)
     ratings = models.JSONField(default=dict)
     # where membership was created
-    home_site = models.SlugField(null=True) # site id (ex: 4-43)
+    home_site_id = models.SlugField(null=True) # site id (ex: 4-43)
 
     # general db stuff
 
@@ -93,10 +93,13 @@ class Player(models.Model):
     # TODO: rfid
 
     @property
-    def home_site_name(self):
-        if self.home_site is None:
-            return "Unknown Site"
-        return ID_TO_SITE.get(self.home_site, self.home_site)
+    def home_site(self) -> Union[str, Site]:
+        if site := SITE_BY_ID.get(self.home_site_id):
+            return site
+        else:
+            return Site(
+                id=self.home_site_id, name=self.home_site_id, ipl_name=self.home_site_id
+            )
     
     async def get_game_count(self, site: Optional[str] = None):
         """
@@ -159,7 +162,10 @@ class Player(models.Model):
         for site, site_ratings in self.ratings.items():
             if site == "global":
                 continue
-            ratings_str += f"{ID_TO_SITE.get(site, site)}:\n"
+
+            site_name = SITE_BY_ID.get(site, site).name if SITE_BY_ID.get(site) else site
+
+            ratings_str += f"{site_name}:\n"
             for game_type in type_order:
                 if game_type in site_ratings:
                     rating = site_ratings[game_type]

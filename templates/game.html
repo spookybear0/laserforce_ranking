@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ ID_TO_SITE[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} | LF Ranking{% endblock %}
+{% block title %}{{ SITE_BY_ID[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} | LF Ranking{% endblock %}
 
 
 {% block meta_description %}SM5 game on LF Ranking
-{{ ID_TO_SITE[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} on {{ game.start_time.strftime("%b %d, %Y") }}{% if game.ranked %} · Ranked{% endif %}{% endblock %}
+{{ SITE_BY_ID[game.site_id] }} @ {{ game.start_time.strftime('%H:%M') }} on {{ game.start_time.strftime("%b %d, %Y") }}{% if game.ranked %} · Ranked{% endif %}{% endblock %}
 
 {% block og_title %}{{ teams[0].name }} {{ teams[0].score }} - {{ teams[1].name }} {{ teams[1].score }} | LF Ranking{% endblock %}
 
-{% block og_description %}SM5 · {{ ID_TO_SITE[game.site_id] }} · {{ game.start_time.strftime("%b %d, %Y") }} {% if game.ranked %}· Ranked{% endif %}{% endblock %}
+{% block og_description %}SM5 · {{ SITE_BY_ID[game.site_id] }} · {{ game.start_time.strftime("%b %d, %Y") }} {% if game.ranked %}· Ranked{% endif %}{% endblock %}
 
 {% block og_image %}
 <meta
@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block twitter_description %}
-    SM5 · {{ ID_TO_SITE[game.site_id] }} · {{ game.start_time.strftime("%b %d, %Y") }}
+    SM5 · {{ SITE_BY_ID[game.site_id].name }} · {{ game.start_time.strftime("%b %d, %Y") }}
     {% if game.ranked %}· Ranked{% endif %}
 {% endblock %}
 
@@ -46,7 +46,7 @@
         <div class="flex flex-col gap-2">
             <h1 class="text-4xl font-bold">Game @ {{ game.start_time.strftime('%H:%M') }}</h1>
             <p class="text-base text-base-content/70">
-                {{ ID_TO_SITE[game.site_id] }} - {{ game.start_time.strftime('%b {}, %Y'.format(day_no_leading_zero)) }} - {{ game.mission_duration.seconds // 60 }}:{{ '%02d' % (game.mission_duration.seconds % 60) }}
+                {{ SITE_BY_ID[game.site_id].name }} - {{ game.start_time.strftime('%b {}, %Y'.format(day_no_leading_zero)) }} - {{ game.mission_duration.seconds // 60 }}:{{ '%02d' % (game.mission_duration.seconds % 60) }}
             </p>
             <p class="text-base text-base-content/70 mb-4"><a href="/api/tdf/{{game.tdf_name}}" class="text-blue-500 hover:underline">{{ game.tdf_name }}</a></p>
         </div>
