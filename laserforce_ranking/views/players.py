@@ -88,14 +88,17 @@ class PlayerListView(ListView):
         context = super().get_context_data(**kwargs)
 
         # pass current sorting to the template to toggle direction
+
+        date_range = self.request.GET.get("date_range")
+        date_range = date_range if date_range != "None" else None
         
         context.update({
             "current_sort": self.request.GET.get("sort", "-ratings"),
             "current_page": self.request.GET.get("page", 1),
             "current_mode": self.request.GET.get("mode", "sm5"),
             "current_site": self.request.GET.get("site"),
-            "current_date_range": self.request.GET.get("date_range"),
-            "date_range_display": self.request.GET.get("date_range", "").replace("/", " to "),
+            "current_date_range": date_range,
+            "date_range_display": date_range.replace("/", " to ") if date_range else None,
         })
 
         logger.debug(f"Context data prepared: {context}")

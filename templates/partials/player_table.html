@@ -1,33 +1,35 @@
 <div class="container mx-auto bg-base-100 rounded-2xl shadow-xl p-10 mb-8" hx-swap="outerHTML" id="player-table">
-    <div class="flex justify-between items-center mb-4">
+    <div class="flex justify-between items-center mb-4 sm:flex-row flex-col space-y-2 sm:space-y-0 space-x-2">
         <h1 class="text-2xl font-bold">Players</h1>
-        <div class="flex space-x-2 flex-row">
-            <button name="mode" 
-                    value="sm5"
-                    hx-get="{{ url('players')}}?sort={{current_sort}}&page={{ page_obj.number }}"
-                    hx-target="#player-table"
-                    hx-include="[name='site'], [name='mode']"
-                    hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
-                    class="btn {% if current_mode == 'sm5' %}btn-primary{% else %}btn-outline{% endif %}">
-                SM5
-            </button>
-            
-            <button name="mode" 
-                    value="laserball"
-                    hx-get="{{ url('players')}}?sort={{current_sort}}&page={{ page_obj.number }}"
-                    hx-target="#player-table"
-                    hx-include="[name='site'], [name='mode']"
-                    hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
-                    class="btn {% if current_mode == 'laserball' %}btn-primary{% else %}btn-outline{% endif %}">
-                Laserball
-            </button>
+        <div class="flex space-x-2 sm:flex-row flex-col space-y-2 sm:space-y-0">
+            <div class="flex flex-row md:space-x-2 space-x-0 px-2 justify-between sm:space-y-0 space-y-2">
+                <button name="mode" 
+                        value="sm5"
+                        hx-get="{{ url('players')}}?sort={{current_sort}}&page={{ page_obj.number }}"
+                        hx-target="#player-table"
+                        hx-include="[name='site'], [name='mode']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="btn {% if current_mode == 'sm5' %}btn-primary{% else %}btn-outline{% endif %}">
+                    SM5
+                </button>
+                
+                <button name="mode" 
+                        value="laserball"
+                        hx-get="{{ url('players')}}?sort={{current_sort}}&page={{ page_obj.number }}"
+                        hx-target="#player-table"
+                        hx-include="[name='site'], [name='mode']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="btn {% if current_mode == 'laserball' %}btn-primary{% else %}btn-outline{% endif %}">
+                    Laserball
+                </button>
+            </div>
 
             <select name="site"
-                    hx-get="{{ url('players')}}?sort=date&page={{ page_obj.number }}&mode={{ current_mode }}"
+                    hx-get="{{ url('players')}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
                     hx-target="#player-table"
                     hx-include="[name='site'], [name='mode']"
                     hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
-                    class="select select-primary">
+                    class="select">
                 <option value="" {% if not current_site %}selected{% endif %}>All Sites</option>
                 {% for site in COMPETITIVE_SITES.values() %}
                     <option value="{{ site.id }}" {% if current_site == site.id %}selected{% endif %}>{{ site.name }}</option>
@@ -142,7 +144,7 @@
                         </button>
                     </th>
                 </tr>
-            </thead>    </thead>
+            </thead>
             <tbody id="player-table">
                 {% for player in players %}
                 <tr>

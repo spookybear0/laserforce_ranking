@@ -126,6 +126,9 @@ def get_game_table_context(request, player_entity_id=None):
     paginator = Paginator(games, 10)
     page_obj = paginator.get_page(request.GET.get("page", 1))
 
+    date_range = request.GET.get("date_range")
+    date_range = date_range if date_range != "None" else None
+
     return {
         "games": page_obj.object_list,
         "page_obj": page_obj,
@@ -133,8 +136,8 @@ def get_game_table_context(request, player_entity_id=None):
         "current_page": request.GET.get("page", 1),
         "current_site": request.GET.get("site"),
         "current_mode": request.GET.get("mode", "sm5"),
-        "current_date_range": request.GET.get("date_range"),
-        "date_range_display": request.GET.get("date_range", "").replace("/", " to "),
+        "current_date_range": date_range,
+        "date_range_display": date_range.replace("/", " to ") if date_range else None,
         "player_entity_id": player_entity_id,
     }
 
