@@ -4,6 +4,9 @@ from django.shortcuts import render
 from django.db.models import Case, When, Value, CharField, F, Q, Max, Min, OuterRef, Subquery, IntegerField
 import random
 from django.core.paginator import Paginator
+import logging
+
+logger = logging.getLogger(__name__)
 
 # team score subqueries
 
@@ -32,6 +35,7 @@ lowest_name_sub   = active_teams_subquery.order_by("adjusted_score").values("col
 def get_games(request, player_entity_id=None):
     sort_by = request.GET.get("sort", "-start_time")
     game_type = request.GET.get("mode", "sm5")
+    date_range = request.GET.get("date_range", None)
 
     if not player_entity_id and request.GET.get("player"):
         player_entity_id = request.GET.get("player")
@@ -72,6 +76,8 @@ def get_games(request, player_entity_id=None):
             ),
         )
     else: # laserball
+        # return empty qs for now
+        return Game.objects.none()
         games = Game.objects.annotate(
             high_score=Subquery(highest_score_sub),
             low_score=Subquery(lowest_score_sub),
@@ -89,6 +95,16 @@ def get_games(request, player_entity_id=None):
             )
         )
 
+    # Date range filter
+
+    if date_range:
+        # format: YYYY-MM-DD/YYYY-MM-DD
+        try:
+            start_date, end_date = date_range.split("/")
+            logger.info(f"Filtering games from {start_date} to {end_date}")
+            games = games.filter(start_time__date__gte=start_date, start_time__date__lte=end_date)
+        except ValueError:
+            pass
 
     # Player filter
     if player_entity_id:
@@ -117,6 +133,8 @@ def get_game_table_context(request, player_entity_id=None):
         "current_page": request.GET.get("page", 1),
         "current_site": request.GET.get("site"),
         "current_mode": request.GET.get("mode", "sm5"),
+        "current_date_range": request.GET.get("date_range"),
+        "date_range_display": request.GET.get("date_range", "").replace("/", " to "),
         "player_entity_id": player_entity_id,
     }
 

@@ -25,7 +25,6 @@
 
     {% block og_image %}
     {% endblock %}
-
     <!-- Twitter / Discord-compatible large preview -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}LF Ranking{% endblock %}">
@@ -38,7 +37,9 @@
     {% endblock %}
 
     <link href="{{ static('css/output.css') }}" rel="stylesheet">
+    <link href="{{ static('css/calendar.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
+    <script type="module" src="https://unpkg.com/cally"></script>
     <script src="{{ static('js/base.js') }}"></script>
 
     {% block head %}{% endblock %}

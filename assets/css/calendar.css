@@ -1,0 +1,22 @@
+/* structures cally's layout header bar as a flex row */
+calendar-range::part(header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* completely hide the leaking screen-reader label text blocks */
+calendar-select-month::part(label),
+calendar-select-year::part(label) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

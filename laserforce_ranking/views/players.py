@@ -86,11 +86,18 @@ class PlayerListView(ListView):
     def get_context_data(self, **kwargs):
         logger.debug("Fetching context data for PlayerListView")
         context = super().get_context_data(**kwargs)
-        # Pass current sorting to the template to toggle direction
-        context["current_sort"] = self.request.GET.get("sort", "-ratings")
-        context["current_page"] = self.request.GET.get("page", 1)
-        context["current_mode"] = self.request.GET.get("mode", "sm5")
-        context["current_site"] = self.request.GET.get("site")
+
+        # pass current sorting to the template to toggle direction
+        
+        context.update({
+            "current_sort": self.request.GET.get("sort", "-ratings"),
+            "current_page": self.request.GET.get("page", 1),
+            "current_mode": self.request.GET.get("mode", "sm5"),
+            "current_site": self.request.GET.get("site"),
+            "current_date_range": self.request.GET.get("date_range"),
+            "date_range_display": self.request.GET.get("date_range", "").replace("/", " to "),
+        })
+
         logger.debug(f"Context data prepared: {context}")
         return context
 
