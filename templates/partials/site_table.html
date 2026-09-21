@@ -18,7 +18,7 @@
             <tbody id="site-table-body">
                 {% for site in sites %}
                 <tr>
-                    <td>{{ site.name }}</td>
+                    <td><a class="link link-primary" href="{{ url('site_detail', kwargs={'site_id': site.id}) }}">{{ site.name }}</a></td>
                     <td>{{ site.id }}</td>
                     <td>{{ site.players }}</td>
                     <td>{{ site.games }}</td>

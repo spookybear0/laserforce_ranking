@@ -37,6 +37,7 @@ urlpatterns = [
     path("team_builder/update", views.TeamBuilderUpdateView.as_view(), name="team_builder_update"),
     path("team_builder/<str:tdf_name>", views.TeamBuilderView.as_view(), name="team_builder_rematchmake"),
     path("sites/", views.SiteListView.as_view(), name="sites"),
+    path("sites/<str:site_id>", views.SiteView.as_view(), name="site_detail"),
     path("util/upload_tdf", views.UploadTDFView.as_view(), name="upload_tdf"),
 ]
 

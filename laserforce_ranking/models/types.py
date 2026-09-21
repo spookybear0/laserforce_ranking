@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, IntEnum
 from zoneinfo import ZoneInfo
 from django.db import models
+from pathlib import Path
 import re
 
 @dataclass(frozen=True)
@@ -24,6 +25,21 @@ class Site:
     ipl_name: str
     timezone: Optional[ZoneInfo] = None 
     competitive: bool = True
+
+    @property
+    def images(self) -> list[str]:
+        site_images = []
+
+        pngs = Path("assets/site").glob("*.png")
+        jpgs = Path("assets/site").glob("*.jpg")
+
+        files = list(pngs) + list(jpgs)
+
+        for file in sorted(files, key=lambda f: f.name):
+            if file.name.startswith(f"{self.id}-"):
+                site_images.append(file.name)
+
+        return site_images
 
     def __str__(self):
         return f"{self.name} ({self.id})"
@@ -62,7 +78,7 @@ SITES = [
     ),
     Site(
         id="4-2",
-        name="St George",
+        name="St. George",
         ipl_name="Laser Mania, St George, UT, USA",
         timezone=ZoneInfo("America/Denver"),
         competitive=True

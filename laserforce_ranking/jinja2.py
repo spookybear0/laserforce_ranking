@@ -1,8 +1,6 @@
 from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import Environment
-from .models import Player
-from .models.types import SITES, SITE_BY_ID, COMPETITIVE_SITES, SITE_BY_IPL_NAME, IntRole, EntityType, RoleLock, NAME_TO_TEAM
 from django.db.models import Sum, Avg
 from asgiref.sync import sync_to_async
 import os
@@ -15,6 +13,8 @@ else:
 def environment(**options):
     """Configures the Jinja2 environment with Django global functions."""
     env = Environment(**options)
+
+    from .models.types import SITES, SITE_BY_ID, COMPETITIVE_SITES, SITE_BY_IPL_NAME, IntRole, EntityType, RoleLock, NAME_TO_TEAM
 
     # inject Django helper functions into Jinja2 templates
     env.globals.update(
@@ -31,7 +31,6 @@ def environment(**options):
             "IntRole": IntRole,
             "EntityType": EntityType,
             "RoleLock": RoleLock,
-            "Player": Player,
             "Sum": Sum,
             "Avg": Avg,
             "sync_to_async": sync_to_async,

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site.name }} | LF Ranking{% endblock %}
+
+{% block content %}
+
+<!--about page daisyui tailwind -->
+
+<div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col justify-center gap-2">
+    <div class="flex items-center gap-2">
+        <h1 class="text-4xl font-bold">{{ site.name }}</h1>
+        <a class="link link-primary" href="http://www.iplaylaserforce.com/mission-stats/?pov={{ site.id }}&sel={{ site.id }}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+    </div>
+    <h2 class="text-xl font-semibold text-gray-400">{{ site.id }}</h2>
+    <div class="mt-4 grid grid-cols-2 gap-4">
+        {% for image in site.images %}
+            <img src="/assets/site/{{ image }}" alt="{{ site.name }} image {{ loop.index }}" class="rounded-lg shadow-md w-full h-full object-cover">
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

@@ -8,3 +8,4 @@ from .team_builder import TeamBuilderView, TeamBuilderPlayersView, TeamBuilderTe
 from .upload_tdf import UploadTDFView
 from .game_embed import SM5GameEmbedImageView
 from .sites import SiteListView
+from .site import SiteView

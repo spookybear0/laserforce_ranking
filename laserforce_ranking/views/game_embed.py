@@ -7,7 +7,7 @@ from django.views import View
 
 
 class SM5GameEmbedImageView(View):
-    def get(self, request, tdf_name,):
+    def get(self, request, tdf_name):
         sm5game = get_object_or_404(
             SM5Game.objects.prefetch_related(
                 "teams__entity_starts__entity_end",
