@@ -4,8 +4,6 @@
 
 {% block content %}
 
-<!--about page daisyui tailwind -->
-
 <div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col justify-center gap-2">
     <div class="flex items-center gap-2">
         <h1 class="text-4xl font-bold">{{ site.name }}</h1>
@@ -18,5 +16,7 @@
         {% endfor %}
     </div>
 </div>
+
+{% include 'partials/game_table.html' %}
 
 {% endblock %}

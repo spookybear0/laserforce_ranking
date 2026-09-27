@@ -30,18 +30,20 @@
                     Laserball
                 </button>
             </div>
-
-            <select name="site"
-                    hx-get="{{ url('games')}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                    hx-target="#game-table"
-                    hx-include="[name='site'], [name='mode'], [name='player']"
-                    hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
-                    class="select">
-                <option value="" {% if not current_site %}selected{% endif %}>All Sites</option>
-                {% for site in SITES %}
-                    <option value="{{ site.id }}" {% if current_site == site.id %}selected{% endif %}>{{ site.name }}</option>
-                {% endfor %}
-            </select>
+            
+            {% if not site_id %}
+                <select name="site"
+                        hx-get="{{ url('games')}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                        hx-target="#game-table"
+                        hx-include="[name='site'], [name='mode'], [name='player']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="select">
+                    <option value="" {% if not current_site %}selected{% endif %}>All Sites</option>
+                    {% for site in SITES %}
+                        <option value="{{ site.id }}" {% if current_site == site.id %}selected{% endif %}>{{ site.name }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
 
             <!-- cally calendar popover button styled with daisyUI -->
             <button popovertarget="cally-popover" class="input input-bordered w-full flex items-center justify-between text-left" id="date-display" style="anchor-name:--cally-btn">

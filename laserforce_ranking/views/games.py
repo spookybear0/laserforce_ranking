@@ -32,13 +32,16 @@ lowest_score_sub  = active_teams_subquery.order_by("adjusted_score").values("adj
 highest_name_sub  = active_teams_subquery.order_by("-adjusted_score").values("color_name")[:1]
 lowest_name_sub   = active_teams_subquery.order_by("adjusted_score").values("color_name")[:1]
 
-def get_games(request, player_entity_id=None):
+def get_games(request, player_entity_id=None, site_id=None):
     sort_by = request.GET.get("sort", "-start_time")
     game_type = request.GET.get("mode", "sm5")
     date_range = request.GET.get("date_range", None)
 
     if not player_entity_id and request.GET.get("player"):
         player_entity_id = request.GET.get("player")
+
+    if not site_id and request.GET.get("site"):
+        site_id = request.GET.get("site")
 
     allowed_fields = {
         "start_time": "start_time",
@@ -117,11 +120,14 @@ def get_games(request, player_entity_id=None):
     if site:
         games = games.filter(site_id=SITE_BY_ID[site].id)
 
+    if site_id:
+        games = games.filter(site_id=site_id)
+
     return games.order_by(db_field)
 
 
-def get_game_table_context(request, player_entity_id=None):
-    games = get_games(request, player_entity_id)
+def get_game_table_context(request, player_entity_id=None, site_id=None):
+    games = get_games(request, player_entity_id, site_id)
 
     paginator = Paginator(games, 10)
     page_obj = paginator.get_page(request.GET.get("page", 1))
@@ -139,6 +145,7 @@ def get_game_table_context(request, player_entity_id=None):
         "current_date_range": date_range,
         "date_range_display": date_range.replace("/", " to ") if date_range else None,
         "player_entity_id": player_entity_id,
+        "site_id": site_id,
     }
 
 class GameListView(ListView):

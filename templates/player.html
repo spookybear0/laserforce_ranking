@@ -13,6 +13,9 @@
     {% if player.previous_codenames %}
         <h2 class="text-md font-semibold text-gray-400">Also known as: {{ player.previous_codenames | join(', ') }}</h2>
     {% endif %}
+    {% if player.home_site and player.home_site.id %}
+        <h2 class="text-md font-semibold text-gray-400"><a class="link link-primary" href="{{ url('site_detail', kwargs={'site_id': player.home_site.id}) }}">{{ player.home_site.name }}</a></h2>
+    {% endif %}
     <h2 class="text-md font-semibold text-gray-400">{{ player.entity_id }}</h2>
     {% if player.player_id %}
         <h2 class="text-md font-semibold text-gray-400">{{ player.player_id }}</h2>
