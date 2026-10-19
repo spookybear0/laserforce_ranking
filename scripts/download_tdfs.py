@@ -6,8 +6,8 @@ from laserforce_ranking.tdf import download_tdfs
 
 
 @click.command()
-@click.option('--site_id', default=None, help='Site ID to download TDFs for (e.g., "4-19")')
-@click.option('--game_type', default=None, help='Game type to download TDFs for (e.g., "sm5")')
+@click.option('--site-id', default=None, help='Site ID to download TDFs for (e.g., "4-19")')
+@click.option('--game-type', default=None, help='Game type to download TDFs for (e.g., "sm5")')
 async def download_tdfs_command(site_id, game_type):
     """
     Command to download TDFs for a specific site and/or game type.

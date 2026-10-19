@@ -458,9 +458,18 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
         team_color = entity_start.team.color_name
         if team_color == (teams[0].color_name):
             player = await Player.objects.filter(entity_id=entity_start.entity_id).afirst()
+
+            # ensure that this player has a rating for this site, if not, create a new one
+            if player and game.site_id not in player.ratings:
+                player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+
             team1.append((player if player else FakeDefaultPlayer(game.site_id), entity_start))
         else:
             player = await Player.objects.filter(entity_id=entity_start.entity_id).afirst()
+
+            if player and game.site_id not in player.ratings:
+                player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+
             team2.append((player if player else FakeDefaultPlayer(game.site_id), entity_start))
 
     # general ratings
@@ -594,18 +603,33 @@ async def reset_rankings():
         player.ratings = {"global": deepcopy(BLANK_RATING_PER_SITE)}
         await player.asave()
 
-async def recalculate_rankings():
+async def recalculate_rankings(start_game_id: Optional[int] = None):
     """
     Recalculate all player rankings from scratch
     """
     from .models import SM5Game, Game
 
+
+
     logger.info("Recalculating all player rankings from scratch")
 
-    await reset_rankings()
+    
 
-    async for game in SM5Game.objects.filter(ranked=True).order_by("start_time").all():
+    query = SM5Game.objects.filter(ranked=True).order_by("start_time")
+
+    if start_game_id is not None:
+        game = await SM5Game.objects.filter(id=start_game_id).afirst()
+        query = query.filter(start_time__gte=game.start_time)
+    else:
+        await reset_rankings()
+    
+    length = await query.acount()
+
+    i = 0
+    async for game in query.all():
+        print(f"Processing game {i + 1}/{length}: {game.tdf_name} (ID: {game.id})")
         await update_sm5_rankings(game)
+        i += 1
 
     #async for game in LaserballGame.objects.filter(ranked=True).order_by("start_time").all():
     #    await update_laserball_rankings(game)

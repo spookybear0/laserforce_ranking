@@ -6,7 +6,7 @@ from laserforce_ranking.tdf import mass_parse_tdfs
 import time
 
 @click.command()
-@click.option('--skip_rankings', is_flag=True, default=True, help='Skip ranking after parsing TDFs')
+@click.option('--skip-rankings', is_flag=True, default=True, help='Skip ranking after parsing TDFs')
 async def mass_parse_tdfs_command(skip_rankings: bool = True):
     """
     Command to mass parse TDFs.
