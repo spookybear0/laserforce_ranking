@@ -132,8 +132,6 @@ async def mass_parse_tdfs(skip_rankings: bool = False):
     files.sort()
 
     if skip_rankings:
-        
-
         loop = asyncio.get_event_loop()
         with ProcessPoolExecutor() as executor:
             tasks = [
@@ -545,6 +543,8 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
         else:
             logger.warning(f"File {new_tdf_name} already exists")
             return
+        
+    logger.info(f"Finished parsing tdf file: {file_location.name}")
 
 
 async def process_sm5(

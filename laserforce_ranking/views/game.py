@@ -50,10 +50,10 @@ class GameView(DetailView):
         context = self.get_context_data(object=self.object)
         game = self.object
 
-        if sync_to_async(hasattr)(game, "sm5game"):
+        if await sync_to_async(hasattr)(game, "sm5game"):
             game = await sync_to_async(getattr)(game, "sm5game")
             await self.sm5(game, context)
-        elif sync_to_async(hasattr)(game, "laserballgame"):
+        elif await sync_to_async(hasattr)(game, "laserballgame"):
             game = await sync_to_async(getattr)(game, "laserballgame")
             await self.laserball(game, context)
             
