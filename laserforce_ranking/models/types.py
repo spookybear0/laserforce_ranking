@@ -371,7 +371,7 @@ class TeamType(Enum):
         return re.sub(r"\s*Team\s*", "", self.name)
 
 
-# Mapping of opposing teams in SM5 games. TODO: Fix
+# Mapping of opposing teams in SM5 games. TODO: Fix for all teams
 SM5_ENEMY_TEAM = {
     TeamType.GREEN: TeamType.RED,
     TeamType.RED: TeamType.GREEN,

@@ -93,7 +93,7 @@ def get_games(request, player_entity_id=None, site_id=None):
 
             outcome=Case(
                 When(winner__isnull=False, then=Value("Draw")),
-                default=Value("Score"),
+                default=Value("ScoreEvent"),
                 output_field=CharField()
             )
         )

@@ -101,52 +101,51 @@ LB_GOAL_WEIGHT_SIGMA = 1.5  # uncertainty weight for goals in laserball
 LB_ASSIST_WEIGHT_MU = 0.75  # skill weight for assists in laserball
 LB_ASSIST_WEIGHT_SIGMA = 0.75  # uncertainty weight for assists in laserball
 
+def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:
+    # Check Arguments
+    self._check_teams(teams)
 
-class CustomPlackettLuce(PlackettLuce):
-    def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:
-        # Check Arguments
-        self._check_teams(teams)
+    n = len(teams)
 
-        n = len(teams)
+    # uneven team adjustment is only implemented for 2 teams
 
-        # uneven team adjustment is only implemented for 2 teams
+    # 2 Player Case
+    if n == 2:
+        teams_ratings = self._calculate_team_ratings(teams)
+        a = teams_ratings[0]
+        b = teams_ratings[1]
 
-        # 2 Player Case
-        if n == 2:
-            teams_ratings = self._calculate_team_ratings(teams)
-            a = teams_ratings[0]
-            b = teams_ratings[1]
+        # CUSTOM ADDITION: per-body feed cost.
+        # In SM5 a player both scores points and concedes ("feeds") them,
+        # so a body's worth is measured against an ABSENT player, not a
+        # zero-skill floor. Subtracting zeta per body cancels exactly when
+        # team sizes are equal (even matchups are unchanged) and removes
+        # the +mu "existence bonus" an extra body otherwise gets.
+        # Unlike the previous mu-inflation approach this does NOT mutate
+        # the rating objects passed in.
+        zeta = FEED * self.mu
+        mu_a = a.mu - len(teams[0]) * zeta
+        mu_b = b.mu - len(teams[1]) * zeta
 
-            # CUSTOM ADDITION: per-body feed cost.
-            # In SM5 a player both scores points and concedes ("feeds") them,
-            # so a body's worth is measured against an ABSENT player, not a
-            # zero-skill floor. Subtracting zeta per body cancels exactly when
-            # team sizes are equal (even matchups are unchanged) and removes
-            # the +mu "existence bonus" an extra body otherwise gets.
-            # Unlike the previous mu-inflation approach this does NOT mutate
-            # the rating objects passed in.
-            zeta = FEED * self.mu
-            mu_a = a.mu - len(teams[0]) * zeta
-            mu_b = b.mu - len(teams[1]) * zeta
+        total_player_count = len(teams[0]) + len(teams[1])
 
-            total_player_count = len(teams[0]) + len(teams[1])
-
-            result = phi_major(
-                (mu_a - mu_b)
-                / math.sqrt(
-                    total_player_count * self.beta ** 2
-                    + a.sigma_squared
-                    + b.sigma_squared
-                )
+        result = phi_major(
+            (mu_a - mu_b)
+            / math.sqrt(
+                total_player_count * self.beta ** 2
+                + a.sigma_squared
+                + b.sigma_squared
             )
+        )
 
-            return [result, 1 - result]
+        return [result, 1 - result]
 
-        # TODO: Implement uneven team adjustment for 3 and 4 teams
-        return PlackettLuce.predict_win(self, teams)
+    # TODO: Implement uneven team adjustment for 3 and 4 teams
+    return PlackettLuce.predict_win(self, teams)
 
+PlackettLuce.predict_win = predict_win
 
-model = CustomPlackettLuce(MU, SIGMA, BETA, KAPPA, tau=TAU)
+model = PlackettLuce(MU, SIGMA, BETA, KAPPA, tau=TAU)
 Rating = PlackettLuceRating
 
 def introle_to_name(role: int):
@@ -569,3 +568,31 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
 
 async def update_laserball_rankings(game: "Game"):
     pass # TODO: rankings for laserball games
+
+async def reset_rankings():
+    """
+    Reset all player rankings to default values
+    """
+    from .models import Player
+
+    logger.info("Resetting all player rankings to default values")
+
+    async for player in Player.objects.all():
+        player.ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), "site": deepcopy(BLANK_RATING_PER_SITE)}
+        await player.asave()
+
+async def recalculate_rankings():
+    """
+    Recalculate all player rankings from scratch
+    """
+    from .models import Game
+
+    logger.info("Recalculating all player rankings from scratch")
+
+    await reset_rankings()
+
+    async for game in Game.objects.filter(ranked=True).order_by("time").all():
+        if game.game_type == GameType.SM5:
+            await update_sm5_rankings(game)
+        elif game.game_type == GameType.LASERBALL:
+            await update_laserball_rankings(game)

@@ -129,6 +129,7 @@ transfer.py
 *.csv
 
 sitemap.xml
+test.py
 
 # tailwind
 

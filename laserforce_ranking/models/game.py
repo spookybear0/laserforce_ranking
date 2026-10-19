@@ -112,7 +112,7 @@ class PlayerState(models.Model):
         return f"{self.state.name} - {self.entity.name} - Game {self.game.id}"
 
 # delta score updates
-class Score(models.Model):
+class ScoreEvent(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="scores")
     time = models.IntegerField() # time in milliseconds
     entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
@@ -122,6 +122,50 @@ class Score(models.Model):
 
     def __str__(self):
         return f"{self.entity.name} - {self.old} -> {self.new} (delta: {self.delta}) - Game {self.game.id}"
+
+# step updates
+class StepEvent(models.Model):
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="steps")
+    time = models.IntegerField() # time in milliseconds
+    entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
+    delta = models.SmallIntegerField() # change in step count
+    new = models.IntegerField() # new step total
+
+    def __str__(self):
+        return f"{self.entity.name} - Step change: {self.delta} -> {self.new} - Game {self.game.id}"
+    
+# life count updates
+class LifeEvent(models.Model):
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="lives")
+    time = models.IntegerField() # time in milliseconds
+    entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
+    delta = models.SmallIntegerField() # change in life count
+    new = models.SmallIntegerField() # new life total
+
+    def __str__(self):
+        return f"{self.entity.name} - Life change: {self.delta} -> {self.new} - Game {self.game.id}"
+
+# shot count updates
+class ShotEvent(models.Model):
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="shots")
+    time = models.IntegerField() # time in milliseconds
+    entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
+    delta = models.SmallIntegerField() # change in shot count
+    new = models.SmallIntegerField() # new shot total
+
+    def __str__(self):
+        return f"{self.entity.name} - Shot change: {self.delta} -> {self.new} - Game {self.game.id}"
+    
+# missiles remaining updates
+class MissileEvent(models.Model):
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="missiles")
+    time = models.IntegerField() # time in milliseconds
+    entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
+    delta = models.SmallIntegerField() # change in missile count
+    new = models.SmallIntegerField() # new missile total
+
+    def __str__(self):
+        return f"{self.entity.name} - Missile change: {self.delta} -> {self.new} - Game {self.game.id}"
 
 class EntityEnd(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="entity_ends")

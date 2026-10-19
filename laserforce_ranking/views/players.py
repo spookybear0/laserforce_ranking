@@ -39,7 +39,7 @@ class PlayerListView(ListView):
         logger.debug(f"Site parameter received: {site}")
 
         if db_field in ["ratings", "-ratings"]:
-            db_field = f"{db_field}__{site}"
+            db_field = db_field[:-1]
             logger.debug(f"Adjusted sorting field for site: {db_field}")
 
         games = (
@@ -68,7 +68,7 @@ class PlayerListView(ListView):
     
         mode = self.request.GET.get("mode", "sm5")
         logger.debug(f"Mode parameter received: {mode}")
-
+        
         queryset = Player.objects.annotate(
             rating=ExpressionWrapper(
                 Cast(KT(f"ratings__{site}__{mode}__mu"), FloatField())

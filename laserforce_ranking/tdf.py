@@ -1,6 +1,6 @@
 from pathlib import Path
 from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITE_BY_ID, TeamType
-from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, Score
+from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, ScoreEvent
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
 from typing import Optional, List, Dict
@@ -42,7 +42,7 @@ def element_to_color(element: str) -> str:
 
 # tdf importing/uploading
 
-async def import_legacy_tdf():
+async def download_legacy_tdf():
     """
     Imports tdfs from the old laserforce_ranking website
 
@@ -79,98 +79,59 @@ async def import_legacy_tdf():
             i += 1
 
 
-async def scrape_lfstats_tdf(site_id: Optional[str] = None, page_start: int = 0):
-    # scrape https://lfstats.com/games?scope=social&center=<center>
-    # pagninated list 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        context = await browser.new_context()
-        page = await context.new_page()
-
-        logger.info(f"Scraping lfstats tdfs for site {site_id} starting from page {page_start}")
+async def download_tdfs(start_date: Optional[str] = None, game_type: Optional[str] = None, site_id: Optional[str] = None):
+    async with aiohttp.ClientSession() as session:
+        payload = {
+            "start_date": "1970-01-01"
+        }
+        if start_date:
+            payload["end_date"] = start_date
         if site_id:
-            await page.goto(f"https://lfstats.com/games?scope=social&center={site_id}")
-        else:
-            await page.goto(f"https://lfstats.com/games?scope=social")
+            payload["center"] = site_id
+        if game_type:
+            payload["game_type"] = game_type
 
-        # Wait for the page to load
-        await page.wait_for_selector(".p-2.align-middle.whitespace-nowrap")
+        async with session.get("https://lfstats.com/api/games", params=payload) as response:
+            games = (await response.json())["data"]
 
-        # print page content
-
-        # click on start_date to sort by oldest first
-
-        started = await page.query_selector("thead[data-slot='table-header'] > tr > th:nth-child(3) > button")
-        if started:
-            await started.click()
-            await page.wait_for_timeout(500)
-
-        page_num = page_start
-
-        if page_start > 0:
-            # click on the page number button "page_start" times to get to the correct page
-            for i in range(page_start):
-                logger.info(f"Clicking next page button to get to page {page_start} ({i+1}/{page_start})")
-                next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
-                if next_button:
-                    await next_button.click()
-                    await page.wait_for_timeout(200)
-
-        while True:
-            # Find all links to tdfs
-            links = await page.query_selector_all(".p-2.align-middle.whitespace-nowrap a")
-            hrefs = [(await link.get_attribute("href")).split("/")[-1] for link in links]
-
-            logger.info(f"Found {len(hrefs)} tdfs on page {page_num} for site {site_id if site_id else 'all sites'}")
-            for href in hrefs:
-                # check if we already have this tdf
-                tdf_name = f"{href}.tdf"
-                tdf_path = Path(f"tdfs/{tdf_name}")
-
-                if os.path.exists(tdf_path):
-                    logger.info(f"Already have {tdf_name}, skipping")
+            for i, game in enumerate(games):
+                if game["competition_slug"]:
+                    # competitive game, skip
                     continue
 
-                # get tdf from link
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(f"https://lfstats-modern-archive.s3.us-west-1.amazonaws.com/{href}.tdf") as tdf_resp:
-                        if tdf_resp.status == 404:
-                            logger.warning(f"TDF {tdf_name} not found (404), skipping")
-                            continue
+                # create /tdfs directory if it doesn't exist
 
-                        data = await tdf_resp.text(encoding="utf-16")
+                if not os.path.exists("tdfs"):
+                    os.makedirs("tdfs")
+                
+                # download game into tdfs/ from game["tdf_url"]
 
-                        # save tdf to disk
+                tdf_url = game["tdf_url"]
+                tdf_filename = tdf_url.split("/")[-1]
 
-                        if not tdf_path.exists():
-                            os.makedirs(tdf_path.parent, exist_ok=True)
-                        
-                        # Remove extra blank lines
-                        data = "\n".join(line for line in data.splitlines() if line.strip())
-                        with open(tdf_path, "w", encoding="utf-16") as f:
-                            f.write(data)
+                # check if we have the tdf already
 
-            # Check if there is a next page, if so, navigate to it
-            next_button = await page.query_selector("div.flex.items-center.justify-between > div.flex.gap-2 > button:nth-child(2)")
-            if next_button:
-                await next_button.click()
-                await page.wait_for_timeout(1000)  # Wait for the next page to load
-                page_num += 1 
-            else:
-                logger.info(f"No more pages found for site {site_id if site_id else 'all sites'}, stopping scrape")
-                break
+                if os.path.exists(f"tdfs/{tdf_filename}"):
+                    print(f"Already have {tdf_filename}, skipping download")
+                    continue
 
-        await browser.close()
-
+                async with session.get(tdf_url) as tdf_response:
+                    if tdf_response.status == 200:
+                        with open(f"tdfs/{tdf_filename}", "wb") as tdf_file:
+                            print(f"Downloading {tdf_filename} ({i+1}/{len(games)})")
+                            tdf_file.write(await tdf_response.read())
+        
 async def mass_parse_tdfs():
     tdf_dir = Path("tdfs")
-    for tdf_file in tdf_dir.glob("*.tdf"):
+    files = list(tdf_dir.glob("*.tdf"))
+    files.sort()
+    for tdf_file in files:
         if await parse_tdf(tdf_file):
             return
 
 # tdf parsing
 
-async def parse_tdf(file_location: Path):
+async def parse_tdf(file_location: Path, skip_rankings: bool = False):
     # first we will process the general information about the game, then we will
     # process the more specific game type
     # current types allowed: sm5, laserball
@@ -178,6 +139,11 @@ async def parse_tdf(file_location: Path):
     logger.info(f"Parsing tdf file: {file_location.name}")
 
     file = open(file_location, "r", encoding="utf-16")
+
+    # check if it's empty/really short
+    if len(file.readlines()) < 10:
+        logger.warning(f"TDF file {file_location.name} is empty or too short, skipping")
+        return
 
     # read line by line
 
@@ -191,6 +157,10 @@ async def parse_tdf(file_location: Path):
 
     force_ended_early = True # if the game ended early, this will be set to false if the game ended naturally
     end_event = None
+    
+    file.close()
+
+    file = open(file_location, "r", encoding="utf-16")
 
     while True:
         line = file.readline()
@@ -294,7 +264,7 @@ async def parse_tdf(file_location: Path):
 
                 entity_start = entity_starts.get(entity_id)
 
-                scores.append(Score(
+                scores.append(ScoreEvent(
                     time=time,
                     entity=entity_start,
                     old=old,
@@ -386,6 +356,28 @@ async def parse_tdf(file_location: Path):
                     entity=entity_start,
                     state=player_state_type
                 ))
+            case "10": # step count
+                time = int(data[1])
+                entity_id = data[2]
+                delta = int(data[3])
+                step_count = int(data[4])
+            case "11": # life deltas
+                time = int(data[1])
+                entity_id = data[2]
+                delta = int(data[3])
+                lives = int(data[4])
+            case "12": # shot deltas
+                time = int(data[1])
+                entity_id = data[2]
+                delta = int(data[3])
+                shots = int(data[4])
+            case "13": # missile deltas
+                time = int(data[1])
+                entity_id = data[2]
+                delta = int(data[3])
+                missiles = int(data[4])
+                
+                
 
     # combine entity_ends.score onto team.score
 
@@ -508,7 +500,8 @@ async def parse_tdf(file_location: Path):
         "team1": team1,
         "team2": team2,
         "team1_size": team1_size,
-        "team2_size": team2_size
+        "team2_size": team2_size,
+        "skip_rankings": skip_rankings
     }
    
     if mission_type == 5: # sm5
@@ -553,7 +546,7 @@ async def process_sm5(
     teams: Dict[int, Team],
     entity_starts: Dict["str", EntityStart],
     events: List[Event],
-    scores: List[Score],
+    scores: List[ScoreEvent],
     entity_ends: List[EntityEnd],
     player_states: List[PlayerState],
     team1: Team,
@@ -561,6 +554,7 @@ async def process_sm5(
     team1_size: int,
     team2_size: int,
     sm5_stats: List[SM5Stats],
+    skip_rankings: bool = False
 ):
     try:
         # special points
@@ -780,11 +774,11 @@ async def process_sm5(
 
         # rankings
 
-        if ranked:
+        if ranked and not skip_rankings:
             if await update_sm5_rankings(game):
-                pass#logger.info(f"Updated player rankings for game {game.id}")
+                logger.info(f"Updated player rankings for game {game.id}")
             else:
-                pass#logger.error(f"Failed to update player rankings for game {game.id}")
+                logger.error(f"Failed to update player rankings for game {game.id}")
         else:  # still need to add current_rating and previous_rating
             async for entity_end in game.entity_ends.filter(entity__type=EntityType.PLAYER).all():
                 entity_start = await sync_to_async(lambda: entity_end.entity)()
@@ -890,13 +884,14 @@ async def process_laserball(
     teams: List[Team],
     entity_starts: List[EntityStart],
     events: List[Event],
-    scores: List[Score],
+    scores: List[ScoreEvent],
     entity_ends: List[EntityEnd],
     team1: Team,
     team2: Team,
     team1_size: int,
     team2_size: int,
-    player_states: List[PlayerState]
+    player_states: List[PlayerState],
+    skip_rankings: bool = False
 ):
     # ranking
     pass

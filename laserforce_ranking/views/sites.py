@@ -44,7 +44,8 @@ class SiteListView(View):
                 .filter(winner__isnull=False)
                 .values("winner__color_name")
                 .annotate(win_count=Count("winner"))
-                .order_by("-win_count")
+                .order_by("-win_count") 
+                [:2] # get top 2
             )
 
             total_wins = sum(team["win_count"] for team in team_wins)

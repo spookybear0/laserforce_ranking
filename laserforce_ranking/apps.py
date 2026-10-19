@@ -7,8 +7,8 @@ import sys
 async def startup():
     if "makemigrations" in sys.argv or "migrate" in sys.argv:
         return
-    from laserforce_ranking.tdf import import_legacy_tdf, scrape_lfstats_tdf, mass_parse_tdfs
-    #await scrape_lfstats_tdf(site_id="4-19", page_start=82)
+    from laserforce_ranking.tdf import import_legacy_tdf, download_tdfs, mass_parse_tdfs
+    #await download_tdfs(site_id="4-19", game_type="sm5")
     #await mass_parse_tdfs()
 
 class LaserforceRankingConfig(AppConfig):
