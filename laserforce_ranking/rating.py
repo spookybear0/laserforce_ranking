@@ -77,14 +77,15 @@ SM5_AMMO_WEIGHT_MU = 1
 SM5_AMMO_WEIGHT_SIGMA = 1.25 # give more uncertainty weight to ammo players since their role is less combat focused
 
 SM5_MEDIC_WEIGHT_MU = 1
-SM5_MEDIC_WEIGHT_SIGMA = 2 # give more uncertainty weight to medic players since their role is less combat focused
+SM5_MEDIC_WEIGHT_SIGMA = 2 
 
 SM5_ROLE_WEIGHT_MULTIPLIERS = {
-    IntRole.COMMANDER: (SM5_COMMANDER_WEIGHT_MU, SM5_COMMANDER_WEIGHT_SIGMA),
-    IntRole.HEAVY: (SM5_HEAVY_WEIGHT_MU, SM5_HEAVY_WEIGHT_SIGMA),
-    IntRole.SCOUT: (SM5_SCOUT_WEIGHT_MU, SM5_SCOUT_WEIGHT_SIGMA),
-    IntRole.AMMO: (SM5_AMMO_WEIGHT_MU, SM5_AMMO_WEIGHT_SIGMA),
-    IntRole.MEDIC: (SM5_MEDIC_WEIGHT_MU, SM5_MEDIC_WEIGHT_SIGMA),
+    IntRole.COMMANDER: (1, 1),
+    IntRole.HEAVY: (1, 1),
+    IntRole.SCOUT: (1, 1),
+    # give more uncertainty weight to ammo/medic players since their role is less combat focused
+    IntRole.AMMO: (1, 1.25),
+    IntRole.MEDIC: (1, 2),
 }
 
 # laserball
@@ -263,8 +264,10 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
 
         # ensure that this player has a rating for this site, if not, create a new one
 
-        if game.site_id not in ratings:
+        if game.site_id not in ratings and player:
             ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+            player.ratings = ratings
+            await player.asave()
 
         entity_end.ratings = {
             "previous": {
@@ -311,6 +314,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
             # make sure we have a rating for this site, if not, create a new one
             if game.site_id not in shooter_player.ratings:
                 shooter_player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+                await shooter_player.asave()
             shooter_rating = shooter_player.ratings
         else:
             # not logged in, we could assume the default rating
@@ -323,6 +327,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
         if target_player:
             if game.site_id not in target_player.ratings:
                 target_player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+                await target_player.asave()
             target_rating = target_player.ratings
         else:
             return
@@ -408,7 +413,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
             weight_mu = hit_mu
             weight_sigma = hit_sigma
 
-        role_weight = SM5_ROLE_WEIGHT_MULTIPLIERS.get(introle_to_name(target.role), (1, 1))
+        role_weight = SM5_ROLE_WEIGHT_MULTIPLIERS.get(target.role, (1, 1))
         role_weight_mu = role_weight[0]
         role_weight_sigma = role_weight[1]
 
@@ -442,8 +447,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     async for event in game.events.filter(
         type__in=[EventType.DAMAGED_OPPONENT, EventType.DOWNED_OPPONENT,
             EventType.MISSILE_DAMAGE_OPPONENT,
-            EventType.MISSILE_DOWN_OPPONENT, EventType.RESUPPLY_LIVES,
-            EventType.RESUPPLY_AMMO]
+            EventType.MISSILE_DOWN_OPPONENT]
     ).order_by("time").all():  # only get the events that we need
         await process_event(event)
 
@@ -462,6 +466,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
             # ensure that this player has a rating for this site, if not, create a new one
             if player and game.site_id not in player.ratings:
                 player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+                await player.asave()
 
             team1.append((player if player else FakeDefaultPlayer(game.site_id), entity_start))
         else:
@@ -469,6 +474,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
 
             if player and game.site_id not in player.ratings:
                 player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+                await player.asave()
 
             team2.append((player if player else FakeDefaultPlayer(game.site_id), entity_start))
 
@@ -477,10 +483,15 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team2_general = list(map(lambda pair: Rating(pair[0].ratings["global"]["sm5"]["mu"], pair[0].ratings["global"]["sm5"]["sigma"]), team2))
 
     game_winner = await sync_to_async(lambda: game.winner)()
-    if game_winner == teams[0].enum:
-        team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[0, 1])
+    winner_enum = game_winner.enum if game_winner else None
+    if winner_enum == teams[0].enum:
+        ranks = [0, 1] # team 1 won, team 2 lost
+    elif winner_enum == teams[1].enum:
+        ranks = [1, 0] # team 2 won, team 1 lost
     else:
-        team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[1, 0])
+        ranks = [0, 0] # tie
+    
+    team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=ranks)
 
     for (player, es), rating in zip(team1, team1_general_new):
         player.ratings["global"]["sm5"]["mu"] = rating.mu
@@ -495,11 +506,9 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     # general role-specific ratings
     team1_general_role = list(map(lambda pair: Rating(pair[0].ratings["global"][introle_to_name(pair[1].role)]["mu"], pair[0].ratings["global"][introle_to_name(pair[1].role)]["sigma"]), team1))
     team2_general_role = list(map(lambda pair: Rating(pair[0].ratings["global"][introle_to_name(pair[1].role)]["mu"], pair[0].ratings["global"][introle_to_name(pair[1].role)]["sigma"]), team2))
-
-    if game_winner == teams[0].enum:
-        team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[0, 1])
-    else:
-        team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[1, 0])
+    
+    # rate
+    team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=ranks)
     
     for (player, es), rating in zip(team1, team1_general_role_new):
         player.ratings["global"][introle_to_name(es.role)]["mu"] = rating.mu
@@ -515,10 +524,8 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team1_site = list(map(lambda pair: Rating(pair[0].ratings[game.site_id]["sm5"]["mu"], pair[0].ratings[game.site_id]["sm5"]["sigma"]), team1))
     team2_site = list(map(lambda pair: Rating(pair[0].ratings[game.site_id]["sm5"]["mu"], pair[0].ratings[game.site_id]["sm5"]["sigma"]), team2))
 
-    if game_winner == teams[0].enum:
-        team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[0, 1])
-    else:
-        team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[1, 0])
+    # rate
+    team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=ranks)
 
     for (player, es), rating in zip(team1, team1_site_new):
         player.ratings[game.site_id]["sm5"]["mu"] = rating.mu
@@ -535,10 +542,8 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team1_site_role = list(map(lambda pair: Rating(pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["mu"], pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["sigma"]), team1))
     team2_site_role = list(map(lambda pair: Rating(pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["mu"], pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["sigma"]), team2))
     
-    if game_winner == teams[0].enum:
-        team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[0, 1])
-    else:
-        team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[1, 0])
+    # rate
+    team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=ranks)
 
     for (player, es), rating in zip(team1, team1_site_role_new):
         player.ratings[game.site_id][introle_to_name(es.role)]["mu"] = rating.mu
@@ -562,6 +567,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
 
         if game.site_id not in ratings:
             ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
+            await player.asave()
 
         entity_end.ratings.update({
             "current": {
