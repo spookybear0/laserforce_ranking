@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 from openskill.models import PlackettLuceRating, PlackettLuce
 from openskill.models.weng_lin.common import phi_major
 import logging
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -307,6 +308,9 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
         shooter = await EntityStart.objects.filter(entity_id=event.entity1).afirst()
         shooter_player = await Player.objects.filter(entity_id=shooter.entity_id).afirst()
         if shooter_player:
+            # make sure we have a rating for this site, if not, create a new one
+            if game.site_id not in shooter_player.ratings:
+                shooter_player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
             shooter_rating = shooter_player.ratings
         else:
             # not logged in, we could assume the default rating
@@ -317,9 +321,10 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
         target = await EntityStart.objects.filter(entity_id=event.entity2).afirst()
         target_player = await Player.objects.filter(entity_id=target.entity_id).afirst()
         if target_player:
+            if game.site_id not in target_player.ratings:
+                target_player.ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
             target_rating = target_player.ratings
         else:
-            # ^
             return
 
         # global
@@ -462,7 +467,8 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team1_general = list(map(lambda pair: Rating(pair[0].ratings["global"]["sm5"]["mu"], pair[0].ratings["global"]["sm5"]["sigma"]), team1))
     team2_general = list(map(lambda pair: Rating(pair[0].ratings["global"]["sm5"]["mu"], pair[0].ratings["global"]["sm5"]["sigma"]), team2))
 
-    if game.winner == teams[0].enum:
+    game_winner = await sync_to_async(lambda: game.winner)()
+    if game_winner == teams[0].enum:
         team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[0, 1])
     else:
         team1_general_new, team2_general_new = model.rate([team1_general, team2_general], ranks=[1, 0])
@@ -481,7 +487,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team1_general_role = list(map(lambda pair: Rating(pair[0].ratings["global"][introle_to_name(pair[1].role)]["mu"], pair[0].ratings["global"][introle_to_name(pair[1].role)]["sigma"]), team1))
     team2_general_role = list(map(lambda pair: Rating(pair[0].ratings["global"][introle_to_name(pair[1].role)]["mu"], pair[0].ratings["global"][introle_to_name(pair[1].role)]["sigma"]), team2))
 
-    if game.winner == teams[0].enum:
+    if game_winner == teams[0].enum:
         team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[0, 1])
     else:
         team1_general_role_new, team2_general_role_new = model.rate([team1_general_role, team2_general_role], ranks=[1, 0])
@@ -500,7 +506,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team1_site = list(map(lambda pair: Rating(pair[0].ratings[game.site_id]["sm5"]["mu"], pair[0].ratings[game.site_id]["sm5"]["sigma"]), team1))
     team2_site = list(map(lambda pair: Rating(pair[0].ratings[game.site_id]["sm5"]["mu"], pair[0].ratings[game.site_id]["sm5"]["sigma"]), team2))
 
-    if game.winner == teams[0].enum:
+    if game_winner == teams[0].enum:
         team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[0, 1])
     else:
         team1_site_new, team2_site_new = model.rate([team1_site, team2_site], ranks=[1, 0])
@@ -520,7 +526,7 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
     team1_site_role = list(map(lambda pair: Rating(pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["mu"], pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["sigma"]), team1))
     team2_site_role = list(map(lambda pair: Rating(pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["mu"], pair[0].ratings[game.site_id][introle_to_name(pair[1].role)]["sigma"]), team2))
     
-    if game.winner == teams[0].enum:
+    if game_winner == teams[0].enum:
         team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[0, 1])
     else:
         team1_site_role_new, team2_site_role_new = model.rate([team1_site_role, team2_site_role], ranks=[1, 0])
@@ -544,6 +550,9 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
             ratings = player.ratings
         else:
             ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
+
+        if game.site_id not in ratings:
+            ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
 
         entity_end.ratings.update({
             "current": {
