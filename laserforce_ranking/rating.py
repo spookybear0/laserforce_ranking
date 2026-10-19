@@ -585,7 +585,7 @@ async def recalculate_rankings():
     """
     Recalculate all player rankings from scratch
     """
-    from .models import Game
+    from .models import SM5Game, Game
 
     logger.info("Recalculating all player rankings from scratch")
 

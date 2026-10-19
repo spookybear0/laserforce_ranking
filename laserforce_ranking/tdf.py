@@ -1,6 +1,6 @@
 from pathlib import Path
 from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITE_BY_ID, TeamType
-from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, ScoreEvent
+from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, ScoreEvent, StepEvent, ShotEvent, LifeEvent, MissileEvent
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
 from typing import Optional, List, Dict
@@ -169,6 +169,10 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
     entity_ends = []
     sm5_stats = []
     player_states = []
+    step_events = []
+    shot_events = []
+    life_events = []
+    missile_events = []
 
     force_ended_early = True # if the game ended early, this will be set to false if the game ended naturally
     end_event = None
@@ -376,24 +380,55 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
                 entity_id = data[2]
                 delta = int(data[3])
                 step_count = int(data[4])
+
+                entity_start = entity_starts.get(entity_id)
+
+                step_events.append(StepEvent(
+                    time=time,
+                    entity=entity_start,
+                    delta=delta,
+                    new=step_count
+                ))
             case "11": # life deltas
                 time = int(data[1])
                 entity_id = data[2]
                 delta = int(data[3])
                 lives = int(data[4])
+
+                entity_start = entity_starts.get(entity_id)
+                life_events.append(LifeEvent(
+                    time=time,
+                    entity=entity_start,
+                    delta=delta,
+                    new=lives
+                ))
             case "12": # shot deltas
                 time = int(data[1])
                 entity_id = data[2]
                 delta = int(data[3])
                 shots = int(data[4])
+
+                entity_start = entity_starts.get(entity_id)
+                shot_events.append(ShotEvent(
+                    time=time,
+                    entity=entity_start,
+                    delta=delta,
+                    new=shots
+                ))
             case "13": # missile deltas
                 time = int(data[1])
                 entity_id = data[2]
                 delta = int(data[3])
                 missiles = int(data[4])
-                
-                
 
+                entity_start = entity_starts.get(entity_id)
+                missile_events.append(MissileEvent(
+                    time=time,
+                    entity=entity_start,
+                    delta=delta,
+                    new=missiles
+                ))
+                
     # combine entity_ends.score onto team.score
 
     for entity_end in entity_ends:
@@ -512,6 +547,10 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
         "scores": scores,
         "entity_ends": entity_ends,
         "player_states": player_states,
+        "step_events": step_events,
+        "shot_events": shot_events,
+        "life_events": life_events,
+        "missile_events": missile_events,
         "team1": team1,
         "team2": team2,
         "team1_size": team1_size,
@@ -566,6 +605,10 @@ async def process_sm5(
     scores: List[ScoreEvent],
     entity_ends: List[EntityEnd],
     player_states: List[PlayerState],
+    step_events: List[StepEvent],
+    shot_events: List[ShotEvent],
+    life_events: List[LifeEvent],
+    missile_events: List[MissileEvent],
     team1: Team,
     team2: Team,
     team1_size: int,
@@ -686,6 +729,27 @@ async def process_sm5(
             player_state.game = game
             await player_state.asave()
         await game.player_states.aset(player_states)
+
+        for step_event in step_events:
+            step_event.game = game
+            await step_event.asave()
+        await game.step_events.aset(step_events)
+
+        for shot_event in shot_events:
+            shot_event.game = game
+            await shot_event.asave()
+        await game.shot_events.aset(shot_events)
+
+        for life_event in life_events:
+            life_event.game = game
+            await life_event.asave()
+        await game.life_events.aset(life_events)
+
+        for missile_event in missile_events:
+            missile_event.game = game
+            await missile_event.asave()
+        await game.missile_events.aset(missile_events)
+
         for sm5_stat in sm5_stats:
             sm5_stat.special_points = player_special_points.get(sm5_stat.entity.entity_id, 0)
             sm5_stat.entity = entity_starts[sm5_stat.entity.entity_id]
@@ -879,6 +943,18 @@ async def process_sm5(
         for player_state in player_states:
             if player_state.pk is not None:
                 await player_state.adelete()
+        for step_event in step_events:
+            if step_event.pk is not None:
+                await step_event.adelete()
+        for shot_event in shot_events:
+            if shot_event.pk is not None:
+                await shot_event.adelete()
+        for life_event in life_events:
+            if life_event.pk is not None:
+                await life_event.adelete()
+        for missile_event in missile_events:
+            if missile_event.pk is not None:
+                await missile_event.adelete()
         for sm5_stat in sm5_stats:
             if sm5_stat.pk is not None:
                 await sm5_stat.adelete()
@@ -903,11 +979,15 @@ async def process_laserball(
     events: List[Event],
     scores: List[ScoreEvent],
     entity_ends: List[EntityEnd],
+    player_states: List[PlayerState],
+    step_events: List[StepEvent],
+    shot_events: List[ShotEvent],
+    life_events: List[LifeEvent],
+    missile_events: List[MissileEvent],
     team1: Team,
     team2: Team,
     team1_size: int,
     team2_size: int,
-    player_states: List[PlayerState],
     skip_rankings: bool = False
 ):
     # ranking
