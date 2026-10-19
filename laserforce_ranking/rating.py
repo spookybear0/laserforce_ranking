@@ -592,7 +592,7 @@ async def recalculate_rankings():
     await reset_rankings()
 
     async for game in Game.objects.filter(ranked=True).order_by("start_time").all():
-        if game.game_type == GameType.SM5:
+        if game.type == GameType.SM5:
             await update_sm5_rankings(game)
-        elif game.game_type == GameType.LASERBALL:
+        elif game.type == GameType.LASERBALL:
             await update_laserball_rankings(game)
