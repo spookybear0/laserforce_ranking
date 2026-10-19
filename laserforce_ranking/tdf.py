@@ -15,6 +15,8 @@ import traceback
 from datetime import timedelta, datetime
 from django.utils import timezone
 import logging
+import asyncio
+from concurrent.futures import ProcessPoolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -121,13 +123,28 @@ async def download_tdfs(start_date: Optional[str] = None, game_type: Optional[st
                             print(f"Downloading {tdf_filename} ({i+1}/{len(games)})")
                             tdf_file.write(await tdf_response.read())
         
-async def mass_parse_tdfs():
+def _process_tdf_worker(file, skip_rankings):
+    return asyncio.run(parse_tdf(file, skip_rankings=skip_rankings))
+    
+async def mass_parse_tdfs(skip_rankings: bool = False):
     tdf_dir = Path("tdfs")
     files = list(tdf_dir.glob("*.tdf"))
     files.sort()
-    for tdf_file in files:
-        if await parse_tdf(tdf_file):
-            return
+
+    if skip_rankings:
+        
+
+        loop = asyncio.get_event_loop()
+        with ProcessPoolExecutor() as executor:
+            tasks = [
+                loop.run_in_executor(executor, _process_tdf_worker, tdf_file, skip_rankings)
+                for tdf_file in files
+            ]
+            await asyncio.gather(*tasks)
+    else:
+        for tdf_file in files:
+            if await parse_tdf(tdf_file, skip_rankings=skip_rankings):
+                return
 
 # tdf parsing
 
