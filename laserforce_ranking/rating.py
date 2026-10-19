@@ -260,6 +260,10 @@ async def update_sm5_rankings(game: "SM5Game") -> bool:
         else:
             ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), game.site_id: deepcopy(BLANK_RATING_PER_SITE)}
 
+        # ensure that this player has a rating for this site, if not, create a new one
+
+        if game.site_id not in ratings:
+            ratings[game.site_id] = deepcopy(BLANK_RATING_PER_SITE)
 
         entity_end.ratings = {
             "previous": {
@@ -578,7 +582,7 @@ async def reset_rankings():
     logger.info("Resetting all player rankings to default values")
 
     async for player in Player.objects.all():
-        player.ratings = {"global": deepcopy(BLANK_RATING_PER_SITE), "site": deepcopy(BLANK_RATING_PER_SITE)}
+        player.ratings = {"global": deepcopy(BLANK_RATING_PER_SITE)}
         await player.asave()
 
 async def recalculate_rankings():
