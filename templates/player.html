@@ -28,10 +28,10 @@
 <div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col justify-center gap-2">
     <h1 class="text-4xl font-bold">Stats</h1>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-        <div>
+        <div class="flex flex-col items-center justify-center relative">
             <canvas id="playerRatingProgressionChart"></canvas>
         </div>
-        <div>
+        <div class="flex flex-col items-center justify-center relative">
             <canvas id="playerRoleRatingChart"></canvas>
         </div>
     </div>
@@ -57,7 +57,7 @@
         </div>
 
         <span id="chart-loading" class="htmx-indicator loading loading-spinner"></span>
-        <div class="w-1/4">
+        <div class="w-1/4 relative">
             <canvas id="playerWinPercentChart" class="mt-4"></canvas>
         </div>
     </div>
@@ -90,7 +90,6 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
                         legend: { position: 'top' },
                         title: { display: true, text: title },
