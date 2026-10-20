@@ -22,6 +22,113 @@
     {% endif %}
 </div>
 
-{% include 'partials/game_table.html' %}
+{# charts and stats #}
+
+<div class="bg-base-100 rounded-2xl shadow-xl p-10 mb-8 text-left flex flex-col justify-center gap-2">
+    <h1 class="text-4xl font-bold">Stats</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div>
+            <canvas id="playerRatingProgressionChart"></canvas>
+        </div>
+        <div>
+            <canvas id="playerRoleRatingChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{% include 'partials/player_game_table.html' %}
+
+{% endblock %}
+
+{% block head %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        ctx = document.getElementById('playerRatingProgressionChart').getContext('2d');
+        const playerRatingProgressionChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ rating_progression_chart['labels'] | tojson }},
+                datasets: [{
+                    label: 'Player Rating',
+                    data: {{ rating_progression_chart['data'] | tojson }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Player Rating Over Time'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Rating'
+                        }
+                    }
+                }
+            }
+        });
+
+        ctx = document.getElementById('playerRoleRatingChart').getContext('2d');
+        const playerRoleRatingChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ role_rating_chart['labels'] | tojson }},
+                datasets: [{
+                    label: 'Role Rating',
+                    data: {{ role_rating_chart['data'] | tojson }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Player Role Ratings'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Role'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Rating'
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+
+</script>
 
 {% endblock %}

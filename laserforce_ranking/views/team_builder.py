@@ -92,7 +92,8 @@ class TeamBuilderView(View):
             "roles": new_roles,
             "locks": [["none" for _ in team] for team in new_teams],
             "win_chances": [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]], # default win chances
-            "roles_enabled": True
+            "roles_enabled": True,
+            "match_roles_enabled": True,
         }
 
         return render(request, "team_builder.html", context=context)
@@ -139,10 +140,11 @@ class TeamBuilderTeamsView(TemplateView):
         teams = json.loads(self.request.POST.get("teams", "[]"))
         mode = self.request.POST.get("mode", "sm5").strip()
         site = self.request.POST.get("site", "global").strip()
-        roles_enabled = self.request.POST.get("roles", "false").strip().lower() == "true"
+        roles_enabled = self.request.POST.get("roles_enabled", "false").strip().lower() == "true"
+        match_roles_enabled = self.request.POST.get("match_roles_enabled", "false").strip().lower() == "true"
         matchmake = request.GET.get("matchmake", "false").strip().lower() == "true"
 
-        logger.debug(f"Received teams: {teams}, mode: {mode}, site: {site}, roles_enabled: {roles_enabled}, matchmake: {matchmake}")
+        logger.debug(f"Received teams: {teams}, mode: {mode}, site: {site}, roles_enabled: {roles_enabled}, match_roles_enabled: {match_roles_enabled} matchmake: {matchmake}")
 
         entity_ids = [player["entity_id"] for team in teams for player in team]
 
@@ -182,7 +184,7 @@ class TeamBuilderTeamsView(TemplateView):
             logger.info("Performing matchmaking")
             print(list(players.values()))
             if roles_enabled:
-                new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site, role_lock_dict)
+                new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site, role_lock_dict, match_roles_enabled)
             else:
                 new_teams = await matchmake_teams(list(players.values()), 2, GameType(mode), site)
 
@@ -195,6 +197,7 @@ class TeamBuilderTeamsView(TemplateView):
         context["roles"] = new_roles
         context["locks"] = [[role_lock_dict.get(player.entity_id, RoleLock("none")).value for player in team] for team in new_teams]
         context["roles_enabled"] = roles_enabled
+        context["match_roles_enabled"] = match_roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
                 if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
 
@@ -216,9 +219,10 @@ class TeamBuilderUpdateView(TemplateView):
         teams = json.loads(self.request.POST.get("teams", "[]"))
         mode = request.POST.get("mode", "sm5").strip()
         site = request.POST.get("site", "global").strip()
-        roles_enabled = request.POST.get("roles", "false").strip().lower() == "true"
+        roles_enabled = request.POST.get("roles_enabled", "false").strip().lower() == "true"
+        match_roles_enabled = request.POST.get("match_roles", "false").strip().lower() == "true"
 
-        logger.debug(f"Received teams: {teams}, mode: {mode}, site: {site}, roles_enabled: {roles_enabled}")
+        logger.debug(f"Received teams: {teams}, mode: {mode}, site: {site}, roles_enabled: {roles_enabled}, match_roles_enabled: {match_roles_enabled}")
 
         rating_expr = ExpressionWrapper(
             Cast(KT(f"ratings__{site}__{mode}__mu"), FloatField())
@@ -251,6 +255,7 @@ class TeamBuilderUpdateView(TemplateView):
         context["roles"] = new_roles
         context["locks"] = locks
         context["roles_enabled"] = roles_enabled
+        context["match_roles_enabled"] = match_roles_enabled
         context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
             if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
 

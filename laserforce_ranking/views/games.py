@@ -71,7 +71,7 @@ def get_games(request, player_entity_id=None, site_id=None):
 
             outcome=Case(
                 # if there is no last team standing, outcome was based on score
-                When(winner__isnull=False, then=Value("Draw")),
+                When(winner__isnull=True, then=Value("Draw")),
                 When(last_team_standing__isnull=False, then=Value("Score")),
                 When(last_team_standing__isnull=True, then=Value("Elimination")),
                 default=Value("Unknown"),
@@ -92,7 +92,7 @@ def get_games(request, player_entity_id=None, site_id=None):
             score_difference=F("high_score") - F("low_score"),
 
             outcome=Case(
-                When(winner__isnull=False, then=Value("Draw")),
+                When(winner__isnull=True, then=Value("Draw")),
                 default=Value("ScoreEvent"),
                 output_field=CharField()
             )

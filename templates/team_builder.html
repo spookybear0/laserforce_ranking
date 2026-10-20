@@ -8,6 +8,7 @@
 
 <script>
     roles_enabled = true;
+    match_roles_enabled = true;
     unrated_player_count = 0;
     team_count = 2;
 
@@ -179,21 +180,34 @@
     
         roleCells.forEach(cell => {
             if (showRoles) {
-            cell.classList.remove('hidden');
+                cell.classList.remove('hidden');
             } else {
-            cell.classList.add('hidden');
+                cell.classList.add('hidden');
             }
         });
 
         roleLockCells.forEach(cell => {
             if (showRoles) {
-            cell.classList.remove('hidden');
+                cell.classList.remove('hidden');
             } else {
-            cell.classList.add('hidden');
+                cell.classList.add('hidden');
             }
         });
 
+        if (roles_enabled) {
+            document.getElementById('match-roles-toggle').disabled = false;
+        }
+        else {
+            match_roles_enabled = false;
+            document.getElementById('match-roles-toggle').checked = false;
+            document.getElementById('match-roles-toggle').disabled = true;
+        }
+
         updateTeams();
+    }
+
+    function toggleMatchRoles(checkbox) {
+        match_roles_enabled = checkbox.checked;
     }
 
 
@@ -297,6 +311,7 @@
         selectMode("SM5", document.querySelector('[data-mode="sm5"]'));
         selectSite("Global", document.querySelector('[data-site-id="global"]'));
         roles_enabled = document.getElementById('roles-toggle').checked;
+        match_roles_enabled = document.getElementById('match-roles-toggle').checked;
         setTimeout(displayWinChances, 500);
     }
 
@@ -311,7 +326,8 @@
         event.detail.parameters.mode = document.querySelector('[data-mode]').dataset.mode;
         event.detail.parameters.site = document.querySelector('[data-site-id]').dataset.siteId;
         event.detail.parameters.teams = JSON.stringify(getTeamState());
-        event.detail.parameters.roles = document.getElementById('roles-toggle').checked ? 'true' : 'false';
+        event.detail.parameters.roles_enabled = document.getElementById('roles-toggle').checked ? 'true' : 'false';
+        event.detail.parameters.match_roles_enabled = document.getElementById('match-roles-toggle').checked ? 'true' : 'false';
     });
 
 </script>
@@ -323,32 +339,39 @@
 <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
     <h1 class="text-3xl sm:text-4xl font-bold mb-8">Team Builder</h1>
     <div class="flex flex-col md:flex-row gap-4 md:justify-evenly md:flex-1 md:min-h-0">
-        <!-- Buttons -->
         <div class="flex flex-col gap-4">
             <button
-                class="btn btn-primary w-full md:w-auto"
+                class="btn btn-primary w-full md:w-auto tooltip tooltip-right"
+                data-tip="Automatically creates balanced teams based on player ratings and roles (if enabled)."
                 hx-post="{{ url('team_builder_teams') }}?matchmake=true"
                 hx-target="#teams"
                 hx-swap="outerHTML"
             >
                 Matchmake
             </button>
-            <button class="btn btn-primary w-full md:w-auto" onclick="addUnratedPlayer()">Add Unrated Player</button>
-            <button class="btn btn-success w-full md:w-auto" disabled>Add Team</button>
+            <button
+            class="btn btn-primary w-full md:w-auto tooltip tooltip-right"
+            data-tip="Adds a player with unknown rating (like a new player)."
+            onclick="addUnratedPlayer()">
+                Add Unrated Player
+            </button>
+            <button
+            class="btn btn-success w-full md:w-auto tooltip tooltip-right"
+            data-tip="Adds a new team to the team builder."
+            disabled>
+                Add Team
+            </button>
             <!--mode dropdown sm5, laserball-->
-            <div class="dropdown w-full md:w-auto">
-                <label
-                tabindex="0"
-                class="btn btn-accent btn-soft w-full"
-            >
-                <span id="mode-label">Mode</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m6 9 6 6 6-6"/>
-                </svg>
-            </label>
-            
+            <div class="dropdown w-full md:w-auto tooltip tooltip-right"
+            data-tip="Selects the game mode to build teams for.">
+                <label tabindex="0" class="btn btn-accent btn-soft w-full tooltip tooltip-right">
+                    <span id="mode-label">Mode</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                </label>
                 <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
                     <li>
                         <a
@@ -370,7 +393,12 @@
                 </ul>
             </div>
             <!-- site dropdown -->
-            <div class="dropdown w-full md:w-auto">
+            <div
+            class="dropdown w-full md:w-auto tooltip tooltip-right"
+            data-tip=
+                "Selects the site where the ratings are going to come from. 
+                Use global if you want to use ratings from all sites, 
+                such as for a game with players from multiple home sites.">
                 <label tabindex="0" class="btn btn-accent btn-soft w-full">
                     <span id="site-label">Site</span>
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -409,10 +437,21 @@
                 </ul>
             </div>
             <!--matchmake with roles checkbox-->
-            <div class="form-control w-full md:w-auto text-center">
+            <div
+            class="form-control w-full md:w-auto text-center tooltip tooltip-right"
+            data-tip="Assigns roles when building teams. 
+            When disabled, roles will not be considered when building teams.">
                 <label class="label cursor-pointer justify-center">
                     <span class="label-text">Roles</span>
                     <input id="roles-toggle" type="checkbox" class="toggle toggle-primary" checked onchange="toggleRoles(this)">
+                </label>
+            </div>
+            <div
+            class="form-control w-full md:w-auto text-center tooltip tooltip-right"
+            data-tip="Attempts to put players of approximately equal skill level against each other on the same role">
+                <label class="label cursor-pointer justify-center">
+                    <span class="label-text">Match Roles</span>
+                    <input id="match-roles-toggle" type="checkbox" class="toggle toggle-primary" checked onchange="toggleMatchRoles(this)">
                 </label>
             </div>
         </div>

@@ -258,6 +258,7 @@ async def matchmake_advanced(
         mode: GameType = GameType.SM5,
         site: str="global",
         role_locks: Optional[Dict[str, RoleLock]]=None,
+        role_matchup: bool=True,
         *, _attempts: int=0
     ) -> Tuple[List[List["Player"]], List[List[IntRole]]]:
     """
@@ -280,7 +281,7 @@ async def matchmake_advanced(
     # feature toggles
 
     USE_WIN_BALANCE = True
-    USE_ROLE_MATCHUPS = True
+    USE_ROLE_MATCHUPS = role_matchup
     USE_ROLE_STRENGTH = True
 
     # these weights determine how much each factor contributes to the overall score

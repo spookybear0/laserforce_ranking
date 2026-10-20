@@ -1,0 +1,242 @@
+<div class="container mx-auto bg-base-100 rounded-2xl shadow-xl p-10 mb-8" hx-swap="outerHTML" id="game-table">
+    <div class="flex justify-between items-center mb-4 sm:flex-row flex-col space-y-2 sm:space-y-0 space-x-2">
+        <h1 class="text-2xl font-bold">Recent Games</h1>
+        <div class="flex space-x-2 sm:flex-row flex-col space-y-2 sm:space-y-0">
+            <div class="flex flex-row md:space-x-2 space-x-0 px-2 justify-between sm:space-y-0 space-y-2">
+                <button name="mode" 
+                        value="sm5"
+                        hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={{current_sort}}&page={{ page_obj.number }}"
+                        hx-target="#game-table"
+                        hx-include="[name='site'], [name='mode'], [name='player']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="btn {% if current_mode == 'sm5' %}btn-primary{% else %}btn-outline{% endif %} sm:w-1/2">
+                    SM5
+                </button>
+                
+                <button name="mode" 
+                        value="laserball"
+                        hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={{current_sort}}&page={{ page_obj.number }}"
+                        hx-target="#game-table"
+                        hx-include="[name='site'], [name='mode'], [name='player']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="btn {% if current_mode == 'laserball' %}btn-primary{% else %}btn-outline{% endif %} sm:w-1/2">
+                    Laserball
+                </button>
+            </div>
+            
+            {% if not site_id %}
+                <select name="site"
+                        hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                        hx-target="#game-table"
+                        hx-include="[name='site'], [name='mode'], [name='player']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="select">
+                    <option value="" {% if not current_site %}selected{% endif %}>All Sites</option>
+                    {% for site in SITES %}
+                        <option value="{{ site.id }}" {% if current_site == site.id %}selected{% endif %}>{{ site.name }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            <!-- cally calendar popover button styled with daisyUI -->
+            <button popovertarget="cally-popover" class="input input-bordered w-full flex items-center justify-between text-left" id="date-display" style="anchor-name:--cally-btn">
+                <span id="current-date-label">
+                    {% if current_date_range %}
+                        {{ date_range_display }}
+                    {% else %}
+                        Sort by Date
+                    {% endif %}
+                </span>
+                <svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+            </button>
+
+            <!-- cally calendar popover content styled with daisyUI -->
+            <div popover id="cally-popover" class="dropdown-content bg-base-100 rounded-box shadow-xl border border-base-200 mt-2 p-4" style="position-anchor: --cally-btn; top: anchor(bottom); left: anchor(left);">
+
+                <calendar-range
+                    class="cally"
+                    id="date_picker"
+                    name="date_range"
+                    value="{{ current_date_range }}"
+                    hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                    hx-target="#game-table"
+                    hx-include="[name='site'], [name='mode'], [name='player']"
+                    hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                    hx-trigger="change">
+                    <button slot="previous" class="btn btn-sm btn-ghost btn-circle">❮</button>
+                    <button slot="next" class="btn btn-sm btn-ghost btn-circle">❯</button>
+
+                    <!-- 5. Year Dropdown Selection -->
+                    <calendar-select-year slot="heading" max-years="14" class="w-24 text-center"></calendar-select-year>
+                    
+                    <calendar-month></calendar-month>
+                </calendar-range>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table w-full table-sm">
+            <thead>
+                <tr>
+                    <th>
+                        <button
+                            hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={% if current_sort == 'start_time' %}-start_time{% else %}start_time{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                            hx-target="#game-table"
+                            hx-include="[name='site'], [name='mode'], [name='player']"
+                            hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                            class="btn btn-ghost">
+                            Game
+                            {% if current_sort == 'start_time' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                            {% elif current_sort == '-start_time' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button
+                            hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={% if current_sort == 'site' %}-site{% else %}site{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                            hx-target="#game-table"
+                            hx-include="[name='site'], [name='mode'], [name='player']"
+                            hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                            class="btn btn-ghost">
+                            Site
+                            {% if current_sort == 'site' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                            {% elif current_sort == '-site' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button
+                            hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={% if current_sort == 'start_time' %}-start_time{% else %}start_time{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                            hx-target="#game-table"
+                            hx-include="[name='site'], [name='mode'], [name='player']"
+                            hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                            class="btn btn-ghost">
+                            Started
+                            {% if current_sort == 'start_time' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                            {% elif current_sort == '-start_time' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button
+                            hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={% if current_sort == 'outcome' %}-outcome{% else %}outcome{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                            hx-target="#game-table"
+                            hx-include="[name='site'], [name='mode'], [name='player']"
+                            hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                            class="btn btn-ghost">
+                            Outcome
+                            {% if current_sort == 'outcome' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                            {% elif current_sort == '-outcome' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th>
+                        <button
+                        hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={% if current_sort == 'score' %}-score{% else %}score{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
+                        hx-target="#game-table"
+                        hx-include="[name='site'], [name='mode'], [name='player']"
+                        hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                        class="btn btn-ghost">
+                            Team Score
+                            {% if current_sort == 'score' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                            {% elif current_sort == '-score' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-up-icon lucide-arrow-down-up"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+                            {% endif %}
+                        </button>
+                    </th>
+                    <th class="text-white">Role</th>
+                    <th class="text-white">Score</th>
+                    <th class="text-white">Rating</th>
+                </tr>
+            </thead>
+            <tbody id="game-table-body">
+                {% for game in games %}
+                {% set entity_start = entity_info[loop.index0]["entity_start"] %}
+                {% set entity_end = entity_info[loop.index0]["entity_end"] %}
+                {% set team = entity_info[loop.index0]["team"] %}
+                {% set won = entity_info[loop.index0]["won"] %}
+                {% set current_rating = entity_info[loop.index0]["current_rating"] %}
+                {% set previous_rating = entity_info[loop.index0]["previous_rating"] %}
+                <tr>
+                    <td style="color: {{ NAME_TO_TEAM[game.high_score_team].css_color_name }}"><a href="/games/{{ game.tdf_name }}" class="link">Game @ <time datetime="{{ game.start_time.isoformat() }}" data-timezone="{{ game.site.timezone }}" class="local-time-only">{{ game.start_time.strftime('%H:%M') }}</time></a></td>
+                    <td>{{ SITE_BY_ID[game.site_id].name }}</td>
+                    <td><time datetime="{{ game.start_time.isoformat() }}" data-timezone="{{ game.site.timezone }}" class="local-time-full">{{ game.start_time.strftime('%b %d, %Y %H:%M') }}</time></td>
+                    <td>
+                        {% if won %}
+                        <span style="color: greenyellow">Win - </span>
+                        {% else %}
+                        <span style="color: orangered">Loss - </span>
+                        {% endif %}
+
+                        {{ game.outcome }}
+                    </td>
+                    <td>
+                        <span style="color: {{ NAME_TO_TEAM[game.high_score_team].css_color_name }}">{{ game.high_score }}</span> 
+                        - 
+                        <span style="color: {{ NAME_TO_TEAM[game.low_score_team].css_color_name }}">{{ game.low_score }}</span>
+                    </td>
+                    <td><img src="{{ static('sm5/roles/{}.png'.format(entity_start.role.name.lower())) }}" alt="{{ entity_start.role }}" width="24" height="24"></td>
+                    <td>{{ entity_end.score }}</td>
+                    {% if game.ranked %}
+                        <td>
+                            {{ "{:.2f}".format(current_rating) }} 
+                            {% set rating_change = current_rating - previous_rating %}
+                            <span style="color: {% if rating_change > 0 %}greenyellow{% elif rating_change < 0 %}orangered{% else %}gray{% endif %};">
+                                ({% if rating_change > 0 %}+{% endif %}{{ "%.2f" % rating_change }})
+                            </span>
+                        </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2" class="text-site py-4 text-base-content/50">No games found for this site.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4 space-x-4">
+        <span class="text-sm text-base-content/70">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} | Total: {{ page_obj.paginator.count }}
+        </span>
+        <div class="flex space-x-2">
+            <button
+                hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={{ current_sort }}&page={% if page_obj.has_previous() %}{{ page_obj.previous_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}"
+                hx-target="#game-table"
+                hx-include="[name='site'], [name='mode'], [name='player']"
+                hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                class="btn btn-outline"
+                {% if not page_obj.has_previous() %}disabled{% endif %}>
+                Previous
+            </button>
+            <button
+                hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={{ current_sort }}&page={% if page_obj.has_next() %}{{ page_obj.next_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}"
+                hx-target="#game-table"
+                hx-include="[name='site'], [name='mode'], [name='player']"
+                hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
+                class="btn btn-outline"
+                {% if not page_obj.has_next() %}disabled{% endif %}>
+                Next
+            </button>
+        </div>
+    </div>
+</div>
