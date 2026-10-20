@@ -72,7 +72,7 @@
 <script>
     let winPercentChart;
 
-    document.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('load', function() {
         function createChart(canvasId, type, labels, values, title, axisLabel, colors) {
             return new Chart(document.getElementById(canvasId), {
                 type,
