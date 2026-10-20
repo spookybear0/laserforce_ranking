@@ -217,7 +217,7 @@ class EntityEnd(models.Model):
     ratings = models.JSONField(null=True) # current and previous ratings, if available
     video = models.URLField(null=True) # video of the game from this player's perspective, if available
 
-    async def get_rating(self, timeframe: Optional[str] = None, use_site: bool=True, consider_roles: bool=True) -> Rating:
+    def get_rating(self, timeframe: Optional[str] = None, use_site: bool=True, consider_roles: bool=True) -> Rating:
         """
         Returns the rating of the player at the end of the game.
         The timeframe can be "previous", "current", or None.
@@ -238,9 +238,9 @@ class EntityEnd(models.Model):
         else:
             # get current rating from database
             from .player import Player
-            player = await Player.objects.filter(entity_id=self.entity.entity_id).afirst()
+            player = Player.objects.filter(entity_id=self.entity.entity_id).first()
             if player:
-                return await player.get_rating(self.game.type, self.game.site_id, self.entity.role)
+                return player.get_rating(self.game.type, self.game.site_id, self.entity.role)
             else:
                 return Rating(mu=MU, sigma=SIGMA)
 
@@ -359,7 +359,7 @@ class Game(models.Model):
 
         # get the previous elo for each player
 
-        elos_team1 = [await entity_end.get_rating(timeframe, consider_site, consider_roles) for entity_end in entity_ends_team1]
+        elos_team1 = [entity_end.get_rating(timeframe, consider_site, consider_roles) for entity_end in entity_ends_team1]
 
         # get all the entity_ends for the green team
 
@@ -367,7 +367,7 @@ class Game(models.Model):
 
         # get the previous elo for each player
 
-        elos_team2 = [await entity_end.get_rating(timeframe, consider_site, consider_roles) for entity_end in entity_ends_team2]
+        elos_team2 = [entity_end.get_rating(timeframe, consider_site, consider_roles) for entity_end in entity_ends_team2]
 
         # get the win chance
 

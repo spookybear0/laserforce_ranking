@@ -37,9 +37,6 @@ def get_games(request, player_entity_id=None, site_id=None):
     game_type = request.GET.get("mode", "sm5")
     date_range = request.GET.get("date_range", None)
 
-    if not player_entity_id and request.GET.get("player"):
-        player_entity_id = request.GET.get("player")
-
     if not site_id and request.GET.get("site"):
         site_id = request.GET.get("site")
 

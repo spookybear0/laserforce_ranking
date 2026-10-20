@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-async def matchmake_teams(players: List["Player"], num_teams: int=2, mode: GameType = GameType.SM5, site: str="global") -> List[List["Player"]]:
+def matchmake_teams(players: List["Player"], num_teams: int=2, mode: GameType = GameType.SM5, site: str="global") -> List[List["Player"]]:
     """
     Algorithm: Basic Matchmaker
 
@@ -26,21 +26,21 @@ async def matchmake_teams(players: List["Player"], num_teams: int=2, mode: GameT
     if not 2 <= num_teams <= 4:
         raise ValueError("num_teams must be between 2 and 4")
 
-    async def get_team_rating(team):
-        return [await player.get_rating(mode, site) for player in team]
+    def get_team_rating(team):
+        return [player.get_rating(mode, site) for player in team]
     
-    async def evaluate_teams(teams):
+    def evaluate_teams(teams):
         ideal_win_chance = 0.5
         win_chances = []
         for team1, team2 in itertools.combinations(teams, 2):
-            team1_rating = await get_team_rating(team1)
-            team2_rating = await get_team_rating(team2)
+            team1_rating =  get_team_rating(team1)
+            team2_rating = get_team_rating(team2)
             win_chance = model.predict_win([team1_rating, team2_rating])[0]
             win_chances.append(abs(win_chance - ideal_win_chance))
         return sum(win_chances)
 
     best_teams = [players[i::num_teams] for i in range(num_teams)]
-    best_fairness = await evaluate_teams(best_teams)
+    best_fairness = evaluate_teams(best_teams)
 
     for _ in range(1000):
         random.shuffle(players)
@@ -60,7 +60,7 @@ async def matchmake_teams(players: List["Player"], num_teams: int=2, mode: GameT
         if num_teams == 4 and any(len(team) != len(players) // num_teams for team in current_teams) and len(players) % 4 == 0:
             continue
 
-        current_fairness = await evaluate_teams(current_teams)
+        current_fairness = evaluate_teams(current_teams)
         if current_fairness < best_fairness:
             best_teams = current_teams
             best_fairness = current_fairness
@@ -194,7 +194,7 @@ def get_best_roles_for_teams(teams: List[List["Player"]]) -> List[List[IntRole]]
     
     return best_roles
 
-async def matchmake_teams_with_roles_best_players(players: List["Player"], num_teams: int, mode: GameType = GameType.SM5, site: str="global") -> List[List["Player"]]:
+def matchmake_teams_with_roles_best_players(players: List["Player"], num_teams: int, mode: GameType = GameType.SM5, site: str="global") -> List[List["Player"]]:
     """
     Algorithm: Best Players for Roles Matchmaker
 
@@ -215,10 +215,10 @@ async def matchmake_teams_with_roles_best_players(players: List["Player"], num_t
     if not 2 <= num_teams <= 4:
         raise ValueError("num_teams must be between 2 and 4")
 
-    async def get_team_rating(team, roles):
-        return [await player.get_rating(mode, site, role) for player, role in zip(team, roles)]
+    def get_team_rating(team, roles):
+        return [player.get_rating(mode, site, role) for player, role in zip(team, roles)]
     
-    async def evaluate_teams(teams, roles):
+    def evaluate_teams(teams, roles):
         ideal_win_chance = 0.5
         win_chances = []
         for team1, team2 in itertools.combinations(teams, 2):
@@ -229,21 +229,21 @@ async def matchmake_teams_with_roles_best_players(players: List["Player"], num_t
             if len(team1) == 0 or len(team2) == 0: # every team must have at least one player
                 continue
 
-            team1_rating = await get_team_rating(team1, roles[teams.index(team1)])
-            team2_rating = await get_team_rating(team2, roles[teams.index(team2)])
+            team1_rating = get_team_rating(team1, roles[teams.index(team1)])
+            team2_rating = get_team_rating(team2, roles[teams.index(team2)])
             win_chance = model.predict_win([team1_rating, team2_rating])[0]
             win_chances.append(abs(win_chance - ideal_win_chance))
         return sum(win_chances)
     
     best_teams = [players[i::num_teams] for i in range(num_teams)]
     best_roles = get_best_roles_for_teams(best_teams)
-    best_fairness = await evaluate_teams(best_teams, best_roles)
+    best_fairness = evaluate_teams(best_teams, best_roles)
 
     for _ in range(5000):
         random.shuffle(players)
         current_teams = [players[i::num_teams] for i in range(num_teams)]
         current_roles = get_best_roles_for_teams(current_teams)
-        current_fairness = await evaluate_teams(current_teams, current_roles)
+        current_fairness = evaluate_teams(current_teams, current_roles)
         if current_fairness < best_fairness:
             best_teams = current_teams
             best_roles = current_roles
@@ -252,7 +252,7 @@ async def matchmake_teams_with_roles_best_players(players: List["Player"], num_t
 
     return best_teams, best_roles
 
-async def matchmake_advanced(
+def matchmake_advanced(
         players: List["Player"],
         num_teams: int,
         mode: GameType = GameType.SM5,
@@ -314,15 +314,15 @@ async def matchmake_advanced(
 
     # helpers
 
-    async def get_team_rating(team, roles):
-        return [await player.get_rating(mode, site, role) for player, role in zip(team, roles)]
+    def get_team_rating(team, roles):
+        return [player.get_rating(mode, site, role) for player, role in zip(team, roles)]
 
     def role_map(team, roles):
         return {r: p for p, r in zip(team, roles)}
 
     # role matchups
 
-    async def role_matchup_diff(team1, roles1, team2, roles2):
+    def role_matchup_diff(team1, roles1, team2, roles2):
 
         map1 = role_map(team1, roles1)
         map2 = role_map(team2, roles2)
@@ -333,8 +333,8 @@ async def matchmake_advanced(
 
             if role in map1 and role in map2:
 
-                r1 = (await map1[role].get_rating(mode, site, role)).ordinal()
-                r2 = (await map2[role].get_rating(mode, site, role)).ordinal()
+                r1 = (map1[role].get_rating(mode, site, role)).ordinal()
+                r2 = (map2[role].get_rating(mode, site, role)).ordinal()
 
                 diff += weight * abs(r1 - r2)
 
@@ -342,18 +342,18 @@ async def matchmake_advanced(
 
     # role strength
 
-    async def team_role_strength(team, roles):
+    def team_role_strength(team, roles):
 
         strength = 0
 
         for p, r in zip(team, roles):
-            strength += (await p.get_rating(mode, site, r)).ordinal()
+            strength += (p.get_rating(mode, site, r)).ordinal()
 
         return strength
 
     # check how even teams are and give them a score (lower is better balance, higher is worse balance)
 
-    async def evaluate(teams, roles):
+    def evaluate(teams, roles):
         ideal = 0.5
 
         win_balance = 0
@@ -361,15 +361,15 @@ async def matchmake_advanced(
         role_balance = 0
 
         for t1, t2 in itertools.combinations(teams, 2):
-            r1 = await get_team_rating(t1, roles[teams.index(t1)])
-            r2 = await get_team_rating(t2, roles[teams.index(t2)])
+            r1 = get_team_rating(t1, roles[teams.index(t1)])
+            r2 = get_team_rating(t2, roles[teams.index(t2)])
 
             if USE_WIN_BALANCE:
                 win = model.predict_win([r1, r2])[0]
                 win_balance += abs(win - ideal) ** 2
 
             if USE_ROLE_MATCHUPS:
-                matchup_score += await role_matchup_diff(
+                matchup_score += role_matchup_diff(
                     t1,
                     roles[teams.index(t1)],
                     t2,
@@ -378,8 +378,8 @@ async def matchmake_advanced(
 
             if USE_ROLE_STRENGTH:
                 role_balance += abs(
-                    await team_role_strength(t1, roles[teams.index(t1)])
-                    - await team_role_strength(t2, roles[teams.index(t2)])
+                    team_role_strength(t1, roles[teams.index(t1)])
+                    - team_role_strength(t2, roles[teams.index(t2)])
                 )
 
         score_components = []
@@ -407,7 +407,7 @@ async def matchmake_advanced(
     teams = [players[i::num_teams] for i in range(num_teams)]
     roles = get_random_roles_for_teams(teams, role_locks)
 
-    best_score = await evaluate(teams, roles)
+    best_score = evaluate(teams, roles)
 
     temperature = INITIAL_TEMP
     prob = 1.0
@@ -431,7 +431,7 @@ async def matchmake_advanced(
 
         new_roles = get_random_roles_for_teams(teams, role_locks)
 
-        new_score = await evaluate(teams, new_roles)
+        new_score = evaluate(teams, new_roles)
 
         delta = new_score - best_score
 
@@ -464,16 +464,16 @@ async def matchmake_advanced(
         logger.warning("Advanced matchmaking reached maximum attempts, returning best found solution")
         return teams, roles
     
-    win_chances = await get_win_chances(teams, mode=mode, roles=roles)
+    win_chances = get_win_chances(teams, mode=mode, roles=roles)
 
     if any(abs(win - 0.5) > 0.05 for row in win_chances for win in row if win is not None):
         logger.info(f"Win chances for teams are imbalanced: {win_chances}, redoing matchmaking (attempt {_attempts}/3)")
-        return await matchmake_advanced(players, num_teams, mode=mode, site=site, role_locks=role_locks, _attempts=_attempts)
+        return matchmake_advanced(players, num_teams, mode=mode, site=site, role_locks=role_locks, _attempts=_attempts)
 
     return teams, roles
 
 
-async def get_win_chance(team1: List["Player"], team2: List["Player"], mode: GameType = GameType.SM5, site: str="global", roles: Optional[List[List[IntRole]]]=None) -> List[float]:
+def get_win_chance(team1: List["Player"], team2: List["Player"], mode: GameType = GameType.SM5, site: str="global", roles: Optional[List[List[IntRole]]]=None) -> List[float]:
     """
     Gets win chance for two teams
     """
@@ -481,18 +481,18 @@ async def get_win_chance(team1: List["Player"], team2: List["Player"], mode: Gam
     logger.debug(f"Getting win chance for {team1} vs {team2}")
 
     if roles:
-        team1 = [await p.get_rating(mode, site, r) for p, r in zip(team1, roles[0])]
-        team2 = [await p.get_rating(mode, site, r) for p, r in zip(team2, roles[1])]
+        team1 = [p.get_rating(mode, site, r) for p, r in zip(team1, roles[0])]
+        team2 = [p.get_rating(mode, site, r) for p, r in zip(team2, roles[1])]
     else:
         # get rating object for mode
-        team1 = [await p.get_rating(mode, site) for p in team1]
-        team2 = [await p.get_rating(mode, site) for p in team2]
+        team1 = [p.get_rating(mode, site) for p in team1]
+        team2 = [p.get_rating(mode, site) for p in team2]
 
     # predict
     return model.predict_win([team1, team2])
 
 
-async def get_win_chances(
+def get_win_chances(
     all_teams: List[List["Player"]],
     mode: GameType = GameType.SM5,
     site: str = "global",
@@ -506,7 +506,7 @@ async def get_win_chances(
         for j in range(i + 1, n):
             match_roles = [roles[i], roles[j]] if roles else None
 
-            team1_chance, team2_chance = await get_win_chance(
+            team1_chance, team2_chance = get_win_chance(
                 all_teams[i],
                 all_teams[j],
                 mode,

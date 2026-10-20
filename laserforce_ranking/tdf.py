@@ -114,13 +114,13 @@ async def download_tdfs(start_date: Optional[str] = None, game_type: Optional[st
                 # check if we have the tdf already
 
                 if os.path.exists(f"tdfs/{tdf_filename}"):
-                    print(f"Already have {tdf_filename}, skipping download")
+                    logger.info(f"Already have {tdf_filename}, skipping download")
                     continue
 
                 async with session.get(tdf_url) as tdf_response:
                     if tdf_response.status == 200:
                         with open(f"tdfs/{tdf_filename}", "wb") as tdf_file:
-                            print(f"Downloading {tdf_filename} ({i+1}/{len(games)})")
+                            logger.info(f"Downloading {tdf_filename} ({i+1}/{len(games)})")
                             tdf_file.write(await tdf_response.read())
         
 def _process_tdf_worker(file, skip_rankings):
@@ -870,10 +870,10 @@ async def process_sm5(
                 player = await Player.objects.filter(entity_id=entity_id).afirst()
 
                 try:
-                    global_ratings = await player.get_rating()
-                    global_role_ratings = await player.get_rating(role=entity_start.role)
-                    site_ratings = await player.get_rating(site=game.site_id)
-                    site_role_ratings = await player.get_rating(role=entity_start.role, site=game.site_id)
+                    global_ratings = player.get_rating()
+                    global_role_ratings = player.get_rating(role=entity_start.role)
+                    site_ratings = player.get_rating(site=game.site_id)
+                    site_role_ratings = player.get_rating(role=entity_start.role, site=game.site_id)
 
                     entity_end.ratings = {
                         "current": {

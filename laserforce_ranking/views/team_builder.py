@@ -25,7 +25,7 @@ class FakePlayer:
         self.rating = Rating(mu=MU, sigma=SIGMA).ordinal()
         logger.debug(f"Created FakePlayer with entity_id: {entity_id}")
     
-    async def get_rating(self, mode: GameType, site: str, role: IntRole = None) -> Rating:
+    def get_rating(self, mode: GameType, site: str, role: IntRole = None) -> Rating:
         """
         Returns a default rating for unrated players.
         """
@@ -53,15 +53,15 @@ class TeamBuilderView(View):
         if tdf_name:
             # get teams/roles from the game with the given tdf_name
             game = await SM5Game.objects.filter(tdf_name=tdf_name).afirst()
-            print(f"Retrieved game for tdf_name {tdf_name}: {game}")
+            logger.info(f"Retrieved game for tdf_name {tdf_name}: {game}")
 
             new_teams = []
             new_roles = []
             teams = await game.get_teams()
-            print(f"Retrieved teams from game: {teams}")
+            logger.debug(f"Retrieved teams from game: {teams}")
 
             for team in teams:
-                print(f"Processing team: {team}")
+                logger.debug(f"Processing team: {team}")
                 entitys = team.entity_starts.filter(type=EntityType.PLAYER).all()
                 new_teams.append(
                     [
@@ -75,7 +75,7 @@ class TeamBuilderView(View):
                     async for entity in entitys
                 ])
             
-            print(f"New teams: {new_teams}, New roles: {new_roles}")
+            logger.debug(f"New teams: {new_teams}, New roles: {new_roles}")
         else:
             new_teams = [[], []]
             new_roles = [[], []]
@@ -182,11 +182,10 @@ class TeamBuilderTeamsView(TemplateView):
 
         if matchmake:
             logger.info("Performing matchmaking")
-            print(list(players.values()))
             if roles_enabled:
-                new_teams, new_roles = await matchmake_advanced(list(players.values()), 2, GameType(mode), site, role_lock_dict, match_roles_enabled)
+                new_teams, new_roles = matchmake_advanced(list(players.values()), 2, GameType(mode), site, role_lock_dict, match_roles_enabled)
             else:
-                new_teams = await matchmake_teams(list(players.values()), 2, GameType(mode), site)
+                new_teams = matchmake_teams(list(players.values()), 2, GameType(mode), site)
 
         if roles_enabled:
             for i, team in enumerate(new_teams):
@@ -198,7 +197,7 @@ class TeamBuilderTeamsView(TemplateView):
         context["locks"] = [[role_lock_dict.get(player.entity_id, RoleLock("none")).value for player in team] for team in new_teams]
         context["roles_enabled"] = roles_enabled
         context["match_roles_enabled"] = match_roles_enabled
-        context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
+        context["win_chances"] = get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
                 if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
 
         logger.debug("Matchmaking completed and context updated")
@@ -256,7 +255,7 @@ class TeamBuilderUpdateView(TemplateView):
         context["locks"] = locks
         context["roles_enabled"] = roles_enabled
         context["match_roles_enabled"] = match_roles_enabled
-        context["win_chances"] = await get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
+        context["win_chances"] = get_win_chances(new_teams, GameType(mode), site, roles=new_roles if roles_enabled else None) \
             if new_teams and new_teams[0] and new_teams[1] else [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]
 
         logger.debug("Updated context with new teams and players")

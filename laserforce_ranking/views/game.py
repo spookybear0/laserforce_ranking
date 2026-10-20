@@ -31,10 +31,10 @@ class GameView(DetailView):
                 async for entity in team.entity_starts.prefetch_related("entity_end").all():
                     context["ratings"][entity.entity_id] = {
                         "current": (
-                            await entity.entity_end.get_rating("current", use_site=False, consider_roles=False)
+                            entity.entity_end.get_rating("current", use_site=False, consider_roles=False)
                         ).ordinal(),
                         "previous": (
-                            await entity.entity_end.get_rating("previous", use_site=False, consider_roles=False)
+                            entity.entity_end.get_rating("previous", use_site=False, consider_roles=False)
                         ).ordinal(),
                     }
                     

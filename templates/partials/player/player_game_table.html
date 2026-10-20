@@ -1,4 +1,4 @@
-<div class="container mx-auto bg-base-100 rounded-2xl shadow-xl p-10 mb-8" hx-swap="outerHTML" id="game-table">
+<div class="container mx-auto bg-base-100 rounded-2xl shadow-xl p-10 mb-8" hx-swap="outerHTML" id="player-game-table">
     <div class="flex justify-between items-center mb-4 sm:flex-row flex-col space-y-2 sm:space-y-0 space-x-2">
         <h1 class="text-2xl font-bold">Recent Games</h1>
         <div class="flex space-x-2 sm:flex-row flex-col space-y-2 sm:space-y-0">
@@ -6,7 +6,7 @@
                 <button name="mode" 
                         value="sm5"
                         hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={{current_sort}}&page={{ page_obj.number }}"
-                        hx-target="#game-table"
+                        hx-target="#player-game-table"
                         hx-include="[name='site'], [name='mode'], [name='player']"
                         hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                         class="btn {% if current_mode == 'sm5' %}btn-primary{% else %}btn-outline{% endif %} sm:w-1/2">
@@ -16,7 +16,7 @@
                 <button name="mode" 
                         value="laserball"
                         hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={{current_sort}}&page={{ page_obj.number }}"
-                        hx-target="#game-table"
+                        hx-target="#player-game-table"
                         hx-include="[name='site'], [name='mode'], [name='player']"
                         hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                         class="btn {% if current_mode == 'laserball' %}btn-primary{% else %}btn-outline{% endif %} sm:w-1/2">
@@ -27,7 +27,7 @@
             {% if not site_id %}
                 <select name="site"
                         hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                        hx-target="#game-table"
+                        hx-target="#player-game-table"
                         hx-include="[name='site'], [name='mode'], [name='player']"
                         hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                         class="select">
@@ -59,7 +59,7 @@
                     name="date_range"
                     value="{{ current_date_range }}"
                     hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={{current_sort}}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                    hx-target="#game-table"
+                    hx-target="#player-game-table"
                     hx-include="[name='site'], [name='mode'], [name='player']"
                     hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                     hx-trigger="change">
@@ -81,7 +81,7 @@
                     <th>
                         <button
                             hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={% if current_sort == 'start_time' %}-start_time{% else %}start_time{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                            hx-target="#game-table"
+                            hx-target="#player-game-table"
                             hx-include="[name='site'], [name='mode'], [name='player']"
                             hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                             class="btn btn-ghost">
@@ -98,7 +98,7 @@
                     <th>
                         <button
                             hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={% if current_sort == 'site' %}-site{% else %}site{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                            hx-target="#game-table"
+                            hx-target="#player-game-table"
                             hx-include="[name='site'], [name='mode'], [name='player']"
                             hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                             class="btn btn-ghost">
@@ -115,7 +115,7 @@
                     <th>
                         <button
                             hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={% if current_sort == 'start_time' %}-start_time{% else %}start_time{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                            hx-target="#game-table"
+                            hx-target="#player-game-table"
                             hx-include="[name='site'], [name='mode'], [name='player']"
                             hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                             class="btn btn-ghost">
@@ -132,7 +132,7 @@
                     <th>
                         <button
                             hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]})}}?sort={% if current_sort == 'outcome' %}-outcome{% else %}outcome{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                            hx-target="#game-table"
+                            hx-target="#player-game-table"
                             hx-include="[name='site'], [name='mode'], [name='player']"
                             hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                             class="btn btn-ghost">
@@ -149,7 +149,7 @@
                     <th>
                         <button
                         hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={% if current_sort == 'score' %}-score{% else %}score{% endif %}&page={{ page_obj.number }}&mode={{ current_mode }}"
-                        hx-target="#game-table"
+                        hx-target="#player-game-table"
                         hx-include="[name='site'], [name='mode'], [name='player']"
                         hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                         class="btn btn-ghost">
@@ -168,7 +168,7 @@
                     <th class="text-white">Rating</th>
                 </tr>
             </thead>
-            <tbody id="game-table-body">
+            <tbody id="player-game-table-body">
                 {% for game in games %}
                 {% set entity_start = entity_info[loop.index0]["entity_start"] %}
                 {% set entity_end = entity_info[loop.index0]["entity_end"] %}
@@ -221,7 +221,7 @@
         <div class="flex space-x-2">
             <button
                 hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={{ current_sort }}&page={% if page_obj.has_previous() %}{{ page_obj.previous_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}"
-                hx-target="#game-table"
+                hx-target="#player-game-table"
                 hx-include="[name='site'], [name='mode'], [name='player']"
                 hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                 class="btn btn-outline"
@@ -230,7 +230,7 @@
             </button>
             <button
                 hx-get="{{ url('player_detail', kwargs={'entity_id': player.entity_id[1:]}) }}?sort={{ current_sort }}&page={% if page_obj.has_next() %}{{ page_obj.next_page_number() }}{% else %}1{% endif %}&mode={{ current_mode }}"
-                hx-target="#game-table"
+                hx-target="#player-game-table"
                 hx-include="[name='site'], [name='mode'], [name='player']"
                 hx-vals="js:{'date_range': document.getElementById('date_picker').value}"
                 class="btn btn-outline"

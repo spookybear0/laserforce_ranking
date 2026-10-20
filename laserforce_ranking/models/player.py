@@ -1,6 +1,6 @@
 from django.db import models
 from .types import Permission, IntRole, SITE_BY_ID, GameType, Site
-from .game import Game
+from .game import Game, EntityStart, EntityEnd
 from typing import Optional, Union
 from laserforce_ranking.rating import Rating, MU, SIGMA
 from django_enum import EnumField
@@ -111,7 +111,7 @@ class Player(models.Model):
         else:
             return await Game.objects.filter(entityend__entity__entity_id=self.entity_id, site_id=site).acount()
 
-    async def get_rating(self, game_type: Optional[GameType]=GameType.SM5, site: Optional[str]=None, role: Optional[IntRole]=None):
+    def get_rating(self, game_type: Optional[GameType]=GameType.SM5, site: Optional[str]=None, role: Optional[IntRole]=None):
         """
         Get specified rating from the player.ratings json object
         """
@@ -174,7 +174,31 @@ class Player(models.Model):
 
         return ratings_str
 
+    def get_win_percent(self, site: Optional[str] = None, role: Optional[IntRole] = None, game_type: Optional[GameType] = None) -> float:
+        """
+        Get the player's win percentage, optionally filtered by site and role.
+
+        Returns (wins, losses)
+        """
+
+        entities = EntityStart.objects.filter(entity_id=self.entity_id)
+
+        if site is not None:
+            entities = entities.filter(game__site_id=site)
+
+        if game_type == GameType.SM5:
+            entities = entities.filter(game__sm5game__isnull=False)
+        elif game_type == GameType.LASERBALL:
+            entities = entities.filter(game__laserballgame__isnull=False)
+
+        if role is not None and role != IntRole.OTHER:
+            entities = entities.filter(role=role)
         
+        total = entities.count()
+
+        wins = entities.filter(team=models.F("game__winner")).count()
+
+        return (wins, total - wins)
     
     def get_absolute_url(self):
         return reverse("player_detail", kwargs={"entity_id": self.entity_id})

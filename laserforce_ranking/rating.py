@@ -64,28 +64,14 @@ SM5_MISSILE_MEDIC_WEIGHT_SIGMA = 0.01  # uncertainty weight for medic missiles i
 
 # sm5 role specific multipliers (multiply the above weights by these for role specific ratings)
 
-SM5_COMMANDER_WEIGHT_MU = 1
-SM5_COMMANDER_WEIGHT_SIGMA = 1
-
-SM5_HEAVY_WEIGHT_MU = 1
-SM5_HEAVY_WEIGHT_SIGMA = 1
-
-SM5_SCOUT_WEIGHT_MU = 1
-SM5_SCOUT_WEIGHT_SIGMA = 1
-
-SM5_AMMO_WEIGHT_MU = 1
-SM5_AMMO_WEIGHT_SIGMA = 1.25 # give more uncertainty weight to ammo players since their role is less combat focused
-
-SM5_MEDIC_WEIGHT_MU = 1
-SM5_MEDIC_WEIGHT_SIGMA = 2 
 
 SM5_ROLE_WEIGHT_MULTIPLIERS = {
     IntRole.COMMANDER: (1, 1),
     IntRole.HEAVY: (1, 1),
     IntRole.SCOUT: (1, 1),
     # give more uncertainty weight to ammo/medic players since their role is less combat focused
-    IntRole.AMMO: (1, 1.25),
-    IntRole.MEDIC: (1, 2),
+    IntRole.AMMO: (1, 1.1),
+    IntRole.MEDIC: (1, 1.25),
 }
 
 # laserball
@@ -97,11 +83,11 @@ SM5_ROLE_WEIGHT_MULTIPLIERS = {
 LB_STEAL_WEIGHT_MU = 0.2  # skill weight for steals in laserball
 LB_STEAL_WEIGHT_SIGMA = 0.2  # uncertainty weight for steals in laserball
 
-LB_GOAL_WEIGHT_MU = 1.5  # skill weight for goals in laserball
-LB_GOAL_WEIGHT_SIGMA = 1.5  # uncertainty weight for goals in laserball
+LB_GOAL_WEIGHT_MU = 0.75  # skill weight for goals in laserball
+LB_GOAL_WEIGHT_SIGMA = 0.75  # uncertainty weight for goals in laserball
 
-LB_ASSIST_WEIGHT_MU = 0.75  # skill weight for assists in laserball
-LB_ASSIST_WEIGHT_SIGMA = 0.75  # uncertainty weight for assists in laserball
+LB_ASSIST_WEIGHT_MU = 0.2  # skill weight for assists in laserball
+LB_ASSIST_WEIGHT_SIGMA = 0.2  # uncertainty weight for assists in laserball
 
 def predict_win(self, teams: List[List[PlackettLuceRating]]) -> List[Union[int, float]]:
     # Check Arguments
@@ -633,7 +619,7 @@ async def recalculate_rankings(start_game_id: Optional[int] = None):
 
     i = 0
     async for game in query.all():
-        print(f"Processing game {i + 1}/{length}: {game.tdf_name} (ID: {game.id})")
+        logger.info(f"Processing game {i + 1}/{length}: {game.tdf_name} (ID: {game.id})")
         await update_sm5_rankings(game)
         i += 1
 
