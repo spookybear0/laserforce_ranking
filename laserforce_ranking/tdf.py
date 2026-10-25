@@ -497,14 +497,14 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
 
                 await player.asave()
             # give player their player_id if we don't have it yet
-            elif (player := await Player.objects.filter(entity_id=entity_id, player_id__isnull=True).afirst()) and e.member_id:
+            if (player := await Player.objects.filter(entity_id=entity_id, player_id__isnull=True).afirst()) and e.member_id:
                 player.player_id = e.member_id
                 split_ = e.member_id.split("-")
                 player.home_site_id = f"{split_[0]}-{split_[1]}"
 
                 await player.asave()
-            # create new player if we don't their entity_id
-            elif not await Player.objects.filter(entity_id=entity_id).aexists():
+            # create new player if we don't have their entity_id
+            if not await Player.objects.filter(entity_id=entity_id).aexists():
                 if e.member_id:
                     split_ = e.member_id.split("-")
                     home_site_id = f"{split_[0]}-{split_[1]}" if len(split_) > 1 else site
