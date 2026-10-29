@@ -459,6 +459,7 @@ class EventType(models.TextChoices):
     # basic and sm5 events
     MISSION_START = "0100"  # Arguments: "* Mission Start *"
     MISSION_END = "0101"  # Arguments: "* Mission End *"
+
     SHOT_EMPTY = "0200"  # unused?
     MISS = "0201"  # Arguments: "(entity 1)", " misses" (this is NOT shown on scoreboard, only in logs)
     MISS_BASE = "0202"  # Arguments: "(entity 1)", " misses ", "(entity 2)". Entity 2 is a base
@@ -469,6 +470,7 @@ class EventType(models.TextChoices):
     DAMANGED_TEAM = "0207"  # unused?
     DOWNED_TEAM = "0208"  # unused?
     WARBOT_ZAP = "0209"  # Arguments: "(entity 1)", " zaps ", "(entity 2)". Entity 1 is a warbot, entity 2 is a player
+    
     LOCKING = "0300"  # (aka missile start) Arguments: "(entity 1)", " locking ", "(entity 2)"
     MISSILE_BASE_MISS = "0301" # you have to be really bad to trigger this event
     MISSILE_BASE_DAMAGE = "0302" # not used in sm5
@@ -478,22 +480,47 @@ class EventType(models.TextChoices):
     MISSILE_DOWN_OPPONENT = "0306"  # Arguments: "(entity 1)", " missiles ", "(entity 2)"
     MISSILE_DAMAGE_TEAM = "0307"  # unused?
     MISSILE_DOWN_TEAM = "0308"
+    
     ACTIVATE_RAPID_FIRE = "0400"  # Arguments: "(entity 1)", " activates rapid fire"
     DEACTIVATE_RAPID_FIRE = "0401"  # unused?
+    ACTIVATE_INVULNERABILITY = "0402"  # Arguments: "(entity 1)", " activates invulnerability"
+    DEACTIVATE_INVULNERABILITY = "0403"  # Arguments: "(entity 1)", " deactivates invulnerability"
     ACTIVATE_NUKE = "0404"  # Arguments: "(entity 1)", " activates nuke"
     DETONATE_NUKE = "0405"  # Arguments: "(entity 1)", " detonates nuke"
+    ACTIVATE_STEALTH = "0406"  # Arguments: "(entity 1)", " activates stealth"
+    DEACTIVATE_STEALTH = "0407"  # Arguments: "(entity 1)", " deactivates stealth"
+    PAYBACK = "0408"  # Arguments: "(entity 1)", " activates payback"
+    RESET = "0409"  # Arguments: "(entity 1)", " activates reset"
+    ACTIVATE_SHIELD = "040A"  # Arguments: "(entity 1)", " activates shield"
+    DEACTIVATE_SHIELD = "040B"  # unknown args
+    
     RESUPPLY_AMMO = "0500"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
+    RESUPPLY_MISSILES = "0501"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
     RESUPPLY_LIVES = "0502"  # Arguments: "(entity 1)", " resupplies ", "(entity 2)"
+    RESUPPLY_TIME = "0503" # unknown args (timewarp)
     AMMO_BOOST = "0510"  # Arguments: "(entity 1)", " resupplies team"
     LIFE_BOOST = "0512"  # Arguments: "(entity 1)", " resupplies team"
+    RESUPPLY_TEAM_TIME = "0513"  # Arguments: "(entity 1)", " resupplies team"
+
     PENALTY = "0600"  # Arguments: "(entity 1)", " is penalized"
+
+    RADIATION_START = "0700"
+    RADIATION_EXPOSURE = "0701"
+
+    SERPENT_EGG_A = "0800"
+    SERPENT_EGG_B = "0801"
+    SERPENT_EGG_C = "0802"
+    SERPENT_EGG_D = "0803"
+    SERPENT_PROVOKE = "0804"
+    SERPENT_DEFEAT = "0805"
+    SERPENT_LOOT = "0806"
+
     ACHIEVEMENT = "0900"  # Arguments: "(entity 1)", " completes an achievement!"
     WIN_TICKETS = "0901"  # Arguments: "(entity 1)", " wins ", "(int:tickets)"
     REWARD = "0902"  # Arguments: "(entity 1)", " earns a reward!"
-    CLAIM_BEACON = "0B00"  # Arguments: "(entity 1)", " claims a beacon"
-    BASE_AWARDED = "0B03"  # (technically #0B03 in hex) Arguments: "(entity 1)", " is awarded ", "(entity 2)"
 
-    # laserball events
+    # specific game events (11XX can be ANY game, so 1100 can mean something different per game type)
+    # be careful with this because 1100 is not always "PASS"
 
     PASS = "1100"  # Arguments: "(entity 1)", " passes to ", "(entity 2)"
     GOAL = "1101"  # Arguments: "(entity 1)", " scores!"
@@ -508,6 +535,49 @@ class EventType(models.TextChoices):
     FAIL_CLEAR = "110A"  # Arguments: "(entity 1)", " fails to clear"
     RESET_ON_BASE = "110B"  # Arguments: "(entity 1)", " resets on (base entity)"
 
+    VORTEX_A_DESTROYED = "0A00"
+    VORTEX_B_DESTROYED = "0A01"
+    VORTEX_C_DESTROYED = "0A02"
+    VORTEX_D_DESTROYED = "0A03"
+    VORTEX_MAIN_DESTROYED = "0A04"
+
+    CLAIM_BEACON = "0B00"  # Arguments: "(entity 1)", " claims a beacon"
+    TARGET_DENY_0 = "0B01" # unknown
+    TARGET_DENY_1 = "0B02" # unknown
+    BASE_AWARDED = "0B03"  # (technically #0B03 in hex) Arguments: "(entity 1)", " is awarded ", "(entity 2)"
+
+    GATE_HIT = "0C00"
+    GATE_CAPTURED = "0C01"
+    GATE_LIBERATED = "0C02"
+    GATE_DEACTIVATES = "0C03"
+    DOMINATION_TEAM_STARTS = "0C10"
+    DOMINATION_INDIVIDUAL_STARTS = "0C11"
+    DOMINATION_TEAM_ENDS = "0C12"
+    DOMINATION_INDIVIDUAL_ENDS = "0C13"
+
+    BLAST_DAMAGE = "0D05"
+    BLAST_DOWN = "0D06"
+    SPLASH = "0D07"
+    
+    BATTLEFIELD_PROMOTION = "0E00"
+
+class ColorCode(models.TextChoices):
+    NONE = 0
+    RED = 1
+    GREEN = 2
+    YELLOW = 3
+    BLUE = 4
+    AQUA = 5
+    PURPLE = 6
+    WHITE = 7
+    ORANGE = 8
+    PINK = 9
+    BLACK = 10
+    FIRE = 11
+    ICE = 12
+    EARTH = 13
+    CRYSTAL = 14
+    RAINBOW = 15
 
 class IntRole(models.IntegerChoices):
     OTHER = 0  # or no role

@@ -1,6 +1,6 @@
 from pathlib import Path
 from laserforce_ranking.models.types import EntityType, EventType, EntityEndType, PlayerStateType, IntRole, SITE_BY_ID, TeamType
-from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, ScoreEvent, StepEvent, ShotEvent, LifeEvent, MissileEvent
+from laserforce_ranking.models.game import Game, Team, EntityStart, Event, EntityEnd, PlayerState, ScoreEvent, StepEvent, ShotEvent, LifeEvent, MissileEvent, ChangeTeamEvent
 from laserforce_ranking.models.sm5 import SM5Stats, SM5Game
 from laserforce_ranking.models.laserball import LaserballStats
 from typing import Optional, List, Dict
@@ -168,6 +168,7 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
     scores = []
     entity_ends = []
     sm5_stats = []
+    team_changes = []
     player_states = []
     step_events = []
     shot_events = []
@@ -362,7 +363,23 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
                     missiled_opponent=missiled_opponent,
                     missiled_team=missiled_team
                 ))
-            # 8 is unknown
+            case "8": # team change
+                time = int(data[1])
+                entity_id = data[2]
+                old_team_index = int(data[3])
+                new_team_index = int(data[4])
+
+                old_team = teams.get(old_team_index)
+                new_team = teams.get(new_team_index)
+
+                entity_start = entity_starts.get(entity_id)
+
+                team_changes.append(ChangeTeamEvent(
+                    time=time,
+                    entity=entity_start,
+                    old_team=old_team,
+                    new_team=new_team
+                ))
             case "9": # player state
                 time = int(data[1])
                 entity_id = data[2]
@@ -546,6 +563,7 @@ async def parse_tdf(file_location: Path, skip_rankings: bool = False):
         "events": events,
         "scores": scores,
         "entity_ends": entity_ends,
+        "team_changes": team_changes,
         "player_states": player_states,
         "step_events": step_events,
         "shot_events": shot_events,
@@ -604,6 +622,7 @@ async def process_sm5(
     events: List[Event],
     scores: List[ScoreEvent],
     entity_ends: List[EntityEnd],
+    team_changes: List[ChangeTeamEvent],
     player_states: List[PlayerState],
     step_events: List[StepEvent],
     shot_events: List[ShotEvent],
@@ -725,6 +744,12 @@ async def process_sm5(
             await entity_end.entity.asave()
             
         await game.entity_ends.aset(entity_ends)
+
+        for team_change in team_changes:
+            team_change.game = game
+            await team_change.asave()
+        await game.team_changes.aset(team_changes)
+
         for player_state in player_states:
             player_state.game = game
             await player_state.asave()
@@ -924,7 +949,7 @@ async def process_sm5(
         traceback.print_exc()
         if game is not None and game.pk is not None:
             await game.adelete()
-        # delete all teams, entity_starts, events, scores, entity_ends, player_states, sm5_stats
+        # delete saved objects
         for team in teams.values():
             if team.pk is not None:
                 await team.adelete()
@@ -940,6 +965,9 @@ async def process_sm5(
         for entity_end in entity_ends:
             if entity_end.pk is not None:
                 await entity_end.adelete()
+        for team_change in team_changes:
+            if team_change.pk is not None:
+                await team_change.adelete()
         for player_state in player_states:
             if player_state.pk is not None:
                 await player_state.adelete()

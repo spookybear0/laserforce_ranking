@@ -101,6 +101,16 @@ class Event(models.Model):
     class Meta:
         ordering = ["time"] # order events by time
 
+class ChangeTeamEvent(models.Model):
+    game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="change_team_events")
+    time = models.IntegerField() # time in milliseconds
+    entity = models.ForeignKey("EntityStart", on_delete=models.CASCADE)
+    old_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="old_team_events")
+    new_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="new_team_events")
+
+    def __str__(self):
+        return f"{self.entity.name} - {self.old_team.name} -> {self.new_team.name} - Game {self.game.id}"
+
 # player status updates
 class PlayerState(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="player_states")
@@ -277,6 +287,7 @@ class Game(models.Model):
     penalty_amount = models.SmallIntegerField() # how much score is added for each penalty, can be negative (ex: 0, -1000)
 
     # FORIEGN KEYS AND RELATED NAMES
+    # change_team_events is a related name for the ChangeTeamEvent model, which has a foreign key to this model
     # teams is a related name for the Team model, which has a foreign key to this model
     # entity_starts is a related name for the EntityStart model, which has a foreign key to this model
     # events is a related name for the Event model, which has a foreign key to this model
